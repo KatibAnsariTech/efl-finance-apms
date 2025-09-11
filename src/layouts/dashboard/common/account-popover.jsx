@@ -1,125 +1,166 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import swal from 'sweetalert';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import swal from "sweetalert";
 
-import Box from '@mui/material/Box';
-import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
-import Popover from '@mui/material/Popover';
-import { alpha } from '@mui/material/styles';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { clearTokens } from 'src/requestMethod';
-import { useAccount } from 'src/hooks/use-account';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Avatar from "@mui/material/Avatar";
+import Divider from "@mui/material/Divider";
+import Popover from "@mui/material/Popover";
+import MenuList from "@mui/material/MenuList";
+import MenuItem, { menuItemClasses } from "@mui/material/MenuItem";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+
+import { clearTokens } from "src/requestMethod";
+import { useAccount } from "src/hooks/use-account";
+import Iconify from "src/components/iconify";
 
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
   // {
-  //   label: 'Home',
-  //   icon: 'eva:home-fill',
+  //   label: "Home",
+  //   href: "/",
+  //   icon: <Iconify width={22} icon="solar:home-angle-bold-duotone" />,
   // },
   // {
-  //   label: 'Profile',
-  //   icon: 'eva:person-fill',
+  //   label: "Profile",
+  //   href: "/profile",
+  //   icon: <Iconify width={22} icon="solar:shield-keyhole-bold-duotone" />,
   // },
-  // {
-  //   label: 'Settings',
-  //   icon: 'eva:settings-2-fill',
-  // },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: <Iconify width={22} icon="solar:settings-bold-duotone" />,
+  },
 ];
 
 // ----------------------------------------------------------------------
 
-export default function AccountPopover() {
-  const [open, setOpen] = useState(null);
+export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
+  const [openPopover, setOpenPopover] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const account = useAccount();
 
-  const handleOpen = (event) => {
-    setOpen(event.currentTarget);
-  };
+  const handleOpenPopover = useCallback((event) => {
+    setOpenPopover(event.currentTarget);
+  }, []);
 
-  const handleClose = () => {
-    setOpen(null);
-  };
+  const handleClosePopover = useCallback(() => {
+    setOpenPopover(null);
+  }, []);
+
+  const handleClickItem = useCallback(
+    (path) => {
+      handleClosePopover();
+      navigate(path);
+    },
+    [handleClosePopover, navigate]
+  );
 
   const logout = () => {
-    clearTokens();    
-    swal({ title: 'logout', text: 'LogOut Successfully', icon: 'success' }).then(() => {});
-    navigate('/login');
+    clearTokens();
+    swal({
+      title: "Logout",
+      text: "Logged out successfully",
+      icon: "success",
+    }).then(() => {
+      navigate("/login");
+    });
   };
 
   return (
     <>
       <IconButton
-        onClick={handleOpen}
+        onClick={handleOpenPopover}
         sx={{
-          width: 46,
-          height: 46,
-          // background: (theme) => alpha(theme.palette.grey[500], 0.08),
-          ...(open && {
-            background: (theme) =>
-              `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-          }),
+          p: "2px",
+          width: 40,
+          height: 40,
+          // background: (theme) =>
+          //   `conic-gradient(${theme.palette.primary.light}, ${theme.palette.warning.light}, ${theme.palette.primary.light})`,
+          background: (theme) => theme.palette.background.default,
+          ...sx,
         }}
+        {...other}
       >
         <Avatar
           src={account?.photoURL}
           alt={account?.displayName}
-          sx={{
-            border: '0px',
-            padding: '5px',
-          }}
+          sx={{ width: 1, height: 1 }}
         >
           {account?.displayName?.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
 
       <Popover
-        open={!!open}
-        anchorEl={open}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 0,
-            mt: 1,
-            ml: 0.75,
-            width: 200,
+        open={!!openPopover}
+        anchorEl={openPopover}
+        onClose={handleClosePopover}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{
+          paper: {
+            sx: { width: 200,mt: 1.5, ml: 0.5},
           },
         }}
       >
-        <Box sx={{ my: 1.5, px: 2 }}>
+        {/* Account Info */}
+        <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {account?.displayName}
+            {account?.username || account?.displayName}
           </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
+          <Typography variant="body2" sx={{ color: "text.secondary" }} noWrap>
             {account?.email}
           </Typography>
         </Box>
 
-        <Divider sx={{ borderStyle: 'dashed' }} />
+        <Divider sx={{ borderStyle: "dashed" }} />
 
-        {MENU_OPTIONS.map((option) => (
-          <MenuItem key={option.label} onClick={handleClose}>
-            {option.label}
-          </MenuItem>
-        ))}
-
-        <Divider sx={{ borderStyle: 'dashed', m: 0 }} />
-
-        <MenuItem
-          disableRipple
-          disableTouchRipple
-          onClick={logout}
-          sx={{ typography: 'body2', color: 'error.main', py: 1.5 }}
+        {/* Menu Options */}
+        <MenuList
+          disablePadding
+          sx={{
+            p: 1,
+            gap: 0.5,
+            display: "flex",
+            flexDirection: "column",
+            [`& .${menuItemClasses.root}`]: {
+              px: 1,
+              gap: 2,
+              borderRadius: 0.75,
+              color: "text.secondary",
+              "&:hover": { color: "text.primary" },
+              [`&.${menuItemClasses.selected}`]: {
+                color: "text.primary",
+                bgcolor: "action.selected",
+                fontWeight: "fontWeightSemiBold",
+              },
+            },
+          }}
         >
-          Logout
-        </MenuItem>
+          {data.map((option) => (
+            <MenuItem
+              key={option.label}
+              selected={option.href === location.pathname}
+              onClick={() => handleClickItem(option.href)}
+            >
+              {option.icon}
+              {option.label}
+            </MenuItem>
+          ))}
+        </MenuList>
+
+        <Divider sx={{ borderStyle: "dashed" }} />
+
+        {/* Logout */}
+        <Box sx={{ p: 1 }}>
+          <Button fullWidth color="error" size="medium" variant="text" onClick={logout}>
+            Logout
+          </Button>
+        </Box>
       </Popover>
     </>
   );
