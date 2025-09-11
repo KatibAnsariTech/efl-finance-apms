@@ -48,7 +48,7 @@ const ReportTableDataGrid = () => {
       setRegionCount(response.data?.data?.regionCount || {});
     } catch (error) {
       console.error("Error fetching report data:", error);
-      showErrorMessage(error, "Failed to fetch report data", swal);
+      // showErrorMessage(error, "Failed to fetch report data", swal);
     } finally {
       setLoading(false);
     }

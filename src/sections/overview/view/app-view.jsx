@@ -13,6 +13,8 @@ import ReportTable from '../app-report-table-datagrid';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
 import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsCurrentSubject } from '../analytics-current-subject';
+import swal from 'sweetalert';
+import { showErrorMessage } from 'src/utils/errorUtils';
 
 export default function AppView() {
   const [cardData, setCardData] = useState();
@@ -30,6 +32,7 @@ export default function AppView() {
       setCardData(response.data?.data);
     } catch (error) {
       console.log('error:', error);
+      // showErrorMessage(error, "Failed to fetch form statistics. Please try again later.", swal);
     }
   };
 
@@ -46,6 +49,7 @@ export default function AppView() {
       setChartData(response.data?.data?.reverse());
     } catch (error) {
       console.log('error:', error);
+      // showErrorMessage(error, "Failed to fetch chart data. Please try again later.", swal);
     } finally {
       setLoading(false);
     }
@@ -64,6 +68,7 @@ export default function AppView() {
       setPieChartData(response.data?.data);
     } catch (error) {
       console.log('error:', error);
+      // showErrorMessage(error, "Failed to fetch pie chart data. Please try again later.", swal);
     } finally {
       setPieLoading(false);
     }
