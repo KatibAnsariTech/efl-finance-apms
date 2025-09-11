@@ -1,0 +1,89 @@
+/* scrollbar */
+@import 'simplebar-react/dist/simplebar.min.css';
+
+.assing_task_comp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.assign_task_partner_details {
+  /* border-bottom: dashed 2px grey; */
+  width: 65%;
+  margin-bottom: 30px;
+}
+
+.assign_task_rating {
+  padding-top: 30px;
+  border-top: dashed 2px grey;
+}
+
+.assign_task_rating p {
+  color: grey;
+  font-size: 12px;
+  font-weight: 600;
+}
+.assign_task_comment {
+  margin-top: 20px;
+}
+.assign_task_comment button {
+  background: #1a67d8;
+  border: 0;
+  width: 100%;
+  color: white;
+  font-weight: 600;
+  border-radius: 30px;
+  padding: 15px;
+}
+.assign_task-left {
+  width: 65%;
+  padding: 20px;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+/* Custom scrollbar styles for WebKit browsers */
+.assign_task-left::-webkit-scrollbar {
+  width: 15px; 
+}
+
+.assign_task-left::-webkit-scrollbar-track {
+  background: #c8c7c7; 
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px #a7a7a7;
+}
+
+.assign_task-left::-webkit-scrollbar-thumb {
+  background: #676666; 
+  border-radius: 10px; 
+  border: 3px solid #c8c7c7; 
+  box-sizing: border-box;
+}
+
+.assign_task-left::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+.assign_task_right {
+  width: 35%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.server_machine_box {
+  width: 55%;
+}
+
+.server_insepection_box ,
+.assign_task_box {
+  width: 85%;
+  height: 90%;
+}
+
+.MuiContainer-root {
+  max-width: 100% !important;
+}
+
+
