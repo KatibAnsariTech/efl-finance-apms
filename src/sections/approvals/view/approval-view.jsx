@@ -1,19 +1,12 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
-import Table from "@mui/material/Table";
+import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import TablePagination from "@mui/material/TablePagination";
-import Scrollbar from "src/components/scrollbar";
 import CircularIndeterminate from "src/utils/loader";
 import FormTableToolbar from "../form-table-toolbar";
-import FormTableHead from "../form-table-head";
-import FormTableRow from "../form-table-row";
 import { applyFilter, getComparator } from "src/utils/utils";
 import excel from "../../../../public/assets/excel.svg";
-import TableNoData from "../table-no-data";
 import { publicRequest, userRequest } from "src/requestMethod";
 import FilterModal from "../FilterModal";
 import FormRequestTabs from "./form-request-tabs";
@@ -24,6 +17,9 @@ import ColorIndicators from "../colorIndicator";
 import { useCounts } from "src/contexts/CountsContext";
 import { Box } from "@mui/material";
 import RequestModal from "../RequestModal";
+import { fDateTime } from "src/utils/format-time";
+import swal from 'sweetalert';
+import { showErrorMessage } from 'src/utils/errorUtils';
 
 export default function ApprovalPage() {
   const router = useRouter();
@@ -48,6 +44,23 @@ export default function ApprovalPage() {
 
   const [regionData, setRegionData] = React.useState();
   const { approvalCount } = useCounts();
+
+  // Status color mapping
+  const getStatusColor = (status) => {
+    const normalizedStatus = (status || "").toLowerCase();
+    switch (normalizedStatus) {
+      case "pending":
+        return "#f4f5ba";
+      case "declined":
+        return "#e6b2aa";
+      case "approved":
+        return "#baf5c2";
+      case "clarification needed":
+        return "#9be7fa";
+      default:
+        return "white";
+    }
+  };
   const menuItems = [
     { label: `Pending With Me${approvalCount > 0 ? ` (${approvalCount})` : ''}`, value: "myAssigned" },
     // { label: `Pending With Me`, value: "myAssigned" },
@@ -227,7 +240,7 @@ export default function ApprovalPage() {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Error exporting data:", error);
-      toast.error("Error exporting data. Please try again later.");
+      showErrorMessage(error, "Error exporting data. Please try again later.", swal);
     }
   };
 
@@ -302,7 +315,7 @@ export default function ApprovalPage() {
         menuItems={menuItems}
         approvalCount={approvalCount}
       />
-      <Card>
+      <Card sx={{ mt: 2, p: 2 }}>
         <div
           style={{
             display: "flex",
@@ -353,48 +366,164 @@ export default function ApprovalPage() {
           regionData={regionData}
         />
 
-        <Scrollbar>
-          {loading && <CircularIndeterminate />}
-          {!loading && (
-            <TableContainer sx={{ overflow: "unset" }}>
-              <Table sx={{ minWidth: 800 }}>
-                <FormTableHead
-                  order={order}
-                  orderBy={orderBy}
-                  rowCount={data?.length}
-                  onRequestSort={handleSort}
-                  headLabel={headLabel}
-                />
-                <TableBody>
-                  {dataFiltered &&
-                    dataFiltered.map((row) => (
-                      <FormTableRow
-                        key={row?._id}
-                        createdAt={row?.createdAt}
-                        slNo={row?.slNo}
-                        status={row?.status || ""}
-                        customerCode={row?.customerCode || ""}
-                        channel={row?.channel || ""}
-                        region={row?.region || ""}
-                        salesOffice={row?.salesOffice || ""}
-                        salesGroup={row?.salesGroup || ""}
-                        onClick={() => {
-                          setSelectedRowData(row);
-                          setOpenModal(true);
-                        }}
-                        onSLClick={() => {
-                          router.push(`/approvals/view/${row?._id}`);
-                        }}
-                        selectedTab={selectedTab}
-                      />
-                    ))}
-
-                  {notFound && <TableNoData query={search} />}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Scrollbar>
+        <Box sx={{ width: "100%" }}>
+          <DataGrid
+            rows={dataFiltered?.map((row, index) => ({
+              id: row._id,
+              ...row,
+              backgroundColor: getStatusColor(row.status),
+            })) || []}
+            columns={[
+              {
+                field: "createdAt",
+                headerName: "Requested Date",
+                flex: 1,
+                minWidth: 200,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => fDateTime(params.value),
+              },
+              {
+                field: "slNo",
+                headerName: "Request No.",
+                flex: 1,
+                minWidth: 160,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => (
+                  <Box
+                    sx={{
+                      cursor: "pointer",
+                      color: "#1976d2",
+                      textDecoration: "underline",
+                      textDecorationThickness: "2px",
+                      textUnderlineOffset: "4px",
+                      fontWeight: 600,
+                      "&:hover": { color: "#1565c0" },
+                    }}
+                    onClick={() => router.push(`/approvals/view/${params.row._id}`)}
+                  >
+                    {params.value}
+                  </Box>
+                ),
+              },
+              {
+                field: "status",
+                headerName: "Status",
+                flex: 1,
+                minWidth: 130,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => (
+                  <Box
+                    sx={{
+                      cursor: "pointer",
+                      color: "#1976d2",
+                      textDecoration: "underline",
+                      textDecorationThickness: "2px",
+                      textUnderlineOffset: "4px",
+                      fontWeight: 600,
+                      "&:hover": { color: "#1565c0" },
+                    }}
+                    onClick={() => {
+                      setSelectedRowData(params.row);
+                      setOpenModal(true);
+                    }}
+                  >
+                    {params.value}
+                  </Box>
+                ),
+              },
+              {
+                field: "customerCode",
+                headerName: "Customer Code",
+                flex: 1,
+                minWidth: 140,
+                align: "center",
+                headerAlign: "center",
+              },
+              {
+                field: "channel",
+                headerName: "Channel",
+                flex: 1,
+                minWidth: 110,
+                align: "center",
+                headerAlign: "center",
+              },
+              {
+                field: "region",
+                headerName: "Region",
+                flex: 1,
+                minWidth: 110,
+                align: "center",
+                headerAlign: "center",
+              },
+              {
+                field: "salesOffice",
+                headerName: "Sales Office",
+                flex: 1,
+                minWidth: 140,
+                align: "center",
+                headerAlign: "center",
+              },
+              {
+                field: "salesGroup",
+                headerName: "Sales Group",
+                flex: 1,
+                minWidth: 140,
+                align: "center",
+                headerAlign: "center",
+              },
+            ]}
+            getRowId={(row) => row?.id}
+            loading={loading}
+            pagination
+            paginationMode="server"
+            rowCount={totalCount}
+            pageSizeOptions={[5, 10, 25]}
+            autoHeight
+            getRowClassName={(params) => {
+              return params.row.backgroundColor ? "custom-row" : "";
+            }}
+            disableRowSelectionOnClick
+            sx={{
+              "& .MuiDataGrid-cell": {
+                justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:focus-visible": {
+                  outline: "none",
+                },
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f5f6f8",
+                fontWeight: "bold",
+                color: "#637381",
+              },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                width: "100%",
+                textAlign: "center",
+              },
+              "& .MuiDataGrid-row": {
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:focus-visible": {
+                  outline: "none",
+                },
+              },
+              "& .custom-row": {
+                backgroundColor: (theme) => theme.palette.background.paper,
+              },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: (theme) => theme.palette.action.hover,
+              },
+            }}
+          />
+        </Box>
         <Box
           sx={{
             display: "flex",
@@ -403,24 +532,6 @@ export default function ApprovalPage() {
           }}
         >
           <ColorIndicators />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-            }}
-          >
-            {/* <ColorIndicators /> */}
-            <TablePagination
-              page={page}
-              component="div"
-              count={totalCount}
-              rowsPerPage={rowsPerPage}
-              onPageChange={handleChangePage}
-              rowsPerPageOptions={[5, 10, 25]}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </div>
         </Box>
       </Card>
       <RequestModal

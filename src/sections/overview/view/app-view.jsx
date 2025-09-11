@@ -9,7 +9,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { BACKEND_URL } from 'src/config/config';
 import { userRequest } from 'src/requestMethod';
 import { useRouter } from 'src/routes/hooks';
-import ReportTable from '../app-report-table';
+import ReportTable from '../app-report-table-datagrid';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
 import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsCurrentSubject } from '../analytics-current-subject';

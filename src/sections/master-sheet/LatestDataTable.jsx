@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 import { userRequest } from "src/requestMethod";
+import swal from 'sweetalert';
+import { showErrorMessage } from 'src/utils/errorUtils';
 
 export default function LatestDataTable({
   selectedTab,
@@ -39,6 +41,7 @@ export default function LatestDataTable({
       onDataUpdate?.(dataWithSno);
     } catch (error) {
       console.error("LatestData fetch failed", error);
+      showErrorMessage(error, "Failed to fetch latest data", swal);
     } finally {
       setLoading(false);
     }
@@ -95,7 +98,24 @@ export default function LatestDataTable({
       onPaginationModelChange={setPaginationModel}
       pageSizeOptions={[5, 10, 25]}
       autoHeight
+      disableRowSelectionOnClick
       sx={{
+        "& .MuiDataGrid-cell": {
+          "&:focus": {
+            outline: "none",
+          },
+          "&:focus-visible": {
+            outline: "none",
+          },
+        },
+        "& .MuiDataGrid-row": {
+          "&:focus": {
+            outline: "none",
+          },
+          "&:focus-visible": {
+            outline: "none",
+          },
+        },
         "& .MuiDataGrid-columnHeaders": {
           backgroundColor: "#f5f6f8",
           fontWeight: "bold",

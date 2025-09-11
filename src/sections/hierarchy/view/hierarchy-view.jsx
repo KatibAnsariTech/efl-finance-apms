@@ -2,22 +2,19 @@ import { BACKEND_URL } from 'src/config/config';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
+import { DataGrid } from '@mui/x-data-grid';
 import Container from '@mui/material/Container';
-import TableBody from '@mui/material/TableBody';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
-import Scrollbar from 'src/components/scrollbar';
 import CircularIndeterminate from 'src/utils/loader';
 import FormTableToolbar from '../form-table-toolbar';
-import FormTableHead from '../form-table-head';
-import FormTableRow from '../form-table-row';
 import { applyFilter, getComparator } from 'src/utils/utils';
 import excel from '../../../../public/assets/excel.svg';
-import TableNoData from '../table-no-data';
 import { userRequest } from 'src/requestMethod';
 import ApproversModal from '../parallel-approvers-modal';
 import ColorIndicators from '../colorIndicator';
+import { Box } from '@mui/material';
+import { fDateTime } from 'src/utils/format-time';
+import swal from 'sweetalert';
+import { showErrorMessage } from 'src/utils/errorUtils';
 
 export default function HierarchyView() {
   const [data, setData] = useState([]);
@@ -192,13 +189,13 @@ export default function HierarchyView() {
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error exporting data:', error);
-      toast.error('Error exporting data. Please try again later.');
+      showErrorMessage(error, 'Error exporting data. Please try again later.', swal);
     }
   };
 
   return (
     <Container>
-      <Card>
+      <Card sx={{ mt: 2, p: 2 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginRight: '20px' }}>
           <FormTableToolbar search={search} onFilterChange={handleFilterChange} />
           <div
@@ -217,84 +214,182 @@ export default function HierarchyView() {
           </div>
         </div>
 
-        <Scrollbar>
-          {loading && <CircularIndeterminate />}
-          {!loading && (
-            <TableContainer sx={{ overflow: 'unset' }}>
-              <Table sx={{ minWidth: 800 }}>
-                <FormTableHead
-                  order={order}
-                  orderBy={orderBy}
-                  rowCount={data?.length}
-                  onRequestSort={handleSort}
-                  headLabel={headLabel}
-                />
-                <TableBody>
-                  {dataFiltered &&
-                    dataFiltered.map((row) => (
-                      <FormTableRow
-                        key={row._id}
-                        createdAt={row?.createdAt}
-                        slNo={row?.slNo}
-                        status={row?.status}
-                        requesterEmail={row?.step1.length > 1 ? <span  onClick={() => handleOpenModal(row.step1.map((item) => item.email))}>Parallel Approvers</span> : row?.step1[0]?.email}
-                        totalRecipients={row?.totalRecipients}
-                        recipientOne={row?.step1.length > 1 ? <span  onClick={() => handleOpenModal(row.step1.map((item) => item.email))}>Parallel Approvers</span> : row?.step1[0]?.email}
-                        recipientOneStatus={row?.step1[0]?.status}
-                        recipientOneIssueDate={row?.step1[0]?.createdAt}
-                        recipientOneResponseDate={row?.step1[0]?.updatedAt}
-                        recipientOneComment={row?.step1[0]?.comment}
-                        recipientTwo={row?.step2.length > 1 ? <span  onClick={() => handleOpenModal(row.step2.map((item) => item.email))}>Parallel Approvers</span> : row?.step2[0]?.email}
-                        recipientTwoStatus={row?.step2[0]?.status}
-                        recipientTwoIssueDate={row?.step2[0]?.createdAt}
-                        recipientTwoResponseDate={row?.step2[0]?.updatedAt}
-                        recipientTwoComment={row?.step2[0]?.comment}
-                        recipientThree={row?.step3.length > 1 ? <span  onClick={() => handleOpenModal(row.step3.map((item) => item.email))}>Parallel Approvers</span> : row?.step3[0]?.email}
-                        recipientThreeStatus={row?.step3[0]?.status}
-                        recipientThreeIssueDate={row?.step3[0]?.createdAt}
-                        recipientThreeResponseDate={row?.step3[0]?.updatedAt}
-                        recipientThreeComment={row?.step3[0]?.comment}
-                        recipientFour={row?.step4.length > 1 ? <span  onClick={() => handleOpenModal(row.step4.map((item) => item.email))}>Parallel Approvers</span> : row?.step4[0]?.email}
-                        recipientFourStatus={row?.step4[0]?.status}
-                        recipientFourIssueDate={row?.step4[0]?.createdAt}
-                        recipientFourResponseDate={row?.step4[0]?.updatedAt}
-                        recipientFourComment={row?.step4[0]?.comment}
-                        recipientFive={row?.step5[0]?.email}
-                        recipientFiveStatus={row?.step5.length > 1 ? <span  onClick={() => handleOpenModal(row.step5.map((item) => item.email))}>Parallel Approvers</span> : row?.step5[0]?.status}
-                        recipientFiveIssueDate={row?.step5[0]?.createdAt}
-                        recipientFiveResponseDate={row?.step5[0]?.updatedAt}
-                        recipientFiveComment={row?.step5[0]?.comment}
-                        recipientSix={row?.step6.length > 1 ? <span  onClick={() => handleOpenModal(row.step6.map((item) => item.email))}>Parallel Approvers</span> : row?.step6[0]?.email}
-                        recipientSixStatus={row?.step6[0]?.status}
-                        recipientSixIssueDate={row?.step6[0]?.createdAt}
-                        recipientSixResponseDate={row?.step6[0]?.updatedAt}
-                        recipientSixComment={row?.step6[0]?.comment}
-
-                        // onClick={() => {
-                        //   setSelectedRowData(row);
-                        //   setOpenModal(true);
-                        // }}
-                      />
-                    ))}
-
-                  {notFound && <TableNoData query={search} />}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            
-          )}
-        </Scrollbar>
+        <Box sx={{ width: "100%" }}>
+          <DataGrid
+            rows={dataFiltered?.map((row, index) => ({
+              id: row._id,
+              ...row,
+            })) || []}
+            columns={[
+              {
+                field: "createdAt",
+                headerName: "Response Date",
+                flex: 1,
+                minWidth: 160,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => fDateTime(params.value),
+              },
+              {
+                field: "slNo",
+                headerName: "Request No.",
+                flex: 1,
+                minWidth: 100,
+                align: "center",
+                headerAlign: "center",
+              },
+              {
+                field: "status",
+                headerName: "Status",
+                flex: 1,
+                minWidth: 110,
+                align: "center",
+                headerAlign: "center",
+              },
+              {
+                field: "requesterEmail",
+                headerName: "Requester Email",
+                flex: 1,
+                minWidth: 170,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => {
+                  const email = params.row.step1?.[0]?.email;
+                  const isParallel = params.row.step1?.length > 1;
+                  return isParallel ? (
+                    <Box
+                      sx={{
+                        cursor: "pointer",
+                        color: "#1976d2",
+                        textDecoration: "underline",
+                        "&:hover": { color: "#1565c0" },
+                      }}
+                      onClick={() => handleOpenModal(params.row.step1.map((item) => item.email))}
+                    >
+                      Parallel Approvers
+                    </Box>
+                  ) : (
+                    email
+                  );
+                },
+              },
+              {
+                field: "totalRecipients",
+                headerName: "Total Recipients",
+                flex: 1,
+                minWidth: 150,
+                align: "center",
+                headerAlign: "center",
+              },
+              {
+                field: "recipientOne",
+                headerName: "Recipient 1",
+                flex: 1,
+                minWidth: 160,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => {
+                  const email = params.row.step1?.[0]?.email;
+                  const isParallel = params.row.step1?.length > 1;
+                  return isParallel ? (
+                    <Box
+                      sx={{
+                        cursor: "pointer",
+                        color: "#1976d2",
+                        textDecoration: "underline",
+                        "&:hover": { color: "#1565c0" },
+                      }}
+                      onClick={() => handleOpenModal(params.row.step1.map((item) => item.email))}
+                    >
+                      Parallel Approvers
+                    </Box>
+                  ) : (
+                    email
+                  );
+                },
+              },
+              {
+                field: "recipientOneStatus",
+                headerName: "Recipient 1 Status",
+                flex: 1,
+                minWidth: 160,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => params.row.step1?.[0]?.status,
+              },
+              {
+                field: "recipientOneIssueDate",
+                headerName: "Recipient 1 Issue Date",
+                flex: 1,
+                minWidth: 140,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => fDateTime(params.row.step1?.[0]?.createdAt),
+              },
+              {
+                field: "recipientOneResponseDate",
+                headerName: "Recipient 1 Response Date",
+                flex: 1,
+                minWidth: 160,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => fDateTime(params.row.step1?.[0]?.updatedAt),
+              },
+              {
+                field: "recipientOneComment",
+                headerName: "Recipient 1 Comment",
+                flex: 1,
+                minWidth: 150,
+                align: "center",
+                headerAlign: "center",
+                renderCell: (params) => params.row.step1?.[0]?.comment,
+              },
+            ]}
+            getRowId={(row) => row?.id}
+            loading={loading}
+            pagination
+            paginationMode="server"
+            rowCount={totalCount}
+            pageSizeOptions={[5, 10, 25]}
+            autoHeight
+            disableRowSelectionOnClick
+            sx={{
+              "& .MuiDataGrid-cell": {
+                justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:focus-visible": {
+                  outline: "none",
+                },
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f5f6f8",
+                fontWeight: "bold",
+                color: "#637381",
+              },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                width: "100%",
+                textAlign: "center",
+              },
+              "& .MuiDataGrid-row": {
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:focus-visible": {
+                  outline: "none",
+                },
+              },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: (theme) => theme.palette.action.hover,
+              },
+            }}
+          />
+        </Box>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <ColorIndicators />
-          <TablePagination
-            page={page}
-            component="div"
-            count={totalCount}
-            rowsPerPage={rowsPerPage}
-            onPageChange={handleChangePage}
-            rowsPerPageOptions={[5, 10, 25]}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
         </div>
       </Card>
        <ApproversModal open={modalOpen} handleClose={handleCloseModal} emails={approversEmails} />

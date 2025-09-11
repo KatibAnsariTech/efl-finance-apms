@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { fDate, fTime } from "src/utils/format-time";
 import { userRequest } from "src/requestMethod";
+import swal from 'sweetalert';
+import { showErrorMessage } from 'src/utils/errorUtils';
 
 // Permission value to tab label mapping (should match master-sheet-view)
 const tabLabelToPermission = {
@@ -59,6 +61,7 @@ const UploadLogTable = ({ selectedTab, menuItems = [
       setRowCount(total);
     } catch (err) {
       console.error("Failed to fetch upload logs:", err);
+      showErrorMessage(err, "Failed to fetch upload logs", swal);
     } finally {
       setLoading(false);
     }
@@ -137,11 +140,26 @@ const UploadLogTable = ({ selectedTab, menuItems = [
       onPaginationModelChange={setPaginationModel}
       pageSizeOptions={[5, 10, 25]}
       autoHeight
+      disableRowSelectionOnClick
       sx={{
         "& .MuiDataGrid-cell": {
           justifyContent: "center",
           display: "flex",
           alignItems: "center",
+          "&:focus": {
+            outline: "none",
+          },
+          "&:focus-visible": {
+            outline: "none",
+          },
+        },
+        "& .MuiDataGrid-row": {
+          "&:focus": {
+            outline: "none",
+          },
+          "&:focus-visible": {
+            outline: "none",
+          },
         },
         "& .MuiDataGrid-columnHeaders": {
           backgroundColor: "#f5f6f8",

@@ -14,11 +14,15 @@ import {
   RequesterTypeTable,
   SalesOfficeTable,
   SalesGroupTable,
+  HierarchyTable,
+  ApproverTable,
 } from '../tables';
 
 const AddEditRegion = lazy(() => import("../Modals/AddEditRegion"));
 const AddEditChannel = lazy(() => import("../Modals/AddEditChannel"));
 const AddEditRequestType = lazy(() => import("../Modals/AddEditRequestType"));
+const AddEditApproverType = lazy(() => import("../Modals/AddEditApproverType"));
+const AddEditApprover = lazy(() => import("../Modals/AddEditApprover"));
 
 const menuItems = [
   "Region",
@@ -27,8 +31,8 @@ const menuItems = [
   "Requester Type",
   "Sales Office",
   "Sales Group",
-  // "Approver Type",
-  // "Approver",
+  "Hierarchy",
+  "Approver",
 ];
 
 export default function MasterView() {
@@ -66,20 +70,23 @@ export default function MasterView() {
     <Container maxWidth="xl">
       <Card sx={{ p: 3 }}>
         <MasterTabs
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
+          value={selectedTab}
+          onChange={(event, newValue) => setSelectedTab(newValue)}
           menuItems={menuItems}
         />
 
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
             alignItems: "center",
             marginBottom: "20px",
             marginTop: "20px",
           }}
         >
+          <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+            {menuItems[selectedTab]} Management
+          </div>
           <div
             style={{
               fontSize: "0.8rem",
@@ -161,6 +168,27 @@ export default function MasterView() {
           </Suspense>
         )}
 
+        {open && selectedTab === 6 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditApproverType
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
+        {open && selectedTab === 7 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditApprover
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
 
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && <RegionTable />}
@@ -169,6 +197,8 @@ export default function MasterView() {
           {selectedTab === 3 && <RequesterTypeTable />}
           {selectedTab === 4 && <SalesOfficeTable />}
           {selectedTab === 5 && <SalesGroupTable />}
+          {selectedTab === 6 && <HierarchyTable />}
+          {selectedTab === 7 && <ApproverTable />}
         </Box>
       </Card>
     </Container>

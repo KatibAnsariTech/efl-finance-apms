@@ -1,21 +1,17 @@
 import React, { lazy, Suspense, useRef } from "react";
 import { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
-import Table from "@mui/material/Table";
+import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import TablePagination from "@mui/material/TablePagination";
-import Scrollbar from "src/components/scrollbar";
 import CircularIndeterminate from "src/utils/loader";
 import FormTableToolbar from "../form-table-toolbar";
-import FormTableHead from "../form-table-head";
-import FormTableRow from "../form-table-row";
 import { applyFilter, getComparator } from "src/utils/utils";
-import TableNoData from "../table-no-data";
 import { userRequest } from "src/requestMethod";
 import MasterTabs from "../master-tab";
 import { headLabel } from "./getHeadLabel";
+import { Box, IconButton, Tooltip, Chip } from "@mui/material";
+import Iconify from "src/components/iconify";
+import { fDateTime } from "src/utils/format-time";
 const AddRequester = lazy(() => import("../Modals/AddRequester"));
 const AddAdmin = lazy(() => import("../Modals/AddAdmin"));
 const AddSuperAdmin = lazy(() => import("../Modals/AddSuperAdmin"));
@@ -40,7 +36,11 @@ export default function UserManagementView() {
   // Ref to store the current AbortController
   const abortControllerRef = useRef(null);
 
-  const handleEdit = (row) => {
+  const handleEdit = (row, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     setEditData(row);
     setOpen(true);
   };
@@ -173,7 +173,7 @@ export default function UserManagementView() {
         setSelectedTab={setSelectedTab}
         menuItems={menuItems}
       />
-      <Card>
+      <Card sx={{ mt: 2, p: 2 }}>
         <div
           style={{
             display: "flex",
@@ -257,55 +257,131 @@ export default function UserManagementView() {
           </Suspense>
         )}
 
-        <Scrollbar>
-          {loading && <CircularIndeterminate />}
-          {!loading && (
-            <TableContainer sx={{ overflow: "unset" }}>
-              <Table sx={{ minWidth: 800 }}>
-                <FormTableHead
-                  order={order}
-                  orderBy={orderBy}
-                  rowCount={data?.length}
-                  onRequestSort={handleSort}
-                  headLabel={headLabel(selectedTab)}
-                />
-                <TableBody>
-                  {dataFiltered &&
-                    dataFiltered.map((row, index) => (
-                      <FormTableRow
-                        key={row?._id}
-                        sno={page * rowsPerPage + index + 1}
-                        rowData={row}
-                        columns={headLabel(selectedTab)}
-                        onDelete={getData}
-                        selectedTab={selectedTab}
-                        onEdit={handleEdit}
-                      />
-                    ))}
-
-                  {notFound && <TableNoData query={search} />}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Scrollbar>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
-          <TablePagination
-            page={page}
-            component="div"
-            count={totalCount}
-            rowsPerPage={rowsPerPage}
-            onPageChange={handleChangePage}
-            rowsPerPageOptions={[5, 10, 25]}
-            onRowsPerPageChange={handleChangeRowsPerPage}
+        <Box sx={{ width: "100%" }}>
+          <DataGrid
+            rows={dataFiltered?.map((row, index) => ({
+              id: row._id,
+              sno: page * rowsPerPage + index + 1,
+              ...row,
+            })) || []}
+            columns={[
+              ...headLabel(selectedTab)
+                .filter((col) => col.id !== "action") // Filter out the action column from headLabel
+                .map((col) => ({
+                  field: col.name || col.id, // Use col.name if available, otherwise col.id
+                  headerName: col.label,
+                  flex: 1,
+                  minWidth: col.minWidth || 100,
+                  sortable: col.sortable !== false,
+                  align: col.align || "center",
+                  headerAlign: col.align || "center",
+                  renderCell: (params) => {
+                    if (col.id === "createdAt") {
+                      return fDateTime(params.value);
+                    }
+                    if (col.id === "userType") {
+                      return (
+                        <Chip
+                          label={params.value}
+                          color={
+                            params.value === "SUPER_ADMIN"
+                              ? "error"
+                              : params.value === "ADMIN"
+                              ? "warning"
+                              : params.value === "APPROVER"
+                              ? "info"
+                              : "default"
+                          }
+                          size="small"
+                        />
+                      );
+                    }
+                    if (col.id === "name") {
+                      return params.row.username || "-";
+                    }
+                    return params.value;
+                  },
+                })),
+              {
+                field: "action",
+                headerName: "Actions",
+                width: 120,
+                sortable: false,
+                align: "center",
+                headerAlign: "center",
+                disableColumnMenu: true,
+                disableReorder: true,
+                disableExport: true,
+                renderCell: (params) => (
+                  <Box
+                    onClick={(event) => event.stopPropagation()}
+                    sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    <Tooltip title="Edit">
+                      <IconButton
+                        size="small"
+                        onClick={(event) => handleEdit(params.row, event)}
+                        sx={{ mr: 1 }}
+                      >
+                        <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton
+                        size="small"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDelete(params.row._id);
+                        }}
+                        sx={{ color: "error.main" }}
+                      >
+                        <Iconify icon="eva:trash-2-outline" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                ),
+              },
+            ]}
+            getRowId={(row) => row?.id}
+            loading={loading}
+            pagination
+            paginationMode="server"
+            rowCount={totalCount}
+            pageSizeOptions={[5, 10, 25]}
+            autoHeight
+            disableRowSelectionOnClick
+            sx={{
+              "& .MuiDataGrid-cell": {
+                justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:focus-visible": {
+                  outline: "none",
+                },
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f5f6f8",
+                fontWeight: "bold",
+                color: "#637381",
+              },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                width: "100%",
+                textAlign: "center",
+              },
+              "& .MuiDataGrid-row": {
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:focus-visible": {
+                  outline: "none",
+                },
+              },
+            }}
           />
-        </div>
+        </Box>
       </Card>
     </Container>
   );

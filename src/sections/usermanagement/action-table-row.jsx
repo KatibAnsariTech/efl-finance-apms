@@ -31,7 +31,7 @@ const ActionButtons = ({ userId, onDelete, onEdit }) => {
   return (
     <div style={{ display: "flex", gap: "10px" }}>
       <IconButton color="primary" onClick={onEdit}>
-        <Iconify icon="eva:edit-outline" />
+        <Iconify icon="eva:edit-outline" sx={{ color: "primary.main" }} />
       </IconButton>
 
       <IconButton color="error" onClick={handleDelete}>

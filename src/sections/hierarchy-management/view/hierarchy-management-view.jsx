@@ -4,13 +4,6 @@ import {
   Card,
   Container,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
   IconButton,
   Switch,
   FormControl,
@@ -20,13 +13,16 @@ import {
   Button,
   Stack,
   Chip,
+  Tooltip,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import { Add as AddIcon, Edit as EditIcon } from "@mui/icons-material";
 import { userRequest } from "src/requestMethod";
 import CircularIndeterminate from "src/utils/loader";
 import excel from "../../../../public/assets/excel.svg";
 import EditHierarchyModal from "../EditHierarchyModal";
 import swal from "sweetalert";
+import { showErrorMessage } from 'src/utils/errorUtils';
 
 export default function HierarchyManagementView() {
   // State for dropdowns
@@ -235,14 +231,14 @@ export default function HierarchyManagementView() {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Error exporting data:", error);
-      alert("Error exporting data. Please try again later.");
+      showErrorMessage(error, "Error exporting data. Please try again later.", swal);
     }
   };
 
   return (
     <Container>
       <Box sx={{ mb: 3 }}>
-        <Card>
+        <Card sx={{ mt: 2, p: 2 }}>
           <Box sx={{ p: 2 }}>
             <Stack direction="row" spacing={3} alignItems="center">
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -365,71 +361,142 @@ export default function HierarchyManagementView() {
           )}
 
           {!loading && selectedChannel && selectedRegion && (
-            <TableContainer>
-              <Table sx={{ minWidth: 650 }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>H.No.</TableCell>
-                    <TableCell>Level</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell>Email</TableCell>
-                    {/* <TableCell>Approval Type</TableCell> */}
-                    <TableCell align="center">Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        No data available
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    data.map((row) => (
-                      <TableRow key={row._id || row.sno}>
-                        <TableCell>{row?.sno}</TableCell>
-                        <TableCell>{row?.value || "-"}</TableCell>
-                        <TableCell>{row?.users[0]?.username || "-"}</TableCell>
-                        <TableCell>{row?.users[0]?.email || "-"}</TableCell>
-                        {/* <TableCell>{row?.label || "-"}</TableCell> */}
-                        <TableCell align="center">
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            justifyContent="center"
+            <Box sx={{ width: "100%" }}>
+              <DataGrid
+                rows={data.map((row, index) => {
+                  const mappedRow = {
+                    ...row,
+                    id: row._id || row.sno || index,
+                    sno: row?.sno,
+                    level: row?.value || "-",
+                    username: row?.users[0]?.username || "-",
+                    email: row?.users[0]?.email || "-",
+                    status: row?.status !== false,
+                  }; 
+                  return mappedRow;
+                })}
+                columns={[
+                  {
+                    field: "sno",
+                    headerName: "H.No.",
+                    flex: 1,
+                    minWidth: 100,
+                    align: "center",
+                    headerAlign: "center",
+                  },
+                  {
+                    field: "level",
+                    headerName: "Level",
+                    flex: 1,
+                    minWidth: 150,
+                    align: "center",
+                    headerAlign: "center",
+                  },
+                  {
+                    field: "username",
+                    headerName: "Username",
+                    flex: 1,
+                    minWidth: 200,
+                    align: "center",
+                    headerAlign: "center",
+                  },
+                  {
+                    field: "email",
+                    headerName: "Email",
+                    flex: 1,
+                    minWidth: 250,
+                    align: "center",
+                    headerAlign: "center",
+                  },
+                  {
+                    field: "actions",
+                    headerName: "Actions",
+                    width: 150,
+                    sortable: false,
+                    align: "center",
+                    headerAlign: "center",
+                    renderCell: (params) => (
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <Tooltip title="Edit">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(params.row)}
+                            sx={{ color: "#1877F2" }}
                           >
-                            <IconButton
-                              size="small"
-                              onClick={() => handleEdit(row)}
-                              sx={{ color: "#1877F2" }}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <Switch
-                              checked={row?.status !== false}
-                              onChange={() => handleToggle(row)}
-                              color="error"
-                            />
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-
-          {selectedChannel && selectedRegion && (
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={totalCount}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Switch
+                          checked={params.row.status}
+                          onChange={() => handleToggle(params.row)}
+                          color="error"
+                        />
+                      </Stack>
+                    ),
+                  },
+                ]}
+                getRowId={(row) => row?.id}
+                loading={loading}
+                pagination
+                paginationMode="server"
+                rowCount={totalCount}
+                pageSizeOptions={[5, 10, 25]}
+                autoHeight
+                disableRowSelectionOnClick
+                sx={{
+                  "& .MuiDataGrid-cell": {
+                    justifyContent: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    "&:focus": {
+                      outline: "none",
+                    },
+                    "&:focus-visible": {
+                      outline: "none",
+                    },
+                  },
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: "#f5f6f8",
+                    fontWeight: "bold",
+                    color: "#637381",
+                  },
+                  "& .MuiDataGrid-columnHeaderTitle": {
+                    width: "100%",
+                    textAlign: "center",
+                  },
+                  // Remove focus outline from all interactive elements
+                  "& .MuiIconButton-root": {
+                    "&:focus": {
+                      outline: "none",
+                    },
+                    "&:focus-visible": {
+                      outline: "none",
+                    },
+                  },
+                  "& .MuiSwitch-root": {
+                    "&:focus": {
+                      outline: "none",
+                    },
+                    "&:focus-visible": {
+                      outline: "none",
+                    },
+                  },
+                  "& .MuiDataGrid-row": {
+                    "&:focus": {
+                      outline: "none",
+                    },
+                    "&:focus-visible": {
+                      outline: "none",
+                    },
+                  },
+                }}
+              />
+            </Box>
           )}
         </Card>
       </Box>
