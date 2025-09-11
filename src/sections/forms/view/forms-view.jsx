@@ -318,6 +318,9 @@ export default function FormPage() {
               id: row._id,
               ...row,
               backgroundColor: getStatusColor(row.status),
+              style: {
+                backgroundColor: getStatusColor(row.status),
+              },
             })) || []}
             columns={[
               {
@@ -426,10 +429,21 @@ export default function FormPage() {
             pagination
             paginationMode="server"
             rowCount={totalCount}
-            pageSizeOptions={[5, 10, 25]}
+            paginationModel={{ page: page, pageSize: rowsPerPage }}
+            onPaginationModelChange={(newModel) => {
+              setPage(newModel.page);
+              setRowsPerPage(newModel.pageSize);
+              setLimit(newModel.pageSize);
+            }}
+            pageSizeOptions={[5, 10, 25, 50]}
             autoHeight
             getRowClassName={(params) => {
-              return params.row.backgroundColor ? "custom-row" : "";
+              const status = params.row.status?.toLowerCase();
+              if (status === 'pending') return 'row-pending';
+              if (status === 'declined') return 'row-declined';
+              if (status === 'approved') return 'row-approved';
+              if (status === 'clarification needed') return 'row-clarification';
+              return '';
             }}
             disableRowSelectionOnClick
             sx={{
@@ -461,23 +475,43 @@ export default function FormPage() {
                   outline: "none",
                 },
               },
-              "& .custom-row": {
-                backgroundColor: (theme) => theme.palette.background.paper,
+              "& .MuiDataGrid-row.row-pending": {
+                backgroundColor: "#f4f5ba !important",
+              },
+              "& .MuiDataGrid-row.row-declined": {
+                backgroundColor: "#e6b2aa !important",
+              },
+              "& .MuiDataGrid-row.row-approved": {
+                backgroundColor: "#baf5c2 !important",
+              },
+              "& .MuiDataGrid-row.row-clarification": {
+                backgroundColor: "#9be7fa !important",
+              },
+              "& .MuiDataGrid-row": {
+                borderBottom: "1px solid #e0e0e0",
               },
               "& .MuiDataGrid-row:hover": {
                 backgroundColor: (theme) => theme.palette.action.hover,
+                opacity: 0.8,
               },
             }}
           />
         </Box>
         <Box
           sx={{
+            position: "relative",
+            height: "52px", // Match DataGrid footer height
+            marginTop: "-52px", // Overlap with DataGrid footer
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            paddingLeft: "16px",
+            zIndex: 0, // Lower z-index so pagination is clickable
+            pointerEvents: "none", // Allow clicks to pass through
           }}
         >
-          <ColorIndicators />
+          <Box sx={{ pointerEvents: "auto" }}>
+            <ColorIndicators />
+          </Box>
         </Box>
       </Card>
       <RequestModal
