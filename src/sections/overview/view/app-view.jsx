@@ -10,6 +10,9 @@ import { BACKEND_URL } from 'src/config/config';
 import { userRequest } from 'src/requestMethod';
 import { useRouter } from 'src/routes/hooks';
 import ReportTable from '../app-report-table';
+import { AnalyticsConversionRates } from '../analytics-conversion-rates';
+import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
+import { AnalyticsCurrentSubject } from '../analytics-current-subject';
 
 export default function AppView() {
   const [cardData, setCardData] = useState();
@@ -226,6 +229,53 @@ export default function AppView() {
           )}
         </Grid>
       </Grid>
+
+      {/* Analytics Components Section */}
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid xs={12} md={6} lg={6}>
+          <AnalyticsConversionRates
+            title="Conversion Rates"
+            subheader="Request completion rates by category"
+            chart={{
+              series: [
+                { name: 'Completed', data: [85, 72, 90, 78, 95] },
+                { name: 'Pending', data: [15, 28, 10, 22, 5] }
+              ],
+              categories: ['Finance', 'HR', 'IT', 'Operations', 'Marketing']
+            }}
+          />
+        </Grid>
+
+        <Grid xs={12} md={6} lg={6}>
+          <AnalyticsWebsiteVisits
+            title="Request Trends"
+            subheader="Weekly request volume"
+            chart={{
+              series: [
+                { name: 'This Week', data: [23, 11, 22, 27, 13, 22, 37] },
+                { name: 'Last Week', data: [30, 25, 36, 30, 45, 35, 64] }
+              ],
+              categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            }}
+          />
+        </Grid>
+
+        <Grid xs={12} md={6} lg={6}>
+          <AnalyticsCurrentSubject
+            title="Department Performance"
+            subheader="Request handling efficiency by department"
+            chart={{
+              series: [
+                { name: 'Finance', data: [80, 50, 30, 40, 100, 20] },
+                { name: 'HR', data: [20, 30, 40, 80, 20, 80] },
+                { name: 'IT', data: [44, 76, 78, 13, 43, 10] }
+              ],
+              categories: ['Speed', 'Accuracy', 'Communication', 'Follow-up', 'Resolution', 'Satisfaction']
+            }}
+          />
+        </Grid>
+      </Grid>
+
       <Grid container spacing={3} >
         <ReportTable style={{ height: '100%' }}/>
       </Grid>

@@ -94,6 +94,10 @@ export default function Router() {
         // { element: <IndexPage />, index: true },
         { index: true, element: <RoleBasedRedirect /> },
         {
+          path: "dashboard",
+          element: <IndexPage />,
+        },
+        {
           path: "request",
           element: <RoleRoute path="/request" element={<RaiseTicket />} />,
         },
