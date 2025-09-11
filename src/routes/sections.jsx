@@ -91,8 +91,8 @@ export default function Router() {
         <Navigate to="/login" replace />
       ),
       children: [
-        // { element: <IndexPage />, index: true },
-        { index: true, element: <RoleBasedRedirect /> },
+        { element: <IndexPage />, index: true },
+        // { index: true, element: <RoleBasedRedirect /> },
         {
           path: "dashboard",
           element: <IndexPage />,

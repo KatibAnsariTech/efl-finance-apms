@@ -9,6 +9,12 @@ const icon = (name) => (
 
 const navConfig = [
   {
+    title: "Dashboard",
+    path: "/",
+    icon: icon("ic_raise_ticket"),
+    roles: ["SUPER_ADMIN" ],
+  },
+  {
     title: "Request",
     path: "/request",
     icon: icon("ic_raise_ticket"),
