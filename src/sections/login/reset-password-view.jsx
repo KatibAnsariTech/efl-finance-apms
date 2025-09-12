@@ -96,13 +96,14 @@ export default function ResetPasswordView() {
   };
 
   return (
-    <Container maxWidth={false} sx={{ height: "100vh", p: 0 }}>
+    <Container maxWidth={false} sx={{ height: "100vh", p: 0, backgroundColor: "white" }}>
       <ToastContainer />
       <Box
         sx={{
           display: "flex",
           height: "100vh",
           padding: 3,
+          backgroundColor: "white",
         }}
       >
         {/* Left Panel - Image Background Only */}
@@ -112,7 +113,7 @@ export default function ResetPasswordView() {
         <Box
           sx={{
             flex: 1,
-            background: "white",
+            backgroundColor: "white",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

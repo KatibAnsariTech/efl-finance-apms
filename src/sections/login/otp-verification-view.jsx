@@ -136,29 +136,30 @@ export default function OTPVerificationView() {
   };
 
   return (
-    <Container maxWidth={false} sx={{ height: "100vh", p: 0 }}>
+    <Container maxWidth={false} sx={{ height: "100vh", p: 0, backgroundColor: "white" }}>
       <ToastContainer />
       <Box
         sx={{
           display: "flex",
           height: "100vh",
           padding: 3,
+          backgroundColor: "white",
         }}
       >
          {/* Left Panel - Image Background Only */}
          <LoginLeftPanel />
 
-        {/* Right Panel - White Background */}
-        <Box
-          sx={{
-            flex: 1,
-            background: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 4,
-          }}
-        >
+         {/* Right Panel - White Background */}
+         <Box
+           sx={{
+             flex: 1,
+             backgroundColor: "white",
+             display: "flex",
+             alignItems: "center",
+             justifyContent: "center",
+             padding: 4,
+           }}
+         >
            <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
              <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
                Reset Password
