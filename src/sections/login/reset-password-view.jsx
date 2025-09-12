@@ -84,7 +84,7 @@ export default function ResetPasswordView() {
   };
 
   const handleLoginDashboard = () => {
-    navigate("/login");
+    navigate("/new-login");
   };
 
   return (
