@@ -200,6 +200,19 @@ export default function OTPVerificationView() {
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",
                     },
+                    "& .MuiInputLabel-root": {
+                      fontSize: "0.875rem",
+                      transform: "translate(20px, 20px) scale(1)",
+                      "&.Mui-focused": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                      "&.MuiFormLabel-filled": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      paddingLeft: "24px",
+                    },
                   }}
                 />
 
@@ -216,7 +229,7 @@ export default function OTPVerificationView() {
                     helperText={errors.otp?.message}
                     InputProps={{
                       endAdornment: (
-                        <InputAdornment position="end">
+                        <InputAdornment position="end" sx={{ mr: 1 }}>
                           <IconButton edge="end">
                             <Iconify icon="eva:eye-fill" />
                           </IconButton>
@@ -226,6 +239,19 @@ export default function OTPVerificationView() {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "25px",
+                      },
+                      "& .MuiInputLabel-root": {
+                        fontSize: "0.875rem",
+                        transform: "translate(20px, 20px) scale(1)",
+                        "&.Mui-focused": {
+                          transform: "translate(20px, -9px) scale(0.75)",
+                        },
+                        "&.MuiFormLabel-filled": {
+                          transform: "translate(20px, -9px) scale(0.75)",
+                        },
+                      },
+                      "& .MuiOutlinedInput-input": {
+                        paddingLeft: "24px",
                       },
                     }}
                   />

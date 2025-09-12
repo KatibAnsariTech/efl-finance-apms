@@ -138,6 +138,19 @@ export default function NewLoginView() {
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",
                     },
+                    "& .MuiInputLabel-root": {
+                      fontSize: "0.875rem",
+                      transform: "translate(20px, 20px) scale(1)",
+                      "&.Mui-focused": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                      "&.MuiFormLabel-filled": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      paddingLeft: "24px",
+                    },
                   }}
                 />
 
@@ -151,7 +164,7 @@ export default function NewLoginView() {
                   helperText={errors.password?.message}
                   InputProps={{
                     endAdornment: (
-                      <InputAdornment position="end">
+                      <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
@@ -168,6 +181,19 @@ export default function NewLoginView() {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",
+                    },
+                    "& .MuiInputLabel-root": {
+                      fontSize: "0.875rem",
+                      transform: "translate(20px, 20px) scale(1)",
+                      "&.Mui-focused": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                      "&.MuiFormLabel-filled": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      paddingLeft: "24px",
                     },
                   }}
                 />

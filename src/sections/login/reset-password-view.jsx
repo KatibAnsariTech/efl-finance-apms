@@ -157,7 +157,7 @@ export default function ResetPasswordView() {
                   helperText={errors.newPassword?.message}
                   InputProps={{
                     endAdornment: (
-                      <InputAdornment position="end">
+                      <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           edge="end"
@@ -172,6 +172,19 @@ export default function ResetPasswordView() {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",
+                    },
+                    "& .MuiInputLabel-root": {
+                      fontSize: "0.875rem",
+                      transform: "translate(20px, 20px) scale(1)",
+                      "&.Mui-focused": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                      "&.MuiFormLabel-filled": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      paddingLeft: "24px",
                     },
                   }}
                 />
@@ -188,7 +201,7 @@ export default function ResetPasswordView() {
                   helperText={errors.confirmPassword?.message}
                   InputProps={{
                     endAdornment: (
-                      <InputAdornment position="end">
+                      <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           edge="end"
@@ -203,6 +216,19 @@ export default function ResetPasswordView() {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",
+                    },
+                    "& .MuiInputLabel-root": {
+                      fontSize: "0.875rem",
+                      transform: "translate(20px, 20px) scale(1)",
+                      "&.Mui-focused": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                      "&.MuiFormLabel-filled": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      paddingLeft: "24px",
                     },
                   }}
                 />
