@@ -13,6 +13,9 @@ import FormDetailsViewForm from "src/sections/forms/form-details/view/FormDetail
 import { MasterView } from "src/sections/master/view";
 import IndexPage from "src/pages/app";
 import LoginPage from "src/pages/login";
+import NewLoginPage from "src/pages/new-login";
+import OTPVerificationPage from "src/pages/otp-verification";
+import ResetPasswordPage from "src/pages/reset-password";
 import Page404 from "src/pages/page-not-found";
 import { MasterSheetView } from "src/sections/master-sheet/view";
 import navConfig from "src/layouts/dashboard/config-navigation";
@@ -157,6 +160,18 @@ export default function Router() {
     {
       path: "/login",
       element: isLoggedIn ? <Navigate to="/" replace /> : <LoginPage />,
+    },
+    {
+      path: "/new-login",
+      element: isLoggedIn ? <Navigate to="/" replace /> : <NewLoginPage />,
+    },
+    {
+      path: "/otp-verification",
+      element: isLoggedIn ? <Navigate to="/" replace /> : <OTPVerificationPage />,
+    },
+    {
+      path: "/reset-password",
+      element: isLoggedIn ? <Navigate to="/" replace /> : <ResetPasswordPage />,
     },
     {
       path: "404",
