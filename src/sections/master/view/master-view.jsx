@@ -14,7 +14,7 @@ import {
   RequesterTypeTable,
   SalesOfficeTable,
   SalesGroupTable,
-} from '../tables';
+} from "../tables";
 
 const AddEditRegion = lazy(() => import("../Modals/AddEditRegion"));
 const AddEditChannel = lazy(() => import("../Modals/AddEditChannel"));
@@ -53,31 +53,31 @@ export default function MasterView() {
   };
 
   const handleDelete = (id) => {
-    console.log('Delete:', id);
+    console.log("Delete:", id);
     // Add delete logic here
   };
 
   const getData = () => {
     // This function is now handled by individual table components
-    console.log('Data refresh requested');
+    console.log("Data refresh requested");
   };
 
   return (
     <Container maxWidth="xl">
+      <MasterTabs
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+        menuItems={menuItems}
+      />
       <Card sx={{ p: 3 }}>
-        <MasterTabs
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
-          menuItems={menuItems}
-        />
-
         <div
           style={{
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
             marginBottom: "20px",
-            marginTop: "20px",
+            // marginTop: "20px",
+            marginRight: "0.5%",
           }}
         >
           <div
@@ -160,7 +160,6 @@ export default function MasterView() {
             />
           </Suspense>
         )}
-
 
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && <RegionTable />}
