@@ -1,3 +1,9 @@
+/*
+ * DEVELOPMENT MODE - API calls are commented out
+ * This component uses local state and mock responses for UI development
+ * To enable API calls, uncomment the API imports and replace mock logic with actual API calls
+ */
+
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -14,7 +20,8 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Divider from "@mui/material/Divider";
 
 import Iconify from "src/components/iconify";
-import { publicRequest } from "src/requestMethod";
+// API imports commented out for development
+// import { publicRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
 import loginImage from "../../../public/assets/loginImage.webp";
 
@@ -51,16 +58,34 @@ export default function ResetPasswordView() {
 
     try {
       setResetProcessing(true);
-      await publicRequest.post("/admin/reset-password", {
+      
+      // API call commented out for development
+      // await publicRequest.post("/admin/reset-password", {
+      //   email: location.state?.email,
+      //   token: location.state?.token,
+      //   newPassword: data.newPassword,
+      // });
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock successful password reset
+      const resetData = {
         email: location.state?.email,
         token: location.state?.token,
         newPassword: data.newPassword,
-      });
-      toast.success("Password reset successfully");
-      navigate("/login");
+      };
+      console.log("Password reset attempt:", resetData);
+      
+      toast.success("Password reset successfully! Redirecting to login...");
+      
+      // Simulate redirect delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.errors || "Failed to reset password.");
+      toast.error("Failed to reset password. Please try again.");
     } finally {
       setResetProcessing(false);
     }
@@ -77,7 +102,7 @@ export default function ResetPasswordView() {
         sx={{
           display: "flex",
           height: "100vh",
-          width: "100%",
+          padding: 3,
         }}
       >
         {/* Left Panel - Image Background Only */}
@@ -85,10 +110,12 @@ export default function ResetPasswordView() {
           sx={{
             flex: 1,
             backgroundImage: `url(${loginImage})`,
-            backgroundSize: "cover",
+            backgroundSize: "contain",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
-            minHeight: "100vh",
+            backgroundColor: "#f5faf4",
+            borderRadius: 3,
+            backgroundPositionY: 10,
           }}
         />
 
@@ -101,7 +128,6 @@ export default function ResetPasswordView() {
             alignItems: "center",
             justifyContent: "center",
             padding: 4,
-            minHeight: "100vh",
           }}
         >
           <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
@@ -116,7 +142,7 @@ export default function ResetPasswordView() {
             </Typography>
 
             <form onSubmit={handleSubmit(handleResetPassword)}>
-              <Stack spacing={3} sx={{ maxWidth: 350, mx: "auto" }}>
+              <Stack spacing={2} sx={{ mx: "auto" }}>
                 <TextField
                   label="New Password"
                   type={showNewPassword ? "text" : "password"}
@@ -232,9 +258,10 @@ export default function ResetPasswordView() {
                 sx={{
                   borderRadius: "25px",
                   py: 1.5,
-                  backgroundColor: "#1976d2",
+                  backgroundColor: "#013594",
+                  transition: "all 0.3s ease",
                   "&:hover": {
-                    backgroundColor: "#1565c0",
+                    backgroundColor: "#002366",
                   },
                 }}
               >

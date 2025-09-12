@@ -1,3 +1,9 @@
+/*
+ * DEVELOPMENT MODE - API calls are commented out
+ * This component uses local state and mock responses for UI development
+ * To enable API calls, uncomment the API imports and replace mock logic with actual API calls
+ */
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -14,9 +20,10 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Divider from "@mui/material/Divider";
 
 import Iconify from "src/components/iconify";
-import { publicRequest, setTokens, userRequest } from "src/requestMethod";
+// API imports commented out for development
+// import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
-import { useCounts } from "src/contexts/CountsContext";
+// import { useCounts } from "src/contexts/CountsContext";
 import loginImage from "../../../public/assets/loginImage.webp";
 
 export default function NewLoginView() {
@@ -28,21 +35,31 @@ export default function NewLoginView() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginProcessing, setLoginProcessing] = useState(false);
   const navigate = useNavigate();
-  const { refreshCounts } = useCounts();
+  // const { refreshCounts } = useCounts(); // Commented out for development
 
   const notifySuccess = (message) => toast.success(message);
 
   const handleLogin = async (data) => {
     try {
       setLoginProcessing(true);
-      await publicRequest.post("/admin/login", {
-        email: data.email,
-        password: data.password,
-      });
+
+      // API call commented out for development
+      // await publicRequest.post("/admin/login", {
+      //   email: data.email,
+      //   password: data.password,
+      // });
+
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Mock successful login
+      console.log("Login attempt:", data);
+      toast.success("Login successful! Redirecting to OTP verification...");
+
       navigate("/otp-verification", { state: { email: data.email } });
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.errors || "Login failed.");
+      toast.error("Login failed. Please check your credentials.");
     } finally {
       setLoginProcessing(false);
     }
@@ -58,15 +75,13 @@ export default function NewLoginView() {
   };
 
   return (
-    <Container maxWidth={false} className="new-login-container">
+    <Container maxWidth={false}>
       <ToastContainer />
       <Box
         sx={{
           display: "flex",
           height: "100vh",
-          // width: "100%",
-          padding:3
-
+          padding: 3,
         }}
       >
         {/* Left Panel - Image Background Only */}
@@ -78,36 +93,35 @@ export default function NewLoginView() {
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             backgroundColor: "#f5faf4",
-            borderRadius:3,
-            backgroundPositionY:10
+            borderRadius: 3,
+            backgroundPositionY: 10,
           }}
         />
 
         {/* Right Panel - White Background */}
-        <Box 
-          sx={{ 
-            flex: 1, 
-            display: "flex", 
-            alignItems: "center", 
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
             justifyContent: "center",
             padding: 4,
-            // minHeight: "100vh",
           }}
         >
           <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
-            <Typography className="new-login-typography-primary" variant="h3" sx={{ mb: 1, textAlign: "center" }}>
+            <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
               Welcome back!
             </Typography>
             <Typography
-              className="new-login-typography-secondary"
               variant="body1"
               sx={{ mb: 4, lineHeight: 1.6, textAlign: "center" }}
             >
-              Simplify your workflow and boost your productivity with SpaceToTech's App.
+              Simplify your workflow and boost your productivity with
+              SpaceToTech's App.
             </Typography>
 
             <form onSubmit={handleSubmit(handleLogin)}>
-              <Stack spacing={3} sx={{ mx: "auto" }}>
+              <Stack spacing={2} sx={{ mx: "auto" }}>
                 <TextField
                   label="Official Email"
                   type="email"
@@ -143,7 +157,9 @@ export default function NewLoginView() {
                           edge="end"
                         >
                           <Iconify
-                            icon={showPassword ? "eva:eye-fill" : "eva:eye-off-fill"}
+                            icon={
+                              showPassword ? "eva:eye-fill" : "eva:eye-off-fill"
+                            }
                           />
                         </IconButton>
                       </InputAdornment>
@@ -176,8 +192,16 @@ export default function NewLoginView() {
                 size="large"
                 type="submit"
                 variant="contained"
-                className="new-login-button new-login-button-black"
-                sx={{ mt: 3, py: 1.5 }}
+                // sx={{ mt: 3, py: 1.5, }}
+                sx={{
+                  mt: 3,
+                  borderRadius: "25px",
+                  py: 1.5,
+                  backgroundColor: "black",
+                  "&:hover": {
+                    backgroundColor: "grey.800",
+                  },
+                }}
                 disabled={loginProcessing}
                 loading={loginProcessing}
               >
@@ -185,11 +209,11 @@ export default function NewLoginView() {
               </LoadingButton>
 
               <Box sx={{ my: 3, display: "flex", alignItems: "center" }}>
-                <Divider className="new-login-divider" sx={{ flex: 1 }} />
-                <Typography className="new-login-typography-secondary" variant="body2" sx={{ px: 2 }}>
+                <Divider sx={{ flex: 1 }} />
+                <Typography variant="body2" sx={{ px: 2 }}>
                   or need access
                 </Typography>
-                <Divider className="new-login-divider" sx={{ flex: 1 }} />
+                <Divider sx={{ flex: 1 }} />
               </Box>
 
               <LoadingButton
@@ -197,8 +221,15 @@ export default function NewLoginView() {
                 size="large"
                 variant="contained"
                 onClick={handleContactAdmin}
-                className="new-login-button new-login-button-blue"
-                sx={{ py: 1.5 }}
+                sx={{
+                  borderRadius: "25px",
+                  py: 1.5,
+                  backgroundColor: "#013594",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "#002366",
+                  },
+                }}
               >
                 Contact Administrator
               </LoadingButton>

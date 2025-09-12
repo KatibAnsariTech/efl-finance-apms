@@ -1,3 +1,9 @@
+/*
+ * DEVELOPMENT MODE - API calls are commented out
+ * This component uses local state and mock responses for UI development
+ * To enable API calls, uncomment the API imports and replace mock logic with actual API calls
+ */
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -14,9 +20,10 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Divider from "@mui/material/Divider";
 
 import Iconify from "src/components/iconify";
-import { publicRequest, setTokens, userRequest } from "src/requestMethod";
+// API imports commented out for development
+// import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
-import { useCounts } from "src/contexts/CountsContext";
+// import { useCounts } from "src/contexts/CountsContext";
 import loginImage from "../../../public/assets/loginImage.webp";
 
 export default function OTPVerificationView() {
@@ -31,7 +38,7 @@ export default function OTPVerificationView() {
   const [timeLeft, setTimeLeft] = useState(60);
   const navigate = useNavigate();
   const location = useLocation();
-  const { refreshCounts } = useCounts();
+  // const { refreshCounts } = useCounts(); // Commented out for development
 
   const email = location.state?.email || "";
 
@@ -53,15 +60,23 @@ export default function OTPVerificationView() {
   const handleSendOTP = async (data) => {
     try {
       setOtpProcessing(true);
-      await publicRequest.post("/admin/forgot-password", {
-        email: data.email,
-      });
+      
+      // API call commented out for development
+      // await publicRequest.post("/admin/forgot-password", {
+      //   email: data.email,
+      // });
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock successful OTP send
+      console.log("OTP send attempt:", data);
       setShowOTP(true);
       setTimeLeft(60);
       notifySuccess("OTP sent to your email");
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.errors || "Failed to send OTP.");
+      toast.error("Failed to send OTP. Please try again.");
     } finally {
       setOtpProcessing(false);
     }
@@ -70,16 +85,33 @@ export default function OTPVerificationView() {
   const handleVerifyOTP = async (data) => {
     try {
       setOtpProcessing(true);
+      
+      // API call commented out for development
+      // const otpData = {
+      //   email: data.email,
+      //   otp: Number(data.otp),
+      // };
+      // const res = await publicRequest.post("/admin/verifyOTP", otpData);
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock OTP verification (accept any 6-digit OTP)
       const otpData = {
         email: data.email,
         otp: Number(data.otp),
       };
-      const res = await publicRequest.post("/admin/verifyOTP", otpData);
-      notifySuccess("OTP verified successfully");
-      navigate("/reset-password", { state: { email: data.email, token: res.data.data } });
+      console.log("OTP verification attempt:", otpData);
+      
+      if (data.otp && data.otp.length === 6) {
+        notifySuccess("OTP verified successfully");
+        navigate("/reset-password", { state: { email: data.email, token: "mock-token-123" } });
+      } else {
+        throw new Error("Invalid OTP format");
+      }
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.errors || "OTP verification failed.");
+      toast.error("OTP verification failed. Please enter a valid 6-digit OTP.");
     } finally {
       setOtpProcessing(false);
     }
@@ -110,7 +142,7 @@ export default function OTPVerificationView() {
         sx={{
           display: "flex",
           height: "100vh",
-          width: "100%",
+          padding: 3,
         }}
       >
         {/* Left Panel - Image Background Only */}
@@ -118,10 +150,12 @@ export default function OTPVerificationView() {
           sx={{
             flex: 1,
             backgroundImage: `url(${loginImage})`,
-            backgroundSize: "cover",
+            backgroundSize: "contain",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
-            minHeight: "100vh",
+            backgroundColor: "#f5faf4",
+            borderRadius: 3,
+            backgroundPositionY: 10,
           }}
         />
 
@@ -134,7 +168,6 @@ export default function OTPVerificationView() {
             alignItems: "center",
             justifyContent: "center",
             padding: 4,
-            minHeight: "100vh",
           }}
         >
           <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
@@ -149,7 +182,7 @@ export default function OTPVerificationView() {
             </Typography>
 
             <form onSubmit={handleSubmit(showOTP ? handleVerifyOTP : handleSendOTP)}>
-              <Stack spacing={3} sx={{ maxWidth: 350, mx: "auto" }}>
+              <Stack spacing={2} sx={{ mx: "auto" }}>
                 <TextField
                   label="Official Email"
                   type="email"
@@ -254,9 +287,10 @@ export default function OTPVerificationView() {
                 sx={{
                   borderRadius: "25px",
                   py: 1.5,
-                  backgroundColor: "#1976d2",
+                  backgroundColor: "#013594",
+                  transition: "all 0.3s ease",
                   "&:hover": {
-                    backgroundColor: "#1565c0",
+                    backgroundColor: "#002366",
                   },
                 }}
               >
