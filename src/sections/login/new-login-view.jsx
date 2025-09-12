@@ -72,67 +72,90 @@ export default function NewLoginView() {
         sx={{
           display: "flex",
           height: "100vh",
-          paddingY: 3,
+          paddingY: { xs: 1, sm: 2, md: 3 },
           backgroundColor: "white",
+          flexDirection: { xs: "column", md: "row" },
         }}
       >
-        <LoginLeftPanel />
+        <Box
+          sx={{
+            flex: { xs: 0.4, sm: 0.5, md: 1 },
+            minHeight: { xs: "200px", sm: "300px", md: "auto" },
+          }}
+        >
+          <LoginLeftPanel />
+        </Box>
 
         <Box
           sx={{
-            flex: 1,
+            flex: { xs: 1, md: 1 },
             backgroundColor: "white",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: 4,
+            padding: { xs: 2, sm: 3, md: 4 },
+            minHeight: { xs: "100vh", md: "auto" },
           }}
         >
-          <Box sx={{ maxWidth: 420, width: "100%", mx: "auto" }}>
-            <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
+          <Box sx={{ maxWidth: { xs: "100%", sm: 400, md: 420 }, width: "100%", mx: "auto" }}>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                mb: 1, 
+                textAlign: "center",
+                fontSize: { xs: "1.75rem", sm: "2rem", md: "2.5rem" }
+              }}
+            >
               Welcome back!
             </Typography>
             <Typography
               variant="body2"
-              sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
+              sx={{ 
+                mb: 2, 
+                lineHeight: 1.6, 
+                textAlign: "center",
+                fontSize: { xs: "0.875rem", sm: "1rem" }
+              }}
             >
               Simplify your workflow and boost your productivity with
               SpaceToTech's App.
             </Typography>
 
             <form onSubmit={handleSubmit(handleLogin)}>
-              <Stack spacing={2} sx={{ mx: "auto" }}>
-                <TextField
-                  label="Official Email"
-                  type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email format",
-                    },
-                  })}
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "25px",
-                    },
-                    "& .MuiInputLabel-root": {
-                      fontSize: "0.875rem",
-                      transform: "translate(20px, 20px) scale(1)",
-                      "&.Mui-focused": {
-                        transform: "translate(20px, -9px) scale(0.75)",
-                      },
-                      "&.MuiFormLabel-filled": {
-                        transform: "translate(20px, -9px) scale(0.75)",
-                      },
-                    },
-                    "& .MuiOutlinedInput-input": {
-                      paddingLeft: "24px",
-                    },
-                  }}
-                />
+              <Stack spacing={{ xs: 1.5, sm: 2, md: 2 }} sx={{ mx: "auto" }}>
+                 <TextField
+                   label="Official Email"
+                   type="email"
+                   {...register("email", {
+                     required: "Email is required",
+                     pattern: {
+                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                       message: "Invalid email format",
+                     },
+                   })}
+                   error={!!errors.email}
+                   helperText={errors.email?.message}
+                   sx={{
+                     "& .MuiOutlinedInput-root": {
+                       borderRadius: "25px",
+                       fontSize: { xs: "0.875rem", sm: "1rem" },
+                     },
+                     "& .MuiInputLabel-root": {
+                       fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                       transform: "translate(20px, 20px) scale(1)",
+                       "&.Mui-focused": {
+                         transform: "translate(20px, -9px) scale(0.75)",
+                       },
+                       "&.MuiFormLabel-filled": {
+                         transform: "translate(20px, -9px) scale(0.75)",
+                       },
+                     },
+                     "& .MuiOutlinedInput-input": {
+                       paddingLeft: "24px",
+                       fontSize: { xs: "0.875rem", sm: "1rem" },
+                     },
+                   }}
+                 />
 
                 <TextField
                   label="Password"
@@ -161,9 +184,10 @@ export default function NewLoginView() {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
                     },
                     "& .MuiInputLabel-root": {
-                      fontSize: "0.875rem",
+                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
                       transform: "translate(20px, 20px) scale(1)",
                       "&.Mui-focused": {
                         transform: "translate(20px, -9px) scale(0.75)",
@@ -174,6 +198,7 @@ export default function NewLoginView() {
                     },
                     "& .MuiOutlinedInput-input": {
                       paddingLeft: "24px",
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
                     },
                   }}
                 />
@@ -201,7 +226,8 @@ export default function NewLoginView() {
                 sx={{
                   mt: 3,
                   borderRadius: "25px",
-                  py: 1.5,
+                  py: { xs: 1.5, sm: 1.5, md: 1.5 },
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
                   backgroundColor: "black",
                   "&:hover": {
                     backgroundColor: "grey.800",
@@ -228,7 +254,8 @@ export default function NewLoginView() {
                 onClick={handleContactAdmin}
                 sx={{
                   borderRadius: "25px",
-                  py: 1.5,
+                  py: { xs: 1.5, sm: 1.5, md: 1.5 },
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
                   backgroundColor: "#013594",
                   transition: "all 0.3s ease",
                   "&:hover": {

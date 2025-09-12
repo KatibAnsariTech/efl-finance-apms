@@ -88,38 +88,62 @@ export default function ResetPasswordView() {
   };
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{ height: "100vh", p: 0, backgroundColor: "white" }}
-    >
+    <Container maxWidth={false} sx={{ backgroundColor: "white" }}>
       <ToastContainer />
       <Box
         sx={{
           display: "flex",
           height: "100vh",
-          padding: 3,
+          paddingY: { xs: 1, sm: 2, md: 3 },
           backgroundColor: "white",
+          flexDirection: { xs: "column", md: "row" },
         }}
       >
-        <LoginLeftPanel />
+        <Box
+          sx={{
+            flex: { xs: 0.4, sm: 0.5, md: 1 },
+            minHeight: { xs: "200px", sm: "300px", md: "auto" },
+          }}
+        >
+          <LoginLeftPanel />
+        </Box>
 
         <Box
           sx={{
-            flex: 1,
+            flex: { xs: 1, md: 1 },
             backgroundColor: "white",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: 4,
+            padding: { xs: 2, sm: 3, md: 4 },
+            minHeight: { xs: "100vh", md: "auto" },
           }}
         >
-          <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
-            <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
+          <Box
+            sx={{
+              maxWidth: { xs: "100%", sm: 400, md: 400 },
+              width: "100%",
+              mx: "auto",
+            }}
+          >
+            <Typography
+              variant="h3"
+              sx={{
+                mb: 1,
+                textAlign: "center",
+                fontSize: { xs: "1.75rem", sm: "2rem", md: "2.5rem" },
+              }}
+            >
               Reset Password
             </Typography>
             <Typography
               variant="body2"
-              sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
+              sx={{
+                mb: 2,
+                lineHeight: 1.6,
+                textAlign: "center",
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+              }}
             >
               Simplify your workflow and boost your productivity with
               SpaceToTech's App.
@@ -234,7 +258,7 @@ export default function ResetPasswordView() {
                       sx={{
                         color: "text.primary",
                         fontWeight: "bold",
-                        fontSize: "0.75rem",
+                        fontSize: "0.8rem",
                         ml: 2,
                       }}
                     >
