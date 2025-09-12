@@ -32,7 +32,7 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
 // Styled components
 const SidebarContainer = styled(Box)(({ theme, collapsed }) => ({
-  width: collapsed ? 80 : 280,
+  width: collapsed ? 80 : 220,
   height: '100vh',
   backgroundColor: '#F5F5F5',
   borderRight: '1px dashed #E0E0E0',
@@ -46,16 +46,17 @@ const SidebarContainer = styled(Box)(({ theme, collapsed }) => ({
 }));
 
 const LogoContainer = styled(Box)(({ collapsed }) => ({
-  padding: collapsed ? '20px 10px' : '20px 30px',
+  padding: collapsed ? '0' : '0',
   textAlign: 'center',
   borderBottom: '1px solid #E0E0E0',
-  marginBottom: '20px',
+  marginBottom: '0',
 }));
 
 
 const NavigationList = styled(List)(({ collapsed }) => ({
   padding: collapsed ? '0 8px' : '0 20px',
   flex: 1,
+  marginTop: '20px',
 }));
 
 const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
@@ -69,9 +70,17 @@ const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
   },
   transition: 'all 0.2s ease',
   minHeight: '44px',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 }));
 
 const StyledListItemText = styled(ListItemText)(({ active, collapsed }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  position: 'relative',
+  flex: 1,
+  minWidth: 0,
   '& .MuiListItemText-primary': {
     fontFamily: 'Arial, sans-serif',
     fontSize: '14px',
@@ -80,6 +89,9 @@ const StyledListItemText = styled(ListItemText)(({ active, collapsed }) => ({
     textTransform: 'none',
     opacity: collapsed ? 0 : 1,
     transition: 'opacity 0.3s ease',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 }));
 
@@ -96,6 +108,8 @@ const ArrowIcon = styled(Box)(({ expanded, collapsed, active }) => ({
   opacity: collapsed ? 0 : 1,
   transition: 'all 0.2s ease',
   fontSize: '20px',
+  flexShrink: 0,
+  marginLeft: '8px',
 }));
 
 const SubItemButton = styled(ListItemButton)(({ theme, active }) => ({
@@ -109,15 +123,26 @@ const SubItemButton = styled(ListItemButton)(({ theme, active }) => ({
   },
   transition: 'all 0.2s ease',
   minHeight: '36px',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 }));
 
 const SubItemText = styled(ListItemText)(({ active }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  position: 'relative',
+  flex: 1,
+  minWidth: 0,
   '& .MuiListItemText-primary': {
     fontFamily: 'Arial, sans-serif',
     fontSize: '13px',
     fontWeight: active ? '500' : '400',
     color: active ? '#1877F2' : '#555555',
     textTransform: 'none',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 }));
 
@@ -125,28 +150,35 @@ const CollapseButton = styled(Button)(({ theme, collapsed }) => ({
   position: 'absolute',
   bottom: '20px',
   left: collapsed ? '20px' : '30px',
-  right: collapsed ? '20px' : '30px',
+  right: '20px',
   backgroundColor: 'transparent',
-  color: '#333333',
-  fontSize: '14px',
+  color: '#666666',
+  fontSize: '13px',
   fontFamily: 'Arial, sans-serif',
+  fontWeight: '500',
   textTransform: 'none',
-  padding: '8px 12px',
+  padding: collapsed ? '8px' : '8px 12px',
   justifyContent: 'flex-start',
   minWidth: 'auto',
+  textAlign: 'left',
+  borderRadius: '6px',
+  transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: 'transparent',
+    backgroundColor: '#E8F4FD',
+    color: '#1877F2',
   },
 }));
 
 const IconContainer = styled(Box)(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
-  padding: '4px',
+  justifyContent: 'center',
+  padding: '6px',
   borderRadius: '4px',
-  transition: 'background-color 0.2s ease',
+  transition: 'all 0.2s ease',
+  marginRight: '8px',
   '&:hover': {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: 'rgba(24, 119, 242, 0.1)',
   },
 }));
 
@@ -371,9 +403,9 @@ const ExactSidebar = () => {
         startIcon={
           <IconContainer>
             {collapsed ? (
-              <TbLayoutSidebarRightCollapse size={20} />
+              <TbLayoutSidebarRightCollapse size={18} />
             ) : (
-              <TbLayoutSidebarLeftCollapse size={20} />
+              <TbLayoutSidebarLeftCollapse size={18} />
             )}
           </IconContainer>
         }
