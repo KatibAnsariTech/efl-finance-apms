@@ -81,7 +81,7 @@ export default function NewLoginView() {
         sx={{
           display: "flex",
           height: "100vh",
-          padding: 3,
+          paddingY: 3,
           backgroundColor: "white",
         }}
       >
@@ -99,7 +99,7 @@ export default function NewLoginView() {
              padding: 4,
            }}
          >
-          <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
+          <Box sx={{ maxWidth: 420, width: "100%", mx: "auto" }}>
             <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
               Welcome back!
             </Typography>
