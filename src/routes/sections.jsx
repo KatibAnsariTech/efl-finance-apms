@@ -20,6 +20,7 @@ import Page404 from "src/pages/page-not-found";
 import { MasterSheetView } from "src/sections/master-sheet/view";
 import navConfig from "src/layouts/dashboard/config-navigation";
 import HierarchyManagementView from "src/sections/hierarchy-management/view/hierarchy-management-view";
+import ExactSidebarDemo from "src/pages/exact-sidebar-demo";
 // import { RaiseTicket } from 'src/sections/raise-ticket/view';
 
 // export const IndexPage = lazy(() => import("src/pages/app"));
@@ -154,6 +155,10 @@ export default function Router() {
               element={<HierarchyManagementView />}
             />
           ),
+        },
+        {
+          path: "/exact-sidebar-demo",
+          element: <ExactSidebarDemo />,
         },
       ],
     },
