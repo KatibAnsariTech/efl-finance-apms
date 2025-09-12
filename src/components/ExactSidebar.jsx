@@ -62,14 +62,14 @@ const NavigationList = styled(List)(({ collapsed }) => ({
 const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
   borderRadius: '8px',
   marginBottom: '4px',
-  padding: '12px 16px',
+  padding: '8px 16px',
   backgroundColor: active ? '#E3F2FD' : 'transparent',
   // borderLeft: active ? '3px solid #1877F2' : '3px solid transparent',
   '&:hover': {
     backgroundColor: active ? '#E3F2FD' : '#F0F0F0',
   },
   transition: 'all 0.2s ease',
-  minHeight: '44px',
+  minHeight: '36px',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -115,14 +115,14 @@ const ArrowIcon = styled(Box)(({ expanded, collapsed, active }) => ({
 const SubItemButton = styled(ListItemButton)(({ theme, active }) => ({
   borderRadius: '6px',
   marginBottom: '2px',
-  padding: '8px 16px 8px 40px',
+  padding: '6px 16px 6px 40px',
   backgroundColor: active ? '#E3F2FD' : 'transparent',
   // borderLeft: active ? '2px solid #1877F2' : '2px solid transparent',
   '&:hover': {
     backgroundColor: active ? '#E3F2FD' : '#F0F0F0',
   },
   transition: 'all 0.2s ease',
-  minHeight: '36px',
+  minHeight: '30px',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
