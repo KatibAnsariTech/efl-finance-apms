@@ -114,7 +114,7 @@ export default function NewLoginView() {
             </Typography>
             <Typography
               variant="body1"
-              sx={{ mb: 4, lineHeight: 1.6, textAlign: "center" }}
+              sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
             >
               Simplify your workflow and boost your productivity with
               SpaceToTech's App.
@@ -202,9 +202,9 @@ export default function NewLoginView() {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: "primary.main",
+                      color: "black",
                       cursor: "pointer",
-                      textDecoration: "underline",
+                      fontSize: "0.8rem",
                     }}
                     onClick={handleForgotPassword}
                   >
@@ -218,7 +218,6 @@ export default function NewLoginView() {
                 size="large"
                 type="submit"
                 variant="contained"
-                // sx={{ mt: 3, py: 1.5, }}
                 sx={{
                   mt: 3,
                   borderRadius: "25px",
@@ -234,7 +233,7 @@ export default function NewLoginView() {
                 Login
               </LoadingButton>
 
-              <Box sx={{ my: 3, display: "flex", alignItems: "center" }}>
+              <Box sx={{ my: 2, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />
                 <Typography variant="body2" sx={{ px: 2 }}>
                   or need access

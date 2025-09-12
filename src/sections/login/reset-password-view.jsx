@@ -131,14 +131,15 @@ export default function ResetPasswordView() {
           }}
         >
           <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
-            <Typography variant="h3" sx={{ fontWeight: "bold", mb: 1, color: "text.primary", textAlign: "center" }}>
+            <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
               Reset Password
             </Typography>
             <Typography
               variant="body1"
-              sx={{ color: "text.secondary", mb: 4, lineHeight: 1.6, textAlign: "center" }}
+              sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
             >
-              Simplify your workflow and boost your productivity with SpaceToTech's App.
+              Simplify your workflow and boost your productivity with
+              SpaceToTech's App.
             </Typography>
 
             <form onSubmit={handleSubmit(handleResetPassword)}>
@@ -268,9 +269,9 @@ export default function ResetPasswordView() {
                 Save new password
               </LoadingButton>
 
-              <Box sx={{ my: 3, display: "flex", alignItems: "center" }}>
+              <Box sx={{ my: 2, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />
-                <Typography variant="body2" sx={{ px: 2, color: "text.secondary" }}>
+                <Typography variant="body2" sx={{ px: 2 }}>
                   or don't change
                 </Typography>
                 <Divider sx={{ flex: 1 }} />
