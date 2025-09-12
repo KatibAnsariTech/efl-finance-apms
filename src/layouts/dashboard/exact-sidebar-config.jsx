@@ -7,8 +7,6 @@ import RequestPageIcon from '@mui/icons-material/RequestPage';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import DescriptionIcon from '@mui/icons-material/Description';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -37,28 +35,24 @@ const exactSidebarConfig = [
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
       { 
+        id: 'initiate-jv', 
+        title: 'Initiate JV', 
+        path: '/initiate-jv',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
+      { 
+        id: 'jv-status', 
+        title: "JV's Status", 
+        path: '/jv-status',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
+      { 
         id: 'jvm-reports', 
         title: 'JVM Reports', 
         path: '/jvm/reports',
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
     ],
-  },
-  {
-    id: 'initiate-jv',
-    title: 'Initiate JV',
-    path: '/initiate-jv',
-    icon: <AddCircleIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-    hasSubItems: false,
-  },
-  {
-    id: 'jv-status',
-    title: "JV's Status",
-    path: '/jv-status',
-    icon: <DescriptionIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-    hasSubItems: false,
   },
   {
     id: 'import-payment',
