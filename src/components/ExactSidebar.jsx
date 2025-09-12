@@ -105,7 +105,7 @@ const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
   marginBottom: '4px',
   padding: '12px 16px',
   backgroundColor: active ? '#E3F2FD' : 'transparent',
-  borderLeft: active ? '3px solid #1877F2' : '3px solid transparent',
+  // borderLeft: active ? '3px solid #1877F2' : '3px solid transparent',
   '&:hover': {
     backgroundColor: active ? '#E3F2FD' : '#F0F0F0',
   },
@@ -145,7 +145,7 @@ const SubItemButton = styled(ListItemButton)(({ theme, active }) => ({
   marginBottom: '2px',
   padding: '8px 16px 8px 40px',
   backgroundColor: active ? '#E3F2FD' : 'transparent',
-  borderLeft: active ? '2px solid #1877F2' : '2px solid transparent',
+  // borderLeft: active ? '2px solid #1877F2' : '2px solid transparent',
   '&:hover': {
     backgroundColor: active ? '#E3F2FD' : '#F0F0F0',
   },
@@ -175,6 +175,18 @@ const CollapseButton = styled(Button)(({ theme, collapsed }) => ({
   textTransform: 'none',
   padding: '8px 12px',
   justifyContent: 'flex-start',
+  minWidth: 'auto',
+  '&:hover': {
+    backgroundColor: 'transparent',
+  },
+}));
+
+const IconContainer = styled(Box)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '4px',
+  borderRadius: '4px',
+  transition: 'background-color 0.2s ease',
   '&:hover': {
     backgroundColor: '#F0F0F0',
   },
@@ -255,17 +267,40 @@ const ExactSidebar = () => {
 
   const handleItemClick = (itemId, hasSubItems) => {
     if (hasSubItems) {
-      setExpandedItems(prev => ({
-        ...prev,
-        [itemId]: !prev[itemId]
-      }));
+      // If expanding, select the first subitem and close other expanded items
+      if (!expandedItems[itemId]) {
+        const item = navigationItems.find(navItem => navItem.id === itemId);
+        if (item && item.subItems && item.subItems.length > 0) {
+          setActiveItem(item.subItems[0].id);
+        }
+        // Close all other expanded items
+        setExpandedItems(prev => {
+          const newExpandedItems = {};
+          newExpandedItems[itemId] = true;
+          return newExpandedItems;
+        });
+      } else {
+        // If collapsing, just close this item
+        setExpandedItems(prev => ({
+          ...prev,
+          [itemId]: false
+        }));
+      }
     } else {
       setActiveItem(itemId);
+      // Close all expanded items when selecting a main item
+      setExpandedItems({});
     }
   };
 
   const handleSubItemClick = (subItemId, parentId) => {
     setActiveItem(subItemId);
+    // Close all other expanded items and expand only the current parent
+    setExpandedItems(prev => {
+      const newExpandedItems = {};
+      newExpandedItems[parentId] = true;
+      return newExpandedItems;
+    });
   };
 
   const handleNavigation = (path) => {
@@ -310,17 +345,17 @@ const ExactSidebar = () => {
           <React.Fragment key={item.id}>
             <ListItem disablePadding>
               <StyledListItemButton
-                active={activeItem === item.id}
+                active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
                 onClick={() => handleItemClick(item.id, item.hasSubItems)}
               >
-                <StyledListItemIcon active={activeItem === item.id} collapsed={collapsed}>
+                <StyledListItemIcon active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))} collapsed={collapsed}>
                   {item.icon}
                 </StyledListItemIcon>
                 {!collapsed && (
                   <>
                     <StyledListItemText
                       primary={item.label}
-                      active={activeItem === item.id}
+                      active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
                       collapsed={collapsed}
                     />
                     {item.hasSubItems && (
@@ -362,11 +397,13 @@ const ExactSidebar = () => {
         onClick={handleCollapse}
         collapsed={collapsed}
         startIcon={
-          collapsed ? (
-            <TbLayoutSidebarRightCollapse size={20} />
-          ) : (
-            <TbLayoutSidebarLeftCollapse size={20} />
-          )
+          <IconContainer>
+            {collapsed ? (
+              <TbLayoutSidebarRightCollapse size={20} />
+            ) : (
+              <TbLayoutSidebarLeftCollapse size={20} />
+            )}
+          </IconContainer>
         }
       >
         {!collapsed && 'Collapse'}
