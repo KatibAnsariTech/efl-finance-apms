@@ -23,7 +23,7 @@ import Iconify from "src/components/iconify";
 // API imports commented out for development
 // import { publicRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
-import loginImage from "../../../public/assets/loginImage.webp";
+import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
 
 export default function ResetPasswordView() {
   const {
@@ -58,17 +58,17 @@ export default function ResetPasswordView() {
 
     try {
       setResetProcessing(true);
-      
+
       // API call commented out for development
       // await publicRequest.post("/admin/reset-password", {
       //   email: location.state?.email,
       //   token: location.state?.token,
       //   newPassword: data.newPassword,
       // });
-      
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Mock successful password reset
       const resetData = {
         email: location.state?.email,
@@ -76,9 +76,9 @@ export default function ResetPasswordView() {
         newPassword: data.newPassword,
       };
       console.log("Password reset attempt:", resetData);
-      
+
       toast.success("Password reset successfully! Redirecting to login...");
-      
+
       // Simulate redirect delay
       setTimeout(() => {
         navigate("/login");
@@ -106,18 +106,7 @@ export default function ResetPasswordView() {
         }}
       >
         {/* Left Panel - Image Background Only */}
-        <Box
-          sx={{
-            flex: 1,
-            backgroundImage: `url(${loginImage})`,
-            backgroundSize: "contain",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            backgroundColor: "#f5faf4",
-            borderRadius: 3,
-            backgroundPositionY: 10,
-          }}
-        />
+        <LoginLeftPanel />
 
         {/* Right Panel - White Background */}
         <Box
@@ -164,7 +153,11 @@ export default function ResetPasswordView() {
                           edge="end"
                         >
                           <Iconify
-                            icon={showNewPassword ? "eva:eye-fill" : "eva:eye-off-fill"}
+                            icon={
+                              showNewPassword
+                                ? "eva:eye-fill"
+                                : "eva:eye-off-fill"
+                            }
                           />
                         </IconButton>
                       </InputAdornment>
@@ -204,11 +197,17 @@ export default function ResetPasswordView() {
                     endAdornment: (
                       <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           edge="end"
                         >
                           <Iconify
-                            icon={showConfirmPassword ? "eva:eye-fill" : "eva:eye-off-fill"}
+                            icon={
+                              showConfirmPassword
+                                ? "eva:eye-fill"
+                                : "eva:eye-off-fill"
+                            }
                           />
                         </IconButton>
                       </InputAdornment>
@@ -235,15 +234,25 @@ export default function ResetPasswordView() {
                 />
 
                 {newPassword && (
-                  <Box sx={{ textAlign: "right" }}>
+                  <Box sx={{ textAlign: "left" }}>
                     <Typography
                       variant="body2"
                       sx={{
-                        color: passwordStrength.color,
+                        color: "text.primary",
                         fontWeight: "bold",
+                        fontSize: "0.75rem",
+                        ml: 2,
                       }}
                     >
-                      password strength: {passwordStrength.text}
+                      Password strength :{" "}
+                      <span
+                        style={{
+                          fontWeight: "bold",
+                          color: passwordStrength.color,
+                        }}
+                      >
+                        {passwordStrength.text}{" "}
+                      </span>
                     </Typography>
                   </Box>
                 )}

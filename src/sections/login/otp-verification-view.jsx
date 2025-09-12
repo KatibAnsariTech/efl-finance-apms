@@ -24,7 +24,7 @@ import Iconify from "src/components/iconify";
 // import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
 // import { useCounts } from "src/contexts/CountsContext";
-import loginImage from "../../../public/assets/loginImage.webp";
+import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
 
 export default function OTPVerificationView() {
   const {
@@ -145,19 +145,8 @@ export default function OTPVerificationView() {
           padding: 3,
         }}
       >
-        {/* Left Panel - Image Background Only */}
-        <Box
-          sx={{
-            flex: 1,
-            backgroundImage: `url(${loginImage})`,
-            backgroundSize: "contain",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            backgroundColor: "#f5faf4",
-            borderRadius: 3,
-            backgroundPositionY: 10,
-          }}
-        />
+         {/* Left Panel - Image Background Only */}
+         <LoginLeftPanel />
 
         {/* Right Panel - White Background */}
         <Box
