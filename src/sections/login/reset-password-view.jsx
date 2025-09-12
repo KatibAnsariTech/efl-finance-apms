@@ -73,7 +73,7 @@ export default function ResetPasswordView() {
 
       // Simulate redirect delay
       setTimeout(() => {
-        navigate("/login");
+        navigate("/new-login");
       }, 1500);
     } catch (error) {
       console.error(error);
