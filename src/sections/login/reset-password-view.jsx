@@ -201,16 +201,16 @@ export default function ResetPasswordView() {
                   }}
                 />
 
-                <TextField
-                  label="Confirm New Password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  {...register("confirmPassword", {
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                      value === newPassword || "Passwords do not match",
-                  })}
-                  error={!!errors.confirmPassword}
-                  helperText={errors.confirmPassword?.message}
+                 <TextField
+                   label="Confirm New Password"
+                   type={showConfirmPassword ? "text" : "password"}
+                   {...register("confirmPassword", {
+                     required: "Please confirm your password",
+                     validate: (value) =>
+                       value === newPassword || "Passwords do not match",
+                   })}
+                   error={!!errors.confirmPassword || (watch("confirmPassword") && newPassword !== watch("confirmPassword"))}
+                   helperText={errors.confirmPassword?.message || (watch("confirmPassword") && newPassword !== watch("confirmPassword") ? "Passwords do not match" : "")}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end" sx={{ mr: 1 }}>
