@@ -122,7 +122,7 @@ export default function NewLoginView() {
             </Typography>
 
             <form onSubmit={handleSubmit(handleLogin)}>
-              <Stack spacing={{ xs: 1.5, sm: 2, md: 2 }} sx={{ mx: "auto" }}>
+              <Stack spacing={{ xs: 1, sm: 1.5, md: 1.5 }} sx={{ mx: "auto" }}>
                  <TextField
                    label="Official Email"
                    type="email"
@@ -224,7 +224,7 @@ export default function NewLoginView() {
                 type="submit"
                 variant="contained"
                 sx={{
-                  mt: 3,
+                  mt: 2,
                   borderRadius: "25px",
                   py: { xs: 1.5, sm: 1.5, md: 1.5 },
                   fontSize: { xs: "0.875rem", sm: "1rem" },
@@ -239,7 +239,7 @@ export default function NewLoginView() {
                 Login
               </LoadingButton>
 
-              <Box sx={{ my: 2, display: "flex", alignItems: "center" }}>
+              <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />
                 <Typography variant="body2" sx={{ px: 2 }}>
                   or need access

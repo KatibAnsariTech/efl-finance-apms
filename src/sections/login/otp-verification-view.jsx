@@ -195,10 +195,10 @@ export default function OTPVerificationView() {
               SpaceToTech's App.
             </Typography>
 
-            <form
-              onSubmit={handleSubmit(showOTP ? handleVerifyOTP : handleSendOTP)}
-            >
-              <Stack spacing={2} sx={{ mx: "auto" }}>
+             <form
+               onSubmit={handleSubmit(showOTP ? handleVerifyOTP : handleSendOTP)}
+             >
+               <Stack spacing={{ xs: 1, sm: 1.5, md: 1.5 }} sx={{ mx: "auto" }}>
                 <TextField
                   label="Official Email"
                   type="email"
@@ -306,27 +306,27 @@ export default function OTPVerificationView() {
                 )}
               </Stack>
 
-              <LoadingButton
-                fullWidth
-                size="large"
-                type="submit"
-                variant="contained"
-                sx={{
-                  mt: 3,
-                  borderRadius: "25px",
-                  py: 1.5,
-                  backgroundColor: "black",
-                  "&:hover": {
-                    backgroundColor: "grey.800",
-                  },
-                }}
-                disabled={otpProcessing}
-                loading={otpProcessing}
-              >
-                {showOTP ? "Confirm OTP" : "Send OTP"}
-              </LoadingButton>
+               <LoadingButton
+                 fullWidth
+                 size="large"
+                 type="submit"
+                 variant="contained"
+                 sx={{
+                   mt: 2,
+                   borderRadius: "25px",
+                   py: 1.5,
+                   backgroundColor: "black",
+                   "&:hover": {
+                     backgroundColor: "grey.800",
+                   },
+                 }}
+                 disabled={otpProcessing}
+                 loading={otpProcessing}
+               >
+                 {showOTP ? "Confirm OTP" : "Send OTP"}
+               </LoadingButton>
 
-              <Box sx={{ my: 2, display: "flex", alignItems: "center" }}>
+              <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />
                 <Typography variant="body2" sx={{ px: 2 }}>
                   or don't change

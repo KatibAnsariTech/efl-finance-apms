@@ -149,8 +149,8 @@ export default function ResetPasswordView() {
               SpaceToTech's App.
             </Typography>
 
-            <form onSubmit={handleSubmit(handleResetPassword)}>
-              <Stack spacing={2} sx={{ mx: "auto" }}>
+             <form onSubmit={handleSubmit(handleResetPassword)}>
+               <Stack spacing={{ xs: 1, sm: 1.5, md: 1.5 }} sx={{ mx: "auto" }}>
                 <TextField
                   label="New Password"
                   type={showNewPassword ? "text" : "password"}
@@ -276,27 +276,27 @@ export default function ResetPasswordView() {
                 )}
               </Stack>
 
-              <LoadingButton
-                fullWidth
-                size="large"
-                type="submit"
-                variant="contained"
-                sx={{
-                  mt: 3,
-                  borderRadius: "25px",
-                  py: 1.5,
-                  backgroundColor: "black",
-                  "&:hover": {
-                    backgroundColor: "grey.800",
-                  },
-                }}
-                disabled={resetProcessing}
-                loading={resetProcessing}
-              >
-                Save new password
-              </LoadingButton>
+               <LoadingButton
+                 fullWidth
+                 size="large"
+                 type="submit"
+                 variant="contained"
+                 sx={{
+                   mt: 2,
+                   borderRadius: "25px",
+                   py: 1.5,
+                   backgroundColor: "black",
+                   "&:hover": {
+                     backgroundColor: "grey.800",
+                   },
+                 }}
+                 disabled={resetProcessing}
+                 loading={resetProcessing}
+               >
+                 Save new password
+               </LoadingButton>
 
-              <Box sx={{ my: 2, display: "flex", alignItems: "center" }}>
+              <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />
                 <Typography variant="body2" sx={{ px: 2 }}>
                   or don't change
