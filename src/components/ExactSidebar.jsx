@@ -18,6 +18,7 @@ import {
   TbChevronDown,
   TbChevronRight
 } from 'react-icons/tb';
+import { useRouter } from 'src/routes/hooks';
 import Logo from "../../public/assets/image1.png";
 import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
 import exactSidebarConfig from '../layouts/dashboard/exact-sidebar-config';
@@ -33,17 +34,12 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
 // Styled components
 const SidebarContainer = styled(Box)(({ theme, collapsed }) => ({
-  width: collapsed ? 80 : 220,
+  width: '100%',
   height: '100vh',
   backgroundColor: '#F5F5F5',
-  borderRight: '1px dashed #E0E0E0',
   display: 'flex',
   flexDirection: 'column',
-  transition: 'width 0.3s ease',
-  position: 'fixed',
-  left: 0,
-  top: 0,
-  zIndex: 1000,
+  transition: 'all 0.3s ease',
 }));
 
 const LogoContainer = styled(Box)(({ collapsed }) => ({
@@ -58,6 +54,7 @@ const NavigationList = styled(List)(({ collapsed }) => ({
   padding: collapsed ? '0 8px' : '0 20px',
   flex: 1,
   marginTop: '20px',
+  overflow: 'hidden',
 }));
 
 const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
@@ -206,11 +203,16 @@ const filterNavigationByRole = (config, userRole) => {
   });
 };
 
-const ExactSidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollapsed }) => {
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState({});
   const [activeItem, setActiveItem] = useState('dashboard');
   const [navigationItems, setNavigationItems] = useState([]);
+  const router = useRouter();
+
+  // Use external collapsed state if provided, otherwise use internal state
+  const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
+  const setCollapsed = setExternalCollapsed || setInternalCollapsed;
 
   // Filter navigation items based on user role
   useEffect(() => {
@@ -286,8 +288,8 @@ const ExactSidebar = () => {
   };
 
   const handleNavigation = (path) => {
-    // Use window.location for navigation since we don't have router context here
-    window.location.href = path;
+    // Use router for navigation
+    router.push(path);
   };
 
   return (
@@ -306,8 +308,7 @@ const ExactSidebar = () => {
               cursor: "pointer",
             }}
             onClick={() => {
-              // Handle navigation to home
-              console.log('Navigate to home');
+              handleNavigation('/');
             }}
           />
         ) : (
@@ -321,8 +322,7 @@ const ExactSidebar = () => {
               cursor: "pointer",
             }}
             onClick={() => {
-              // Handle navigation to home
-              console.log('Navigate to home');
+              handleNavigation('/');
             }}
           />
         )}

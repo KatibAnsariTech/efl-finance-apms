@@ -10,7 +10,7 @@ import { NAV, HEADER } from './config-layout';
 
 const SPACING = 8;
 
-export default function Main({ children, sx, ...other }) {
+export default function Main({ children, collapsed, sx, ...other }) {
   const lgUp = useResponsive('up', 'lg');
 
   return (
@@ -25,7 +25,8 @@ export default function Main({ children, sx, ...other }) {
         ...(lgUp && {
           px: 2,
           py: `${HEADER.H_DESKTOP + SPACING}px`,
-          width: `calc(100% - ${NAV.WIDTH}px)`,
+          width: '100%',
+          transition: 'all 0.3s ease',
         }),
         ...sx,
       }}
@@ -38,5 +39,6 @@ export default function Main({ children, sx, ...other }) {
 
 Main.propTypes = {
   children: PropTypes.node,
+  collapsed: PropTypes.bool,
   sx: PropTypes.object,
 };

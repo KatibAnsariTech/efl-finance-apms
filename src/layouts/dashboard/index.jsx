@@ -22,6 +22,7 @@ export default function DashboardLayout({ children }) {
           minHeight: 1,
           display: 'flex',
           flexDirection: { xs: 'column', lg: 'row' },
+          position: 'relative',
         }}
       >
         <Nav
@@ -31,7 +32,19 @@ export default function DashboardLayout({ children }) {
           onCloseNav={() => setOpenNav(false)}
         />
 
-        <Main>{children}</Main>
+        <Box
+          sx={{
+            flexGrow: 1,
+            position: 'absolute',
+            top: 0,
+            left: collapsed ? '80px' : '220px',
+            right: 0,
+            bottom: 0,
+            transition: 'left 0.3s ease',
+          }}
+        >
+          <Main collapsed={collapsed}>{children}</Main>
+        </Box>
       </Box>
     </>
   );

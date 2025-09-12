@@ -155,6 +155,8 @@ export default function Header({ onOpenNav, collapsed }) {
             ? `calc(100% - ${80 + 1}px)`
             : `calc(100% - ${NAV.WIDTH + 1}px)`,
           height: HEADER.H_DESKTOP,
+          marginLeft: collapsed ? '80px' : `${NAV.WIDTH}px`,
+          transition: 'all 0.3s ease',
         }),
       }}
     >
