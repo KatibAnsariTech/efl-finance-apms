@@ -21,6 +21,12 @@ import { MasterSheetView } from "src/sections/master-sheet/view";
 import navConfig from "src/layouts/dashboard/config-navigation";
 import HierarchyManagementView from "src/sections/hierarchy-management/view/hierarchy-management-view";
 import ExactSidebarDemo from "src/pages/exact-sidebar-demo";
+import JVMPage from "src/pages/jvm";
+import InitiateJVPage from "src/pages/initiate-jv";
+import JVStatusPage from "src/pages/jv-status";
+import ImportPaymentPage from "src/pages/import-payment";
+import CustomDutyPage from "src/pages/custom-duty";
+import PettyCashPage from "src/pages/petty-cash";
 // import { RaiseTicket } from 'src/sections/raise-ticket/view';
 
 // export const IndexPage = lazy(() => import("src/pages/app"));
@@ -159,6 +165,30 @@ export default function Router() {
         {
           path: "/exact-sidebar-demo",
           element: <ExactSidebarDemo />,
+        },
+        {
+          path: "/jvm",
+          element: <RoleRoute path="/jvm" element={<JVMPage />} />,
+        },
+        {
+          path: "/initiate-jv",
+          element: <RoleRoute path="/initiate-jv" element={<InitiateJVPage />} />,
+        },
+        {
+          path: "/jv-status",
+          element: <RoleRoute path="/jv-status" element={<JVStatusPage />} />,
+        },
+        {
+          path: "/import-payment",
+          element: <RoleRoute path="/import-payment" element={<ImportPaymentPage />} />,
+        },
+        {
+          path: "/custom-duty",
+          element: <RoleRoute path="/custom-duty" element={<CustomDutyPage />} />,
+        },
+        {
+          path: "/petty-cash",
+          element: <RoleRoute path="/petty-cash" element={<PettyCashPage />} />,
         },
       ],
     },

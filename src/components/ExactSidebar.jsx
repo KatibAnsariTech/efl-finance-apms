@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   List,
@@ -20,6 +20,7 @@ import {
 } from 'react-icons/tb';
 import Logo from "../../public/assets/image1.png";
 import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
+import exactSidebarConfig from '../layouts/dashboard/exact-sidebar-config';
 
 // Icons for navigation items
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -182,86 +183,66 @@ const IconContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-// Navigation items configuration with subitems
-const navigationItems = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: <DashboardIcon />,
-    path: '/',
-    active: true,
-    hasSubItems: false,
-  },
-  {
-    id: 'master-data',
-    label: 'Master Data',
-    icon: <LockIcon />,
-    path: '/master',
-    active: false,
-    hasSubItems: true,
-    subItems: [
-      { id: 'master-data-1', label: 'Data Management', path: '/master/data' },
-      { id: 'master-data-2', label: 'Configuration', path: '/master/config' },
-      { id: 'master-data-3', label: 'Settings', path: '/master/settings' },
-    ],
-  },
-  {
-    id: 'user-management',
-    label: 'User Management',
-    icon: <PersonIcon />,
-    path: '/usermanagement',
-    active: false,
-    hasSubItems: true,
-    subItems: [
-      { id: 'user-management-1', label: 'Users', path: '/usermanagement/users' },
-      { id: 'user-management-2', label: 'Roles', path: '/usermanagement/roles' },
-      { id: 'user-management-3', label: 'Permissions', path: '/usermanagement/permissions' },
-    ],
-  },
-  {
-    id: 'master-sheet',
-    label: 'Master Sheet',
-    icon: <AssignmentIcon />,
-    path: '/master-sheet',
-    active: false,
-    hasSubItems: true,
-    subItems: [
-      { id: 'master-sheet-1', label: 'Sheet Templates', path: '/master-sheet/templates' },
-      { id: 'master-sheet-2', label: 'Data Import', path: '/master-sheet/import' },
-      { id: 'master-sheet-3', label: 'Export', path: '/master-sheet/export' },
-    ],
-  },
-  {
-    id: 'h-management',
-    label: 'H. Management',
-    icon: <AccountTreeIcon />,
-    path: '/hierarchy-management',
-    active: false,
-    hasSubItems: true,
-    subItems: [
-      { id: 'h-management-1', label: 'Organization', path: '/hierarchy-management/org' },
-      { id: 'h-management-2', label: 'Structure', path: '/hierarchy-management/structure' },
-      { id: 'h-management-3', label: 'Reports', path: '/hierarchy-management/reports' },
-    ],
-  },
-];
+// Helper function to filter navigation items based on user role
+const filterNavigationByRole = (config, userRole) => {
+  return config.filter(item => {
+    // Check if user role is in the item's allowed roles
+    const hasAccess = !item.roles || item.roles.includes(userRole);
+    
+    if (hasAccess && item.hasSubItems && item.subItems) {
+      // Filter subitems based on role as well
+      const filteredSubItems = item.subItems.filter(subItem => 
+        !subItem.roles || subItem.roles.includes(userRole)
+      );
+      
+      // Return the item with filtered subitems
+      return {
+        ...item,
+        subItems: filteredSubItems
+      };
+    }
+    
+    return hasAccess;
+  });
+};
 
 const ExactSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState({});
   const [activeItem, setActiveItem] = useState('dashboard');
+  const [navigationItems, setNavigationItems] = useState([]);
+
+  // Filter navigation items based on user role
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userRole = user?.userType || "REQUESTER";
+    const filteredNav = filterNavigationByRole(exactSidebarConfig, userRole);
+    setNavigationItems(filteredNav);
+    
+    // Set the first available item as active if current active item is not available
+    if (filteredNav.length > 0) {
+      const firstItem = filteredNav[0];
+      if (firstItem.hasSubItems && firstItem.subItems.length > 0) {
+        setActiveItem(firstItem.subItems[0].id);
+      } else {
+        setActiveItem(firstItem.id);
+      }
+    }
+  }, []);
 
   const handleCollapse = () => {
     setCollapsed(!collapsed);
   };
 
-  const handleItemClick = (itemId, hasSubItems) => {
+  const handleItemClick = (itemId, hasSubItems, path) => {
     if (hasSubItems) {
       // If expanding, select the first subitem and close other expanded items
       if (!expandedItems[itemId]) {
         const item = navigationItems.find(navItem => navItem.id === itemId);
         if (item && item.subItems && item.subItems.length > 0) {
           setActiveItem(item.subItems[0].id);
+          // Navigate to the first subitem's path
+          handleNavigation(item.subItems[0].path);
         }
         // Close all other expanded items
         setExpandedItems(prev => {
@@ -280,6 +261,8 @@ const ExactSidebar = () => {
       setActiveItem(itemId);
       // Close all expanded items when selecting a main item
       setExpandedItems({});
+      // Navigate to the item's path
+      handleNavigation(path);
     }
   };
 
@@ -291,10 +274,20 @@ const ExactSidebar = () => {
       newExpandedItems[parentId] = true;
       return newExpandedItems;
     });
+    
+    // Find and navigate to the subitem's path
+    const parentItem = navigationItems.find(navItem => navItem.id === parentId);
+    if (parentItem && parentItem.subItems) {
+      const subItem = parentItem.subItems.find(sub => sub.id === subItemId);
+      if (subItem) {
+        handleNavigation(subItem.path);
+      }
+    }
   };
 
   const handleNavigation = (path) => {
-    console.log('Navigate to:', path);
+    // Use window.location for navigation since we don't have router context here
+    window.location.href = path;
   };
 
   return (
@@ -342,7 +335,7 @@ const ExactSidebar = () => {
             <ListItem disablePadding>
               <StyledListItemButton
                 active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
-                onClick={() => handleItemClick(item.id, item.hasSubItems)}
+                onClick={() => handleItemClick(item.id, item.hasSubItems, item.path)}
               >
                 <StyledListItemIcon active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))} collapsed={collapsed}>
                   {item.icon}
@@ -350,7 +343,7 @@ const ExactSidebar = () => {
                 {!collapsed && (
                   <>
                     <StyledListItemText
-                      primary={item.label}
+                      primary={item.title}
                       active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
                       collapsed={collapsed}
                     />
@@ -383,7 +376,7 @@ const ExactSidebar = () => {
                         onClick={() => handleSubItemClick(subItem.id, item.id)}
                       >
                         <SubItemText
-                          primary={subItem.label}
+                          primary={subItem.title}
                           active={activeItem === subItem.id}
                         />
                       </SubItemButton>
