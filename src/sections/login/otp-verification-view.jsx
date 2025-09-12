@@ -172,23 +172,23 @@ export default function OTPVerificationView() {
               mx: "auto",
             }}
           >
-            <Typography
-              variant="h3"
-              sx={{
-                mb: 1,
-                textAlign: "center",
-                fontSize: { xs: "1.75rem", sm: "2rem", md: "2.5rem" },
-              }}
-            >
-              Reset Password
-            </Typography>
+             <Typography
+               variant="h4"
+               sx={{
+                 mb: 1,
+                 textAlign: "center",
+                 fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+               }}
+             >
+               Reset Password
+             </Typography>
             <Typography
               variant="body2"
               sx={{
                 mb: 2,
                 lineHeight: 1.6,
                 textAlign: "center",
-                fontSize: { xs: "0.875rem", sm: "1rem" },
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
               }}
             >
               Simplify your workflow and boost your productivity with
