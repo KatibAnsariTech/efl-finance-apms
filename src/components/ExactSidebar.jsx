@@ -25,6 +25,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import PersonIcon from '@mui/icons-material/Person';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
 // Styled components
 const SidebarContainer = styled(Box)(({ theme, collapsed }) => ({
@@ -133,11 +135,11 @@ const StyledListItemIcon = styled(ListItemIcon)(({ active, collapsed }) => ({
   marginRight: collapsed ? 0 : '12px',
 }));
 
-const ArrowIcon = styled(Box)(({ expanded, collapsed }) => ({
-  color: '#666666',
+const ArrowIcon = styled(Box)(({ expanded, collapsed, active }) => ({
+  color: active ? '#1877F2' : '#666666',
   opacity: collapsed ? 0 : 1,
   transition: 'all 0.2s ease',
-  transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+  fontSize: '20px',
 }));
 
 const SubItemButton = styled(ListItemButton)(({ theme, active }) => ({
@@ -359,8 +361,16 @@ const ExactSidebar = () => {
                       collapsed={collapsed}
                     />
                     {item.hasSubItems && (
-                      <ArrowIcon expanded={expandedItems[item.id]} collapsed={collapsed}>
-                        <TbChevronRight size={16} />
+                      <ArrowIcon 
+                        expanded={expandedItems[item.id]} 
+                        collapsed={collapsed}
+                        active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
+                      >
+                        {expandedItems[item.id] ? (
+                          <ArrowDropUpIcon sx={{ fontSize: 20 }} />
+                        ) : (
+                          <ArrowDropDownIcon sx={{ fontSize: 20 }} />
+                        )}
                       </ArrowIcon>
                     )}
                   </>
