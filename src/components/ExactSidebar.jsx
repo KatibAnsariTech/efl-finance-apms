@@ -18,6 +18,8 @@ import {
   TbChevronDown,
   TbChevronRight
 } from 'react-icons/tb';
+import Logo from "../../public/assets/image1.png";
+import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
 
 // Icons for navigation items
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -50,52 +52,6 @@ const LogoContainer = styled(Box)(({ collapsed }) => ({
   marginBottom: '20px',
 }));
 
-const LogoText = styled(Typography)(({ theme }) => ({
-  fontFamily: 'Arial, sans-serif',
-  fontWeight: 'bold',
-  color: '#1877F2',
-  fontSize: '18px',
-  lineHeight: 1.2,
-  margin: 0,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '8px',
-}));
-
-const CrossIcon = styled(Box)(({ theme }) => ({
-  width: '16px',
-  height: '16px',
-  backgroundColor: '#1877F2',
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '2px',
-    height: '12px',
-    backgroundColor: 'white',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '12px',
-    height: '2px',
-    backgroundColor: 'white',
-  },
-}));
-
-const SubtitleText = styled(Typography)(({ theme }) => ({
-  fontFamily: 'Arial, sans-serif',
-  color: '#666666',
-  fontSize: '12px',
-  marginTop: '4px',
-}));
 
 const NavigationList = styled(List)(({ collapsed }) => ({
   padding: collapsed ? '0 8px' : '0 20px',
@@ -314,30 +270,36 @@ const ExactSidebar = () => {
       {/* Logo Section */}
       <LogoContainer collapsed={collapsed}>
         {collapsed ? (
-          <Box
-            sx={{
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#1877F2',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto',
+          <img
+            src={EurekaForbes}
+            alt="Eurekforbes"
+            style={{
+              width: "64%",
+              marginTop: "32px",
+              marginLeft: "10px",
+              marginBottom: "9px",
+              cursor: "pointer",
             }}
-          >
-            <CrossIcon />
-          </Box>
+            onClick={() => {
+              // Handle navigation to home
+              console.log('Navigate to home');
+            }}
+          />
         ) : (
-          <Box>
-            <LogoText variant="h6">
-              <CrossIcon />
-              EUREKA FORBES
-            </LogoText>
-            <SubtitleText>
-              Credit Deviation Request
-            </SubtitleText>
-          </Box>
+          <img
+            src={Logo}
+            alt="Description of your image"
+            style={{
+              width: "60%",
+              marginTop: "20px",
+              marginLeft: "25px",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              // Handle navigation to home
+              console.log('Navigate to home');
+            }}
+          />
         )}
       </LogoContainer>
 
