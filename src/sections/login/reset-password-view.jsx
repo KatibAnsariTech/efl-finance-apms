@@ -1,9 +1,3 @@
-/*
- * DEVELOPMENT MODE - API calls are commented out
- * This component uses local state and mock responses for UI development
- * To enable API calls, uncomment the API imports and replace mock logic with actual API calls
- */
-
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -58,8 +52,6 @@ export default function ResetPasswordView() {
 
     try {
       setResetProcessing(true);
-
-      // API call commented out for development
       // await publicRequest.post("/admin/reset-password", {
       //   email: location.state?.email,
       //   token: location.state?.token,
@@ -96,7 +88,10 @@ export default function ResetPasswordView() {
   };
 
   return (
-    <Container maxWidth={false} sx={{ height: "100vh", p: 0, backgroundColor: "white" }}>
+    <Container
+      maxWidth={false}
+      sx={{ height: "100vh", p: 0, backgroundColor: "white" }}
+    >
       <ToastContainer />
       <Box
         sx={{
@@ -106,10 +101,8 @@ export default function ResetPasswordView() {
           backgroundColor: "white",
         }}
       >
-        {/* Left Panel - Image Background Only */}
         <LoginLeftPanel />
 
-        {/* Right Panel - White Background */}
         <Box
           sx={{
             flex: 1,
@@ -125,7 +118,7 @@ export default function ResetPasswordView() {
               Reset Password
             </Typography>
             <Typography
-              variant="body1"
+              variant="body2"
               sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
             >
               Simplify your workflow and boost your productivity with

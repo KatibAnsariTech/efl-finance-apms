@@ -1,9 +1,3 @@
-/*
- * DEVELOPMENT MODE - API calls are commented out
- * This component uses local state and mock responses for UI development
- * To enable API calls, uncomment the API imports and replace mock logic with actual API calls
- */
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -60,15 +54,15 @@ export default function OTPVerificationView() {
   const handleSendOTP = async (data) => {
     try {
       setOtpProcessing(true);
-      
+
       // API call commented out for development
       // await publicRequest.post("/admin/forgot-password", {
       //   email: data.email,
       // });
-      
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Mock successful OTP send
       console.log("OTP send attempt:", data);
       setShowOTP(true);
@@ -85,27 +79,29 @@ export default function OTPVerificationView() {
   const handleVerifyOTP = async (data) => {
     try {
       setOtpProcessing(true);
-      
+
       // API call commented out for development
       // const otpData = {
       //   email: data.email,
       //   otp: Number(data.otp),
       // };
       // const res = await publicRequest.post("/admin/verifyOTP", otpData);
-      
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Mock OTP verification (accept any 6-digit OTP)
       const otpData = {
         email: data.email,
         otp: Number(data.otp),
       };
       console.log("OTP verification attempt:", otpData);
-      
+
       if (data.otp && data.otp.length === 6) {
         notifySuccess("OTP verified successfully");
-        navigate("/reset-password", { state: { email: data.email, token: "mock-token-123" } });
+        navigate("/reset-password", {
+          state: { email: data.email, token: "mock-token-123" },
+        });
       } else {
         throw new Error("Invalid OTP format");
       }
@@ -132,11 +128,16 @@ export default function OTPVerificationView() {
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   return (
-    <Container maxWidth={false} sx={{ height: "100vh", p: 0, backgroundColor: "white" }}>
+    <Container
+      maxWidth={false}
+      sx={{ height: "100vh", p: 0, backgroundColor: "white" }}
+    >
       <ToastContainer />
       <Box
         sx={{
@@ -146,33 +147,33 @@ export default function OTPVerificationView() {
           backgroundColor: "white",
         }}
       >
-         {/* Left Panel - Image Background Only */}
-         <LoginLeftPanel />
+        <LoginLeftPanel />
 
-         {/* Right Panel - White Background */}
-         <Box
-           sx={{
-             flex: 1,
-             backgroundColor: "white",
-             display: "flex",
-             alignItems: "center",
-             justifyContent: "center",
-             padding: 4,
-           }}
-         >
-           <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
-             <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
-               Reset Password
-             </Typography>
-             <Typography
-               variant="body1"
-               sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
-             >
-               Simplify your workflow and boost your productivity with
-               SpaceToTech's App.
-             </Typography>
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 4,
+          }}
+        >
+          <Box sx={{ maxWidth: 400, width: "100%", mx: "auto" }}>
+            <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
+              Reset Password
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
+            >
+              Simplify your workflow and boost your productivity with
+              SpaceToTech's App.
+            </Typography>
 
-            <form onSubmit={handleSubmit(showOTP ? handleVerifyOTP : handleSendOTP)}>
+            <form
+              onSubmit={handleSubmit(showOTP ? handleVerifyOTP : handleSendOTP)}
+            >
               <Stack spacing={2} sx={{ mx: "auto" }}>
                 <TextField
                   label="Official Email"
@@ -249,11 +250,18 @@ export default function OTPVerificationView() {
                 )}
 
                 {showOTP && (
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography
                       variant="body2"
                       sx={{
-                        color: timeLeft === 0 ? "primary.main" : "text.secondary",
+                        color:
+                          timeLeft === 0 ? "primary.main" : "text.secondary",
                         cursor: timeLeft === 0 ? "pointer" : "default",
                         textDecoration: timeLeft === 0 ? "underline" : "none",
                       }}
@@ -261,7 +269,10 @@ export default function OTPVerificationView() {
                     >
                       resend OTP
                     </Typography>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary" }}
+                    >
                       {formatTime(timeLeft)}
                     </Typography>
                   </Box>
@@ -288,13 +299,13 @@ export default function OTPVerificationView() {
                 {showOTP ? "Confirm OTP" : "Send OTP"}
               </LoadingButton>
 
-               <Box sx={{ my: 2, display: "flex", alignItems: "center" }}>
-                 <Divider sx={{ flex: 1 }} />
-                 <Typography variant="body2" sx={{ px: 2 }}>
-                   or don't change
-                 </Typography>
-                 <Divider sx={{ flex: 1 }} />
-               </Box>
+              <Box sx={{ my: 2, display: "flex", alignItems: "center" }}>
+                <Divider sx={{ flex: 1 }} />
+                <Typography variant="body2" sx={{ px: 2 }}>
+                  or don't change
+                </Typography>
+                <Divider sx={{ flex: 1 }} />
+              </Box>
 
               <LoadingButton
                 fullWidth

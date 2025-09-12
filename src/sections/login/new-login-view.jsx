@@ -1,9 +1,3 @@
-/*
- * DEVELOPMENT MODE - API calls are commented out
- * This component uses local state and mock responses for UI development
- * To enable API calls, uncomment the API imports and replace mock logic with actual API calls
- */
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -51,8 +45,6 @@ export default function NewLoginView() {
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock successful login
       console.log("Login attempt:", data);
       toast.success("Login successful! Redirecting to OTP verification...");
 
@@ -70,7 +62,6 @@ export default function NewLoginView() {
   };
 
   const handleContactAdmin = () => {
-    // Handle contact administrator action
     toast.info("Contact administrator functionality");
   };
 
@@ -85,26 +76,24 @@ export default function NewLoginView() {
           backgroundColor: "white",
         }}
       >
-        {/* Left Panel - Image Background Only */}
         <LoginLeftPanel />
 
-         {/* Right Panel - White Background */}
-         <Box
-           sx={{
-             flex: 1,
-             backgroundColor: "white",
-             display: "flex",
-             alignItems: "center",
-             justifyContent: "center",
-             padding: 4,
-           }}
-         >
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 4,
+          }}
+        >
           <Box sx={{ maxWidth: 420, width: "100%", mx: "auto" }}>
             <Typography variant="h3" sx={{ mb: 1, textAlign: "center" }}>
               Welcome back!
             </Typography>
             <Typography
-              variant="body1"
+              variant="body2"
               sx={{ mb: 2, lineHeight: 1.6, textAlign: "center" }}
             >
               Simplify your workflow and boost your productivity with
