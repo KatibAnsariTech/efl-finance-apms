@@ -19,9 +19,9 @@ import {
   TbChevronRight
 } from 'react-icons/tb';
 import { useRouter } from 'src/routes/hooks';
-import Logo from "../../public/assets/image1.png";
-import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
-import exactSidebarConfig from '../layouts/dashboard/exact-sidebar-config';
+import Logo from "../../../public/assets/image1.png";
+import EurekaForbes from "../../../public/assets/eurekafobesimage2.png";
+import navConfig from './config-navigation';
 
 // Icons for navigation items
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -218,7 +218,7 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const userRole = user?.userType || "REQUESTER";
-    const filteredNav = filterNavigationByRole(exactSidebarConfig, userRole);
+    const filteredNav = filterNavigationByRole(navConfig, userRole);
     setNavigationItems(filteredNav);
     
     // Set the first available item as active if current active item is not available

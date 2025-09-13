@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Container, Paper, Button, Stack, Chip } from '@mui/material';
-import ExactSidebar from '../components/ExactSidebar';
+import ExactSidebar from '../layouts/dashboard/Sidebar';
 
 const ExactSidebarDemo = () => {
   const [currentUser, setCurrentUser] = useState(null);

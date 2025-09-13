@@ -6,7 +6,7 @@ import Drawer from "@mui/material/Drawer";
 import { useResponsive } from "src/hooks/use-responsive";
 
 import { NAV } from "./config-layout";
-import ExactSidebar from "src/components/ExactSidebar";
+import ExactSidebar from "src/layouts/dashboard/Sidebar";
 
 // ----------------------------------------------------------------------
 
