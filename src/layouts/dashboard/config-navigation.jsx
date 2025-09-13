@@ -13,14 +13,6 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const navConfig = [
   {
-    id: 'dashboard',
-    title: 'Dashboard',
-    path: '/',
-    icon: <DashboardIcon />,
-    roles: ["SUPER_ADMIN"],
-    hasSubItems: false,
-  },
-  {
     id: 'jvm',
     title: 'JVM',
     path: '/jvm',
