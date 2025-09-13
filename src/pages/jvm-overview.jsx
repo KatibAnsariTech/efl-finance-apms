@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Paper } from '@mui/material';
+import { Container, Typography, Box, Paper } from "@mui/material";
 
 export default function JVMOverviewPage() {
   return (
@@ -9,17 +9,10 @@ export default function JVMOverviewPage() {
         </Typography>
         <Paper sx={{ p: 3, mt: 2 }}>
           <Typography variant="body1" paragraph>
-            Welcome to the JVM Overview page. This page provides a comprehensive view of all Journal Voucher (JV) activities and metrics.
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Here you can monitor JV performance, track key metrics, and get insights into your financial operations.
-          </Typography>
-          <Typography variant="body1">
-            This page is currently under development. More features will be added soon.
+            Welcome to the JVM Overview page
           </Typography>
         </Paper>
       </Box>
     </Container>
   );
 }
-

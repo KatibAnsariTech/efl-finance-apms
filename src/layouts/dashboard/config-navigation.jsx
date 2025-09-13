@@ -33,25 +33,7 @@ const navConfig = [
         title: 'JVM Overview', 
         path: '/jvm/overview',
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
-      { 
-        id: 'initiate-jv', 
-        title: 'Initiate JV', 
-        path: '/initiate-jv',
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
-      { 
-        id: 'jv-status', 
-        title: "JV's Status", 
-        path: '/jv-status',
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
-      { 
-        id: 'jvm-reports', 
-        title: 'JVM Reports', 
-        path: '/jvm/reports',
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
+      }
     ],
   },
   {
@@ -67,13 +49,7 @@ const navConfig = [
         title: 'Upload Payment', 
         path: '/import-payment/upload',
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
-      { 
-        id: 'import-payment-history', 
-        title: 'Payment History', 
-        path: '/import-payment/history',
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
+      }
     ],
   },
   {
@@ -84,12 +60,6 @@ const navConfig = [
     roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
-      { 
-        id: 'custom-duty-calculate', 
-        title: 'Calculate Duty', 
-        path: '/custom-duty/calculate',
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
       { 
         id: 'custom-duty-payment', 
         title: 'Duty Payment', 
@@ -111,19 +81,7 @@ const navConfig = [
         title: 'Request Petty Cash', 
         path: '/petty-cash/request',
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
-      { 
-        id: 'petty-cash-approval', 
-        title: 'Approve Petty Cash', 
-        path: '/petty-cash/approval',
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
-      { 
-        id: 'petty-cash-reports', 
-        title: 'Petty Cash Reports', 
-        path: '/petty-cash/reports',
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      },
+      }
     ],
   },
   {
@@ -156,27 +114,7 @@ const navConfig = [
     path: '/master',
     icon: <LockIcon />,
     roles: ["SUPER_ADMIN"],
-    hasSubItems: true,
-    subItems: [
-      { 
-        id: 'master-data-management', 
-        title: 'Data Management', 
-        path: '/master/data',
-        roles: ["SUPER_ADMIN"]
-      },
-      { 
-        id: 'master-data-config', 
-        title: 'Configuration', 
-        path: '/master/config',
-        roles: ["SUPER_ADMIN"]
-      },
-      { 
-        id: 'master-data-settings', 
-        title: 'Settings', 
-        path: '/master/settings',
-        roles: ["SUPER_ADMIN"]
-      },
-    ],
+    hasSubItems: false,
   },
   {
     id: 'user-management',
@@ -184,27 +122,7 @@ const navConfig = [
     path: '/usermanagement',
     icon: <PersonIcon />,
     roles: ["SUPER_ADMIN"],
-    hasSubItems: true,
-    subItems: [
-      { 
-        id: 'user-management-users', 
-        title: 'Users', 
-        path: '/usermanagement/users',
-        roles: ["SUPER_ADMIN"]
-      },
-      { 
-        id: 'user-management-roles', 
-        title: 'Roles', 
-        path: '/usermanagement/roles',
-        roles: ["SUPER_ADMIN"]
-      },
-      { 
-        id: 'user-management-permissions', 
-        title: 'Permissions', 
-        path: '/usermanagement/permissions',
-        roles: ["SUPER_ADMIN"]
-      },
-    ],
+    hasSubItems: false,
   },
   {
     id: 'master-sheet',
@@ -220,27 +138,7 @@ const navConfig = [
     path: '/hierarchy-management',
     icon: <AccountTreeIcon />,
     roles: ["SUPER_ADMIN"],
-    hasSubItems: true,
-    subItems: [
-      { 
-        id: 'h-management-org', 
-        title: 'Organization', 
-        path: '/hierarchy-management/org',
-        roles: ["SUPER_ADMIN"]
-      },
-      { 
-        id: 'h-management-structure', 
-        title: 'Structure', 
-        path: '/hierarchy-management/structure',
-        roles: ["SUPER_ADMIN"]
-      },
-      { 
-        id: 'h-management-reports', 
-        title: 'Reports', 
-        path: '/hierarchy-management/reports',
-        roles: ["SUPER_ADMIN"]
-      },
-    ],
+    hasSubItems: false,
   },
 ];
 
