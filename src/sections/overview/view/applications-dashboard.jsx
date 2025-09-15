@@ -20,7 +20,7 @@ const DashboardContainer = styled(Container)(({ theme }) => ({
 }));
 
 const ApplicationCard = styled(Card)(({ theme, cardColor }) => ({
-  height: '280px',
+  height: '240px',
   borderRadius: '16px',
   background: `linear-gradient(135deg, ${cardColor} 0%, ${cardColor}dd 100%)`,
   position: 'relative',
@@ -38,7 +38,7 @@ const CardContentWrapper = styled(CardContent)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   position: 'relative',
   zIndex: 2,
 }));
@@ -69,12 +69,13 @@ const StatusText = styled(Typography)(({ theme }) => ({
 const PendingButton = styled(Button)(({ theme }) => ({
   backgroundColor: '#dc3545',
   color: 'white',
-  borderRadius: '8px',
+  borderRadius: '20px',
   padding: '8px 16px',
   fontSize: '12px',
   fontWeight: '600',
   textTransform: 'none',
   minWidth: '100px',
+  width: '120px',
   '&:hover': {
     backgroundColor: '#c82333',
   },
@@ -168,22 +169,18 @@ export default function ApplicationsDashboard() {
               cardColor={applications[0].color}
               onClick={() => handleCardClick(applications[0].route)}
             >
-              <CardContentWrapper>
-                <Box>
-                  <CardTitle>{applications[0].title}</CardTitle>
-                  <CardDescription>{applications[0].description}</CardDescription>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {applications[0].status === 'coming-soon' ? (
-                    <StatusText>...Coming Soon</StatusText>
-                  ) : (
-                    <PendingButton>
-                      {applications[0].pendingCount} Pending
-                    </PendingButton>
-                  )}
-                </Box>
-              </CardContentWrapper>
+               <CardContentWrapper>
+                 <CardTitle>{applications[0].title}</CardTitle>
+                 <CardDescription>{applications[0].description}</CardDescription>
+                 
+                 {applications[0].status === 'coming-soon' ? (
+                   <StatusText>...Coming Soon</StatusText>
+                 ) : (
+                   <PendingButton>
+                     {applications[0].pendingCount} Pending
+                   </PendingButton>
+                 )}
+               </CardContentWrapper>
               
               <BackgroundDecoration>
                 <Box
@@ -203,22 +200,18 @@ export default function ApplicationsDashboard() {
               cardColor={applications[1].color}
               onClick={() => handleCardClick(applications[1].route)}
             >
-              <CardContentWrapper>
-                <Box>
-                  <CardTitle>{applications[1].title}</CardTitle>
-                  <CardDescription>{applications[1].description}</CardDescription>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {applications[1].status === 'coming-soon' ? (
-                    <StatusText>...Coming Soon</StatusText>
-                  ) : (
-                    <PendingButton>
-                      {applications[1].pendingCount} Pending
-                    </PendingButton>
-                  )}
-                </Box>
-              </CardContentWrapper>
+               <CardContentWrapper>
+                 <CardTitle>{applications[1].title}</CardTitle>
+                 <CardDescription>{applications[1].description}</CardDescription>
+                 
+                 {applications[1].status === 'coming-soon' ? (
+                   <StatusText>...Coming Soon</StatusText>
+                 ) : (
+                   <PendingButton>
+                     {applications[1].pendingCount} Pending
+                   </PendingButton>
+                 )}
+               </CardContentWrapper>
               
               <BackgroundDecoration>
                 <Box
@@ -238,22 +231,18 @@ export default function ApplicationsDashboard() {
               cardColor={applications[2].color}
               onClick={() => handleCardClick(applications[2].route)}
             >
-              <CardContentWrapper>
-                <Box>
-                  <CardTitle>{applications[2].title}</CardTitle>
-                  <CardDescription>{applications[2].description}</CardDescription>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {applications[2].status === 'coming-soon' ? (
-                    <StatusText>...Coming Soon</StatusText>
-                  ) : (
-                    <PendingButton>
-                      {applications[2].pendingCount} Pending
-                    </PendingButton>
-                  )}
-                </Box>
-              </CardContentWrapper>
+               <CardContentWrapper>
+                 <CardTitle>{applications[2].title}</CardTitle>
+                 <CardDescription>{applications[2].description}</CardDescription>
+                 
+                 {applications[2].status === 'coming-soon' ? (
+                   <StatusText>...Coming Soon</StatusText>
+                 ) : (
+                   <PendingButton>
+                     {applications[2].pendingCount} Pending
+                   </PendingButton>
+                 )}
+               </CardContentWrapper>
               
               <BackgroundDecoration>
                 <Box
@@ -274,22 +263,18 @@ export default function ApplicationsDashboard() {
               cardColor={applications[3].color}
               onClick={() => handleCardClick(applications[3].route)}
             >
-              <CardContentWrapper>
-                <Box>
-                  <CardTitle>{applications[3].title}</CardTitle>
-                  <CardDescription>{applications[3].description}</CardDescription>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {applications[3].status === 'coming-soon' ? (
-                    <StatusText>...Coming Soon</StatusText>
-                  ) : (
-                    <PendingButton>
-                      {applications[3].pendingCount} Pending
-                    </PendingButton>
-                  )}
-                </Box>
-              </CardContentWrapper>
+               <CardContentWrapper>
+                 <CardTitle>{applications[3].title}</CardTitle>
+                 <CardDescription>{applications[3].description}</CardDescription>
+                 
+                 {applications[3].status === 'coming-soon' ? (
+                   <StatusText>...Coming Soon</StatusText>
+                 ) : (
+                   <PendingButton>
+                     {applications[3].pendingCount} Pending
+                   </PendingButton>
+                 )}
+               </CardContentWrapper>
               
               <BackgroundDecoration>
                 <Box
@@ -309,22 +294,18 @@ export default function ApplicationsDashboard() {
               cardColor={applications[4].color}
               onClick={() => handleCardClick(applications[4].route)}
             >
-              <CardContentWrapper>
-                <Box>
-                  <CardTitle>{applications[4].title}</CardTitle>
-                  <CardDescription>{applications[4].description}</CardDescription>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {applications[4].status === 'coming-soon' ? (
-                    <StatusText>...Coming Soon</StatusText>
-                  ) : (
-                    <PendingButton>
-                      {applications[4].pendingCount} Pending
-                    </PendingButton>
-                  )}
-                </Box>
-              </CardContentWrapper>
+               <CardContentWrapper>
+                 <CardTitle>{applications[4].title}</CardTitle>
+                 <CardDescription>{applications[4].description}</CardDescription>
+                 
+                 {applications[4].status === 'coming-soon' ? (
+                   <StatusText>...Coming Soon</StatusText>
+                 ) : (
+                   <PendingButton>
+                     {applications[4].pendingCount} Pending
+                   </PendingButton>
+                 )}
+               </CardContentWrapper>
               
               <BackgroundDecoration>
                 <Box
@@ -344,22 +325,18 @@ export default function ApplicationsDashboard() {
               cardColor={applications[5].color}
               onClick={() => handleCardClick(applications[5].route)}
             >
-              <CardContentWrapper>
-                <Box>
-                  <CardTitle>{applications[5].title}</CardTitle>
-                  <CardDescription>{applications[5].description}</CardDescription>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {applications[5].status === 'coming-soon' ? (
-                    <StatusText>...Coming Soon</StatusText>
-                  ) : (
-                    <PendingButton>
-                      {applications[5].pendingCount} Pending
-                    </PendingButton>
-                  )}
-                </Box>
-              </CardContentWrapper>
+               <CardContentWrapper>
+                 <CardTitle>{applications[5].title}</CardTitle>
+                 <CardDescription>{applications[5].description}</CardDescription>
+                 
+                 {applications[5].status === 'coming-soon' ? (
+                   <StatusText>...Coming Soon</StatusText>
+                 ) : (
+                   <PendingButton>
+                     {applications[5].pendingCount} Pending
+                   </PendingButton>
+                 )}
+               </CardContentWrapper>
               
               <BackgroundDecoration>
                 <Box
