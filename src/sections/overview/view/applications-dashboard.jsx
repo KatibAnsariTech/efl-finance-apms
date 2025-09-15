@@ -162,43 +162,217 @@ export default function ApplicationsDashboard() {
       <DashboardContainer maxWidth="xl">
         {/* Applications Grid */}
         <Grid container spacing={3}>
-          {applications.map((app) => (
-            <Grid item xs={12} sm={6} md={4} key={app.id}>
-              <ApplicationCard 
-                cardColor={app.color}
-                onClick={() => handleCardClick(app.route)}
-              >
-                <CardContentWrapper>
-                  <Box>
-                    <CardTitle>{app.title}</CardTitle>
-                    <CardDescription>{app.description}</CardDescription>
-                  </Box>
-                  
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {app.status === 'coming-soon' ? (
-                      <StatusText>...Coming Soon</StatusText>
-                    ) : (
-                      <PendingButton>
-                        {app.pendingCount} Pending
-                      </PendingButton>
-                    )}
-                  </Box>
-                </CardContentWrapper>
+          {/* Row 1: 2 cards (25% each) + 1 card (50%) */}
+          <Grid item xs={12} sm={6} md={3}>
+            <ApplicationCard 
+              cardColor={applications[0].color}
+              onClick={() => handleCardClick(applications[0].route)}
+            >
+              <CardContentWrapper>
+                <Box>
+                  <CardTitle>{applications[0].title}</CardTitle>
+                  <CardDescription>{applications[0].description}</CardDescription>
+                </Box>
                 
-                {/* Background Decoration */}
-                <BackgroundDecoration>
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-                      borderRadius: '50%',
-                    }}
-                  />
-                </BackgroundDecoration>
-              </ApplicationCard>
-            </Grid>
-          ))}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {applications[0].status === 'coming-soon' ? (
+                    <StatusText>...Coming Soon</StatusText>
+                  ) : (
+                    <PendingButton>
+                      {applications[0].pendingCount} Pending
+                    </PendingButton>
+                  )}
+                </Box>
+              </CardContentWrapper>
+              
+              <BackgroundDecoration>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                  }}
+                />
+              </BackgroundDecoration>
+            </ApplicationCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ApplicationCard 
+              cardColor={applications[1].color}
+              onClick={() => handleCardClick(applications[1].route)}
+            >
+              <CardContentWrapper>
+                <Box>
+                  <CardTitle>{applications[1].title}</CardTitle>
+                  <CardDescription>{applications[1].description}</CardDescription>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {applications[1].status === 'coming-soon' ? (
+                    <StatusText>...Coming Soon</StatusText>
+                  ) : (
+                    <PendingButton>
+                      {applications[1].pendingCount} Pending
+                    </PendingButton>
+                  )}
+                </Box>
+              </CardContentWrapper>
+              
+              <BackgroundDecoration>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                  }}
+                />
+              </BackgroundDecoration>
+            </ApplicationCard>
+          </Grid>
+
+          <Grid item xs={12} sm={12} md={6}>
+            <ApplicationCard 
+              cardColor={applications[2].color}
+              onClick={() => handleCardClick(applications[2].route)}
+            >
+              <CardContentWrapper>
+                <Box>
+                  <CardTitle>{applications[2].title}</CardTitle>
+                  <CardDescription>{applications[2].description}</CardDescription>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {applications[2].status === 'coming-soon' ? (
+                    <StatusText>...Coming Soon</StatusText>
+                  ) : (
+                    <PendingButton>
+                      {applications[2].pendingCount} Pending
+                    </PendingButton>
+                  )}
+                </Box>
+              </CardContentWrapper>
+              
+              <BackgroundDecoration>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                  }}
+                />
+              </BackgroundDecoration>
+            </ApplicationCard>
+          </Grid>
+
+          {/* Row 2: 1 card (50%) + 2 cards (25% each) */}
+          <Grid item xs={12} sm={6} md={6}>
+            <ApplicationCard 
+              cardColor={applications[3].color}
+              onClick={() => handleCardClick(applications[3].route)}
+            >
+              <CardContentWrapper>
+                <Box>
+                  <CardTitle>{applications[3].title}</CardTitle>
+                  <CardDescription>{applications[3].description}</CardDescription>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {applications[3].status === 'coming-soon' ? (
+                    <StatusText>...Coming Soon</StatusText>
+                  ) : (
+                    <PendingButton>
+                      {applications[3].pendingCount} Pending
+                    </PendingButton>
+                  )}
+                </Box>
+              </CardContentWrapper>
+              
+              <BackgroundDecoration>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                  }}
+                />
+              </BackgroundDecoration>
+            </ApplicationCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ApplicationCard 
+              cardColor={applications[4].color}
+              onClick={() => handleCardClick(applications[4].route)}
+            >
+              <CardContentWrapper>
+                <Box>
+                  <CardTitle>{applications[4].title}</CardTitle>
+                  <CardDescription>{applications[4].description}</CardDescription>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {applications[4].status === 'coming-soon' ? (
+                    <StatusText>...Coming Soon</StatusText>
+                  ) : (
+                    <PendingButton>
+                      {applications[4].pendingCount} Pending
+                    </PendingButton>
+                  )}
+                </Box>
+              </CardContentWrapper>
+              
+              <BackgroundDecoration>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                  }}
+                />
+              </BackgroundDecoration>
+            </ApplicationCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ApplicationCard 
+              cardColor={applications[5].color}
+              onClick={() => handleCardClick(applications[5].route)}
+            >
+              <CardContentWrapper>
+                <Box>
+                  <CardTitle>{applications[5].title}</CardTitle>
+                  <CardDescription>{applications[5].description}</CardDescription>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {applications[5].status === 'coming-soon' ? (
+                    <StatusText>...Coming Soon</StatusText>
+                  ) : (
+                    <PendingButton>
+                      {applications[5].pendingCount} Pending
+                    </PendingButton>
+                  )}
+                </Box>
+              </CardContentWrapper>
+              
+              <BackgroundDecoration>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                  }}
+                />
+              </BackgroundDecoration>
+            </ApplicationCard>
+          </Grid>
         </Grid>
       </DashboardContainer>
     </>
