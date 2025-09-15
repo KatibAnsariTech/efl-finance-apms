@@ -17,7 +17,7 @@ import swal from 'sweetalert';
 import { showErrorMessage } from 'src/utils/errorUtils';
 import { Helmet } from 'react-helmet-async';
 
-export default function CreditDeviationDashboard() {
+export default function PettyCashDashboard() {
   const [cardData, setCardData] = useState();
   const [filter, setFilter] = useState('weekly');
   const [pieFilter, setPieFilter] = useState('weekly');
@@ -98,11 +98,11 @@ export default function CreditDeviationDashboard() {
     switch (cardType) {
       case 'todayRequests':
       case 'totalRequests':
-        router.push('/credit-deviation/request-status');
+        router.push('/petty-cash/request');
         break;
       case 'completedRequests':
       case 'pendingRequests':
-        router.push('/credit-deviation/hierarchy-management');
+        router.push('/petty-cash/request');
         break;
       default:
         break;
@@ -112,14 +112,14 @@ export default function CreditDeviationDashboard() {
   return (
     <>
       <Helmet>
-        <title>Credit Deviation Dashboard</title>
+        <title>Petty Cash Dashboard</title>
       </Helmet>
       
       <Container maxWidth="xl">
         <Grid container spacing={3}>
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Today Requests"
+              title="Today Petty Cash"
               total={cardData && cardData.todayForms}
               color="success"
               icon={<img alt="icon" src="/assets/icons/glass/today-requests.svg" />}
@@ -129,7 +129,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Total Requests"
+              title="Total Petty Cash"
               total={cardData && cardData.totalForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/total-requests.svg" />}
@@ -139,7 +139,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Completed Requests"
+              title="Approved Requests"
               total={cardData && cardData.completedForms}
               color="warning"
               icon={<img alt="icon" src="/assets/icons/glass/completed-requests.svg" />}
@@ -172,7 +172,7 @@ export default function CreditDeviationDashboard() {
             ) : (
               <AppWebsiteVisits
                 style={{ height: '100%' }}
-                title="Total Requests"
+                title="Petty Cash Overview"
                 setFilter={setFilter}
                 filter={filter}
                 chart={{
@@ -181,16 +181,16 @@ export default function CreditDeviationDashboard() {
                   series: [
                     {
                       name: 'Total Requests',
-                      type: 'area', // Change to area
-                      fill: 'gradient', // Ensure fill is gradient
+                      type: 'area',
+                      fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
                           ? chartData.map((data) => data?.totalRequests)
                           : [],
                     },
                     {
-                      name: 'Completed Requests',
-                      type: 'area', // Change to area
+                      name: 'Approved Requests',
+                      type: 'area',
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
@@ -199,7 +199,7 @@ export default function CreditDeviationDashboard() {
                     },
                     {
                       name: 'Pending Requests',
-                      type: 'area', // Change to area
+                      type: 'area',
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
@@ -207,7 +207,7 @@ export default function CreditDeviationDashboard() {
                           : [],
                     },
                   ],
-                  colors: ['#ffb40b', '#00a65e', '#da0000'],
+                  colors: ['#9C27B0', '#00a65e', '#da0000'],
                 }}
               />
             )}
@@ -227,7 +227,7 @@ export default function CreditDeviationDashboard() {
               </div>
             ) : (
               <AppCurrentVisits
-                title="Region Wise Request"
+                title="Petty Cash by Region"
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
@@ -245,26 +245,26 @@ export default function CreditDeviationDashboard() {
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsConversionRates
-              title="Conversion Rates"
-              subheader="Request completion rates by category"
+              title="Petty Cash Approval Rates"
+              subheader="Request approval rates by category"
               chart={{
                 series: [
-                  { name: 'Completed', data: [85, 72, 90, 78, 95] },
-                  { name: 'Pending', data: [15, 28, 10, 22, 5] }
+                  { name: 'Approved', data: [85, 78, 92, 88, 90] },
+                  { name: 'Pending', data: [15, 22, 8, 12, 10] }
                 ],
-                categories: ['Finance', 'HR', 'IT', 'Operations', 'Marketing']
+                categories: ['Office Supplies', 'Travel', 'Meals', 'Utilities', 'Miscellaneous']
               }}
             />
           </Grid>
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsWebsiteVisits
-              title="Request Trends"
+              title="Petty Cash Trends"
               subheader="Weekly request volume"
               chart={{
                 series: [
-                  { name: 'This Week', data: [23, 11, 22, 27, 13, 22, 37] },
-                  { name: 'Last Week', data: [30, 25, 36, 30, 45, 35, 64] }
+                  { name: 'This Week', data: [8, 5, 7, 10, 6, 8, 12] },
+                  { name: 'Last Week', data: [10, 8, 9, 12, 7, 10, 15] }
                 ],
                 categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
               }}
@@ -273,15 +273,15 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsCurrentSubject
-              title="Department Performance"
-              subheader="Request handling efficiency by department"
+              title="Petty Cash Department Performance"
+              subheader="Request processing efficiency by department"
               chart={{
                 series: [
-                  { name: 'Finance', data: [80, 50, 30, 40, 100, 20] },
-                  { name: 'HR', data: [20, 30, 40, 80, 20, 80] },
-                  { name: 'IT', data: [44, 76, 78, 13, 43, 10] }
+                  { name: 'Finance', data: [90, 75, 55, 65, 95, 45] },
+                  { name: 'HR', data: [35, 55, 65, 90, 35, 90] },
+                  { name: 'Operations', data: [65, 85, 90, 35, 65, 30] }
                 ],
-                categories: ['Speed', 'Accuracy', 'Communication', 'Follow-up', 'Resolution', 'Satisfaction']
+                categories: ['Speed', 'Accuracy', 'Processing', 'Follow-up', 'Resolution', 'Satisfaction']
               }}
             />
           </Grid>

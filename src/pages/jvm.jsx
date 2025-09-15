@@ -1,25 +1,13 @@
-import React from "react";
-import {
-  Container,
-  Typography,
-  Box,
-  Paper,
-  Grid,
-  Card,
-  CardContent,
-} from "@mui/material";
-import { BarChart, TrendingUp, Assessment } from "@mui/icons-material";
+import { Helmet } from 'react-helmet-async';
+import { Navigate } from 'react-router-dom';
 
-const JVMPage = () => {
+export default function JVMPage() {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          JVM Management
-        </Typography>
-      </Box>
-    </Container>
+    <>
+      <Helmet>
+        <title>JVM</title>
+      </Helmet>
+      <Navigate to="/jvm/dashboard" replace />
+    </>
   );
-};
-
-export default JVMPage;
+}

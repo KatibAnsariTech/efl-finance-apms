@@ -80,6 +80,12 @@ const navConfig = [
     hasSubItems: true,
     subItems: [
       { 
+        id: 'jvm-dashboard', 
+        title: 'Dashboard', 
+        path: '/jvm/dashboard',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
+      { 
         id: 'jvm-overview', 
         title: 'JVM Overview', 
         path: '/jvm/overview',
@@ -95,6 +101,12 @@ const navConfig = [
     roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
+      { 
+        id: 'import-payment-dashboard', 
+        title: 'Dashboard', 
+        path: '/import-payment/dashboard',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
       { 
         id: 'import-payment-upload', 
         title: 'Upload Payment', 
@@ -112,6 +124,12 @@ const navConfig = [
     hasSubItems: true,
     subItems: [
       { 
+        id: 'custom-duty-dashboard', 
+        title: 'Dashboard', 
+        path: '/custom-duty/dashboard',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
+      { 
         id: 'custom-duty-payment', 
         title: 'Duty Payment', 
         path: '/custom-duty/payment',
@@ -127,6 +145,12 @@ const navConfig = [
     roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
+      { 
+        id: 'petty-cash-dashboard', 
+        title: 'Dashboard', 
+        path: '/petty-cash/dashboard',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
       { 
         id: 'petty-cash-request', 
         title: 'Request Petty Cash', 

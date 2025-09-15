@@ -17,7 +17,7 @@ import swal from 'sweetalert';
 import { showErrorMessage } from 'src/utils/errorUtils';
 import { Helmet } from 'react-helmet-async';
 
-export default function CreditDeviationDashboard() {
+export default function CustomDutyDashboard() {
   const [cardData, setCardData] = useState();
   const [filter, setFilter] = useState('weekly');
   const [pieFilter, setPieFilter] = useState('weekly');
@@ -98,11 +98,11 @@ export default function CreditDeviationDashboard() {
     switch (cardType) {
       case 'todayRequests':
       case 'totalRequests':
-        router.push('/credit-deviation/request-status');
+        router.push('/custom-duty/payment');
         break;
       case 'completedRequests':
       case 'pendingRequests':
-        router.push('/credit-deviation/hierarchy-management');
+        router.push('/custom-duty/payment');
         break;
       default:
         break;
@@ -112,14 +112,14 @@ export default function CreditDeviationDashboard() {
   return (
     <>
       <Helmet>
-        <title>Credit Deviation Dashboard</title>
+        <title>Custom Duty Dashboard</title>
       </Helmet>
       
       <Container maxWidth="xl">
         <Grid container spacing={3}>
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Today Requests"
+              title="Today Duty Payments"
               total={cardData && cardData.todayForms}
               color="success"
               icon={<img alt="icon" src="/assets/icons/glass/today-requests.svg" />}
@@ -129,7 +129,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Total Requests"
+              title="Total Duty Payments"
               total={cardData && cardData.totalForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/total-requests.svg" />}
@@ -139,7 +139,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Completed Requests"
+              title="Processed Payments"
               total={cardData && cardData.completedForms}
               color="warning"
               icon={<img alt="icon" src="/assets/icons/glass/completed-requests.svg" />}
@@ -149,7 +149,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Pending Requests"
+              title="Pending Payments"
               total={cardData && cardData.pendingForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/pending-requests.svg" />}
@@ -172,7 +172,7 @@ export default function CreditDeviationDashboard() {
             ) : (
               <AppWebsiteVisits
                 style={{ height: '100%' }}
-                title="Total Requests"
+                title="Custom Duty Overview"
                 setFilter={setFilter}
                 filter={filter}
                 chart={{
@@ -180,17 +180,17 @@ export default function CreditDeviationDashboard() {
                     chartData && chartData.length > 0 ? chartData.map((data) => getLabel(data)) : [],
                   series: [
                     {
-                      name: 'Total Requests',
-                      type: 'area', // Change to area
-                      fill: 'gradient', // Ensure fill is gradient
+                      name: 'Total Duty Payments',
+                      type: 'area',
+                      fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
                           ? chartData.map((data) => data?.totalRequests)
                           : [],
                     },
                     {
-                      name: 'Completed Requests',
-                      type: 'area', // Change to area
+                      name: 'Processed Payments',
+                      type: 'area',
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
@@ -198,8 +198,8 @@ export default function CreditDeviationDashboard() {
                           : [],
                     },
                     {
-                      name: 'Pending Requests',
-                      type: 'area', // Change to area
+                      name: 'Pending Payments',
+                      type: 'area',
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
@@ -207,7 +207,7 @@ export default function CreditDeviationDashboard() {
                           : [],
                     },
                   ],
-                  colors: ['#ffb40b', '#00a65e', '#da0000'],
+                  colors: ['#7B1FA2', '#00a65e', '#da0000'],
                 }}
               />
             )}
@@ -227,7 +227,7 @@ export default function CreditDeviationDashboard() {
               </div>
             ) : (
               <AppCurrentVisits
-                title="Region Wise Request"
+                title="Duty Payments by Region"
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
@@ -245,26 +245,26 @@ export default function CreditDeviationDashboard() {
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsConversionRates
-              title="Conversion Rates"
-              subheader="Request completion rates by category"
+              title="Duty Payment Processing Rates"
+              subheader="Duty payment processing rates by category"
               chart={{
                 series: [
-                  { name: 'Completed', data: [85, 72, 90, 78, 95] },
-                  { name: 'Pending', data: [15, 28, 10, 22, 5] }
+                  { name: 'Processed', data: [92, 88, 95, 90, 94] },
+                  { name: 'Pending', data: [8, 12, 5, 10, 6] }
                 ],
-                categories: ['Finance', 'HR', 'IT', 'Operations', 'Marketing']
+                categories: ['Import Duty', 'Export Duty', 'Customs', 'Tax', 'Fees']
               }}
             />
           </Grid>
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsWebsiteVisits
-              title="Request Trends"
-              subheader="Weekly request volume"
+              title="Duty Payment Trends"
+              subheader="Weekly duty payment volume"
               chart={{
                 series: [
-                  { name: 'This Week', data: [23, 11, 22, 27, 13, 22, 37] },
-                  { name: 'Last Week', data: [30, 25, 36, 30, 45, 35, 64] }
+                  { name: 'This Week', data: [12, 8, 10, 15, 9, 12, 18] },
+                  { name: 'Last Week', data: [15, 12, 14, 20, 11, 15, 22] }
                 ],
                 categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
               }}
@@ -273,15 +273,15 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsCurrentSubject
-              title="Department Performance"
-              subheader="Request handling efficiency by department"
+              title="Custom Duty Department Performance"
+              subheader="Duty processing efficiency by department"
               chart={{
                 series: [
-                  { name: 'Finance', data: [80, 50, 30, 40, 100, 20] },
-                  { name: 'HR', data: [20, 30, 40, 80, 20, 80] },
-                  { name: 'IT', data: [44, 76, 78, 13, 43, 10] }
+                  { name: 'Customs', data: [95, 80, 60, 70, 100, 50] },
+                  { name: 'Finance', data: [40, 60, 70, 95, 40, 95] },
+                  { name: 'Operations', data: [70, 90, 95, 30, 70, 25] }
                 ],
-                categories: ['Speed', 'Accuracy', 'Communication', 'Follow-up', 'Resolution', 'Satisfaction']
+                categories: ['Speed', 'Accuracy', 'Processing', 'Follow-up', 'Resolution', 'Satisfaction']
               }}
             />
           </Grid>

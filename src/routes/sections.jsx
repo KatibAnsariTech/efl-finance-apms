@@ -25,6 +25,10 @@ import CustomDutyPage from "src/pages/custom-duty";
 import PettyCashPage from "src/pages/petty-cash";
 import CreditDeviationPage from "src/pages/credit-deviation";
 import CreditDeviationDashboard from "src/pages/credit-deviation-dashboard";
+import JVMDashboard from "src/pages/jvm-dashboard";
+import ImportPaymentDashboard from "src/pages/import-payment-dashboard";
+import CustomDutyDashboard from "src/pages/custom-duty-dashboard";
+import PettyCashDashboard from "src/pages/petty-cash-dashboard";
 // JVM subpages
 import JVMOverviewPage from "src/pages/jvm-overview";
 // Import Payment subpages
@@ -158,6 +162,22 @@ export default function Router() {
         {
           path: "/credit-deviation/dashboard",
           element: <RoleRoute path="/credit-deviation/dashboard" element={<CreditDeviationDashboard />} />,
+        },
+        {
+          path: "/jvm/dashboard",
+          element: <RoleRoute path="/jvm/dashboard" element={<JVMDashboard />} />,
+        },
+        {
+          path: "/import-payment/dashboard",
+          element: <RoleRoute path="/import-payment/dashboard" element={<ImportPaymentDashboard />} />,
+        },
+        {
+          path: "/custom-duty/dashboard",
+          element: <RoleRoute path="/custom-duty/dashboard" element={<CustomDutyDashboard />} />,
+        },
+        {
+          path: "/petty-cash/dashboard",
+          element: <RoleRoute path="/petty-cash/dashboard" element={<PettyCashDashboard />} />,
         },
         // Credit Deviation subpages
         {

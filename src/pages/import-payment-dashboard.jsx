@@ -17,7 +17,7 @@ import swal from 'sweetalert';
 import { showErrorMessage } from 'src/utils/errorUtils';
 import { Helmet } from 'react-helmet-async';
 
-export default function CreditDeviationDashboard() {
+export default function ImportPaymentDashboard() {
   const [cardData, setCardData] = useState();
   const [filter, setFilter] = useState('weekly');
   const [pieFilter, setPieFilter] = useState('weekly');
@@ -98,11 +98,11 @@ export default function CreditDeviationDashboard() {
     switch (cardType) {
       case 'todayRequests':
       case 'totalRequests':
-        router.push('/credit-deviation/request-status');
+        router.push('/import-payment/upload');
         break;
       case 'completedRequests':
       case 'pendingRequests':
-        router.push('/credit-deviation/hierarchy-management');
+        router.push('/import-payment/upload');
         break;
       default:
         break;
@@ -112,14 +112,14 @@ export default function CreditDeviationDashboard() {
   return (
     <>
       <Helmet>
-        <title>Credit Deviation Dashboard</title>
+        <title>Import Payment Dashboard</title>
       </Helmet>
       
       <Container maxWidth="xl">
         <Grid container spacing={3}>
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Today Requests"
+              title="Today Payments"
               total={cardData && cardData.todayForms}
               color="success"
               icon={<img alt="icon" src="/assets/icons/glass/today-requests.svg" />}
@@ -129,7 +129,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Total Requests"
+              title="Total Payments"
               total={cardData && cardData.totalForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/total-requests.svg" />}
@@ -139,7 +139,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Completed Requests"
+              title="Processed Payments"
               total={cardData && cardData.completedForms}
               color="warning"
               icon={<img alt="icon" src="/assets/icons/glass/completed-requests.svg" />}
@@ -149,7 +149,7 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Pending Requests"
+              title="Pending Payments"
               total={cardData && cardData.pendingForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/pending-requests.svg" />}
@@ -172,7 +172,7 @@ export default function CreditDeviationDashboard() {
             ) : (
               <AppWebsiteVisits
                 style={{ height: '100%' }}
-                title="Total Requests"
+                title="Import Payment Overview"
                 setFilter={setFilter}
                 filter={filter}
                 chart={{
@@ -180,17 +180,17 @@ export default function CreditDeviationDashboard() {
                     chartData && chartData.length > 0 ? chartData.map((data) => getLabel(data)) : [],
                   series: [
                     {
-                      name: 'Total Requests',
-                      type: 'area', // Change to area
-                      fill: 'gradient', // Ensure fill is gradient
+                      name: 'Total Payments',
+                      type: 'area',
+                      fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
                           ? chartData.map((data) => data?.totalRequests)
                           : [],
                     },
                     {
-                      name: 'Completed Requests',
-                      type: 'area', // Change to area
+                      name: 'Processed Payments',
+                      type: 'area',
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
@@ -198,8 +198,8 @@ export default function CreditDeviationDashboard() {
                           : [],
                     },
                     {
-                      name: 'Pending Requests',
-                      type: 'area', // Change to area
+                      name: 'Pending Payments',
+                      type: 'area',
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
@@ -207,7 +207,7 @@ export default function CreditDeviationDashboard() {
                           : [],
                     },
                   ],
-                  colors: ['#ffb40b', '#00a65e', '#da0000'],
+                  colors: ['#2E7D32', '#00a65e', '#da0000'],
                 }}
               />
             )}
@@ -227,7 +227,7 @@ export default function CreditDeviationDashboard() {
               </div>
             ) : (
               <AppCurrentVisits
-                title="Region Wise Request"
+                title="Payments by Region"
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
@@ -245,26 +245,26 @@ export default function CreditDeviationDashboard() {
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsConversionRates
-              title="Conversion Rates"
-              subheader="Request completion rates by category"
+              title="Payment Processing Rates"
+              subheader="Payment processing rates by category"
               chart={{
                 series: [
-                  { name: 'Completed', data: [85, 72, 90, 78, 95] },
-                  { name: 'Pending', data: [15, 28, 10, 22, 5] }
+                  { name: 'Processed', data: [88, 82, 92, 85, 90] },
+                  { name: 'Pending', data: [12, 18, 8, 15, 10] }
                 ],
-                categories: ['Finance', 'HR', 'IT', 'Operations', 'Marketing']
+                categories: ['Import', 'Export', 'Customs', 'Shipping', 'Finance']
               }}
             />
           </Grid>
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsWebsiteVisits
-              title="Request Trends"
-              subheader="Weekly request volume"
+              title="Payment Trends"
+              subheader="Weekly payment volume"
               chart={{
                 series: [
-                  { name: 'This Week', data: [23, 11, 22, 27, 13, 22, 37] },
-                  { name: 'Last Week', data: [30, 25, 36, 30, 45, 35, 64] }
+                  { name: 'This Week', data: [18, 12, 15, 20, 14, 18, 25] },
+                  { name: 'Last Week', data: [22, 18, 20, 28, 16, 22, 30] }
                 ],
                 categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
               }}
@@ -273,15 +273,15 @@ export default function CreditDeviationDashboard() {
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsCurrentSubject
-              title="Department Performance"
-              subheader="Request handling efficiency by department"
+              title="Payment Department Performance"
+              subheader="Payment processing efficiency by department"
               chart={{
                 series: [
-                  { name: 'Finance', data: [80, 50, 30, 40, 100, 20] },
-                  { name: 'HR', data: [20, 30, 40, 80, 20, 80] },
-                  { name: 'IT', data: [44, 76, 78, 13, 43, 10] }
+                  { name: 'Finance', data: [90, 70, 50, 60, 100, 40] },
+                  { name: 'Operations', data: [30, 50, 60, 90, 30, 90] },
+                  { name: 'IT', data: [60, 85, 90, 25, 60, 20] }
                 ],
-                categories: ['Speed', 'Accuracy', 'Communication', 'Follow-up', 'Resolution', 'Satisfaction']
+                categories: ['Speed', 'Accuracy', 'Processing', 'Follow-up', 'Resolution', 'Satisfaction']
               }}
             />
           </Grid>
