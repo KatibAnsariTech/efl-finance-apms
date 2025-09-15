@@ -41,25 +41,34 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
 // Helper function to filter navigation items based on user role
 const filterNavigationByRole = (config, userRole) => {
-  return config.filter(item => {
-    // Check if user role is in the item's allowed roles
-    const hasAccess = !item.roles || item.roles.includes(userRole);
-    
-    if (hasAccess && item.hasSubItems && item.subItems) {
-      // Filter subitems based on role as well
-      const filteredSubItems = item.subItems.filter(subItem => 
-        !subItem.roles || subItem.roles.includes(userRole)
-      );
+  return config
+    .filter(item => {
+      // Check if user role is in the item's allowed roles
+      return !item.roles || item.roles.includes(userRole);
+    })
+    .map(item => {
+      if (item.hasSubItems && item.subItems) {
+        // Filter subitems based on role as well
+        const filteredSubItems = item.subItems.filter(subItem => 
+          !subItem.roles || subItem.roles.includes(userRole)
+        );
+        
+        // Return the item with filtered subitems
+        return {
+          ...item,
+          subItems: filteredSubItems
+        };
+      }
       
-      // Return the item with filtered subitems
-      return {
-        ...item,
-        subItems: filteredSubItems
-      };
-    }
-    
-    return hasAccess;
-  });
+      return item;
+    })
+    .filter(item => {
+      // Only show items that have accessible subitems or are main items without subitems
+      if (item.hasSubItems && item.subItems) {
+        return item.subItems.length > 0;
+      }
+      return true;
+    });
 };
 
 // Helper function to determine active item based on current pathname
