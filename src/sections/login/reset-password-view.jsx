@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -14,8 +14,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Divider from "@mui/material/Divider";
 
 import Iconify from "src/components/iconify";
-// API imports commented out for development
-// import { publicRequest } from "src/requestMethod";
+import { publicRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
 import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
 import { getPasswordStrength } from "src/utils/utils";
@@ -35,6 +34,17 @@ export default function ResetPasswordView() {
 
   const newPassword = watch("newPassword", "");
 
+  // Check if user has valid token on component mount
+  useEffect(() => {
+    const token = location.state?.token;
+    if (!token) {
+      toast.error("Invalid session. Please restart the password reset process.");
+      setTimeout(() => {
+        navigate("/otp-verification");
+      }, 2000);
+    }
+  }, [location.state?.token, navigate]);
+
   // const getPasswordStrength = (password) => {
   //   if (!password) return { text: "", color: "" };
   //   if (password.length < 6) return { text: "Weak", color: "#f44336" };
@@ -53,32 +63,39 @@ export default function ResetPasswordView() {
 
     try {
       setResetProcessing(true);
-      // await publicRequest.post("/admin/reset-password", {
-      //   email: location.state?.email,
-      //   token: location.state?.token,
-      //   newPassword: data.newPassword,
-      // });
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock successful password reset
+      
+      // Get the JWT token from location state
+      const token = location.state?.token;
+      if (!token) {
+        toast.error("Invalid session. Please restart the password reset process.");
+        navigate("/otp-verification");
+        return;
+      }
+      
+      // Call the resetPassword API endpoint with Bearer token
       const resetData = {
-        email: location.state?.email,
-        token: location.state?.token,
         newPassword: data.newPassword,
       };
+      
+      // Create a custom request with the JWT token as Bearer token
+      const response = await publicRequest.post("/admin/resetPassword", resetData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
       console.log("Password reset attempt:", resetData);
+      console.log("Password reset response:", response.data);
 
       toast.success("Password reset successfully! Redirecting to login...");
 
-      // Simulate redirect delay
+      // Redirect to login after successful reset
       setTimeout(() => {
         navigate("/login");
       }, 1500);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to reset password. Please try again.");
+      toast.error(error.response?.data?.message || "Failed to reset password. Please try again.");
     } finally {
       setResetProcessing(false);
     }

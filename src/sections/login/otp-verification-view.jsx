@@ -14,8 +14,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Divider from "@mui/material/Divider";
 
 import Iconify from "src/components/iconify";
-// API imports commented out for development
-// import { publicRequest, setTokens, userRequest } from "src/requestMethod";
+import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
 // import { useCounts } from "src/contexts/CountsContext";
 import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
@@ -55,22 +54,18 @@ export default function OTPVerificationView() {
     try {
       setOtpProcessing(true);
 
-      // API call commented out for development
-      // await publicRequest.post("/admin/forgot-password", {
-      //   email: data.email,
-      // });
+      // Call the sendOtp API endpoint
+      await publicRequest.post("/admin/sendOtp", {
+        email: data.email,
+      });
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock successful OTP send
       console.log("OTP send attempt:", data);
       setShowOTP(true);
       setTimeLeft(60);
       notifySuccess("OTP sent to your email");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send OTP. Please try again.");
+      toast.error(error.response?.data?.message || "Failed to send OTP. Please try again.");
     } finally {
       setOtpProcessing(false);
     }
@@ -80,44 +75,57 @@ export default function OTPVerificationView() {
     try {
       setOtpProcessing(true);
 
-      // API call commented out for development
-      // const otpData = {
-      //   email: data.email,
-      //   otp: Number(data.otp),
-      // };
-      // const res = await publicRequest.post("/admin/verifyOTP", otpData);
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock OTP verification (accept any 6-digit OTP)
+      // Call the verifyOtp API endpoint
       const otpData = {
         email: data.email,
-        otp: Number(data.otp),
+        otp: data.otp,
       };
+      
+      const response = await publicRequest.post("/admin/verifyOtp", otpData);
+      
       console.log("OTP verification attempt:", otpData);
+      console.log("OTP verification response:", response.data);
 
-      if (data.otp && data.otp.length === 6) {
-        notifySuccess("OTP verified successfully");
-        navigate("/reset-password", {
-          state: { email: data.email, token: "mock-token-123" },
-        });
-      } else {
-        throw new Error("Invalid OTP format");
-      }
+      notifySuccess("OTP verified successfully");
+      navigate("/reset-password", {
+        state: { 
+          email: data.email, 
+          token: response.data?.data || response.data?.token || "verified" 
+        },
+      });
     } catch (error) {
       console.error(error);
-      toast.error("OTP verification failed. Please enter a valid 6-digit OTP.");
+      toast.error(error.response?.data?.message || "OTP verification failed. Please enter a valid 6-digit OTP.");
     } finally {
       setOtpProcessing(false);
     }
   };
 
-  const handleResendOTP = () => {
+  const handleResendOTP = async () => {
     if (timeLeft === 0) {
-      setTimeLeft(60);
-      // Resend OTP logic here
-      toast.info("OTP resent to your email");
+      try {
+        setOtpProcessing(true);
+        
+        // Get the current email from the form
+        const currentEmail = document.querySelector('input[name="email"]')?.value;
+        if (!currentEmail) {
+          toast.error("Please enter your email first");
+          return;
+        }
+
+        // Call the sendOtp API endpoint again
+        await publicRequest.post("/admin/sendOtp", {
+          email: currentEmail,
+        });
+
+        setTimeLeft(60);
+        toast.info("OTP resent to your email");
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response?.data?.message || "Failed to resend OTP. Please try again.");
+      } finally {
+        setOtpProcessing(false);
+      }
     }
   };
 
