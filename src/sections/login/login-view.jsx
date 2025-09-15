@@ -51,19 +51,9 @@ export default function LoginView() {
         await refreshCounts();
         
         const user = JSON.parse(localStorage.getItem("user"));
-        let navigateUrl = "/";
-        if (user?.userType === "APPROVER") {
-          navigateUrl = "/credit-deviation/approvals";
-        } else if (user?.userType === "REQUESTER") {
-          navigateUrl = "/credit-deviation/request";
-        } else if (user?.userType === "ADMIN") {
-          navigateUrl = "/credit-deviation/master-sheet";
-        } else if (user?.userType === "SUPER_ADMIN") {
-          navigateUrl = "/credit-deviation/master";
-        }
         
         notifySuccess("Login successful!");
-        setTimeout(() => navigate(navigateUrl), 1000);
+        setTimeout(() => navigate("/"), 1000);
       } else {
         throw new Error("No token received from server");
       }
