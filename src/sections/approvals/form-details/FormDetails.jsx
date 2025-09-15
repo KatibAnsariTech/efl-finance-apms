@@ -48,7 +48,7 @@ function FormDetails({ data }) {
                 ml: 2,
                 "&:hover .close-tooltip": { opacity: 1, pointerEvents: "auto" },
               }}
-              onClick={() => router.push("/request-status")}
+              onClick={() => router.push("/credit-deviation/request-status")}
             >
               <svg
                 width="28"

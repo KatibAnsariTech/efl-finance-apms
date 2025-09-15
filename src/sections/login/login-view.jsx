@@ -53,13 +53,13 @@ export default function LoginView() {
         const user = JSON.parse(localStorage.getItem("user"));
         let navigateUrl = "/";
         if (user?.userType === "APPROVER") {
-          navigateUrl = "/approvals";
+          navigateUrl = "/credit-deviation/approvals";
         } else if (user?.userType === "REQUESTER") {
-          navigateUrl = "/request";
+          navigateUrl = "/credit-deviation/request";
         } else if (user?.userType === "ADMIN") {
-          navigateUrl = "/master-sheet";
+          navigateUrl = "/credit-deviation/master-sheet";
         } else if (user?.userType === "SUPER_ADMIN") {
-          navigateUrl = "/master";
+          navigateUrl = "/credit-deviation/master";
         }
         
         notifySuccess("Login successful!");

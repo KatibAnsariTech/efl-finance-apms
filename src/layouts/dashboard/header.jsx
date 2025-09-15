@@ -86,16 +86,15 @@ export default function Header({ onOpenNav, collapsed }) {
 
   const getCurrentTitle = (path) => {
     if (path === "/") return "";
-    // if (path.startsWith("/request-status")) return "My Requests";
-    // if (path.startsWith("/request")) return "Request";
-    if (/^\/request-status/.test(path)) return "My Requests";
-    if (/^\/request(\/|$)/.test(path)) return "Request";
-    if (path.startsWith("/approvals/view/")) return "Request Details";
-    if (path.startsWith("/request-status/view/")) return "Request Details";
-    if (path.startsWith("/approvals")) return "Approvals Requests";
-    if (path.startsWith("/usermanagement")) return "User Management";
-    if (path.startsWith("/master")) return "Master Data";
-    if (path.startsWith("/hierarchy-management")) return "Hierarchy Management";
+    if (path.startsWith("/credit-deviation/request-status")) return "My Requests";
+    if (path.startsWith("/credit-deviation/request")) return "Request";
+    if (path.startsWith("/credit-deviation/approvals/view/")) return "Request Details";
+    if (path.startsWith("/credit-deviation/request-status/view/")) return "Request Details";
+    if (path.startsWith("/credit-deviation/approvals")) return "Approvals Requests";
+    if (path.startsWith("/credit-deviation/usermanagement")) return "User Management";
+    if (path.startsWith("/credit-deviation/master")) return "Master Data";
+    if (path.startsWith("/credit-deviation/hierarchy-management")) return "Hierarchy Management";
+    if (path.startsWith("/credit-deviation/master-sheet")) return "Master Sheet";
     return "Welcome back 👋";
   };
 

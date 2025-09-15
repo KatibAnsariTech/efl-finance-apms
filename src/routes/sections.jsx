@@ -91,7 +91,7 @@ export default function Router() {
     const firstAvailablePage = navConfig.find((nav) =>
       nav.roles.includes(userRole)
     );
-    const redirectPath = firstAvailablePage?.path || "/request";
+    const redirectPath = firstAvailablePage?.path || "/credit-deviation/request";
     return <Navigate to={redirectPath} replace />;
   };
 
@@ -120,53 +120,17 @@ export default function Router() {
           element: <RoleRoute path="/request" element={<RaiseTicket />} />,
         },
         {
-          path: "request-status",
-          element: <RoleRoute path="/request-status" element={<FormView />} />,
-        },
-        {
-          path: "approvals",
-          element: <RoleRoute path="/approvals" element={<ApprovalView />} />,
-        },
-        {
-          path: "approvals/view/:id",
+          path: "credit-deviation/approvals/view/:id",
           element: (
-            <RoleRoute path="/approvals" element={<FormDetailsView />} />
+            <RoleRoute path="/credit-deviation/approvals" element={<FormDetailsView />} />
           ),
         },
         {
-          path: "request-status/view/:id",
+          path: "credit-deviation/request-status/view/:id",
           element: (
             <RoleRoute
-              path="/request-status"
+              path="/credit-deviation/request-status"
               element={<FormDetailsViewForm />}
-            />
-          ),
-        },
-        {
-          path: "usermanagement",
-          element: (
-            <RoleRoute
-              path="/usermanagement"
-              element={<UserManagementView />}
-            />
-          ),
-        },
-        {
-          path: "/master",
-          element: <RoleRoute path="/master" element={<MasterView />} />,
-        },
-        {
-          path: "/master-sheet",
-          element: (
-            <RoleRoute path="/master-sheet" element={<MasterSheetView />} />
-          ),
-        },
-        {
-          path: "/hierarchy-management",
-          element: (
-            <RoleRoute
-              path="/hierarchy-management"
-              element={<HierarchyManagementView />}
             />
           ),
         },
@@ -189,6 +153,35 @@ export default function Router() {
         {
           path: "/credit-deviation",
           element: <RoleRoute path="/credit-deviation" element={<CreditDeviationPage />} />,
+        },
+        // Credit Deviation subpages
+        {
+          path: "/credit-deviation/request",
+          element: <RoleRoute path="/credit-deviation/request" element={<FormView />} />,
+        },
+        {
+          path: "/credit-deviation/request-status",
+          element: <RoleRoute path="/credit-deviation/request-status" element={<FormView />} />,
+        },
+        {
+          path: "/credit-deviation/approvals",
+          element: <RoleRoute path="/credit-deviation/approvals" element={<ApprovalView />} />,
+        },
+        {
+          path: "/credit-deviation/master",
+          element: <RoleRoute path="/credit-deviation/master" element={<MasterView />} />,
+        },
+        {
+          path: "/credit-deviation/usermanagement",
+          element: <RoleRoute path="/credit-deviation/usermanagement" element={<UserManagementView />} />,
+        },
+        {
+          path: "/credit-deviation/master-sheet",
+          element: <RoleRoute path="/credit-deviation/master-sheet" element={<MasterSheetView />} />,
+        },
+        {
+          path: "/credit-deviation/hierarchy-management",
+          element: <RoleRoute path="/credit-deviation/hierarchy-management" element={<HierarchyManagementView />} />,
         },
         // JVM subpages
         {
