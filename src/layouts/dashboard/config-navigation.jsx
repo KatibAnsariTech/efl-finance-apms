@@ -90,6 +90,12 @@ const navConfig = [
         title: 'JVM Overview', 
         path: '/jvm/overview',
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
+      { 
+        id: 'initiate-jv', 
+        title: 'Initiate JV', 
+        path: '/jvm/initiate-jv',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       }
     ],
   },
