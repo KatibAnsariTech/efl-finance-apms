@@ -6,13 +6,13 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import Iconify from 'src/components/iconify';
 
-function FormTableToolbar({ search, onFilterChange }) {
+function FormTableToolbar({ search, onFilterChange, placeholder = "Search" }) {
   return (
     <Toolbar>
       <Input
         value={search}
         onChange={(e) => onFilterChange('search', e.target.value)}
-        placeholder="Search"
+        placeholder={placeholder}
         startAdornment={
           <InputAdornment position="start">
             <Iconify icon="eva:search-fill" />
@@ -26,6 +26,7 @@ function FormTableToolbar({ search, onFilterChange }) {
 FormTableToolbar.propTypes = {
   search: PropTypes.string.isRequired,
   onFilterChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
 };
 
 export default FormTableToolbar;

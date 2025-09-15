@@ -6,7 +6,7 @@ import excel from "../../../../public/assets/excel.svg";
 import UploadFileModal from "../UploadFileModal";
 import { headLabel } from "../getHeadLabel";
 import MasterTabs from "../master-tab";
-import FormTableToolbar from "../form-table-toolbar";
+import { FormTableToolbar } from "src/components/table";
 import { fDate, fTime } from "src/utils/format-time";
 import LatestDataTable from "../LatestDataTable";
 import UploadLogTable from "../UploadLogTable";

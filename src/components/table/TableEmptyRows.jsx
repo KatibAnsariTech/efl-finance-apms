@@ -1,9 +1,7 @@
+import React from 'react';
 import PropTypes from 'prop-types';
-
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
-
-// ----------------------------------------------------------------------
 
 export default function TableEmptyRows({ emptyRows, height }) {
   if (!emptyRows) {
@@ -18,7 +16,7 @@ export default function TableEmptyRows({ emptyRows, height }) {
         }),
       }}
     >
-      <TableCell colSpan={9} />
+      <TableCell colSpan={100} />
     </TableRow>
   );
 }

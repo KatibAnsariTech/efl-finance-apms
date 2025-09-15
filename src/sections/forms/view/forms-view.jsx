@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
-import FormTableToolbar from "../form-table-toolbar";
+import { FormTableToolbar } from "src/components/table";
 import { applyFilter, getComparator } from "src/utils/utils";
 import excel from "../../../../public/assets/excel.svg";
 import { publicRequest, userRequest } from "src/requestMethod";
