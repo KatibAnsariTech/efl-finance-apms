@@ -17,7 +17,7 @@ const HealthReportTable = ({ customerDetails, setScore }) => {
     customerDetails?.dmsCustomerDetails?.IS_CUSTOMER_ORD_DET?.IS_ORDER_DETAIL
       ?.OVERDUE_DATE || "-";
   const controlCheque =
-    customerDetails?.controlledChequeData?.chequeAvailability || "-";
+    customerDetails?.controlledChequeData?.chequeAvailability || "No";
   const chequeDishonour12M =
     customerDetails?.dmsCustomerDetails?.IS_CUSTOMER_ORD_DET?.IS_ORDER_DETAIL
       ?.CHEQUE_DIS || "-";

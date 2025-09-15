@@ -13,7 +13,7 @@ const HealthReportTable = ({ data, setScore }) => {
       : agreementStatus || "-";
   const avgSalesInfo = otherData?.AVGSALE || "-";
   const overdue = otherData?.OVERDUE_DATE || "-";
-  const controlCheque = otherData?.controlledChequeData?.chequeAvailability || "-";
+  const controlCheque = otherData?.controlledChequeData?.chequeAvailability || "No";
   const chequeDishonour12M = otherData?.CHEQUE_DIS || "-";
   const dso = otherData?.dso?.value ?? "-";
   const orderDeviation = otherData?.DELAYORD || "-";
