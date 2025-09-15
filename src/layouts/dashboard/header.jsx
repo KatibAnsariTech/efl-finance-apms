@@ -33,6 +33,7 @@ import NotificationsPopover from "./common/notifications-popover";
 import { userRequest } from "src/requestMethod";
 import { Button } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
+import { BiSolidPieChartAlt } from 'react-icons/bi';
 
 // ----------------------------------------------------------------------
 
@@ -84,7 +85,7 @@ export default function Header({ onOpenNav, collapsed }) {
   // }, []);
 
   const getCurrentTitle = (path) => {
-    if (path === "/") return "Dashboard";
+    if (path === "/") return "";
     // if (path.startsWith("/request-status")) return "My Requests";
     // if (path.startsWith("/request")) return "Request";
     if (/^\/request-status/.test(path)) return "My Requests";
@@ -110,7 +111,7 @@ export default function Header({ onOpenNav, collapsed }) {
 
       {/* <Searchbar /> */}
 
-      <Typography variant="h4" sx={{ mb: 5, color: "black", mt: 5 }}>
+      <Typography variant="h4" sx={{ mb: 5, color: "black", mt: 5, fontWeight: 'bold' }}>
         {currentTitle}
       </Typography>
 
@@ -122,6 +123,32 @@ export default function Header({ onOpenNav, collapsed }) {
         alignItems="center"
         spacing={1}
       >
+        {/* Applications Button - only show on dashboard */}
+        {location.pathname === "/" && (
+          <Button
+            variant="contained"
+            startIcon={<BiSolidPieChartAlt size={18} />}
+            sx={{
+              backgroundColor: '#e3f2fd',
+              color: '#1976d2',
+              textTransform: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              '&:hover': {
+                backgroundColor: '#bbdefb',
+              },
+            }}
+            onClick={() => {
+              // Handle applications button click
+              console.log('Applications clicked');
+            }}
+          >
+            Applications
+          </Button>
+        )}
+        
         {/* <LanguagePopover /> */}
         {/* <NotificationsPopover
           notificationData={notificationData}
