@@ -9,87 +9,7 @@ import {
   CardContent, 
   Button
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import { useRouter } from 'src/routes/hooks';
-
-// Styled components
-const DashboardContainer = styled(Container)(({ theme }) => ({
-  padding: theme.spacing(3),
-  minHeight: '100vh',
-  backgroundColor: '#f8f9fa',
-}));
-
-const ApplicationCard = styled(Card)(({ theme, cardColor }) => ({
-  height: '240px',
-  borderRadius: '16px',
-  background: `linear-gradient(135deg, ${cardColor} 0%, ${cardColor}dd 100%)`,
-  position: 'relative',
-  overflow: 'hidden',
-  cursor: 'pointer',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-  },
-}));
-
-const CardContentWrapper = styled(CardContent)(({ theme }) => ({
-  padding: theme.spacing(3),
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  position: 'relative',
-  zIndex: 2,
-}));
-
-const CardTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '20px',
-  fontWeight: 'bold',
-  color: 'white',
-  marginBottom: theme.spacing(1),
-  fontFamily: 'Arial, sans-serif',
-}));
-
-const CardDescription = styled(Typography)(({ theme }) => ({
-  fontSize: '14px',
-  color: 'rgba(255, 255, 255, 0.9)',
-  lineHeight: 1.5,
-  marginBottom: theme.spacing(2),
-  fontFamily: 'Arial, sans-serif',
-}));
-
-const StatusText = styled(Typography)(({ theme }) => ({
-  fontSize: '12px',
-  color: 'rgba(255, 255, 255, 0.8)',
-  fontStyle: 'italic',
-  fontFamily: 'Arial, sans-serif',
-}));
-
-const PendingButton = styled(Button)(({ theme }) => ({
-  backgroundColor: '#dc3545',
-  color: 'white',
-  borderRadius: '20px',
-  padding: '8px 16px',
-  fontSize: '12px',
-  fontWeight: '600',
-  textTransform: 'none',
-  minWidth: '100px',
-  width: '120px',
-  '&:hover': {
-    backgroundColor: '#c82333',
-  },
-}));
-
-const BackgroundDecoration = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: 0,
-  right: 0,
-  width: '120px',
-  height: '120px',
-  opacity: 0.1,
-  zIndex: 1,
-}));
 
 // Application data
 const applications = [
@@ -160,29 +80,113 @@ export default function ApplicationsDashboard() {
         <title>Applications Dashboard</title>
       </Helmet>
       
-      <DashboardContainer maxWidth="xl">
+      <Container 
+        maxWidth="xl"
+        sx={{
+          padding: 3,
+          minHeight: '100vh',
+          backgroundColor: '#f8f9fa',
+        }}
+      >
         {/* Applications Grid */}
         <Grid container spacing={3}>
           {/* Row 1: 2 cards (25% each) + 1 card (50%) */}
           <Grid item xs={12} sm={6} md={3}>
-            <ApplicationCard 
-              cardColor={applications[0].color}
+            <Card
+              sx={{
+                height: '240px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${applications[0].color} 0%, ${applications[0].color}dd 100%)`,
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                },
+              }}
               onClick={() => handleCardClick(applications[0].route)}
             >
-               <CardContentWrapper>
-                 <CardTitle>{applications[0].title}</CardTitle>
-                 <CardDescription>{applications[0].description}</CardDescription>
-                 
-                 {applications[0].status === 'coming-soon' ? (
-                   <StatusText>...Coming Soon</StatusText>
-                 ) : (
-                   <PendingButton>
-                     {applications[0].pendingCount} Pending
-                   </PendingButton>
-                 )}
-               </CardContentWrapper>
+              <CardContent
+                sx={{
+                  padding: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginBottom: 1,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[0].title}
+                </Typography>
+                
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    lineHeight: 1.5,
+                    marginBottom: 2,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[0].description}
+                </Typography>
+                
+                {applications[0].status === 'coming-soon' ? (
+                  <Typography
+                    sx={{
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontStyle: 'italic',
+                      fontFamily: 'Arial, sans-serif',
+                    }}
+                  >
+                    ...Coming Soon
+                  </Typography>
+                ) : (
+                  <Button
+                    sx={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'none',
+                      minWidth: '100px',
+                      width: '120px',
+                      '&:hover': {
+                        backgroundColor: '#c82333',
+                      },
+                    }}
+                  >
+                    {applications[0].pendingCount} Pending
+                  </Button>
+                )}
+              </CardContent>
               
-              <BackgroundDecoration>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '120px',
+                  opacity: 0.1,
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
                     width: '100%',
@@ -191,29 +195,106 @@ export default function ApplicationsDashboard() {
                     borderRadius: '50%',
                   }}
                 />
-              </BackgroundDecoration>
-            </ApplicationCard>
+              </Box>
+            </Card>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <ApplicationCard 
-              cardColor={applications[1].color}
+            <Card
+              sx={{
+                height: '240px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${applications[1].color} 0%, ${applications[1].color}dd 100%)`,
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                },
+              }}
               onClick={() => handleCardClick(applications[1].route)}
             >
-               <CardContentWrapper>
-                 <CardTitle>{applications[1].title}</CardTitle>
-                 <CardDescription>{applications[1].description}</CardDescription>
-                 
-                 {applications[1].status === 'coming-soon' ? (
-                   <StatusText>...Coming Soon</StatusText>
-                 ) : (
-                   <PendingButton>
-                     {applications[1].pendingCount} Pending
-                   </PendingButton>
-                 )}
-               </CardContentWrapper>
+              <CardContent
+                sx={{
+                  padding: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginBottom: 1,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[1].title}
+                </Typography>
+                
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    lineHeight: 1.5,
+                    marginBottom: 2,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[1].description}
+                </Typography>
+                
+                {applications[1].status === 'coming-soon' ? (
+                  <Typography
+                    sx={{
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontStyle: 'italic',
+                      fontFamily: 'Arial, sans-serif',
+                    }}
+                  >
+                    ...Coming Soon
+                  </Typography>
+                ) : (
+                  <Button
+                    sx={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'none',
+                      minWidth: '100px',
+                      width: '120px',
+                      '&:hover': {
+                        backgroundColor: '#c82333',
+                      },
+                    }}
+                  >
+                    {applications[1].pendingCount} Pending
+                  </Button>
+                )}
+              </CardContent>
               
-              <BackgroundDecoration>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '120px',
+                  opacity: 0.1,
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
                     width: '100%',
@@ -222,29 +303,106 @@ export default function ApplicationsDashboard() {
                     borderRadius: '50%',
                   }}
                 />
-              </BackgroundDecoration>
-            </ApplicationCard>
+              </Box>
+            </Card>
           </Grid>
 
           <Grid item xs={12} sm={12} md={6}>
-            <ApplicationCard 
-              cardColor={applications[2].color}
+            <Card
+              sx={{
+                height: '240px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${applications[2].color} 0%, ${applications[2].color}dd 100%)`,
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                },
+              }}
               onClick={() => handleCardClick(applications[2].route)}
             >
-               <CardContentWrapper>
-                 <CardTitle>{applications[2].title}</CardTitle>
-                 <CardDescription>{applications[2].description}</CardDescription>
-                 
-                 {applications[2].status === 'coming-soon' ? (
-                   <StatusText>...Coming Soon</StatusText>
-                 ) : (
-                   <PendingButton>
-                     {applications[2].pendingCount} Pending
-                   </PendingButton>
-                 )}
-               </CardContentWrapper>
+              <CardContent
+                sx={{
+                  padding: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginBottom: 1,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[2].title}
+                </Typography>
+                
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    lineHeight: 1.5,
+                    marginBottom: 2,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[2].description}
+                </Typography>
+                
+                {applications[2].status === 'coming-soon' ? (
+                  <Typography
+                    sx={{
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontStyle: 'italic',
+                      fontFamily: 'Arial, sans-serif',
+                    }}
+                  >
+                    ...Coming Soon
+                  </Typography>
+                ) : (
+                  <Button
+                    sx={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'none',
+                      minWidth: '100px',
+                      width: '120px',
+                      '&:hover': {
+                        backgroundColor: '#c82333',
+                      },
+                    }}
+                  >
+                    {applications[2].pendingCount} Pending
+                  </Button>
+                )}
+              </CardContent>
               
-              <BackgroundDecoration>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '120px',
+                  opacity: 0.1,
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
                     width: '100%',
@@ -253,30 +411,107 @@ export default function ApplicationsDashboard() {
                     borderRadius: '50%',
                   }}
                 />
-              </BackgroundDecoration>
-            </ApplicationCard>
+              </Box>
+            </Card>
           </Grid>
 
           {/* Row 2: 1 card (50%) + 2 cards (25% each) */}
           <Grid item xs={12} sm={6} md={6}>
-            <ApplicationCard 
-              cardColor={applications[3].color}
+            <Card
+              sx={{
+                height: '240px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${applications[3].color} 0%, ${applications[3].color}dd 100%)`,
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                },
+              }}
               onClick={() => handleCardClick(applications[3].route)}
             >
-               <CardContentWrapper>
-                 <CardTitle>{applications[3].title}</CardTitle>
-                 <CardDescription>{applications[3].description}</CardDescription>
-                 
-                 {applications[3].status === 'coming-soon' ? (
-                   <StatusText>...Coming Soon</StatusText>
-                 ) : (
-                   <PendingButton>
-                     {applications[3].pendingCount} Pending
-                   </PendingButton>
-                 )}
-               </CardContentWrapper>
+              <CardContent
+                sx={{
+                  padding: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginBottom: 1,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[3].title}
+                </Typography>
+                
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    lineHeight: 1.5,
+                    marginBottom: 2,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[3].description}
+                </Typography>
+                
+                {applications[3].status === 'coming-soon' ? (
+                  <Typography
+                    sx={{
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontStyle: 'italic',
+                      fontFamily: 'Arial, sans-serif',
+                    }}
+                  >
+                    ...Coming Soon
+                  </Typography>
+                ) : (
+                  <Button
+                    sx={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'none',
+                      minWidth: '100px',
+                      width: '120px',
+                      '&:hover': {
+                        backgroundColor: '#c82333',
+                      },
+                    }}
+                  >
+                    {applications[3].pendingCount} Pending
+                  </Button>
+                )}
+              </CardContent>
               
-              <BackgroundDecoration>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '120px',
+                  opacity: 0.1,
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
                     width: '100%',
@@ -285,29 +520,106 @@ export default function ApplicationsDashboard() {
                     borderRadius: '50%',
                   }}
                 />
-              </BackgroundDecoration>
-            </ApplicationCard>
+              </Box>
+            </Card>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <ApplicationCard 
-              cardColor={applications[4].color}
+            <Card
+              sx={{
+                height: '240px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${applications[4].color} 0%, ${applications[4].color}dd 100%)`,
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                },
+              }}
               onClick={() => handleCardClick(applications[4].route)}
             >
-               <CardContentWrapper>
-                 <CardTitle>{applications[4].title}</CardTitle>
-                 <CardDescription>{applications[4].description}</CardDescription>
-                 
-                 {applications[4].status === 'coming-soon' ? (
-                   <StatusText>...Coming Soon</StatusText>
-                 ) : (
-                   <PendingButton>
-                     {applications[4].pendingCount} Pending
-                   </PendingButton>
-                 )}
-               </CardContentWrapper>
+              <CardContent
+                sx={{
+                  padding: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginBottom: 1,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[4].title}
+                </Typography>
+                
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    lineHeight: 1.5,
+                    marginBottom: 2,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[4].description}
+                </Typography>
+                
+                {applications[4].status === 'coming-soon' ? (
+                  <Typography
+                    sx={{
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontStyle: 'italic',
+                      fontFamily: 'Arial, sans-serif',
+                    }}
+                  >
+                    ...Coming Soon
+                  </Typography>
+                ) : (
+                  <Button
+                    sx={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'none',
+                      minWidth: '100px',
+                      width: '120px',
+                      '&:hover': {
+                        backgroundColor: '#c82333',
+                      },
+                    }}
+                  >
+                    {applications[4].pendingCount} Pending
+                  </Button>
+                )}
+              </CardContent>
               
-              <BackgroundDecoration>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '120px',
+                  opacity: 0.1,
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
                     width: '100%',
@@ -316,29 +628,106 @@ export default function ApplicationsDashboard() {
                     borderRadius: '50%',
                   }}
                 />
-              </BackgroundDecoration>
-            </ApplicationCard>
+              </Box>
+            </Card>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <ApplicationCard 
-              cardColor={applications[5].color}
+            <Card
+              sx={{
+                height: '240px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${applications[5].color} 0%, ${applications[5].color}dd 100%)`,
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                },
+              }}
               onClick={() => handleCardClick(applications[5].route)}
             >
-               <CardContentWrapper>
-                 <CardTitle>{applications[5].title}</CardTitle>
-                 <CardDescription>{applications[5].description}</CardDescription>
-                 
-                 {applications[5].status === 'coming-soon' ? (
-                   <StatusText>...Coming Soon</StatusText>
-                 ) : (
-                   <PendingButton>
-                     {applications[5].pendingCount} Pending
-                   </PendingButton>
-                 )}
-               </CardContentWrapper>
+              <CardContent
+                sx={{
+                  padding: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginBottom: 1,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[5].title}
+                </Typography>
+                
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    lineHeight: 1.5,
+                    marginBottom: 2,
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  {applications[5].description}
+                </Typography>
+                
+                {applications[5].status === 'coming-soon' ? (
+                  <Typography
+                    sx={{
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontStyle: 'italic',
+                      fontFamily: 'Arial, sans-serif',
+                    }}
+                  >
+                    ...Coming Soon
+                  </Typography>
+                ) : (
+                  <Button
+                    sx={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'none',
+                      minWidth: '100px',
+                      width: '120px',
+                      '&:hover': {
+                        backgroundColor: '#c82333',
+                      },
+                    }}
+                  >
+                    {applications[5].pendingCount} Pending
+                  </Button>
+                )}
+              </CardContent>
               
-              <BackgroundDecoration>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '120px',
+                  opacity: 0.1,
+                  zIndex: 1,
+                }}
+              >
                 <Box
                   sx={{
                     width: '100%',
@@ -347,11 +736,11 @@ export default function ApplicationsDashboard() {
                     borderRadius: '50%',
                   }}
                 />
-              </BackgroundDecoration>
-            </ApplicationCard>
+              </Box>
+            </Card>
           </Grid>
         </Grid>
-      </DashboardContainer>
+      </Container>
     </>
   );
 }
