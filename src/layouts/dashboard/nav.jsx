@@ -22,6 +22,7 @@ import {
   TbChevronRight
 } from 'react-icons/tb';
 import { useRouter } from 'src/routes/hooks';
+import { usePathname } from 'src/routes/hooks';
 import { useResponsive } from "src/hooks/use-responsive";
 
 import { NAV } from "./config-layout";
@@ -206,16 +207,62 @@ const filterNavigationByRole = (config, userRole) => {
   });
 };
 
+// Helper function to determine active item based on current pathname
+const getActiveItemFromPath = (pathname, navigationItems) => {
+  // First check for exact matches with subitems
+  for (const item of navigationItems) {
+    if (item.hasSubItems && item.subItems) {
+      for (const subItem of item.subItems) {
+        if (pathname === subItem.path) {
+          return subItem.id;
+        }
+      }
+    }
+    // Check for exact match with main item
+    if (pathname === item.path) {
+      return item.id;
+    }
+  }
+  
+  // Check for partial matches (e.g., /jvm should match /jvm/overview)
+  for (const item of navigationItems) {
+    if (item.hasSubItems && item.subItems) {
+      for (const subItem of item.subItems) {
+        if (pathname.startsWith(subItem.path)) {
+          return subItem.id;
+        }
+      }
+    }
+    if (pathname.startsWith(item.path)) {
+      return item.id;
+    }
+  }
+  
+  // Default to first available item if no match found
+  if (navigationItems.length > 0) {
+    const firstItem = navigationItems[0];
+    if (firstItem.hasSubItems && firstItem.subItems.length > 0) {
+      return firstItem.subItems[0].id;
+    }
+    return firstItem.id;
+  }
+  
+  return 'dashboard';
+};
+
 const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollapsed }) => {
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState({});
-  const [activeItem, setActiveItem] = useState('dashboard');
   const [navigationItems, setNavigationItems] = useState([]);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Use external collapsed state if provided, otherwise use internal state
   const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
   const setCollapsed = setExternalCollapsed || setInternalCollapsed;
+
+  // Compute active item based on current pathname
+  const activeItem = getActiveItemFromPath(pathname, navigationItems);
 
   // Filter navigation items based on user role
   useEffect(() => {
@@ -223,17 +270,26 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
     const userRole = user?.userType || "REQUESTER";
     const filteredNav = filterNavigationByRole(navConfig, userRole);
     setNavigationItems(filteredNav);
-    
-    // Set the first available item as active if current active item is not available
-    if (filteredNav.length > 0) {
-      const firstItem = filteredNav[0];
-      if (firstItem.hasSubItems && firstItem.subItems.length > 0) {
-        setActiveItem(firstItem.subItems[0].id);
-      } else {
-        setActiveItem(firstItem.id);
-      }
-    }
   }, []);
+
+  // Update expanded items when active item changes
+  useEffect(() => {
+    if (navigationItems.length > 0) {
+      const newExpandedItems = {};
+      
+      // Find which parent item contains the active subitem
+      for (const item of navigationItems) {
+        if (item.hasSubItems && item.subItems) {
+          const hasActiveSubItem = item.subItems.some(subItem => subItem.id === activeItem);
+          if (hasActiveSubItem) {
+            newExpandedItems[item.id] = true;
+          }
+        }
+      }
+      
+      setExpandedItems(newExpandedItems);
+    }
+  }, [activeItem, navigationItems]);
 
   const handleCollapse = () => {
     setCollapsed(!collapsed);
@@ -245,7 +301,6 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
       if (!expandedItems[itemId]) {
         const item = navigationItems.find(navItem => navItem.id === itemId);
         if (item && item.subItems && item.subItems.length > 0) {
-          setActiveItem(item.subItems[0].id);
           // Navigate to the first subitem's path
           handleNavigation(item.subItems[0].path);
         }
@@ -263,7 +318,6 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
         }));
       }
     } else {
-      setActiveItem(itemId);
       // Close all expanded items when selecting a main item
       setExpandedItems({});
       // Navigate to the item's path
@@ -272,7 +326,6 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
   };
 
   const handleSubItemClick = (subItemId, parentId) => {
-    setActiveItem(subItemId);
     // Close all other expanded items and expand only the current parent
     setExpandedItems(prev => {
       const newExpandedItems = {};
