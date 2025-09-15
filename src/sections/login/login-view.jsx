@@ -167,19 +167,19 @@ export default function LoginView() {
 
             <form onSubmit={handleSubmit(handleLogin)}>
               <Stack spacing={{ xs: 1, sm: 1.5, md: 1.5 }} sx={{ mx: "auto" }}>
-                 <TextField
+                <TextField
                    label="Official Email"
-                   type="email"
-                   {...register("email", {
-                     required: "Email is required",
-                     pattern: {
-                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                       message: "Invalid email format",
-                     },
-                   })}
-                   error={!!errors.email}
-                   helperText={errors.email?.message}
-                   sx={{
+                  type="email"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email format",
+                    },
+                  })}
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                      sx={{
                      "& .MuiOutlinedInput-root": {
                        borderRadius: "25px",
                        fontSize: { xs: "0.875rem", sm: "1rem" },
@@ -201,30 +201,30 @@ export default function LoginView() {
                    }}
                  />
 
-                <TextField
-                  label="Password"
-                  type={showPassword ? "text" : "password"}
-                  {...register("password", {
-                    required: "Password is required",
-                  })}
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  InputProps={{
-                    endAdornment: (
+                  <TextField
+                    label="Password"
+                    type={showPassword ? "text" : "password"}
+                    {...register("password", {
+                      required: "Password is required",
+                    })}
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                    InputProps={{
+                      endAdornment: (
                       <InputAdornment position="end" sx={{ mr: 1 }}>
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          <Iconify
-                            icon={
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                          >
+                            <Iconify
+                              icon={
                               showPassword ? "eva:eye-fill" : "eva:eye-off-fill"
-                            }
-                          />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
+                              }
+                            />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",

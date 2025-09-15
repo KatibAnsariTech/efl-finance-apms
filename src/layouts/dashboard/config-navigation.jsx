@@ -10,8 +10,61 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 
 const navConfig = [
+  {
+    id: 'credit-deviation',
+    title: 'Credit Deviation',
+    path: '/credit-deviation',
+    icon: <CreditCardIcon />,
+    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+    hasSubItems: true,
+    subItems: [
+      {
+        id: 'request',
+        title: 'Request',
+        path: '/request',
+        roles: ["REQUESTER"],
+      },
+      {
+        id: 'request-status',
+        title: 'Request Status',
+        path: '/request-status',
+        roles: ["REQUESTER"],
+      },
+      {
+        id: 'approval',
+        title: 'Approval',
+        path: '/approvals',
+        roles: ["APPROVER"],
+      },
+      {
+        id: 'master-data',
+        title: 'Master Data',
+        path: '/master',
+        roles: ["SUPER_ADMIN"],
+      },
+      {
+        id: 'user-management',
+        title: 'User Management',
+        path: '/usermanagement',
+        roles: ["SUPER_ADMIN"],
+      },
+      {
+        id: 'master-sheet',
+        title: 'Master Sheet',
+        path: '/master-sheet',
+        roles: ["ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: 'h-management',
+        title: 'H. Management',
+        path: '/hierarchy-management',
+        roles: ["SUPER_ADMIN"],
+      },
+    ],
+  },
   {
     id: 'jvm',
     title: 'JVM',
@@ -75,62 +128,6 @@ const navConfig = [
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       }
     ],
-  },
-  {
-    id: 'request',
-    title: 'Request',
-    path: '/request',
-    icon: <RequestPageIcon />,
-    roles: ["REQUESTER"],
-    hasSubItems: false,
-  },
-  {
-    id: 'request-status',
-    title: 'Request Status',
-    path: '/request-status',
-    icon: <AssignmentIcon />,
-    roles: ["REQUESTER"],
-    hasSubItems: false,
-  },
-  {
-    id: 'approval',
-    title: 'Approval',
-    path: '/approvals',
-    icon: <CheckCircleIcon />,
-    roles: ["APPROVER"],
-    hasSubItems: false,
-  },
-  {
-    id: 'master-data',
-    title: 'Master Data',
-    path: '/master',
-    icon: <LockIcon />,
-    roles: ["SUPER_ADMIN"],
-    hasSubItems: false,
-  },
-  {
-    id: 'user-management',
-    title: 'User Management',
-    path: '/usermanagement',
-    icon: <PersonIcon />,
-    roles: ["SUPER_ADMIN"],
-    hasSubItems: false,
-  },
-  {
-    id: 'master-sheet',
-    title: 'Master Sheet',
-    path: '/master-sheet',
-    icon: <TableChartIcon />,
-    roles: ["ADMIN", "SUPER_ADMIN"],
-    hasSubItems: false,
-  },
-  {
-    id: 'h-management',
-    title: 'H. Management',
-    path: '/hierarchy-management',
-    icon: <AccountTreeIcon />,
-    roles: ["SUPER_ADMIN"],
-    hasSubItems: false,
   },
 ];
 

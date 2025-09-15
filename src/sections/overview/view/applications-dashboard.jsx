@@ -15,8 +15,8 @@ const applications = [
     id: "credit-deviation",
     title: "Credit Deviation",
     description:
-      "Reduce readmissions by 30% with predictive patient monitoring and intervention alerts",
-    status: "coming-soon",
+      "Access all credit deviation related features including requests, approvals, master data, and user management",
+    status: "active",
     color: "#8B4513",
     route: "/credit-deviation",
   },
@@ -151,6 +151,25 @@ export default function ApplicationsDashboard() {
                 >
                   ...Coming Soon
                 </Typography>
+              ) : applications[0].status === "active" ? (
+                <Button
+                  sx={{
+                    backgroundColor: "#28a745",
+                    color: "white",
+                    borderRadius: "20px",
+                    padding: "8px 16px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    textTransform: "none",
+                    minWidth: "100px",
+                    width: "120px",
+                    "&:hover": {
+                      backgroundColor: "#218838",
+                    },
+                  }}
+                >
+                  View
+                </Button>
               ) : (
                 <Button
                   sx={{
