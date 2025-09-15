@@ -86,6 +86,7 @@ export default function Header({ onOpenNav, collapsed }) {
 
   const getCurrentTitle = (path) => {
     if (path === "/") return "";
+    if (path.startsWith("/credit-deviation/dashboard")) return "Credit Deviation Dashboard";
     if (path.startsWith("/credit-deviation/request-status")) return "My Requests";
     if (path.startsWith("/credit-deviation/request")) return "Request";
     if (path.startsWith("/credit-deviation/approvals/view/")) return "Request Details";

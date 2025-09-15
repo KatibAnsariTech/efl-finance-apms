@@ -22,6 +22,12 @@ const navConfig = [
     hasSubItems: true,
     subItems: [
       {
+        id: 'dashboard',
+        title: 'Dashboard',
+        path: '/credit-deviation/dashboard',
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+      {
         id: 'request',
         title: 'Request',
         path: '/credit-deviation/request',
