@@ -11,6 +11,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import LoadingButton from "@mui/lab/LoadingButton";
 import InputAdornment from "@mui/material/InputAdornment";
+import Divider from "@mui/material/Divider";
 
 import Iconify from "src/components/iconify";
 import { publicRequest, setTokens, userRequest } from "src/requestMethod";
@@ -18,6 +19,7 @@ import image1 from "../../../public/assets/image1.png";
 import companyLogo from "../../../public/assets/spacetotech.png";
 import { useForm } from "react-hook-form";
 import { useCounts } from "src/contexts/CountsContext";
+import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
 
 export default function LoginView() {
   const {
@@ -27,7 +29,6 @@ export default function LoginView() {
     formState: { errors },
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
-  const [showOTP, setShowOtp] = useState(false);
   const [loginProcessing, setLoginProcessing] = useState(false);
   const navigate = useNavigate();
   const { refreshCounts } = useCounts();
@@ -37,12 +38,35 @@ export default function LoginView() {
   const handleLogin = async (data) => {
     try {
       setLoginProcessing(true);
-      await publicRequest.post("/admin/login", {
+      const response = await publicRequest.post("/admin/login", {
         email: data.email,
         password: data.password,
       });
-      setShowOtp(true);
-      // notifySuccess('Login successful, OTP sent to email.');
+      
+      // Get token directly from login response
+      const token = response.data.data || response.data.token;
+      if (token) {
+        setTokens(token);
+        await getUser(token);
+        await refreshCounts();
+        
+        const user = JSON.parse(localStorage.getItem("user"));
+        let navigateUrl = "/";
+        if (user?.userType === "APPROVER") {
+          navigateUrl = "/approvals";
+        } else if (user?.userType === "REQUESTER") {
+          navigateUrl = "/request";
+        } else if (user?.userType === "ADMIN") {
+          navigateUrl = "/master-sheet";
+        } else if (user?.userType === "SUPER_ADMIN") {
+          navigateUrl = "/master";
+        }
+        
+        notifySuccess("Login successful!");
+        setTimeout(() => navigate(navigateUrl), 1000);
+      } else {
+        throw new Error("No token received from server");
+      }
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.errors || "Login failed.");
@@ -76,195 +100,219 @@ export default function LoginView() {
     }
   };
 
-  const handleVerifyOTP = async (data) => {
-    try {
-      setLoginProcessing(true);
-      const otpData = {
-        email: data.email,
-        otp: Number(data.otp),
-      };
-      const res = await publicRequest.post("/admin/verifyOTP", otpData);
-      notifySuccess("Login successful");
-      const token = res.data.data;
-      setTokens(token);
-      await getUser(token);
-      await refreshCounts();
-      const user = JSON.parse(localStorage.getItem("user"));
-      let navigateUrl = "/";
-      if (user?.userType === "APPROVER") {
-        navigateUrl = "/approvals";
-      } else if (user?.userType === "REQUESTER") {
-        navigateUrl = "/request";
-      } else if (user?.userType === "ADMIN") {
-        navigateUrl = "/master-sheet";
-      } else if (user?.userType === "SUPER_ADMIN") {
-        navigateUrl = "/master";
-      }
-      setTimeout(() => navigate(navigateUrl), 2000);
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.errors || "OTP verification failed.");
-    } finally {
-      setLoginProcessing(false);
-    }
+
+  const handleForgotPassword = () => {
+    navigate("/otp-verification");
   };
 
-  const resetEmail = () => {
-    setValue("email", "");
-    setShowOtp(false);
+  const handleContactAdmin = () => {
+    toast.info("Contact administrator functionality");
   };
 
   return (
-    <Container>
+    <Container maxWidth={false} sx={{ backgroundColor: "white" }}>
       <ToastContainer />
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "94vh",
+          height: "100vh",
+          paddingY: { xs: 1, sm: 2, md: 3 },
+          backgroundColor: "white",
+          flexDirection: { xs: "column", md: "row" },
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <img
-            src={image1}
-            alt="Background"
-            style={{
-              width: "100%",
-              height: "auto",
-              objectFit: "cover",
-              marginLeft: "-200px",
-            }}
-          />
-        </Box>
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            flex: { xs: 0.4, sm: 0.5, md: 1 },
+            minHeight: { xs: "200px", sm: "300px", md: "auto" },
           }}
         >
-          <Card sx={{ p: 5, maxWidth: 800, width: 500 }}>
-            <Typography variant="h4" style={{ marginBottom: "10px" }}>
-              SignIn
-            </Typography>
-            <form
-              onSubmit={handleSubmit(showOTP ? handleVerifyOTP : handleLogin)}
+          <LoginLeftPanel />
+        </Box>
+
+        <Box
+          sx={{
+            flex: { xs: 1, md: 1 },
+            backgroundColor: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: { xs: 2, sm: 3, md: 4 },
+            minHeight: { xs: "100vh", md: "auto" },
+          }}
+        >
+          <Box sx={{ maxWidth: { xs: "100%", sm: 400, md: 420 }, width: "100%", mx: "auto" }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                mb: 1, 
+                textAlign: "center",
+                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" }
+              }}
             >
-              <Stack spacing={3}>
+              Welcome back!
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ 
+                mb: 2, 
+                lineHeight: 1.6, 
+                textAlign: "center",
+                fontSize: { xs: "0.75rem", sm: "0.875rem" }
+              }}
+            >
+              Simplify your workflow and boost your productivity with
+              SpaceToTech's App.
+            </Typography>
+
+            <form onSubmit={handleSubmit(handleLogin)}>
+              <Stack spacing={{ xs: 1, sm: 1.5, md: 1.5 }} sx={{ mx: "auto" }}>
+                 <TextField
+                   label="Official Email"
+                   type="email"
+                   {...register("email", {
+                     required: "Email is required",
+                     pattern: {
+                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                       message: "Invalid email format",
+                     },
+                   })}
+                   error={!!errors.email}
+                   helperText={errors.email?.message}
+                   sx={{
+                     "& .MuiOutlinedInput-root": {
+                       borderRadius: "25px",
+                       fontSize: { xs: "0.875rem", sm: "1rem" },
+                     },
+                     "& .MuiInputLabel-root": {
+                       fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                       transform: "translate(20px, 20px) scale(1)",
+                       "&.Mui-focused": {
+                         transform: "translate(20px, -9px) scale(0.75)",
+                       },
+                       "&.MuiFormLabel-filled": {
+                         transform: "translate(20px, -9px) scale(0.75)",
+                       },
+                     },
+                     "& .MuiOutlinedInput-input": {
+                       paddingLeft: "24px",
+                       fontSize: { xs: "0.875rem", sm: "1rem" },
+                     },
+                   }}
+                 />
+
                 <TextField
-                  label="Email Address"
-                  type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email format",
-                    },
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  {...register("password", {
+                    required: "Password is required",
                   })}
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  disabled={showOTP}
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end" sx={{ mr: 1 }}>
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          <Iconify
+                            icon={
+                              showPassword ? "eva:eye-fill" : "eva:eye-off-fill"
+                            }
+                          />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "25px",
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
+                    },
+                    "& .MuiInputLabel-root": {
+                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                      transform: "translate(20px, 20px) scale(1)",
+                      "&.Mui-focused": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                      "&.MuiFormLabel-filled": {
+                        transform: "translate(20px, -9px) scale(0.75)",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      paddingLeft: "24px",
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
+                    },
+                  }}
                 />
-                {showOTP ? (
-                  <>
-                    <TextField
-                      label="OTP"
-                      type="number"
-                      {...register("otp", {
-                        required: "OTP is required",
-                        validate: (value) =>
-                          /^\d{6}$/.test(value) ||
-                          "OTP must be a 6-digit number",
-                      })}
-                      error={!!errors.otp}
-                      helperText={errors.otp?.message}
-                    />
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "primary.main",
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                        textAlign: "right",
-                      }}
-                      onClick={resetEmail}
-                    >
-                      Change email
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "#c62828", mt: 1 }}
-                    >
-                      OTP has been shared to your email.
-                    </Typography>
-                  </>
-                ) : (
-                  <TextField
-                    label="Password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("password", {
-                      required: "Password is required",
-                    })}
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                          >
-                            <Iconify
-                              icon={
-                                showPassword
-                                  ? "eva:eye-fill"
-                                  : "eva:eye-off-fill"
-                              }
-                            />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+
+                <Box sx={{ textAlign: "right" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "black",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
                     }}
-                  />
-                )}
+                    onClick={handleForgotPassword}
+                  >
+                    Forgot Password?
+                  </Typography>
+                </Box>
               </Stack>
+
               <LoadingButton
                 fullWidth
                 size="large"
                 type="submit"
                 variant="contained"
-                color="inherit"
-                sx={{ mt: 3 }}
+                sx={{
+                  mt: 2,
+                  borderRadius: "25px",
+                  py: { xs: 1.5, sm: 1.5, md: 1.5 },
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  backgroundColor: "black",
+                  "&:hover": {
+                    backgroundColor: "grey.800",
+                  },
+                }}
                 disabled={loginProcessing}
                 loading={loginProcessing}
               >
-                {showOTP ? "Verify" : "Login"}
+                Login
+              </LoadingButton>
+
+              <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
+                <Divider sx={{ flex: 1 }} />
+                <Typography variant="body2" sx={{ px: 2, fontSize: "0.8rem" }}>
+                  or need access
+                </Typography>
+                <Divider sx={{ flex: 1 }} />
+              </Box>
+
+              <LoadingButton
+                fullWidth
+                size="large"
+                variant="contained"
+                onClick={handleContactAdmin}
+                sx={{
+                  borderRadius: "25px",
+                  py: { xs: 1.5, sm: 1.5, md: 1.5 },
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  backgroundColor: "#013594",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "#002366",
+                  },
+                }}
+              >
+                Contact Administrator
               </LoadingButton>
             </form>
-          </Card>
+          </Box>
         </Box>
       </Box>
-      <Typography
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          textAlign: "center",
-          justifyContent: "center",
-        }}
-      >
-        <span
-          style={{ fontWeight: "bolder", marginTop: "1px", fontSize: "13px" }}
-        >
-          powered by
-        </span>{" "}
-        <img
-          style={{ width: "180px", marginLeft: "10px" }}
-          onClick={() => window.open("https://spacetotech.com/", "_blank")}
-          src={companyLogo}
-          alt="companylogo"
-        />
-      </Typography>
     </Container>
   );
 }

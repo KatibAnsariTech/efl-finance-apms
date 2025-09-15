@@ -56,3 +56,27 @@ export function applyFilter({ inputData = [], comparator, filterName }) {
 
   return inputData;
 }
+
+
+export const getPasswordStrength = (password) => {
+  if (!password) return { text: "", color: "" };
+
+  let score = 0;
+
+  // Length-based scoring
+  if (password.length >= 6) score++;
+  if (password.length >= 8) score++;
+  if (password.length >= 10) score++;
+
+  // Character diversity scoring
+  if (/[a-z]/.test(password)) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++; // special characters
+
+  // Decide strength based on score
+  if (score <= 2) return { text: "Weak", color: "#f44336" };
+  if (score <= 4) return { text: "Fair", color: "#ff9800" };
+  if (score <= 6) return { text: "Good", color: "#4caf50" };
+  return { text: "Strong", color: "#2e7d32" };
+};

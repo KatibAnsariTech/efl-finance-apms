@@ -18,6 +18,7 @@ import Iconify from "src/components/iconify";
 // import { publicRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
 import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
+import { getPasswordStrength } from "src/utils/utils";
 
 export default function ResetPasswordView() {
   const {
@@ -34,13 +35,13 @@ export default function ResetPasswordView() {
 
   const newPassword = watch("newPassword", "");
 
-  const getPasswordStrength = (password) => {
-    if (!password) return { text: "", color: "" };
-    if (password.length < 6) return { text: "Weak", color: "#f44336" };
-    if (password.length < 8) return { text: "Fair", color: "#ff9800" };
-    if (password.length < 10) return { text: "Good", color: "#4caf50" };
-    return { text: "Strong", color: "#2e7d32" };
-  };
+  // const getPasswordStrength = (password) => {
+  //   if (!password) return { text: "", color: "" };
+  //   if (password.length < 6) return { text: "Weak", color: "#f44336" };
+  //   if (password.length < 8) return { text: "Fair", color: "#ff9800" };
+  //   if (password.length < 10) return { text: "Good", color: "#4caf50" };
+  //   return { text: "Strong", color: "#2e7d32" };
+  // };
 
   const passwordStrength = getPasswordStrength(newPassword);
 
@@ -73,7 +74,7 @@ export default function ResetPasswordView() {
 
       // Simulate redirect delay
       setTimeout(() => {
-        navigate("/new-login");
+        navigate("/login");
       }, 1500);
     } catch (error) {
       console.error(error);
@@ -84,7 +85,7 @@ export default function ResetPasswordView() {
   };
 
   const handleLoginDashboard = () => {
-    navigate("/new-login");
+    navigate("/login");
   };
 
   return (

@@ -122,7 +122,7 @@ export default function OTPVerificationView() {
   };
 
   const handleLoginDashboard = () => {
-    navigate("/new-login");
+    navigate("/login");
   };
 
   const formatTime = (seconds) => {
