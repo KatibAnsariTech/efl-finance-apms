@@ -13,10 +13,27 @@ import FormDetailsViewForm from "src/sections/forms/form-details/view/FormDetail
 import { MasterView } from "src/sections/master/view";
 import IndexPage from "src/pages/app";
 import LoginPage from "src/pages/login";
+import OTPVerificationPage from "src/pages/otp-verification";
+import ResetPasswordPage from "src/pages/reset-password";
 import Page404 from "src/pages/page-not-found";
 import { MasterSheetView } from "src/sections/master-sheet/view";
 import navConfig from "src/layouts/dashboard/config-navigation";
 import HierarchyManagementView from "src/sections/hierarchy-management/view/hierarchy-management-view";
+import JVMPage from "src/pages/jvm";
+import ImportPaymentPage from "src/pages/import-payment";
+import CustomDutyPage from "src/pages/custom-duty";
+import PettyCashPage from "src/pages/petty-cash";
+// JVM subpages
+import JVMOverviewPage from "src/pages/jvm-overview";
+// Import Payment subpages
+import ImportPaymentUploadPage from "src/pages/import-payment-upload";
+// Custom Duty subpages
+import CustomDutyPaymentPage from "src/pages/custom-duty-payment";
+// Petty Cash subpages
+import PettyCashRequestPage from "src/pages/petty-cash-request";
+// Master Data subpages
+// User Management subpages
+// Hierarchy Management subpages
 // import { RaiseTicket } from 'src/sections/raise-ticket/view';
 
 // export const IndexPage = lazy(() => import("src/pages/app"));
@@ -152,11 +169,55 @@ export default function Router() {
             />
           ),
         },
+        {
+          path: "/jvm",
+          element: <RoleRoute path="/jvm" element={<JVMPage />} />,
+        },
+        {
+          path: "/import-payment",
+          element: <RoleRoute path="/import-payment" element={<ImportPaymentPage />} />,
+        },
+        {
+          path: "/custom-duty",
+          element: <RoleRoute path="/custom-duty" element={<CustomDutyPage />} />,
+        },
+        {
+          path: "/petty-cash",
+          element: <RoleRoute path="/petty-cash" element={<PettyCashPage />} />,
+        },
+        // JVM subpages
+        {
+          path: "/jvm/overview",
+          element: <RoleRoute path="/jvm/overview" element={<JVMOverviewPage />} />,
+        },
+        // Import Payment subpages
+        {
+          path: "/import-payment/upload",
+          element: <RoleRoute path="/import-payment/upload" element={<ImportPaymentUploadPage />} />,
+        },
+        // Custom Duty subpages
+        {
+          path: "/custom-duty/payment",
+          element: <RoleRoute path="/custom-duty/payment" element={<CustomDutyPaymentPage />} />,
+        },
+        // Petty Cash subpages
+        {
+          path: "/petty-cash/request",
+          element: <RoleRoute path="/petty-cash/request" element={<PettyCashRequestPage />} />,
+        },
       ],
     },
     {
       path: "/login",
       element: isLoggedIn ? <Navigate to="/" replace /> : <LoginPage />,
+    },
+    {
+      path: "/otp-verification",
+      element: isLoggedIn ? <Navigate to="/" replace /> : <OTPVerificationPage />,
+    },
+    {
+      path: "/reset-password",
+      element: isLoggedIn ? <Navigate to="/" replace /> : <ResetPasswordPage />,
     },
     {
       path: "404",

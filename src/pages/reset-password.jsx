@@ -1,15 +1,17 @@
 import { Helmet } from 'react-helmet-async';
-import { HierarchyView } from 'src/sections/hierarchy/view';
+
+import { ResetPasswordView } from 'src/sections/login';
 
 // ----------------------------------------------------------------------
-export default function FormsPage() {
+
+export default function ResetPasswordPage() {
   return (
     <>
       <Helmet>
-        <title> Hierarchy </title>
+        <title> Reset Password </title>
       </Helmet>
 
-      <HierarchyView />
+      <ResetPasswordView />
     </>
   );
 }
