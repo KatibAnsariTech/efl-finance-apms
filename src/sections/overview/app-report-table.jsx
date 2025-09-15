@@ -188,8 +188,6 @@ const ReportTable = () => {
               <TableBody>
                 {reportData.length > 0 ? (
                   reportData.map((item, index) => {
-                    console.log(item)
-                    console.log(Object.keys(item))
                     const category = Object.keys(item)[0];
                     const values = item[category];
 

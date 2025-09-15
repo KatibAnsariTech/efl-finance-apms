@@ -75,8 +75,6 @@ export default function CreditDeviationDashboard() {
     }
   };
 
-  console.log(pieChartData, 'pieChartData');
-
   useEffect(() => {
     getPieChartData();
   }, [pieFilter]);
