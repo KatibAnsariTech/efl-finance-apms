@@ -105,7 +105,7 @@ const getActiveItemFromPath = (pathname, navigationItems) => {
   return 'dashboard';
 };
 
-const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollapsed }) => {
+const Sidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollapsed }) => {
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState({});
   const [navigationItems, setNavigationItems] = useState([]);
@@ -488,7 +488,7 @@ export default function Nav({ openNav, onCloseNav, collapsed, setCollapsed }) {
             },
           }}
         >
-          <ExactSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         </Drawer>
       ) : (
         <Drawer
@@ -503,7 +503,7 @@ export default function Nav({ openNav, onCloseNav, collapsed, setCollapsed }) {
             },
           }}
         >
-          <ExactSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         </Drawer>
       )}
     </Box>
