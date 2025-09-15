@@ -225,18 +225,21 @@ export default function InitiateJVPage() {
       width: 80,
       align: "center",
       headerAlign: "center",
+      resizable: true,
     },
     {
       field: "documentType",
       headerName: "Document Type",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "documentDate",
       headerName: "Document Date",
       flex: 1,
       minWidth: 120,
+      resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
     {
@@ -244,6 +247,7 @@ export default function InitiateJVPage() {
       headerName: "Posting Date",
       flex: 1,
       minWidth: 120,
+      resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
     {
@@ -251,36 +255,42 @@ export default function InitiateJVPage() {
       headerName: "Business Area",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "accountType",
       headerName: "Account Type",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "postingKey",
       headerName: "Posting Key",
       flex: 1,
       minWidth: 150,
+      resizable: true,
     },
     {
       field: "vendorCustomerGLName",
       headerName: "Vendor/Customer/GL Name",
       flex: 1,
       minWidth: 150,
+      resizable: true,
     },
     {
       field: "vendorCustomerGLNumber",
       headerName: "Vendor/Customer/GL Number",
       flex: 1,
       minWidth: 150,
+      resizable: true,
     },
     {
       field: "amount",
       headerName: "Amount",
       flex: 1,
       minWidth: 100,
+      resizable: true,
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
     {
@@ -288,42 +298,49 @@ export default function InitiateJVPage() {
       headerName: "Assignment",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "costCenter",
       headerName: "Cost Center",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "profitCenter",
       headerName: "Profit Center",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "specialGLIndication",
       headerName: "Special GL Indication",
       flex: 1,
       minWidth: 150,
+      resizable: true,
     },
     {
       field: "referenceNumber",
       headerName: "Reference Number",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "personalNumber",
       headerName: "Personal Number",
       flex: 1,
       minWidth: 120,
+      resizable: true,
     },
     {
       field: "remarks",
       headerName: "Remarks",
       flex: 1,
       minWidth: 150,
+      resizable: true,
       renderCell: (params) => (
         <Box
           sx={{
@@ -343,6 +360,7 @@ export default function InitiateJVPage() {
       headerName: "Auto Reversal",
       flex: 1,
       minWidth: 120,
+      resizable: true,
       renderCell: (params) =>
         // <Chip
         //   label={params.value === "Y" ? "Yes" : "No"}
@@ -363,6 +381,7 @@ export default function InitiateJVPage() {
       headerName: "Created At",
       flex: 1,
       minWidth: 120,
+      resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
     {
@@ -371,6 +390,7 @@ export default function InitiateJVPage() {
       width: 120,
       align: "center",
       headerAlign: "center",
+      resizable: false,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <IconButton
@@ -539,9 +559,11 @@ export default function InitiateJVPage() {
                 paginationModel={paginationModel}
                 onPaginationModelChange={setPaginationModel}
                 pageSizeOptions={[5, 10, 25, 50]}
-                autoHeight
                 disableRowSelectionOnClick
+                columnResize
+                disableColumnResize={false}
                 sx={{
+                  height: 600,
                   "& .MuiDataGrid-cell": {
                     "&:focus": {
                       outline: "none",
