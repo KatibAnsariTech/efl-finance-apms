@@ -51,7 +51,7 @@ const SidebarContainer = styled(Box)(({ theme, collapsed }) => ({
 const LogoContainer = styled(Box)(({ collapsed }) => ({
   padding: collapsed ? '0' : '0',
   textAlign: 'center',
-  borderBottom: '1px solid #E0E0E0',
+  // borderBottom: '1px solid #E0E0E0',
   marginBottom: '0',
 }));
 
