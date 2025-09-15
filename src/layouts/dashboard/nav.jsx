@@ -220,6 +220,9 @@ const Sidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollap
           padding: 0,
           textAlign: 'center',
           marginBottom: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         {collapsed ? (
@@ -229,7 +232,6 @@ const Sidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollap
             style={{
               width: "64%",
               marginTop: "32px",
-              marginLeft: "10px",
               marginBottom: "9px",
               cursor: "pointer",
             }}
@@ -244,7 +246,6 @@ const Sidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollap
             style={{
               width: "60%",
               marginTop: "20px",
-              marginLeft: "25px",
               cursor: "pointer",
             }}
             onClick={() => {
@@ -254,31 +255,32 @@ const Sidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollap
         )}
       </Box>
 
-      {/* Navigation Items */}
-      <List
-        sx={{
-          padding: collapsed ? '0 8px' : '0 20px',
-          flex: 1,
-          marginTop: '20px',
-          overflow: 'auto',
-          maxHeight: 'calc(100vh - 170px)',
-          paddingBottom: 0,
-          '&::-webkit-scrollbar': {
-            width: '6px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'transparent',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: '#c1c1c1',
-            borderRadius: '3px',
-            '&:hover': {
-              background: '#a8a8a8',
+      {/* Navigation Items - Hide on root path */}
+      {pathname !== '/' && (
+        <List
+          sx={{
+            padding: collapsed ? '0 8px' : '0 20px',
+            flex: 1,
+            marginTop: '20px',
+            overflow: 'auto',
+            maxHeight: 'calc(100vh - 170px)',
+            paddingBottom: 0,
+            '&::-webkit-scrollbar': {
+              width: '6px',
             },
-          },
-        }}
-      >
-        {navigationItems.map((item) => (
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#c1c1c1',
+              borderRadius: '3px',
+              '&:hover': {
+                background: '#a8a8a8',
+              },
+            },
+          }}
+        >
+          {navigationItems.map((item) => (
           <React.Fragment key={item.id}>
             <ListItem disablePadding>
               <ListItemButton
@@ -407,7 +409,8 @@ const Sidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalCollap
             )}
           </React.Fragment>
         ))}
-      </List>
+        </List>
+      )}
 
       {/* Collapse Button */}
       <Button
