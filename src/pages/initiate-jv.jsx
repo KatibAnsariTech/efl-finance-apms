@@ -452,10 +452,10 @@ export default function InitiateJVPage() {
 
       <Container maxWidth="xl">
         <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold" }}>
+          {/* <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold" }}>
             Initiate Journal Voucher
-          </Typography>
-          <Typography
+          </Typography> */}
+          {/* <Typography
             variant="body2"
             color="text.secondary"
             sx={{ fontSize: "0.875rem" }}
@@ -466,7 +466,7 @@ export default function InitiateJVPage() {
               month: "short",
               year: "numeric",
             })}
-          </Typography>
+          </Typography> */}
         </Box>
 
         <Card>

@@ -97,6 +97,7 @@ export default function Header({ onOpenNav, collapsed }) {
     if (path.startsWith("/credit-deviation/hierarchy-management")) return "Hierarchy Management";
     if (path.startsWith("/credit-deviation/master-sheet")) return "Master Sheet";
     if (path.startsWith("/jvm/dashboard")) return "JVM Dashboard";
+    if (path.startsWith("/jvm/initiate-jv")) return "Initiate Journal Voucher";
     if (path.startsWith("/import-payment/dashboard")) return "Import Payment Dashboard";
     if (path.startsWith("/custom-duty/dashboard")) return "Custom Duty Dashboard";
     if (path.startsWith("/petty-cash/dashboard")) return "Petty Cash Dashboard";
