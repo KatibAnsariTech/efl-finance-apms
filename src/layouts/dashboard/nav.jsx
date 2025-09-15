@@ -14,7 +14,6 @@ import {
   Collapse,
   Divider,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import { 
   TbLayoutSidebarLeftCollapse,
   TbLayoutSidebarRightCollapse,
@@ -39,150 +38,6 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
-// Styled components
-const SidebarContainer = styled(Box)(({ theme, collapsed }) => ({
-  width: '100%',
-  height: '100vh',
-  backgroundColor: '#F5F5F5',
-  display: 'flex',
-  flexDirection: 'column',
-  transition: 'all 0.3s ease',
-}));
-
-const LogoContainer = styled(Box)(({ collapsed }) => ({
-  padding: collapsed ? '0' : '0',
-  textAlign: 'center',
-  // borderBottom: '1px solid #E0E0E0',
-  marginBottom: '0',
-}));
-
-const NavigationList = styled(List)(({ collapsed }) => ({
-  padding: collapsed ? '0 8px' : '0 20px',
-  flex: 1,
-  marginTop: '20px',
-  overflow: 'hidden',
-}));
-
-const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
-  borderRadius: '8px',
-  marginBottom: '4px',
-  padding: '8px 16px',
-  backgroundColor: active ? '#E3F2FD' : 'transparent',
-  '&:hover': {
-    backgroundColor: active ? '#E3F2FD' : '#F0F0F0',
-  },
-  transition: 'all 0.2s ease',
-  minHeight: '36px',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-}));
-
-const StyledListItemText = styled(ListItemText)(({ active, collapsed }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  position: 'relative',
-  flex: 1,
-  minWidth: 0,
-  '& .MuiListItemText-primary': {
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
-    fontWeight: active ? '600' : '400',
-    color: active ? '#1877F2' : '#333333',
-    textTransform: 'none',
-    opacity: collapsed ? 0 : 1,
-    transition: 'opacity 0.3s ease',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-}));
-
-const StyledListItemIcon = styled(ListItemIcon)(({ active, collapsed }) => ({
-  minWidth: collapsed ? 'auto' : '24px',
-  color: active ? '#1877F2' : '#666666',
-  display: 'flex',
-  justifyContent: 'center',
-  marginRight: collapsed ? 0 : '12px',
-}));
-
-const ArrowIcon = styled(Box)(({ expanded, collapsed, active }) => ({
-  color: active ? '#1877F2' : '#666666',
-  opacity: collapsed ? 0 : 1,
-  transition: 'all 0.2s ease',
-  fontSize: '20px',
-  flexShrink: 0,
-  marginLeft: '8px',
-}));
-
-const SubItemButton = styled(ListItemButton)(({ theme, active }) => ({
-  borderRadius: '6px',
-  marginBottom: '2px',
-  padding: '6px 16px 6px 40px',
-  backgroundColor: active ? '#E3F2FD' : 'transparent',
-  '&:hover': {
-    backgroundColor: active ? '#E3F2FD' : '#F0F0F0',
-  },
-  transition: 'all 0.2s ease',
-  minHeight: '30px',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-}));
-
-const SubItemText = styled(ListItemText)(({ active }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  position: 'relative',
-  flex: 1,
-  minWidth: 0,
-  '& .MuiListItemText-primary': {
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '13px',
-    fontWeight: active ? '500' : '400',
-    color: active ? '#1877F2' : '#555555',
-    textTransform: 'none',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-}));
-
-const CollapseButton = styled(Button)(({ theme, collapsed }) => ({
-  position: 'absolute',
-  bottom: '20px',
-  left: collapsed ? '20px' : '30px',
-  right: '20px',
-  backgroundColor: 'transparent',
-  color: '#666666',
-  fontSize: '13px',
-  fontFamily: 'Arial, sans-serif',
-  fontWeight: '500',
-  textTransform: 'none',
-  padding: collapsed ? '8px' : '8px 12px',
-  justifyContent: 'flex-start',
-  minWidth: 'auto',
-  textAlign: 'left',
-  borderRadius: '6px',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    backgroundColor: '#E8F4FD',
-    color: '#1877F2',
-  },
-}));
-
-const IconContainer = styled(Box)(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '6px',
-  borderRadius: '4px',
-  transition: 'all 0.2s ease',
-  marginRight: '8px',
-  '&:hover': {
-    backgroundColor: 'rgba(24, 119, 242, 0.1)',
-  },
-}));
 
 // Helper function to filter navigation items based on user role
 const filterNavigationByRole = (config, userRole) => {
@@ -349,9 +204,24 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
   };
 
   return (
-    <SidebarContainer collapsed={collapsed}>
+    <Box
+      sx={{
+        width: '100%',
+        height: '100vh',
+        backgroundColor: '#F5F5F5',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'all 0.3s ease',
+      }}
+    >
       {/* Logo Section */}
-      <LogoContainer collapsed={collapsed}>
+      <Box
+        sx={{
+          padding: 0,
+          textAlign: 'center',
+          marginBottom: 0,
+        }}
+      >
         {collapsed ? (
           <img
             src={EurekaForbes}
@@ -382,43 +252,108 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
             }}
           />
         )}
-      </LogoContainer>
+      </Box>
 
       {/* Navigation Items */}
-      <NavigationList collapsed={collapsed}>
+      <List
+        sx={{
+          padding: collapsed ? '0 8px' : '0 20px',
+          flex: 1,
+          marginTop: '20px',
+          overflow: 'auto',
+          maxHeight: 'calc(100vh - 180px)',
+          paddingBottom: 2,
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#c1c1c1',
+            borderRadius: '3px',
+            '&:hover': {
+              background: '#a8a8a8',
+            },
+          },
+        }}
+      >
         {navigationItems.map((item) => (
           <React.Fragment key={item.id}>
             <ListItem disablePadding>
-              <StyledListItemButton
-                active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
+              <ListItemButton
+                sx={{
+                  borderRadius: '8px',
+                  marginBottom: '4px',
+                  padding: '8px 16px',
+                  backgroundColor: (activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))) ? '#E3F2FD' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: (activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))) ? '#E3F2FD' : '#F0F0F0',
+                  },
+                  transition: 'all 0.2s ease',
+                  minHeight: '36px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
                 onClick={() => handleItemClick(item.id, item.hasSubItems, item.path)}
               >
-                <StyledListItemIcon active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))} collapsed={collapsed}>
+                <ListItemIcon
+                  sx={{
+                    minWidth: collapsed ? 'auto' : '24px',
+                    color: (activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))) ? '#1877F2' : '#666666',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    marginRight: collapsed ? 0 : '12px',
+                  }}
+                >
                   {item.icon}
-                </StyledListItemIcon>
+                </ListItemIcon>
                 {!collapsed && (
                   <>
-                    <StyledListItemText
+                    <ListItemText
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        position: 'relative',
+                        flex: 1,
+                        minWidth: 0,
+                        '& .MuiListItemText-primary': {
+                          fontFamily: 'Arial, sans-serif',
+                          fontSize: '14px',
+                          fontWeight: (activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))) ? '600' : '400',
+                          color: (activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))) ? '#1877F2' : '#333333',
+                          textTransform: 'none',
+                          opacity: collapsed ? 0 : 1,
+                          transition: 'opacity 0.3s ease',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        },
+                      }}
                       primary={item.title}
-                      active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
-                      collapsed={collapsed}
                     />
                     {item.hasSubItems && (
-                      <ArrowIcon 
-                        expanded={expandedItems[item.id]} 
-                        collapsed={collapsed}
-                        active={activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))}
+                      <Box
+                        sx={{
+                          color: (activeItem === item.id || (item.hasSubItems && item.subItems.some(subItem => activeItem === subItem.id))) ? '#1877F2' : '#666666',
+                          opacity: collapsed ? 0 : 1,
+                          transition: 'all 0.2s ease',
+                          fontSize: '20px',
+                          flexShrink: 0,
+                          marginLeft: '8px',
+                        }}
                       >
                         {expandedItems[item.id] ? (
                           <ArrowDropUpIcon sx={{ fontSize: 20 }} />
                         ) : (
                           <ArrowDropDownIcon sx={{ fontSize: 20 }} />
                         )}
-                      </ArrowIcon>
+                      </Box>
                     )}
                   </>
                 )}
-              </StyledListItemButton>
+              </ListItemButton>
             </ListItem>
 
             {/* Sub Items */}
@@ -427,15 +362,44 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
                 <List component="div" disablePadding>
                   {item.subItems.map((subItem) => (
                     <ListItem key={subItem.id} disablePadding>
-                      <SubItemButton
-                        active={activeItem === subItem.id}
+                      <ListItemButton
+                        sx={{
+                          borderRadius: '6px',
+                          marginBottom: '2px',
+                          padding: '6px 16px 6px 40px',
+                          backgroundColor: activeItem === subItem.id ? '#E3F2FD' : 'transparent',
+                          '&:hover': {
+                            backgroundColor: activeItem === subItem.id ? '#E3F2FD' : '#F0F0F0',
+                          },
+                          transition: 'all 0.2s ease',
+                          minHeight: '30px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
                         onClick={() => handleSubItemClick(subItem.id, item.id)}
                       >
-                        <SubItemText
+                        <ListItemText
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            position: 'relative',
+                            flex: 1,
+                            minWidth: 0,
+                            '& .MuiListItemText-primary': {
+                              fontFamily: 'Arial, sans-serif',
+                              fontSize: '13px',
+                              fontWeight: activeItem === subItem.id ? '500' : '400',
+                              color: activeItem === subItem.id ? '#1877F2' : '#555555',
+                              textTransform: 'none',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            },
+                          }}
                           primary={subItem.title}
-                          active={activeItem === subItem.id}
                         />
-                      </SubItemButton>
+                      </ListItemButton>
                     </ListItem>
                   ))}
                 </List>
@@ -443,25 +407,59 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
             )}
           </React.Fragment>
         ))}
-      </NavigationList>
+      </List>
 
       {/* Collapse Button */}
-      <CollapseButton
+      <Button
+        sx={{
+          position: 'absolute',
+          bottom: '20px',
+          left: collapsed ? '20px' : '30px',
+          right: '20px',
+          backgroundColor: 'transparent',
+          color: '#666666',
+          fontSize: '13px',
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: '500',
+          textTransform: 'none',
+          padding: collapsed ? '8px' : '8px 12px',
+          justifyContent: 'flex-start',
+          minWidth: 'auto',
+          textAlign: 'left',
+          borderRadius: '6px',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            backgroundColor: '#E8F4FD',
+            color: '#1877F2',
+          },
+        }}
         onClick={handleCollapse}
-        collapsed={collapsed}
         startIcon={
-          <IconContainer>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px',
+              borderRadius: '4px',
+              transition: 'all 0.2s ease',
+              marginRight: '8px',
+              '&:hover': {
+                backgroundColor: 'rgba(24, 119, 242, 0.1)',
+              },
+            }}
+          >
             {collapsed ? (
               <TbLayoutSidebarRightCollapse size={18} />
             ) : (
               <TbLayoutSidebarLeftCollapse size={18} />
             )}
-          </IconContainer>
+          </Box>
         }
       >
         {!collapsed && 'Collapse'}
-      </CollapseButton>
-    </SidebarContainer>
+      </Button>
+    </Box>
   );
 };
 
