@@ -261,8 +261,8 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
           flex: 1,
           marginTop: '20px',
           overflow: 'auto',
-          maxHeight: 'calc(100vh - 180px)',
-          paddingBottom: 2,
+          maxHeight: 'calc(100vh - 170px)',
+          paddingBottom: 0,
           '&::-webkit-scrollbar': {
             width: '6px',
           },
@@ -413,7 +413,7 @@ const ExactSidebar = ({ collapsed: externalCollapsed, setCollapsed: setExternalC
       <Button
         sx={{
           position: 'absolute',
-          bottom: '20px',
+          bottom: '10px',
           left: collapsed ? '20px' : '30px',
           right: '20px',
           backgroundColor: 'transparent',
