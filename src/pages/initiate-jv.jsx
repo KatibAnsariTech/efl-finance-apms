@@ -19,6 +19,9 @@ import {
   FormControlLabel,
   Switch,
   Divider,
+  Select,
+  MenuItem,
+  InputLabel,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { fDateTime } from "src/utils/format-time";
@@ -26,19 +29,21 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { AddJVModal, UploadJVModal } from "../sections/jvm";
+import { AddJVModal, EditJVModal, UploadJVModal } from "../sections/jvm";
 
 export default function InitiateJVPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 50,
   });
   const [totalCount, setTotalCount] = useState(0);
-  const [autoReversal, setAutoReversal] = useState(false);
+  const [autoReversal, setAutoReversal] = useState("No");
   const [hasMore, setHasMore] = useState(true);
 
   // Generate mock data for infinite scrolling
@@ -187,6 +192,13 @@ export default function InitiateJVPage() {
     swal("Success!", "Journal voucher added successfully!", "success");
   };
 
+  const handleEditSuccess = () => {
+    setEditModalOpen(false);
+    setEditData(null);
+    getData();
+    swal("Success!", "Journal voucher updated successfully!", "success");
+  };
+
   const handleUploadSuccess = () => {
     setUploadModalOpen(false);
     getData();
@@ -215,7 +227,7 @@ export default function InitiateJVPage() {
       // Reset form
       setData([]);
       setPaginationModel({ page: 0, pageSize: 50 });
-      setAutoReversal(false);
+      setAutoReversal("No");
     } catch (error) {
       console.error("Submit error:", error);
       showErrorMessage(error, "Failed to submit journal voucher request", swal);
@@ -409,18 +421,32 @@ export default function InitiateJVPage() {
       headerAlign: "center",
       resizable: false,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box 
+          sx={{ 
+            display: "flex", 
+            gap: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+          }}
+        >
           <IconButton
             size="small"
             color="primary"
-            onClick={() => handleEdit(params.row)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(params.row);
+            }}
           >
             <Iconify icon="eva:edit-fill" />
           </IconButton>
           <IconButton
             size="small"
             color="error"
-            onClick={() => handleDelete(params.row)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(params.row);
+            }}
           >
             <Iconify icon="eva:trash-2-fill" />
           </IconButton>
@@ -430,8 +456,8 @@ export default function InitiateJVPage() {
   ];
 
   const handleEdit = (row) => {
-    // TODO: Implement edit functionality
-    console.log("Edit row:", row);
+    setEditData(row);
+    setEditModalOpen(true);
   };
 
   const handleDelete = async (row) => {
@@ -566,6 +592,7 @@ export default function InitiateJVPage() {
                   loading={loading}
                   pagination={false}
                   disableRowSelectionOnClick
+                  disableRowClick
                   columnResize
                   disableColumnResize={false}
                   hideFooter
@@ -588,11 +615,17 @@ export default function InitiateJVPage() {
                         outline: "none",
                       },
                     },
-                    "& .MuiDataGrid-columnHeaders": {
-                      backgroundColor: "#f5f6f8",
-                      fontWeight: "bold",
-                      color: "#637381",
-                    },
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: "#f5f6f8",
+                    fontWeight: "bold",
+                    color: "#637381",
+                  },
+                  "& .MuiDataGrid-cell:focus": {
+                    outline: "none",
+                  },
+                  "& .MuiDataGrid-row:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.04)",
+                  },
                   }}
                 />
                 {loading && hasMore && (
@@ -624,29 +657,38 @@ export default function InitiateJVPage() {
               justifyContent: { xs: "center", sm: "flex-start" },
             }}
           >
-            <FormControl component="fieldset">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={autoReversal}
-                    onChange={(e) => setAutoReversal(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label={
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Auto-reversal this transaction:{" "}
-                    {autoReversal ? "Yes" : "No"}
-                  </Typography>
-                }
-              />
-            </FormControl>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                  whiteSpace: "nowrap",
+                  fontWeight: 500,
+                }}
+              >
+                Auto-reversal this transaction:
+              </Typography>
+              <FormControl 
+                sx={{ 
+                  minWidth: 80,
+                  "& .MuiOutlinedInput-root": {
+                    height: "40px",
+                  }
+                }}
+              >
+                <Select
+                  value={autoReversal}
+                  onChange={(e) => setAutoReversal(e.target.value)}
+                  displayEmpty
+                  sx={{
+                    fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                  }}
+                >
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Button
@@ -671,6 +713,16 @@ export default function InitiateJVPage() {
           open={addModalOpen}
           onClose={() => setAddModalOpen(false)}
           onSuccess={handleAddSuccess}
+        />
+
+        <EditJVModal
+          open={editModalOpen}
+          onClose={() => {
+            setEditModalOpen(false);
+            setEditData(null);
+          }}
+          onSuccess={handleEditSuccess}
+          editData={editData}
         />
 
         <UploadJVModal
