@@ -1,10 +1,10 @@
 {
-  "name": "eureka-forbes-admin",
+  "name": "eureka-forbes-finance-tower",
   "author": "minimals.cc",
   "licence": "MIT",
   "version": "1.8.0",
   "private": false,
-  "description": "Eureka Forbes Admin Dashboard",
+  "description": "Eureka Forbes Finance Tower Dashboard",
   "scripts": {
     "dev": "vite",
     "start": "vite preview",
