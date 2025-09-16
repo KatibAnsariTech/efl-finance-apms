@@ -220,7 +220,7 @@ export default function Router() {
           element: <RoleRoute path="/jvm/initiate-jv" element={<InitiateJVPage />} />,
         },
         {
-          path: "/jv-detail/:jvId",
+          path: "/jvm/jv-status/jv-detail/:jvId",
           element: <JVDetailPage />,
         },
         // Import Payment subpages
