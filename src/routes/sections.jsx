@@ -30,7 +30,7 @@ import ImportPaymentDashboard from "src/pages/import-payment-dashboard";
 import CustomDutyDashboard from "src/pages/custom-duty-dashboard";
 import PettyCashDashboard from "src/pages/petty-cash-dashboard";
 // JVM subpages
-import JVMOverviewPage from "src/pages/jvm-overview";
+import JVStatusPage from "src/pages/jv-status";
 import InitiateJVPage from "src/pages/initiate-jv";
 // Import Payment subpages
 import ImportPaymentUploadPage from "src/pages/import-payment-upload";
@@ -211,8 +211,8 @@ export default function Router() {
         },
         // JVM subpages
         {
-          path: "/jvm/overview",
-          element: <RoleRoute path="/jvm/overview" element={<JVMOverviewPage />} />,
+          path: "/jvm/jv-status",
+          element: <RoleRoute path="/jvm/jv-status" element={<JVStatusPage />} />,
         },
         {
           path: "/jvm/initiate-jv",

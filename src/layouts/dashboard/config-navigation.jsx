@@ -86,9 +86,9 @@ const navConfig = [
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
       { 
-        id: 'jvm-overview', 
-        title: 'JVM Overview', 
-        path: '/jvm/overview',
+        id: 'jv-status', 
+        title: "JV's Status", 
+        path: '/jvm/jv-status',
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
       { 
