@@ -30,6 +30,7 @@ import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { AddJVModal, EditJVModal, UploadJVModal } from "../sections/jvm";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function InitiateJVPage() {
   const [data, setData] = useState([]);
@@ -46,6 +47,7 @@ export default function InitiateJVPage() {
   const [autoReversal, setAutoReversal] = useState("No");
   const [hasMore, setHasMore] = useState(true);
   const [showInfoText, setShowInfoText] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   // Generate mock data for infinite scrolling
   const generateMockData = (startIndex, count) => {
@@ -206,7 +208,11 @@ export default function InitiateJVPage() {
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
 
-  const handleSubmitRequest = async () => {
+  const handleSubmitRequest = () => {
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
     try {
       // For development - using console log instead of API call
       console.log("Submitting JV request with data:", {
@@ -229,6 +235,7 @@ export default function InitiateJVPage() {
       setData([]);
       setPaginationModel({ page: 0, pageSize: 50 });
       setAutoReversal("No");
+      setConfirmModalOpen(false);
     } catch (error) {
       console.error("Submit error:", error);
       showErrorMessage(error, "Failed to submit journal voucher request", swal);
@@ -764,6 +771,15 @@ export default function InitiateJVPage() {
           open={uploadModalOpen}
           onClose={() => setUploadModalOpen(false)}
           onSuccess={handleUploadSuccess}
+        />
+
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          open={confirmModalOpen}
+          onClose={() => setConfirmModalOpen(false)}
+          onConfirm={handleConfirmSubmit}
+          data={data}
+          autoReversal={autoReversal}
         />
       </Container>
     </>
