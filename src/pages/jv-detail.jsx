@@ -24,13 +24,13 @@ export default function JVDetailPage() {
   const [search, setSearch] = useState("");
   const [jvInfo, setJvInfo] = useState({});
 
-
   // Generate mock detailed data for a specific JV
   const generateJVDetailData = (jvId, count = 8) => {
     // Extract JV number for consistent data
-    const jvNumber = jvId ? jvId.replace('jv_', 'JV') : 'JV001';
-    const paddedNumber = jvNumber.length > 2 ? jvNumber : jvNumber.padStart(5, '0');
-    
+    const jvNumber = jvId ? jvId.replace("jv_", "JV") : "JV001";
+    const paddedNumber =
+      jvNumber.length > 2 ? jvNumber : jvNumber.padStart(5, "0");
+
     // Create realistic JV entries that balance
     const entries = [
       // Debit entries
@@ -47,7 +47,7 @@ export default function JVDetailPage() {
         postingDate: new Date(2024, 8, 12),
       },
       {
-        lineType: "Debit Entry", 
+        lineType: "Debit Entry",
         accountCode: "4001 - Office Supplies",
         description: "Stationery and office materials",
         debitAmount: 5000,
@@ -110,13 +110,16 @@ export default function JVDetailPage() {
   // Generate JV header information
   const generateJVInfo = (jvId) => {
     // Extract JV number from ID (assuming format like jv_1, jv_2, etc.)
-    const jvNumber = jvId ? jvId.replace('jv_', 'JV') : 'JV001';
-    const paddedNumber = jvNumber.length > 2 ? jvNumber : jvNumber.padStart(5, '0');
-    
+    const jvNumber = jvId ? jvId.replace("jv_", "JV") : "JV001";
+    const paddedNumber =
+      jvNumber.length > 2 ? jvNumber : jvNumber.padStart(5, "0");
+
     return {
       jvNumber: paddedNumber,
       documentType: "Journal Entry",
-      status: ["Pending", "Approved", "Rejected"][Math.floor(Math.random() * 3)],
+      status: ["Pending", "Approved", "Rejected"][
+        Math.floor(Math.random() * 3)
+      ],
       businessArea: "Finance",
       totalDebit: 0, // Will be calculated
       totalCredit: 0, // Will be calculated
@@ -131,17 +134,23 @@ export default function JVDetailPage() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
       const detailData = generateJVDetailData(jvId, 15);
       const jvHeaderInfo = generateJVInfo(jvId);
-      
+
       // Calculate totals
-      const totalDebit = detailData.reduce((sum, item) => sum + item.debitAmount, 0);
-      const totalCredit = detailData.reduce((sum, item) => sum + item.creditAmount, 0);
-      
+      const totalDebit = detailData.reduce(
+        (sum, item) => sum + item.debitAmount,
+        0
+      );
+      const totalCredit = detailData.reduce(
+        (sum, item) => sum + item.creditAmount,
+        0
+      );
+
       jvHeaderInfo.totalDebit = totalDebit;
       jvHeaderInfo.totalCredit = totalCredit;
-      
+
       setData(detailData);
       setJvInfo(jvHeaderInfo);
       setTotalCount(detailData.length);
@@ -159,38 +168,37 @@ export default function JVDetailPage() {
   }, [jvId, page, rowsPerPage]);
 
   const handleFilterChange = (filterType, value) => {
-    if (filterType === 'search') {
+    if (filterType === "search") {
       setSearch(value);
     }
   };
 
-
   const handleBack = () => {
-    router.push('/jv-status');
+    router.push("/jv-status");
   };
 
   const getStatusColor = (status) => {
     const statusColors = {
-      'Approved': '#e8f5e8',
-      'Rejected': '#ffcdd2',
-      'Pending': '#f4f5ba',
+      Approved: "#e8f5e8",
+      Rejected: "#ffcdd2",
+      Pending: "#f4f5ba",
     };
-    return statusColors[status] || '#f5f5f5';
+    return statusColors[status] || "#f5f5f5";
   };
 
   const getStatusChip = (status) => {
     return (
       <Box
         sx={{
-          display: 'inline-block',
+          display: "inline-block",
           px: 1.5,
           py: 0.5,
           borderRadius: 1,
           backgroundColor: getStatusColor(status),
-          color: '#333',
-          fontSize: '0.75rem',
+          color: "#333",
+          fontSize: "0.75rem",
           fontWeight: 600,
-          textTransform: 'uppercase',
+          textTransform: "uppercase",
         }}
       >
         {status}
@@ -271,7 +279,8 @@ export default function JVDetailPage() {
       minWidth: 130,
       align: "right",
       headerAlign: "center",
-      renderCell: (params) => params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
+      renderCell: (params) =>
+        params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
     },
     {
       field: "creditAmount",
@@ -280,7 +289,8 @@ export default function JVDetailPage() {
       minWidth: 130,
       align: "right",
       headerAlign: "center",
-      renderCell: (params) => params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
+      renderCell: (params) =>
+        params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
     },
     {
       field: "reference",
@@ -320,35 +330,41 @@ export default function JVDetailPage() {
   // Apply filtering and sorting to the data
   const dataFiltered = (() => {
     let filteredData = [...data];
-    
+
     // Apply search filter if search term exists
     if (search) {
       filteredData = filteredData.filter((item) =>
-        ['glAccount', 'accountCode', 'description', 'reference', 'costCenter', 'profitCenter']
-          .some(field => 
-            item[field]?.toString().toLowerCase().includes(search.toLowerCase())
-          )
+        [
+          "glAccount",
+          "accountCode",
+          "description",
+          "reference",
+          "costCenter",
+          "profitCenter",
+        ].some((field) =>
+          item[field]?.toString().toLowerCase().includes(search.toLowerCase())
+        )
       );
     }
-    
+
     // Apply sorting
-    const comparator = getComparator('asc', 'lineNumber');
+    const comparator = getComparator("asc", "lineNumber");
     const stabilizedThis = filteredData.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
       const order = comparator(a[0], b[0]);
       if (order !== 0) return order;
       return a[1] - b[1];
     });
-    
+
     return stabilizedThis.map((el) => el[0]);
   })();
 
   return (
     <>
       <Helmet>
-        <title>JV Detail - {jvInfo.jvNumber || 'Loading...'}</title>
+        <title>JV Detail - {jvInfo.jvNumber || "Loading..."}</title>
       </Helmet>
-      
+
       <Container>
         {/* Header with back button and JV info */}
         {/* <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -461,11 +477,16 @@ export default function JVDetailPage() {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "flex-end",
+              justifyContent: "space-between",
               alignItems: "center",
               mb: 2,
             }}
           >
+            <FormTableToolbar
+              search={search}
+              onFilterChange={handleFilterChange}
+              placeholder="Search by account, description, reference..."
+            />
             <Box
               sx={{
                 display: "flex",
@@ -473,6 +494,7 @@ export default function JVDetailPage() {
                 cursor: "pointer",
                 position: "relative",
                 "&:hover .close-tooltip": { opacity: 1, pointerEvents: "auto" },
+                mr: 1,
               }}
               onClick={handleBack}
             >
@@ -514,19 +536,15 @@ export default function JVDetailPage() {
               </Box>
             </Box>
           </Box>
-          
-          <FormTableToolbar
-            search={search}
-            onFilterChange={handleFilterChange}
-            placeholder="Search by account, description, reference..."
-          />
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={dataFiltered?.map((row, index) => ({
-                id: row.id,
-                ...row,
-              })) || []}
+              rows={
+                dataFiltered?.map((row, index) => ({
+                  id: row.id,
+                  ...row,
+                })) || []
+              }
               columns={columns}
               getRowId={(row) => row?.id}
               loading={loading}
@@ -593,7 +611,7 @@ export default function JVDetailPage() {
             }}
           >
             <Box sx={{ pointerEvents: "auto" }}>
-              <JVDetailColorIndicators />
+              {/* <JVDetailColorIndicators /> */}
             </Box>
           </Box>
         </Card>
