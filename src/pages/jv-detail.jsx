@@ -6,7 +6,6 @@ import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { getComparator } from "src/utils/utils";
-import excel from "../../public/assets/excel.svg";
 import { useRouter } from "src/routes/hooks";
 import { Box, Tooltip, Typography, IconButton } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
@@ -27,58 +26,85 @@ export default function JVDetailPage() {
 
 
   // Generate mock detailed data for a specific JV
-  const generateJVDetailData = (jvId, count = 10) => {
-    const lineTypes = [
-      "Debit Entry",
-      "Credit Entry",
-      "Adjustment Entry",
-      "Reversal Entry",
-      "Allocation Entry",
-    ];
+  const generateJVDetailData = (jvId, count = 8) => {
+    // Extract JV number for consistent data
+    const jvNumber = jvId ? jvId.replace('jv_', 'JV') : 'JV001';
+    const paddedNumber = jvNumber.length > 2 ? jvNumber : jvNumber.padStart(5, '0');
     
-    const accountCodes = [
-      "1001 - Cash Account",
-      "1002 - Bank Account",
-      "2001 - Accounts Payable",
-      "2002 - Accounts Receivable", 
-      "3001 - Revenue Account",
-      "4001 - Expense Account",
-      "5001 - Asset Account",
-      "6001 - Liability Account",
+    // Create realistic JV entries that balance
+    const entries = [
+      // Debit entries
+      {
+        lineType: "Debit Entry",
+        accountCode: "5001 - Office Equipment",
+        description: "Purchase of computer equipment",
+        debitAmount: 50000,
+        creditAmount: 0,
+        reference: "PO-2024-001",
+        costCenter: "IT001",
+        profitCenter: "MAIN",
+        glAccount: "5001",
+        postingDate: new Date(2024, 8, 12),
+      },
+      {
+        lineType: "Debit Entry", 
+        accountCode: "4001 - Office Supplies",
+        description: "Stationery and office materials",
+        debitAmount: 5000,
+        creditAmount: 0,
+        reference: "PO-2024-002",
+        costCenter: "ADMIN001",
+        profitCenter: "MAIN",
+        glAccount: "4001",
+        postingDate: new Date(2024, 8, 12),
+      },
+      {
+        lineType: "Debit Entry",
+        accountCode: "4002 - Travel Expenses",
+        description: "Business travel reimbursement",
+        debitAmount: 15000,
+        creditAmount: 0,
+        reference: "TR-2024-001",
+        costCenter: "SALES001",
+        profitCenter: "MAIN",
+        glAccount: "4002",
+        postingDate: new Date(2024, 8, 12),
+      },
+      {
+        lineType: "Debit Entry",
+        accountCode: "4003 - Training Expenses",
+        description: "Employee training program",
+        debitAmount: 25000,
+        creditAmount: 0,
+        reference: "TR-2024-002",
+        costCenter: "HR001",
+        profitCenter: "MAIN",
+        glAccount: "4003",
+        postingDate: new Date(2024, 8, 12),
+      },
+      // Credit entries
+      {
+        lineType: "Credit Entry",
+        accountCode: "1002 - Bank Account",
+        description: "Payment from bank account",
+        debitAmount: 0,
+        creditAmount: 95000,
+        reference: "CHQ-001234",
+        costCenter: "FIN001",
+        profitCenter: "MAIN",
+        glAccount: "1002",
+        postingDate: new Date(2024, 8, 12),
+      },
     ];
 
-    const descriptions = [
-      "Payment processing fee",
-      "Vendor invoice payment",
-      "Customer refund processing",
-      "Bank charges adjustment",
-      "Tax calculation entry",
-      "Discount allocation",
-      "Currency exchange adjustment",
-      "Interest calculation",
-    ];
-
-    return Array.from({ length: count }, (_, index) => {
-      const lineType = lineTypes[index % lineTypes.length];
-      const accountCode = accountCodes[index % accountCodes.length];
-      const description = descriptions[index % descriptions.length];
-      const isDebit = index % 2 === 0;
-      const amount = Math.floor(Math.random() * 50000) + 1000;
-      
-      return {
-        id: `${jvId}_line_${index + 1}`,
-        lineNumber: index + 1,
-        lineType: lineType,
-        accountCode: accountCode,
-        description: description,
-        debitAmount: isDebit ? amount : 0,
-        creditAmount: !isDebit ? amount : 0,
-        reference: `REF-${String(index + 1).padStart(3, "0")}`,
-        costCenter: `CC${String((index % 5) + 1).padStart(3, "0")}`,
-        profitCenter: `PC${String((index % 3) + 1).padStart(3, "0")}`,
-        createdAt: new Date(2024, 8, 12 - (index % 10)),
-      };
-    });
+    return entries.map((entry, index) => ({
+      id: `${jvId}_line_${index + 1}`,
+      jvNumber: paddedNumber,
+      lineNumber: index + 1,
+      ...entry,
+      createdBy: "John Doe",
+      createdAt: new Date(2024, 8, 12),
+    }));
   };
 
   // Generate JV header information
@@ -138,9 +164,6 @@ export default function JVDetailPage() {
     }
   };
 
-  const handleExport = () => {
-    console.log("Export JV Detail clicked");
-  };
 
   const handleBack = () => {
     router.push('/jv-status');
@@ -218,44 +241,44 @@ export default function JVDetailPage() {
       headerAlign: "center",
     },
     {
-      field: "lineType",
-      headerName: "Line Type",
+      field: "glAccount",
+      headerName: "GL Account",
       flex: 1,
-      minWidth: 150,
+      minWidth: 100,
       align: "center",
       headerAlign: "center",
     },
     {
       field: "accountCode",
-      headerName: "Account Code",
-      flex: 1.5,
-      minWidth: 180,
-      align: "center",
+      headerName: "Account Description",
+      flex: 2,
+      minWidth: 200,
+      align: "left",
       headerAlign: "center",
     },
     {
       field: "description",
-      headerName: "Description",
-      flex: 2,
-      minWidth: 200,
-      align: "center",
+      headerName: "Line Description",
+      flex: 2.5,
+      minWidth: 250,
+      align: "left",
       headerAlign: "center",
     },
     {
       field: "debitAmount",
       headerName: "Debit Amount",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
+      flex: 1.2,
+      minWidth: 130,
+      align: "right",
       headerAlign: "center",
       renderCell: (params) => params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
     },
     {
       field: "creditAmount",
       headerName: "Credit Amount",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
+      flex: 1.2,
+      minWidth: 130,
+      align: "right",
       headerAlign: "center",
       renderCell: (params) => params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
     },
@@ -263,7 +286,7 @@ export default function JVDetailPage() {
       field: "reference",
       headerName: "Reference",
       flex: 1,
-      minWidth: 100,
+      minWidth: 120,
       align: "center",
       headerAlign: "center",
     },
@@ -275,6 +298,23 @@ export default function JVDetailPage() {
       align: "center",
       headerAlign: "center",
     },
+    {
+      field: "profitCenter",
+      headerName: "Profit Center",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "postingDate",
+      headerName: "Posting Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => fDateTime(params.value),
+    },
   ];
 
   // Apply filtering and sorting to the data
@@ -284,7 +324,7 @@ export default function JVDetailPage() {
     // Apply search filter if search term exists
     if (search) {
       filteredData = filteredData.filter((item) =>
-        ['lineType', 'accountCode', 'description', 'reference']
+        ['glAccount', 'accountCode', 'description', 'reference', 'costCenter', 'profitCenter']
           .some(field => 
             item[field]?.toString().toLowerCase().includes(search.toLowerCase())
           )
@@ -341,61 +381,145 @@ export default function JVDetailPage() {
           </Box>
         </Box> */}
 
-        {/* Summary Cards */}
-        {/* <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <Card sx={{ p: 2, flex: 1 }}>
-            <Typography variant="h6" color="primary">Total Debit</Typography>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
-              ₹{jvInfo.totalDebit?.toLocaleString() || '0'}
-            </Typography>
-          </Card>
-          <Card sx={{ p: 2, flex: 1 }}>
-            <Typography variant="h6" color="primary">Total Credit</Typography>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#f44336' }}>
-              ₹{jvInfo.totalCredit?.toLocaleString() || '0'}
-            </Typography>
-          </Card>
-          <Card sx={{ p: 2, flex: 1 }}>
-            <Typography variant="h6" color="primary">Balance</Typography>
-            <Typography variant="h4" sx={{ 
-              fontWeight: 'bold', 
-              color: Math.abs((jvInfo.totalDebit || 0) - (jvInfo.totalCredit || 0)) < 1 ? '#4caf50' : '#ff9800'
-            }}>
-              ₹{Math.abs((jvInfo.totalDebit || 0) - (jvInfo.totalCredit || 0)).toLocaleString()}
-            </Typography>
-          </Card>
-        </Box> */}
+        {/* JV Summary Information */}
+        {/* <Card sx={{ mb: 3, p: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#1976d2' }}>
+            Journal Voucher Summary
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">JV Number</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                {jvInfo.jvNumber || 'Loading...'}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Status</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                {getStatusChip(jvInfo.status || 'Pending')}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Document Type</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                {jvInfo.documentType || 'Journal Entry'}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Created By</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                {jvInfo.createdBy || 'John Doe'}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Created Date</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                {jvInfo.createdDate ? fDateTime(jvInfo.createdDate) : 'Loading...'}
+              </Typography>
+            </Box>
+          </Box>
+        
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            mt: 3, 
+            pt: 2, 
+            borderTop: '2px solid #e0e0e0',
+            gap: 2
+          }}>
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                Total Debit
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
+                ₹{jvInfo.totalDebit?.toLocaleString() || '0'}
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                Total Credit
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#f44336' }}>
+                ₹{jvInfo.totalCredit?.toLocaleString() || '0'}
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                Balance
+              </Typography>
+              <Typography variant="h4" sx={{ 
+                fontWeight: 'bold', 
+                color: Math.abs((jvInfo.totalDebit || 0) - (jvInfo.totalCredit || 0)) < 1 ? '#4caf50' : '#ff9800'
+              }}>
+                ₹{Math.abs((jvInfo.totalDebit || 0) - (jvInfo.totalCredit || 0)).toLocaleString()}
+              </Typography>
+            </Box>
+          </Box>
+        </Card> */}
 
         <Card sx={{ mt: 2, p: 2 }}>
-          <div
-            style={{
+          <Box
+            sx={{
               display: "flex",
-              justifyContent: "space-between",
-              marginRight: "20px",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              mb: 2,
             }}
           >
-            <FormTableToolbar
-              search={search}
-              onFilterChange={handleFilterChange}
-              placeholder="Search JV entries..."
-            />
-            <div
-              style={{
+            <Box
+              sx={{
                 display: "flex",
-                justifyContent: "center",
                 alignItems: "center",
-                fontSize: "0.8rem",
-                fontWeight: "bold",
                 cursor: "pointer",
-                gap: "8px",
+                position: "relative",
+                "&:hover .close-tooltip": { opacity: 1, pointerEvents: "auto" },
               }}
+              onClick={handleBack}
             >
-              <span onClick={handleExport} style={{ color: "#167beb" }}>
-                Export{" "}
-                <img src={excel} style={{ width: "1.2rem", marginLeft: "5px" }} />
-              </span>
-            </div>
-          </div>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="#e53935"
+                stroke="#fff"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ borderRadius: "50%" }}
+              >
+                <circle cx="12" cy="12" r="12" fill="#e53935" />
+                <line x1="8" y1="8" x2="16" y2="16" />
+                <line x1="16" y1="8" x2="8" y2="16" />
+              </svg>
+              <Box
+                className="close-tooltip"
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  right: 35,
+                  background: "#12368d",
+                  color: "#fff",
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 1,
+                  fontSize: "0.85rem",
+                  whiteSpace: "nowrap",
+                  opacity: 0,
+                  pointerEvents: "none",
+                  transition: "opacity 0.2s",
+                  zIndex: 10,
+                }}
+              >
+                Back to JV Status
+              </Box>
+            </Box>
+          </Box>
+          
+          <FormTableToolbar
+            search={search}
+            onFilterChange={handleFilterChange}
+            placeholder="Search by account, description, reference..."
+          />
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
@@ -416,13 +540,6 @@ export default function JVDetailPage() {
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               autoHeight
-              getRowClassName={(params) => {
-                const lineType = params.row.lineType?.toLowerCase();
-                if (lineType?.includes('debit')) return 'row-debit';
-                if (lineType?.includes('credit')) return 'row-credit';
-                if (lineType?.includes('adjustment')) return 'row-adjustment';
-                return '';
-              }}
               disableRowSelectionOnClick
               sx={{
                 "& .MuiDataGrid-cell": {
@@ -452,15 +569,6 @@ export default function JVDetailPage() {
                   "&:focus-visible": {
                     outline: "none",
                   },
-                },
-                "& .MuiDataGrid-row.row-debit": {
-                  backgroundColor: "#e8f5e8 !important",
-                },
-                "& .MuiDataGrid-row.row-credit": {
-                  backgroundColor: "#fff3e0 !important",
-                },
-                "& .MuiDataGrid-row.row-adjustment": {
-                  backgroundColor: "#f4f5ba !important",
                 },
                 "& .MuiDataGrid-row": {
                   borderBottom: "1px solid #e0e0e0",
