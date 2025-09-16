@@ -71,11 +71,13 @@ export default function LatestDataTable({
     const columnConfig = {
       field: col.id,
       headerName: col.label,
-      flex: 1,
+      width: col.width || 150, // Use fixed width instead of flex
+      minWidth: col.minWidth || 100,
+      maxWidth: col.maxWidth || 300,
       sortable: col.sortable !== false,
       align: col.align || "center",
       headerAlign: col.align || "center",
-      minWidth: col.minWidth || 100,
+      resizable: true,
     };
 
     if (col.id === "chequeAvailability") {
@@ -99,7 +101,11 @@ export default function LatestDataTable({
       pageSizeOptions={[5, 10, 25]}
       autoHeight
       disableRowSelectionOnClick
+      disableColumnResize={false}
       sx={{
+        "& .MuiDataGrid-root": {
+          tableLayout: "fixed",
+        },
         "& .MuiDataGrid-cell": {
           "&:focus": {
             outline: "none",
@@ -119,6 +125,14 @@ export default function LatestDataTable({
         "& .MuiDataGrid-columnHeaders": {
           backgroundColor: "#f5f6f8",
           fontWeight: "bold",
+          color: "#637381",
+        },
+        "& .MuiDataGrid-columnSeparator": {
+          display: "none",
+        },
+        "& .MuiDataGrid-columnHeader:hover .MuiDataGrid-columnSeparator": {
+          display: "block",
+          opacity: 0.3,
           color: "#637381",
         },
       }}

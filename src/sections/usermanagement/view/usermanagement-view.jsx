@@ -270,11 +270,13 @@ export default function UserManagementView() {
                 .map((col) => ({
                   field: col.name || col.id, // Use col.name if available, otherwise col.id
                   headerName: col.label,
-                  flex: 1,
+                  width: col.width || 150,
                   minWidth: col.minWidth || 100,
+                  maxWidth: col.maxWidth || 300,
                   sortable: col.sortable !== false,
                   align: col.align || "center",
                   headerAlign: col.align || "center",
+                  resizable: true,
                   renderCell: (params) => {
                     if (col.id === "createdAt") {
                       return fDateTime(params.value);

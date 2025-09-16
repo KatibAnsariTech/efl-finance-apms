@@ -75,11 +75,13 @@ export default function ChannelTable() {
     {
       field: 'channel',
       headerName: 'Channel',
-      flex: 1,
+      width: 250,
       minWidth: 150,
+      maxWidth: 400,
       sortable: true,
       align: 'center',
       headerAlign: 'center',
+      resizable: true,
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {params.value || '-'}
@@ -143,8 +145,12 @@ export default function ChannelTable() {
       onPaginationModelChange={setPaginationModel}
       pageSizeOptions={[5, 10, 25, 50]}
       disableRowSelectionOnClick
+      disableColumnResize={false}
       autoHeight
       sx={{
+        "& .MuiDataGrid-root": {
+          tableLayout: "fixed",
+        },
         '& .MuiDataGrid-cell': {
           display: 'flex',
           alignItems: 'center',
@@ -173,6 +179,14 @@ export default function ChannelTable() {
         },
         '& .MuiSwitch-root:focus-visible': {
           outline: 'none',
+        },
+        "& .MuiDataGrid-columnSeparator": {
+          display: "none",
+        },
+        "& .MuiDataGrid-columnHeader:hover .MuiDataGrid-columnSeparator": {
+          display: "block",
+          opacity: 0.3,
+          color: "#637381",
         },
       }}
     />
