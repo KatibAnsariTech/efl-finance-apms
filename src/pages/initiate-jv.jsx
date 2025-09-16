@@ -663,77 +663,81 @@ export default function InitiateJVPage() {
             )}
           </CardContent>
         </Card>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexDirection: { xs: "column", sm: "row" },
-            gap: { xs: 2, sm: 0 },
-            minHeight: { xs: "auto", sm: "60px" },
-            mt: 2,
-          }}
-        >
+        
+        {/* Footer section - only show when there's data */}
+        {data.length > 0 && (
           <Box
             sx={{
               display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: 2,
-              width: { xs: "100%", sm: "auto" },
-              justifyContent: { xs: "center", sm: "flex-start" },
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 2, sm: 0 },
+              minHeight: { xs: "auto", sm: "60px" },
+              mt: 2,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                  whiteSpace: "nowrap",
-                  fontWeight: 500,
-                }}
-              >
-                Auto-reversal this transaction:
-              </Typography>
-              <FormControl
-                sx={{
-                  minWidth: 80,
-                  "& .MuiOutlinedInput-root": {
-                    height: "40px",
-                  },
-                }}
-              >
-                <Select
-                  value={autoReversal}
-                  onChange={(e) => setAutoReversal(e.target.value)}
-                  displayEmpty
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                width: { xs: "100%", sm: "auto" },
+                justifyContent: { xs: "center", sm: "flex-start" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  variant="body2"
                   sx={{
                     fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                    whiteSpace: "nowrap",
+                    fontWeight: 500,
                   }}
                 >
-                  <MenuItem value="Yes">Yes</MenuItem>
-                  <MenuItem value="No">No</MenuItem>
-                </Select>
-              </FormControl>
+                  Auto-reversal this transaction:
+                </Typography>
+                <FormControl
+                  sx={{
+                    minWidth: 80,
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px",
+                    },
+                  }}
+                >
+                  <Select
+                    value={autoReversal}
+                    onChange={(e) => setAutoReversal(e.target.value)}
+                    displayEmpty
+                    sx={{
+                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                    }}
+                  >
+                    <MenuItem value="Yes">Yes</MenuItem>
+                    <MenuItem value="No">No</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
             </Box>
-          </Box>
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmitRequest}
-            disabled={data.length === 0}
-            sx={{
-              px: { xs: 2, sm: 3 },
-              py: { xs: 1.5, sm: 1 },
-              fontSize: { xs: "0.8rem", sm: "0.875rem" },
-              fontWeight: "bold",
-              width: { xs: "100%", sm: "auto" },
-              minWidth: { xs: "auto", sm: "240px" },
-            }}
-          >
-            Submit Request
-          </Button>
-        </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmitRequest}
+              disabled={data.length === 0}
+              sx={{
+                px: { xs: 2, sm: 3 },
+                py: { xs: 1.5, sm: 1 },
+                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                fontWeight: "bold",
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { xs: "auto", sm: "240px" },
+              }}
+            >
+              Submit Request
+            </Button>
+          </Box>
+        )}
 
         <AddJVModal
           open={addModalOpen}
