@@ -267,121 +267,105 @@ export default function InitiateJVPage() {
     {
       field: "documentType",
       headerName: "Document Type",
-      flex: 1,
-      minWidth: 120,
+      width: 140,
       resizable: true,
     },
     {
       field: "documentDate",
       headerName: "Document Date",
-      flex: 1,
-      minWidth: 120,
+      width: 140,
       resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
     {
       field: "postingDate",
       headerName: "Posting Date",
-      flex: 1,
-      minWidth: 120,
+      width: 140,
       resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
     {
       field: "businessArea",
       headerName: "Business Area",
-      flex: 1,
-      minWidth: 120,
+      width: 130,
       resizable: true,
     },
     {
       field: "accountType",
       headerName: "Account Type",
-      flex: 1,
-      minWidth: 120,
+      width: 130,
       resizable: true,
     },
     {
       field: "postingKey",
       headerName: "Posting Key",
-      flex: 1,
-      minWidth: 150,
+      width: 160,
       resizable: true,
     },
     {
       field: "vendorCustomerGLName",
       headerName: "Vendor/Customer/GL Name",
-      flex: 1,
-      minWidth: 150,
+      width: 200,
       resizable: true,
     },
     {
       field: "vendorCustomerGLNumber",
       headerName: "Vendor/Customer/GL Number",
-      flex: 1,
-      minWidth: 150,
+      width: 200,
       resizable: true,
     },
     {
       field: "amount",
       headerName: "Amount",
-      flex: 1,
-      minWidth: 100,
+      width: 120,
       resizable: true,
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
     {
       field: "assignment",
       headerName: "Assignment",
-      flex: 1,
-      minWidth: 120,
+      width: 130,
       resizable: true,
     },
     {
       field: "costCenter",
       headerName: "Cost Center",
-      flex: 1,
-      minWidth: 120,
+      width: 130,
       resizable: true,
     },
     {
       field: "profitCenter",
       headerName: "Profit Center",
-      flex: 1,
-      minWidth: 120,
+      width: 130,
       resizable: true,
     },
     {
       field: "specialGLIndication",
       headerName: "Special GL Indication",
-      flex: 1,
-      minWidth: 150,
+      width: 170,
       resizable: true,
     },
     {
       field: "referenceNumber",
       headerName: "Reference Number",
-      flex: 1,
-      minWidth: 120,
+      width: 150,
       resizable: true,
     },
     {
       field: "personalNumber",
       headerName: "Personal Number",
-      flex: 1,
-      minWidth: 120,
+      width: 150,
       resizable: true,
     },
     {
       field: "remarks",
       headerName: "Remarks",
-      flex: 1,
-      minWidth: 150,
+      width: 200,
       resizable: true,
       renderCell: (params) => (
         <Box
           sx={{
-            maxWidth: 200,
+            maxWidth: "100%",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -395,8 +379,7 @@ export default function InitiateJVPage() {
     {
       field: "autoReversal",
       headerName: "Auto Reversal",
-      flex: 1,
-      minWidth: 120,
+      width: 130,
       resizable: true,
       renderCell: (params) =>
         // <Chip
@@ -416,8 +399,7 @@ export default function InitiateJVPage() {
     {
       field: "createdAt",
       headerName: "Created At",
-      flex: 1,
-      minWidth: 120,
+      width: 140,
       resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
@@ -638,6 +620,8 @@ export default function InitiateJVPage() {
                   columnResize
                   disableColumnResize={false}
                   hideFooter
+                  autoHeight={false}
+                  columnResizeMode="onResize"
                   sx={{
                     height: "100%",
                     border: "none",
