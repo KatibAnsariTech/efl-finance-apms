@@ -8,14 +8,12 @@ import { FormTableToolbar } from "src/components/table";
 import { applyFilter, getComparator } from "src/utils/utils";
 import excel from "../../public/assets/excel.svg";
 import { publicRequest, userRequest } from "src/requestMethod";
-import FilterModal from "../sections/approvals/FilterModal";
 import FormRequestTabs from "../sections/approvals/view/form-request-tabs";
 import { action } from "src/theme/palette";
 import { format } from "date-fns";
 import { useRouter } from "src/routes/hooks";
-import ColorIndicators from "../sections/approvals/colorIndicator";
 import { useCounts } from "src/contexts/CountsContext";
-import { Box } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import RequestModal from "../sections/approvals/RequestModal";
 import { fDateTime } from "src/utils/format-time";
 import swal from 'sweetalert';
@@ -32,17 +30,19 @@ export default function JVStatusPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
   const [selectedTab, setSelectedTab] = useState("all");
-  const [open, setOpen] = useState(false);
-  const [region, setRegion] = useState("");
-  const [status, setStatus] = useState("");
-  const [refund, setRefund] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [regionData, setRegionData] = useState([]);
   const [approvalCount, setApprovalCount] = useState(0);
+  const [statusCounts, setStatusCounts] = useState({
+    all: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
 
   const menuItems = [
-    { label: "All", value: "all" },
+    { label: "All", value: "all", count: statusCounts.all },
+    { label: "Pending", value: "pending", count: statusCounts.pending },
+    { label: "Approved", value: "approved", count: statusCounts.approved },
+    { label: "Rejected", value: "rejected", count: statusCounts.rejected },
   ];
 
   // Generate mock data for JV Status
@@ -69,7 +69,7 @@ export default function JVStatusPage() {
       "21 - Cash Payment",
       "31 - Bank Receipt",
     ];
-    const statuses = ["Draft", "Submitted", "Approved", "Rejected", "Pending", "In Review"];
+    const statuses = ["Pending", "Approved", "Rejected"];
     const companies = [
       "ABC Company Ltd",
       "XYZ Corporation",
@@ -134,6 +134,15 @@ export default function JVStatusPage() {
       
       setData(newData);
       setTotalCount(1000); // Mock total count
+      
+      // Calculate status counts
+      const counts = {
+        all: 1000,
+        pending: Math.floor(1000 / 3),
+        approved: Math.floor(1000 / 3),
+        rejected: Math.floor(1000 / 3),
+      };
+      setStatusCounts(counts);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -151,37 +160,58 @@ export default function JVStatusPage() {
     }
   };
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
 
   const handleExport = () => {
     // Export functionality
     console.log("Export clicked");
   };
 
+  // Custom ColorIndicators component for JV Status
+  const JVColorIndicators = () => {
+    // Custom circle component for displaying each color with label on hover
+    const ColorCircle = ({ color, label }) => (
+      <Tooltip title={label} arrow>
+        <Box
+          sx={{
+            width: "18px",
+            height: "18px",
+            backgroundColor: color,
+            borderRadius: "50%",
+            cursor: "pointer",
+            border: "1px solid rgba(0, 0, 0, 0.2)", // Light black border
+          }}
+        />
+      </Tooltip>
+    );
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 1,
+          marginLeft: 2,
+        }}
+      >
+        {/* Status color legend for JV Status */}
+        <ColorCircle color="#e8f5e8" label="Approved" />
+        <ColorCircle color="#f4f5ba" label="Pending" />
+        <ColorCircle color="#ffcdd2" label="Rejected" />
+      </Box>
+    );
+  };
+
   const getStatusColor = (status) => {
     const statusColors = {
-      'Draft': '#e3f2fd',
-      'Submitted': '#fff3e0',
       'Approved': '#e8f5e8',
-      'Rejected': '#ffebee',
+      'Rejected': '#ffcdd2',
       'Pending': '#f4f5ba',
-      'In Review': '#e1f5fe',
     };
     return statusColors[status] || '#f5f5f5';
   };
 
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      Draft: { color: "default", label: "Draft" },
-      Submitted: { color: "info", label: "Submitted" },
-      Approved: { color: "success", label: "Approved" },
-      Rejected: { color: "error", label: "Rejected" },
-      Pending: { color: "warning", label: "Pending" },
-      "In Review": { color: "primary", label: "In Review" },
-    };
 
-    const config = statusConfig[status] || { color: "default", label: status };
+  const getStatusChip = (status) => {
     return (
       <Box
         sx={{
@@ -196,7 +226,7 @@ export default function JVStatusPage() {
           textTransform: 'uppercase',
         }}
       >
-        {config.label}
+        {status}
       </Box>
     );
   };
@@ -287,13 +317,38 @@ export default function JVStatusPage() {
     },
   ];
 
-  const dataFiltered = applyFilter(data, getComparator('desc', 'createdAt'), search, [
-    'documentType',
-    'businessArea',
-    'vendorCustomerGLName',
-    'referenceNumber',
-    'slNo',
-  ]);
+  // Apply filtering and sorting to the data
+  const dataFiltered = (() => {
+    let filteredData = [...data];
+    
+    // Apply status tab filter
+    if (selectedTab !== "all") {
+      filteredData = filteredData.filter((item) =>
+        item.status?.toLowerCase() === selectedTab.toLowerCase()
+      );
+    }
+    
+    // Apply search filter if search term exists
+    if (search) {
+      filteredData = filteredData.filter((item) =>
+        ['documentType', 'businessArea', 'vendorCustomerGLName', 'referenceNumber', 'slNo']
+          .some(field => 
+            item[field]?.toString().toLowerCase().includes(search.toLowerCase())
+          )
+      );
+    }
+    
+    // Apply sorting
+    const comparator = getComparator('desc', 'createdAt');
+    const stabilizedThis = filteredData.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+      const order = comparator(a[0], b[0]);
+      if (order !== 0) return order;
+      return a[1] - b[1];
+    });
+    
+    return stabilizedThis.map((el) => el[0]);
+  })();
 
   return (
     <>
@@ -326,17 +381,12 @@ export default function JVStatusPage() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                alignItems: "center",
                 fontSize: "0.8rem",
                 fontWeight: "bold",
                 cursor: "pointer",
                 gap: "8px",
               }}
             >
-              <span onClick={handleOpen} style={{ color: "#167beb" }}>
-                Filter
-              </span>
-              |
               <span onClick={handleExport} style={{ color: "#167beb" }}>
                 Export{" "}
                 <img src={excel} style={{ width: "1.2rem", marginLeft: "5px" }} />
@@ -344,17 +394,6 @@ export default function JVStatusPage() {
             </div>
           </div>
 
-          <FilterModal
-            handleClose={handleClose}
-            handleOpen={handleOpen}
-            open={open}
-            setRegion={setRegion}
-            setStatus={setStatus}
-            setRefund={setRefund}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-            regionData={regionData}
-          />
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
@@ -385,9 +424,6 @@ export default function JVStatusPage() {
                 if (status === 'pending') return 'row-pending';
                 if (status === 'rejected') return 'row-rejected';
                 if (status === 'approved') return 'row-approved';
-                if (status === 'draft') return 'row-draft';
-                if (status === 'submitted') return 'row-submitted';
-                if (status === 'in review') return 'row-in-review';
                 return '';
               }}
               disableRowSelectionOnClick
@@ -424,19 +460,10 @@ export default function JVStatusPage() {
                   backgroundColor: "#f4f5ba !important",
                 },
                 "& .MuiDataGrid-row.row-rejected": {
-                  backgroundColor: "#e6b2aa !important",
+                  backgroundColor: "#ffcdd2 !important",
                 },
                 "& .MuiDataGrid-row.row-approved": {
-                  backgroundColor: "#baf5c2 !important",
-                },
-                "& .MuiDataGrid-row.row-draft": {
-                  backgroundColor: "#e3f2fd !important",
-                },
-                "& .MuiDataGrid-row.row-submitted": {
-                  backgroundColor: "#fff3e0 !important",
-                },
-                "& .MuiDataGrid-row.row-in-review": {
-                  backgroundColor: "#e1f5fe !important",
+                  backgroundColor: "#e8f5e8 !important",
                 },
                 "& .MuiDataGrid-row": {
                   borderBottom: "1px solid #e0e0e0",
@@ -448,6 +475,22 @@ export default function JVStatusPage() {
               }}
             />
           </Box>
+        <Box
+          sx={{
+            position: "relative",
+            height: "52px", // Match DataGrid footer height
+            marginTop: "-52px", // Overlap with DataGrid footer
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "16px",
+            zIndex: 0, // Lower z-index so pagination is clickable
+            pointerEvents: "none", // Allow clicks to pass through
+          }}
+        >
+          <Box sx={{ pointerEvents: "auto" }}>
+            <JVColorIndicators />
+          </Box>
+        </Box>
         </Card>
       </Container>
     </>
