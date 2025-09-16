@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 // DEVELOPMENT MODE: This page uses mock data and console logging instead of API calls
 // for testing purposes. Replace with actual API calls when backend is ready.
@@ -15,6 +15,10 @@ import {
   IconButton,
   Chip,
   CircularProgress,
+  FormControl,
+  FormControlLabel,
+  Switch,
+  Divider,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { fDateTime } from "src/utils/format-time";
@@ -31,11 +35,89 @@ export default function InitiateJVPage() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 50,
   });
   const [totalCount, setTotalCount] = useState(0);
+  const [autoReversal, setAutoReversal] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  const getData = async () => {
+  // Generate mock data for infinite scrolling
+  const generateMockData = (startIndex, count) => {
+    const documentTypes = [
+      "Invoice",
+      "Credit Note",
+      "Journal Entry",
+      "Payment Voucher",
+      "Receipt Voucher",
+    ];
+    const businessAreas = [
+      "Sales",
+      "Finance",
+      "Operations",
+      "Procurement",
+      "Marketing",
+    ];
+    const accountTypes = ["Asset", "Liability", "Expense", "Revenue", "Equity"];
+    const postingKeys = [
+      "40 - Customer Invoice",
+      "50 - Vendor Invoice",
+      "11 - Cash Receipt",
+      "21 - Cash Payment",
+      "31 - Bank Receipt",
+    ];
+    const statuses = ["Draft", "Submitted", "Approved", "Rejected", "Pending"];
+    const companies = [
+      "ABC Company Ltd",
+      "XYZ Corporation",
+      "DEF Industries",
+      "GHI Suppliers",
+      "JKL Enterprises",
+      "MNO Solutions",
+      "PQR Systems",
+      "STU Technologies",
+    ];
+
+    return Array.from({ length: count }, (_, index) => {
+      const globalIndex = startIndex + index;
+      const docType = documentTypes[globalIndex % documentTypes.length];
+      const businessArea = businessAreas[globalIndex % businessAreas.length];
+      const accountType = accountTypes[globalIndex % accountTypes.length];
+      const postingKey = postingKeys[globalIndex % postingKeys.length];
+      const status = statuses[globalIndex % statuses.length];
+      const company = companies[globalIndex % companies.length];
+      const amount = Math.floor(Math.random() * 200000) + 10000;
+      const date = new Date(2024, 8, 12 - (globalIndex % 30)); // Random dates in September 2024
+
+      return {
+        _id: `jv_${globalIndex + 1}`,
+        srNo: `JV${String(globalIndex + 1).padStart(3, "0")}`,
+        documentType: docType,
+        documentDate: date,
+        postingDate: date,
+        businessArea: businessArea,
+        accountType: accountType,
+        postingKey: postingKey,
+        vendorCustomerGLName: company,
+        vendorCustomerGLNumber: `GL${String(globalIndex + 1).padStart(3, "0")}`,
+        amount: amount,
+        assignment: `Assignment ${globalIndex + 1}`,
+        costCenter: `CC${String(globalIndex + 1).padStart(3, "0")}`,
+        profitCenter: `PC${String(globalIndex + 1).padStart(3, "0")}`,
+        specialGLIndication: `SGI${String(globalIndex + 1).padStart(3, "0")}`,
+        referenceNumber: `REF${String(globalIndex + 1).padStart(3, "0")}`,
+        personalNumber: `PN${String(globalIndex + 1).padStart(3, "0")}`,
+        remarks: `Sample journal voucher entry ${
+          globalIndex + 1
+        } for ${docType.toLowerCase()} processing`,
+        autoReversal: globalIndex % 3 === 0 ? "Y" : "N",
+        status: status,
+        createdAt: date,
+        sno: globalIndex + 1,
+      };
+    });
+  };
+
+  const getData = async (isLoadMore = false) => {
     try {
       setLoading(true);
 
@@ -43,144 +125,27 @@ export default function InitiateJVPage() {
       console.log("Fetching JV data with params:", {
         page: paginationModel.page + 1,
         limit: paginationModel.pageSize,
+        isLoadMore,
       });
 
-      // Mock data for development
-      const mockData = [
-        {
-          _id: "1",
-          srNo: "JV001",
-          documentType: "Invoice",
-          documentDate: new Date("2024-09-12"),
-          postingDate: new Date("2024-09-12"),
-          businessArea: "Sales",
-          accountType: "Asset",
-          postingKey: "40 - Customer Invoice",
-          vendorCustomerGLName: "ABC Company Ltd",
-          vendorCustomerGLNumber: "GL001",
-          amount: 50000,
-          assignment: "Assignment 1",
-          costCenter: "CC001",
-          profitCenter: "PC001",
-          specialGLIndication: "SGI001",
-          referenceNumber: "REF001",
-          personalNumber: "PN001",
-          remarks: "Sample journal voucher entry for invoice processing",
-          autoReversal: "N",
-          status: "Draft",
-          createdAt: new Date("2024-09-12"),
-        },
-        {
-          _id: "2",
-          srNo: "JV002",
-          documentType: "Credit Note",
-          documentDate: new Date("2024-09-11"),
-          postingDate: new Date("2024-09-11"),
-          businessArea: "Finance",
-          accountType: "Liability",
-          postingKey: "50 - Vendor Invoice",
-          vendorCustomerGLName: "XYZ Corporation",
-          vendorCustomerGLNumber: "GL002",
-          amount: 25000,
-          assignment: "Assignment 2",
-          costCenter: "CC002",
-          profitCenter: "PC002",
-          specialGLIndication: "SGI002",
-          referenceNumber: "REF002",
-          personalNumber: "PN002",
-          remarks: "Credit note for returned goods and services",
-          autoReversal: "Y",
-          status: "Submitted",
-          createdAt: new Date("2024-09-11"),
-        },
-        {
-          _id: "3",
-          srNo: "JV003",
-          documentType: "Journal Entry",
-          documentDate: new Date("2024-09-10"),
-          postingDate: new Date("2024-09-10"),
-          businessArea: "Operations",
-          accountType: "Expense",
-          postingKey: "11 - Cash Receipt",
-          vendorCustomerGLName: "DEF Industries",
-          vendorCustomerGLNumber: "GL003",
-          amount: 75000,
-          assignment: "Assignment 3",
-          costCenter: "CC003",
-          profitCenter: "PC003",
-          specialGLIndication: "SGI003",
-          referenceNumber: "REF003",
-          personalNumber: "PN003",
-          remarks: "Monthly expense adjustment and reconciliation",
-          autoReversal: "N",
-          status: "Approved",
-          createdAt: new Date("2024-09-10"),
-        },
-        {
-          _id: "4",
-          srNo: "JV004",
-          documentType: "Payment Voucher",
-          documentDate: new Date("2024-09-09"),
-          postingDate: new Date("2024-09-09"),
-          businessArea: "Procurement",
-          accountType: "Asset",
-          postingKey: "21 - Cash Payment",
-          vendorCustomerGLName: "GHI Suppliers",
-          vendorCustomerGLNumber: "GL004",
-          amount: 120000,
-          assignment: "Assignment 4",
-          costCenter: "CC004",
-          profitCenter: "PC004",
-          specialGLIndication: "SGI004",
-          referenceNumber: "REF004",
-          personalNumber: "PN004",
-          remarks: "Payment voucher for supplier invoice settlement",
-          autoReversal: "N",
-          status: "Pending",
-          createdAt: new Date("2024-09-09"),
-        },
-        {
-          _id: "5",
-          srNo: "JV005",
-          documentType: "Receipt Voucher",
-          documentDate: new Date("2024-09-08"),
-          postingDate: new Date("2024-09-08"),
-          businessArea: "Sales",
-          accountType: "Asset",
-          postingKey: "31 - Bank Receipt",
-          vendorCustomerGLName: "JKL Enterprises",
-          vendorCustomerGLNumber: "GL005",
-          amount: 85000,
-          assignment: "Assignment 5",
-          costCenter: "CC005",
-          profitCenter: "PC005",
-          specialGLIndication: "SGI005",
-          referenceNumber: "REF005",
-          personalNumber: "PN005",
-          remarks: "Receipt voucher for customer payment received",
-          autoReversal: "Y",
-          status: "Rejected",
-          createdAt: new Date("2024-09-08"),
-        },
-      ];
-
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const startIndex = paginationModel.page * paginationModel.pageSize;
-      const paginatedData = mockData.slice(
-        startIndex,
-        startIndex + paginationModel.pageSize
-      );
-      const dataWithSno = paginatedData.map((item, index) => ({
-        ...item,
-        sno: startIndex + index + 1,
-      }));
+      const newData = generateMockData(startIndex, paginationModel.pageSize);
 
-      setData(dataWithSno);
-      setTotalCount(mockData.length);
+      if (isLoadMore) {
+        setData((prevData) => [...prevData, ...newData]);
+      } else {
+        setData(newData);
+      }
 
-      console.log("Mock JV data loaded:", dataWithSno);
+      // Simulate having more data (in real app, this would come from API response)
+      const totalMockRecords = 1000; // Simulate 1000 total records
+      setTotalCount(totalMockRecords);
+      setHasMore(startIndex + paginationModel.pageSize < totalMockRecords);
+
+      console.log("Mock JV data loaded:", newData);
     } catch (error) {
       console.error("Failed to fetch JV data:", error);
       showErrorMessage(error, "Failed to fetch journal voucher data", swal);
@@ -191,7 +156,30 @@ export default function InitiateJVPage() {
 
   useEffect(() => {
     getData();
-  }, [paginationModel]);
+  }, [paginationModel.page]);
+
+  // Handle infinite scrolling
+  const handleScroll = useCallback(
+    (event) => {
+      const { scrollTop, scrollHeight, clientHeight } = event.target;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
+
+      if (isNearBottom && hasMore && !loading) {
+        setPaginationModel((prev) => ({
+          ...prev,
+          page: prev.page + 1,
+        }));
+      }
+    },
+    [hasMore, loading]
+  );
+
+  // Load more data when page changes
+  useEffect(() => {
+    if (paginationModel.page > 0) {
+      getData(true);
+    }
+  }, [paginationModel.page]);
 
   const handleAddSuccess = () => {
     setAddModalOpen(false);
@@ -203,6 +191,35 @@ export default function InitiateJVPage() {
     setUploadModalOpen(false);
     getData();
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
+  };
+
+  const handleSubmitRequest = async () => {
+    try {
+      // For development - using console log instead of API call
+      console.log("Submitting JV request with data:", {
+        entries: data,
+        autoReversal: autoReversal,
+        totalEntries: data.length,
+        totalAmount: data.reduce((sum, item) => sum + (item.amount || 0), 0),
+      });
+
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      swal(
+        "Success!",
+        "Journal voucher request submitted successfully!",
+        "success"
+      );
+
+      // Reset form
+      setData([]);
+      setPaginationModel({ page: 0, pageSize: 50 });
+      setAutoReversal(false);
+    } catch (error) {
+      console.error("Submit error:", error);
+      showErrorMessage(error, "Failed to submit journal voucher request", swal);
+    }
   };
 
   const getStatusChip = (status) => {
@@ -450,68 +467,51 @@ export default function InitiateJVPage() {
         <title>Initiate Journal Voucher</title>
       </Helmet>
 
-      <Container maxWidth="xl">
-        <Box sx={{ mb: 2 }}>
-          {/* <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold" }}>
-            Initiate Journal Voucher
-          </Typography> */}
-          {/* <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ fontSize: "0.875rem" }}
+      <Container maxWidth="xl" sx={{ mb: -15 }}>
+        {/* Header Section */}
+        <Box sx={{ mb: 0 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: 1,
+            }}
           >
-            Today Date:{" "}
-            {new Date().toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            })}
-          </Typography> */}
+            <IconButton size="small" color="error">
+              <Iconify icon="eva:info-fill" />
+            </IconButton>
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => setAddModalOpen(true)}
+              sx={{
+                fontSize: "0.875rem",
+                "&:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
+            >
+              Add Manual
+            </Button>
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => setUploadModalOpen(true)}
+              sx={{
+                fontSize: "0.875rem",
+                "&:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
+            >
+              Upload File
+            </Button>
+          </Box>
         </Box>
 
         <Card>
-          <CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                mb: 2,
-              }}
-            >
-              {/* <Typography variant="h6" sx={{ fontSize: '1.1rem' }}>Journal Voucher Entries</Typography> */}
-              <Box sx={{ display: "flex", gap: 1.5 }}>
-                <Button
-                  variant="text"
-                  size="small"
-                  //   startIcon={<Iconify icon="eva:plus-fill" />}
-                  onClick={() => setAddModalOpen(true)}
-                  sx={{
-                    fontSize: "0.875rem",
-                    "&:hover": {
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                >
-                  Add Manual
-                </Button>
-                <Button
-                  variant="text"
-                  size="small"
-                  //   startIcon={<Iconify icon="eva:upload-fill" />}
-                  onClick={() => setUploadModalOpen(true)}
-                  sx={{
-                    fontSize: "0.875rem",
-                    "&:hover": {
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                >
-                  Upload File
-                </Button>
-              </Box>
-            </Box>
-
+          <CardContent sx={{ p: 0 }}>
             {data.length === 0 && !loading ? (
               <Paper
                 sx={{
@@ -519,6 +519,7 @@ export default function InitiateJVPage() {
                   textAlign: "center",
                   backgroundColor: "#fafafa",
                   borderRadius: 2,
+                  m: 2,
                 }}
               >
                 <Iconify
@@ -548,48 +549,123 @@ export default function InitiateJVPage() {
                 </Typography>
               </Paper>
             ) : (
-              <DataGrid
-                rows={data}
-                columns={columns}
-                getRowId={(row) => row._id || row.sno}
-                loading={loading}
-                pagination
-                paginationMode="server"
-                rowCount={totalCount}
-                paginationModel={paginationModel}
-                onPaginationModelChange={setPaginationModel}
-                pageSizeOptions={[5, 10, 25, 50]}
-                disableRowSelectionOnClick
-                columnResize
-                disableColumnResize={false}
+              <Box
                 sx={{
-                  height: 600,
-                  "& .MuiDataGrid-cell": {
-                    "&:focus": {
-                      outline: "none",
-                    },
-                    "&:focus-visible": {
-                      outline: "none",
-                    },
-                  },
-                  "& .MuiDataGrid-row": {
-                    "&:focus": {
-                      outline: "none",
-                    },
-                    "&:focus-visible": {
-                      outline: "none",
-                    },
-                  },
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: "#f5f6f8",
-                    fontWeight: "bold",
-                    color: "#637381",
-                  },
+                  height: "calc(100vh - 220px)",
+                  overflow: "auto",
+                  marginBottom: { xs: "0px", sm: "0px" },
+                  minHeight: "300px",
+                  maxHeight: "70vh",
                 }}
-              />
+                onScroll={handleScroll}
+              >
+                <DataGrid
+                  rows={data}
+                  columns={columns}
+                  getRowId={(row) => row._id || row.sno}
+                  loading={loading}
+                  pagination={false}
+                  disableRowSelectionOnClick
+                  columnResize
+                  disableColumnResize={false}
+                  hideFooter
+                  sx={{
+                    height: "100%",
+                    border: "none",
+                    "& .MuiDataGrid-cell": {
+                      "&:focus": {
+                        outline: "none",
+                      },
+                      "&:focus-visible": {
+                        outline: "none",
+                      },
+                    },
+                    "& .MuiDataGrid-row": {
+                      "&:focus": {
+                        outline: "none",
+                      },
+                      "&:focus-visible": {
+                        outline: "none",
+                      },
+                    },
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f5f6f8",
+                      fontWeight: "bold",
+                      color: "#637381",
+                    },
+                  }}
+                />
+                {loading && hasMore && (
+                  <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                )}
+              </Box>
             )}
           </CardContent>
         </Card>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, sm: 0 },
+            minHeight: { xs: "auto", sm: "60px" },
+            mt: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: { xs: "center", sm: "flex-start" },
+            }}
+          >
+            <FormControl component="fieldset">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={autoReversal}
+                    onChange={(e) => setAutoReversal(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label={
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Auto-reversal this transaction:{" "}
+                    {autoReversal ? "Yes" : "No"}
+                  </Typography>
+                }
+              />
+            </FormControl>
+          </Box>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmitRequest}
+            disabled={data.length === 0}
+            sx={{
+              px: { xs: 2, sm: 3 },
+              py: { xs: 1.5, sm: 1 },
+              fontSize: { xs: "0.8rem", sm: "0.875rem" },
+              fontWeight: "bold",
+              width: { xs: "100%", sm: "auto" },
+              minWidth: { xs: "auto", sm: "240px" },
+            }}
+          >
+            Submit Request
+          </Button>
+        </Box>
 
         <AddJVModal
           open={addModalOpen}
