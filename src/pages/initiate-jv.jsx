@@ -45,6 +45,7 @@ export default function InitiateJVPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [autoReversal, setAutoReversal] = useState("No");
   const [hasMore, setHasMore] = useState(true);
+  const [showInfoText, setShowInfoText] = useState(false);
 
   // Generate mock data for infinite scrolling
   const generateMockData = (startIndex, count) => {
@@ -421,9 +422,9 @@ export default function InitiateJVPage() {
       headerAlign: "center",
       resizable: false,
       renderCell: (params) => (
-        <Box 
-          sx={{ 
-            display: "flex", 
+        <Box
+          sx={{
+            display: "flex",
             gap: 1,
             alignItems: "center",
             justifyContent: "center",
@@ -494,19 +495,44 @@ export default function InitiateJVPage() {
       </Helmet>
 
       <Container maxWidth="xl" sx={{ mb: -15 }}>
-        {/* Header Section */}
         <Box sx={{ mb: 0 }}>
           <Box
             sx={{
               display: "flex",
               justifyContent: "flex-end",
               alignItems: "center",
-              gap: 1,
+              gap: 0.2,
             }}
           >
-            <IconButton size="small" color="error">
+            {showInfoText && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "red",
+                  marginRight: "4px",
+                  fontWeight: "500"
+                }}
+              >
+                use a unique serial number for each SAP debit and credit entry
+              </span>
+            )}
+            <IconButton 
+              size="small" 
+              color="error" 
+              sx={{ p: 0, mr: 0.5 }}
+              onClick={() => setShowInfoText(!showInfoText)}
+            >
               <Iconify icon="eva:info-fill" />
             </IconButton>
+            <span
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "bold",
+                color: "#2c72d8",
+              }}
+            >
+              |
+            </span>
             <Button
               variant="text"
               size="small"
@@ -520,6 +546,15 @@ export default function InitiateJVPage() {
             >
               Add Manual
             </Button>
+            <span
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "bold",
+                color: "#2c72d8",
+              }}
+            >
+              |
+            </span>
             <Button
               variant="text"
               size="small"
@@ -615,17 +650,17 @@ export default function InitiateJVPage() {
                         outline: "none",
                       },
                     },
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: "#f5f6f8",
-                    fontWeight: "bold",
-                    color: "#637381",
-                  },
-                  "& .MuiDataGrid-cell:focus": {
-                    outline: "none",
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.04)",
-                  },
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f5f6f8",
+                      fontWeight: "bold",
+                      color: "#637381",
+                    },
+                    "& .MuiDataGrid-cell:focus": {
+                      outline: "none",
+                    },
+                    "& .MuiDataGrid-row:hover": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
                   }}
                 />
                 {loading && hasMore && (
@@ -668,12 +703,12 @@ export default function InitiateJVPage() {
               >
                 Auto-reversal this transaction:
               </Typography>
-              <FormControl 
-                sx={{ 
+              <FormControl
+                sx={{
                   minWidth: 80,
                   "& .MuiOutlinedInput-root": {
                     height: "40px",
-                  }
+                  },
                 }}
               >
                 <Select
