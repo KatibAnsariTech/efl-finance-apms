@@ -259,7 +259,7 @@ export default function JVStatusPage() {
             fontWeight: 600,
             "&:hover": { color: "#1565c0" },
           }}
-          onClick={() => router.push(`/jvm/jv-status/view/${params.row._id}`)}
+          onClick={() => router.push(`/jv-detail/${params.row._id}`)}
         >
           {params.value}
         </Box>

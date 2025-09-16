@@ -32,6 +32,7 @@ import PettyCashDashboard from "src/pages/petty-cash-dashboard";
 // JVM subpages
 import JVStatusPage from "src/pages/jv-status";
 import InitiateJVPage from "src/pages/initiate-jv";
+import JVDetailPage from "src/pages/jv-detail";
 // Import Payment subpages
 import ImportPaymentUploadPage from "src/pages/import-payment-upload";
 // Custom Duty subpages
@@ -217,6 +218,10 @@ export default function Router() {
         {
           path: "/jvm/initiate-jv",
           element: <RoleRoute path="/jvm/initiate-jv" element={<InitiateJVPage />} />,
+        },
+        {
+          path: "/jv-detail/:jvId",
+          element: <JVDetailPage />,
         },
         // Import Payment subpages
         {
