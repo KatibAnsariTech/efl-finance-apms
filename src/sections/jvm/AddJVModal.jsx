@@ -185,15 +185,13 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
 
       const submitData = {
         ...formData,
-        documentDate: formData.documentDate.toISOString(),
-        postingDate: formData.postingDate.toISOString(),
+        documentDate: formData.documentDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        postingDate: formData.postingDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
         amount: parseFloat(formData.amount),
       };
 
-      const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
-      await axios.post(BASE_URL, submitData);
-
-      onSuccess();
+      // Call onSuccess with the form data instead of API call
+      onSuccess(submitData);
     } catch (error) {
       console.error("Error creating journal voucher:", error);
       showErrorMessage(error, "Failed to create journal voucher", swal);

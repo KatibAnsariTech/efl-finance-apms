@@ -36,97 +36,67 @@ import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function InitiateJVPage() {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 50,
-  });
-  const [totalCount, setTotalCount] = useState(0);
   const [autoReversal, setAutoReversal] = useState("No");
-  const [hasMore, setHasMore] = useState(true);
   const [showInfoText, setShowInfoText] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
 
-  const getData = async (isLoadMore = false) => {
-    try {
-      setLoading(true);
-      const pageParam = paginationModel.page + 1; // API is usually 1-based
-      const limitParam = paginationModel.pageSize;
-      const params = { page: pageParam, limit: limitParam };
-      if (searchTerm && searchTerm.trim()) params.search = searchTerm.trim();
-
-      const response = await axios.get(BASE_URL, { params });
-      const payload = response?.data?.data || {};
-      const items = Array.isArray(payload?.data) ? payload.data : [];
-      const total = Number(payload?.total || 0);
-
-      if (isLoadMore) {
-        setData((prev) => [...prev, ...items]);
-      } else {
-        setData(items);
-      }
-
-      setTotalCount(total);
-      const fetchedSoFar = (pageParam - 1) * limitParam + items.length;
-      setHasMore(fetchedSoFar < total);
-    } catch (error) {
-      console.error("Failed to fetch JV data:", error);
-      showErrorMessage(error, "Failed to fetch journal voucher data", swal);
-    } finally {
-      setLoading(false);
-    }
+  // Add new JV entry to local state
+  const addJVEntry = (newEntry) => {
+    const entryWithId = {
+      ...newEntry,
+      _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sno: data.length + 1,
+      srNo: newEntry.srNo || (data.length + 1).toString(),
+      createdAt: new Date().toISOString(),
+    };
+    setData(prev => [...prev, entryWithId]);
   };
 
-  useEffect(() => {
-    getData();
-  }, [paginationModel.page, searchTerm]);
+  // Update JV entry in local state
+  const updateJVEntry = (updatedEntry) => {
+    setData(prev => prev.map(item => 
+      item._id === updatedEntry._id ? { ...updatedEntry, sno: item.sno } : item
+    ));
+  };
 
-  // Handle infinite scrolling
-  const handleScroll = useCallback(
-    (event) => {
-      const { scrollTop, scrollHeight, clientHeight } = event.target;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
+  // Remove JV entry from local state
+  const removeJVEntry = (entryId) => {
+    setData(prev => {
+      const filtered = prev.filter(item => item._id !== entryId);
+      // Reassign serial numbers
+      return filtered.map((item, index) => ({ 
+        ...item, 
+        sno: index + 1,
+        srNo: item.srNo || (index + 1).toString()
+      }));
+    });
+  };
 
-      if (isNearBottom && hasMore && !loading) {
-        setPaginationModel((prev) => ({
-          ...prev,
-          page: prev.page + 1,
-        }));
-      }
-    },
-    [hasMore, loading]
-  );
-
-  // Load more data when page changes
-  useEffect(() => {
-    if (paginationModel.page > 0) {
-      getData(true);
-    }
-  }, [paginationModel.page]);
-
-  const handleAddSuccess = () => {
+  const handleAddSuccess = (newEntry) => {
+    addJVEntry(newEntry);
     setAddModalOpen(false);
-    getData();
     swal("Success!", "Journal voucher added successfully!", "success");
   };
 
-  const handleEditSuccess = () => {
+  const handleEditSuccess = (updatedEntry) => {
+    updateJVEntry(updatedEntry);
     setEditModalOpen(false);
     setEditData(null);
-    getData();
     swal("Success!", "Journal voucher updated successfully!", "success");
   };
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (uploadedEntries) => {
+    // Add all uploaded entries to local state
+    uploadedEntries.forEach(entry => addJVEntry(entry));
     setUploadModalOpen(false);
-    getData();
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
 
@@ -136,17 +106,35 @@ export default function InitiateJVPage() {
 
   const handleConfirmSubmit = async () => {
     try {
-      // For development - using console log instead of API call
-      console.log("Submitting JV request with data:", {
-        entries: data,
-        autoReversal: autoReversal,
-        totalEntries: data.length,
-        totalAmount: data.reduce((sum, item) => sum + (item.amount || 0), 0),
-      });
+      setSubmitting(true);
+      const journalVouchers = data.map(entry => ({
+        srNo: entry.srNo || entry.sno?.toString(),
+        documentType: entry.documentType,
+        documentDate: entry.documentDate,
+        businessArea: entry.businessArea,
+        accountType: entry.accountType,
+        postingKey: entry.postingKey,
+        vendorCustomerGLNumber: entry.vendorCustomerGLNumber,
+        amount: parseFloat(entry.amount),
+        assignment: entry.assignment,
+        profitCenter: entry.profitCenter,
+        specialGLIndication: entry.specialGLIndication,
+        referenceNumber: entry.referenceNumber,
+        remarks: entry.remarks,
+        postingDate: entry.postingDate,
+        vendorCustomerGLName: entry.vendorCustomerGLName,
+        costCenter: entry.costCenter,
+        personalNumber: entry.personalNumber,
+        autoReversal: autoReversal === "Yes" ? "Y" : "N"
+      }));
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const requestBody = {
+        journalVouchers
+      };
 
+      // Call the importJV API endpoint
+      const response = await userRequest.post(`${BASE_URL}/createJV`, requestBody);
+      
       swal(
         "Success!",
         "Journal voucher request submitted successfully!",
@@ -155,12 +143,13 @@ export default function InitiateJVPage() {
 
       // Reset form
       setData([]);
-      setPaginationModel({ page: 0, pageSize: 50 });
       setAutoReversal("No");
       setConfirmModalOpen(false);
     } catch (error) {
       console.error("Submit error:", error);
       showErrorMessage(error, "Failed to submit journal voucher request", swal);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -185,6 +174,7 @@ export default function InitiateJVPage() {
       align: "center",
       headerAlign: "center",
       resizable: true,
+      renderCell: (params) => params.row.sno || params.row.srNo || params.value,
     },
     {
       field: "documentType",
@@ -197,14 +187,24 @@ export default function InitiateJVPage() {
       headerName: "Document Date",
       width: 140,
       resizable: true,
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => {
+        if (!params.value) return '';
+        // Handle both ISO date strings and YYYY-MM-DD format
+        const date = new Date(params.value);
+        return isNaN(date.getTime()) ? params.value : date.toLocaleDateString('en-GB');
+      },
     },
     {
       field: "postingDate",
       headerName: "Posting Date",
       width: 140,
       resizable: true,
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => {
+        if (!params.value) return '';
+        // Handle both ISO date strings and YYYY-MM-DD format
+        const date = new Date(params.value);
+        return isNaN(date.getTime()) ? params.value : date.toLocaleDateString('en-GB');
+      },
     },
     {
       field: "businessArea",
@@ -383,15 +383,8 @@ export default function InitiateJVPage() {
 
     if (result) {
       try {
-        // For development - using console log instead of API call
-        console.log("Deleting JV with ID:", row._id);
-        console.log("JV data to delete:", row);
-
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
+        removeJVEntry(row._id);
         swal("Deleted!", "Journal voucher has been deleted.", "success");
-        getData();
       } catch (error) {
         console.error("Delete error:", error);
         showErrorMessage(error, "Failed to delete journal voucher", swal);
@@ -524,12 +517,10 @@ export default function InitiateJVPage() {
               <Box
                 sx={{
                   height: "calc(100vh - 220px)",
-                  overflow: "auto",
                   marginBottom: { xs: "0px", sm: "0px" },
                   minHeight: "300px",
                   maxHeight: "70vh",
                 }}
-                onScroll={handleScroll}
               >
                 <DataGrid
                   rows={data}
@@ -576,11 +567,6 @@ export default function InitiateJVPage() {
                     },
                   }}
                 />
-                {loading && hasMore && (
-                  <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
-                    <CircularProgress size={24} />
-                  </Box>
-                )}
               </Box>
             )}
           </CardContent>
@@ -690,6 +676,7 @@ export default function InitiateJVPage() {
           onConfirm={handleConfirmSubmit}
           data={data}
           autoReversal={autoReversal}
+          loading={submitting}
         />
       </Container>
     </>

@@ -50,7 +50,8 @@
     "simplebar-react": "^3.2.4",
     "socket.io-client": "^4.7.5",
     "sweetalert": "^2.1.2",
-    "to-words": "^4.5.1"
+    "to-words": "^4.5.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^3.4.0",

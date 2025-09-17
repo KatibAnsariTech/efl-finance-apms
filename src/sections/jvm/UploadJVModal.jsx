@@ -4,6 +4,7 @@ import swal from "sweetalert";
 import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import { getErrorMessage, showErrorMessage } from "src/utils/errorUtils";
+import * as XLSX from 'xlsx';
 
 export default function UploadJVModal({ open, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -59,7 +60,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
   };
   const triggerFileInput = () => inputRef.current.click();
 
-  // Upload logic (direct API)
+  // Upload logic - extract data from Excel file
   const handleUpload = async () => {
     if (!selectedFile) return;
 
@@ -68,31 +69,119 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
     setUploadError("");
     setUploadSuccess(false);
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
     try {
-      const response = await userRequest.post("https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers/uploadjvexcel", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(progress);
-        },
-      });
+      let jsonData;
+      
+      if (selectedFile.name.toLowerCase().endsWith('.csv')) {
+        // Handle CSV file
+        const text = await selectedFile.text();
+        const lines = text.split('\n');
+        jsonData = lines.map(line => line.split(','));
+      } else {
+        // Handle Excel file
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        
+        // Get the first worksheet
+        const worksheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[worksheetName];
+        
+        // Convert to JSON
+        jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      }
+      
+      // Skip header row and process data
+      const headers = jsonData[0];
+      const dataRows = jsonData.slice(1);
+      
+      // Map the data to our JV structure
+      const extractedData = dataRows.map((row, index) => {
+        const entry = {};
+        headers.forEach((header, colIndex) => {
+          const value = row[colIndex];
+          if (value !== undefined && value !== null && value !== '') {
+            // Map common column names to our field names
+            const fieldMap = {
+              'Sr.No': 'srNo',
+              'Serial Number': 'srNo',
+              'Document Type': 'documentType',
+              'Document Date': 'documentDate',
+              'Business Area': 'businessArea',
+              'Account Type': 'accountType',
+              'Posting Key': 'postingKey',
+              'Vendor/Customer/GL Number': 'vendorCustomerGLNumber',
+              'Vendor/Customer/GL Name': 'vendorCustomerGLName',
+              'Amount': 'amount',
+              'Assignment': 'assignment',
+              'Cost Center': 'costCenter',
+              'Profit Center': 'profitCenter',
+              'Special GL Indication': 'specialGLIndication',
+              'Reference Number': 'referenceNumber',
+              'Personal Number': 'personalNumber',
+              'Remarks': 'remarks',
+              'Posting Date': 'postingDate',
+              'Auto Reversal': 'autoReversal',
+              // Direct field name mapping
+              'documentType': 'documentType',
+              'documentDate': 'documentDate',
+              'businessArea': 'businessArea',
+              'accountType': 'accountType',
+              'postingKey': 'postingKey',
+              'vendorCustomerGLNumber': 'vendorCustomerGLNumber',
+              'vendorCustomerGLName': 'vendorCustomerGLName',
+              'amount': 'amount',
+              'assignment': 'assignment',
+              'costCenter': 'costCenter',
+              'profitCenter': 'profitCenter',
+              'specialGLIndication': 'specialGLIndication',
+              'referenceNumber': 'referenceNumber',
+              'personalNumber': 'personalNumber',
+              'remarks': 'remarks',
+              'postingDate': 'postingDate',
+              'autoReversal': 'autoReversal'
+            };
+            
+            const fieldName = fieldMap[header] || header.toLowerCase().replace(/\s+/g, '');
+            entry[fieldName] = value;
+          }
+        });
+        
+        // Ensure required fields have default values
+        return {
+          ...entry,
+          srNo: entry.srNo || (index + 1).toString(),
+          documentType: entry.documentType || 'DR',
+          documentDate: entry.documentDate || new Date().toISOString().split('T')[0],
+          postingDate: entry.postingDate || new Date().toISOString().split('T')[0],
+          businessArea: entry.businessArea || '1000',
+          accountType: entry.accountType || 'S',
+          postingKey: entry.postingKey || '40',
+          amount: parseFloat(entry.amount) || 0,
+          assignment: entry.assignment || '',
+          profitCenter: entry.profitCenter || '1000',
+          specialGLIndication: entry.specialGLIndication || 'N',
+          referenceNumber: entry.referenceNumber || '',
+          remarks: entry.remarks || '',
+          vendorCustomerGLName: entry.vendorCustomerGLName || '',
+          costCenter: entry.costCenter || '1000',
+          personalNumber: entry.personalNumber || '',
+          autoReversal: entry.autoReversal || 'N'
+        };
+      }).filter(entry => entry.amount > 0); // Filter out entries with zero amount
 
+      setUploadProgress(100);
       setUploadSuccess(true);
       setSelectedFile(null);
 
-      swal("Upload Successful!", response.data.message, "success");
+      swal("Upload Successful!", `Successfully extracted ${extractedData.length} journal voucher entries from the file.`, "success");
 
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(extractedData);
     } catch (err) {
-      setUploadError(getErrorMessage(err));
+      console.error("Error processing Excel file:", err);
+      setUploadError("Error processing Excel file. Please ensure the file format is correct.");
       showErrorMessage(
         err,
-        "Error uploading file. Please try again later.",
+        "Error processing Excel file. Please check the file format and try again.",
         swal
       );
     } finally {
@@ -102,10 +191,10 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
 
   // Simple sample download
   const handleDownloadSample = () => {
-    const sampleUrl = "/sample-files/jv-sample.xlsx"; // <-- fixed location
+    const sampleUrl = "/sample-files/jv-sample.csv"; // <-- fixed location
     const a = document.createElement("a");
     a.href = sampleUrl;
-    a.download = "Sample_JV.xlsx";
+    a.download = "Sample_JV.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -160,7 +249,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
           <input
             ref={inputRef}
             type="file"
-            accept=".xls,.xlsx"
+            accept=".xls,.xlsx,.csv"
             hidden
             onChange={handleFileChange}
             disabled={uploading}
@@ -188,10 +277,10 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
                   fontWeight: 600,
                 }}
               >
-                Drag & drop Excel file here, or click to select
+                Drag & drop Excel/CSV file here, or click to select
               </Typography>
               <Typography variant="caption" sx={{ color: "#bdbdbd", mt: 0.5 }}>
-                Only .xls, .xlsx files are supported
+                Only .xls, .xlsx, .csv files are supported
               </Typography>
             </>
           )}
