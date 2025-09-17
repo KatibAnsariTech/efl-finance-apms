@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { Navigate } from 'react-router-dom';
+import JVMDashboard from './jvm-dashboard';
 
 export default function JVMPage() {
   return (
@@ -7,7 +7,7 @@ export default function JVMPage() {
       <Helmet>
         <title>JVM</title>
       </Helmet>
-      <Navigate to="/jvm/dashboard" replace />
+      <JVMDashboard />
     </>
   );
 }

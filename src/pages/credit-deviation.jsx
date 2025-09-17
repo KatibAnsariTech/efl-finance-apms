@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { Navigate } from 'react-router-dom';
+import CreditDeviationDashboard from './credit-deviation-dashboard';
 
 export default function CreditDeviationPage() {
   return (
@@ -7,7 +7,7 @@ export default function CreditDeviationPage() {
       <Helmet>
         <title>Credit Deviation</title>
       </Helmet>
-      <Navigate to="/credit-deviation/dashboard" replace />
+      <CreditDeviationDashboard />
     </>
   );
 }

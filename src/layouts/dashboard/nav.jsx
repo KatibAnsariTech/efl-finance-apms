@@ -135,7 +135,7 @@ const Sidebar = ({
           const hasActiveSubItem = item.subItems.some(
             (subItem) => subItem.id === activeItem
           );
-          if (hasActiveSubItem) {
+          if (hasActiveSubItem || item.id === activeItem) {
             newExpandedItems[item.id] = true;
           }
         }
@@ -151,22 +151,12 @@ const Sidebar = ({
 
   const handleItemClick = (itemId, hasSubItems, path) => {
     if (hasSubItems) {
-      if (!expandedItems[itemId]) {
-        const item = navigationItems.find((navItem) => navItem.id === itemId);
-        if (item && item.subItems && item.subItems.length > 0) {
-          handleNavigation(item.subItems[0].path);
-        }
-        setExpandedItems((prev) => {
-          const newExpandedItems = {};
-          newExpandedItems[itemId] = true;
-          return newExpandedItems;
-        });
-      } else {
-        setExpandedItems((prev) => ({
-          ...prev,
-          [itemId]: false,
-        }));
-      }
+      handleNavigation(path);
+      setExpandedItems((prev) => {
+        const newExpandedItems = {};
+        newExpandedItems[itemId] = true;
+        return newExpandedItems;
+      });
     } else {
       setExpandedItems({});
       handleNavigation(path);

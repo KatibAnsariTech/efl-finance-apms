@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { Navigate } from 'react-router-dom';
+import PettyCashDashboard from './petty-cash-dashboard';
 
 export default function PettyCashPage() {
   return (
@@ -7,7 +7,7 @@ export default function PettyCashPage() {
       <Helmet>
         <title>Petty Cash</title>
       </Helmet>
-      <Navigate to="/petty-cash/dashboard" replace />
+      <PettyCashDashboard />
     </>
   );
 }

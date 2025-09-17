@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { Navigate } from 'react-router-dom';
+import CustomDutyDashboard from './custom-duty-dashboard';
 
 export default function CustomDutyPage() {
   return (
@@ -7,7 +7,7 @@ export default function CustomDutyPage() {
       <Helmet>
         <title>Custom Duty</title>
       </Helmet>
-      <Navigate to="/custom-duty/dashboard" replace />
+      <CustomDutyDashboard />
     </>
   );
 }

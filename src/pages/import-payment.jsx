@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { Navigate } from 'react-router-dom';
+import ImportPaymentDashboard from './import-payment-dashboard';
 
 export default function ImportPaymentPage() {
   return (
@@ -7,7 +7,7 @@ export default function ImportPaymentPage() {
       <Helmet>
         <title>Import Payment</title>
       </Helmet>
-      <Navigate to="/import-payment/dashboard" replace />
+      <ImportPaymentDashboard />
     </>
   );
 }
