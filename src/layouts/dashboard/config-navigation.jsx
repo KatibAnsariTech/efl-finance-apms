@@ -11,6 +11,8 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 const navConfig = [
   {
@@ -25,42 +27,49 @@ const navConfig = [
         id: 'request',
         title: 'Request',
         path: '/credit-deviation/request',
+        icon: <RequestPageIcon />,
         roles: ["REQUESTER"],
       },
       {
         id: 'request-status',
         title: 'Request Status',
         path: '/credit-deviation/request-status',
+        icon: <TableChartIcon />,
         roles: ["REQUESTER"],
       },
       {
         id: 'approval',
         title: 'Approval',
         path: '/credit-deviation/approvals',
+        icon: <CheckCircleIcon />,
         roles: ["APPROVER"],
       },
       {
         id: 'master-data',
         title: 'Master Data',
         path: '/credit-deviation/master',
+        icon: <AssignmentIcon />,
         roles: ["SUPER_ADMIN"],
       },
       {
         id: 'user-management',
         title: 'User Management',
         path: '/credit-deviation/usermanagement',
+        icon: <ManageAccountsIcon />,
         roles: ["SUPER_ADMIN"],
       },
       {
         id: 'master-sheet',
         title: 'Master Sheet',
         path: '/credit-deviation/master-sheet',
+        icon: <TableChartIcon />,
         roles: ["ADMIN", "SUPER_ADMIN"],
       },
       {
         id: 'h-management',
         title: 'H. Management',
         path: '/credit-deviation/hierarchy-management',
+        icon: <AccountTreeIcon />,
         roles: ["SUPER_ADMIN"],
       },
     ],
@@ -77,12 +86,14 @@ const navConfig = [
         id: 'jv-status', 
         title: "JV's Status", 
         path: '/jvm/jv-status',
+        icon: <AssignmentTurnedInIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
       { 
         id: 'initiate-jv', 
         title: 'Initiate JV', 
         path: '/jvm/initiate-jv',
+        icon: <RequestPageIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       }
     ],
@@ -99,6 +110,7 @@ const navConfig = [
         id: 'import-payment-upload', 
         title: 'Upload Payment', 
         path: '/import-payment/upload',
+        icon: <FileUploadIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       }
     ],
@@ -115,6 +127,7 @@ const navConfig = [
         id: 'custom-duty-payment', 
         title: 'Duty Payment', 
         path: '/custom-duty/payment',
+        icon: <AccountBalanceIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
     ],
@@ -131,6 +144,7 @@ const navConfig = [
         id: 'petty-cash-request', 
         title: 'Request Petty Cash', 
         path: '/petty-cash/request',
+        icon: <AttachMoneyIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       }
     ],

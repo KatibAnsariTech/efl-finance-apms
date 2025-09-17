@@ -13,6 +13,7 @@ import {
   Button,
   Collapse,
   Divider,
+  Tooltip,
 } from "@mui/material";
 import {
   TbLayoutSidebarLeftCollapse,
@@ -298,7 +299,7 @@ const Sidebar = ({
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: collapsed ? "auto" : "24px",
+                      minWidth: collapsed ? "auto" : "20px",
                       color:
                         activeItem === item.id ||
                         (item.hasSubItems &&
@@ -309,10 +310,12 @@ const Sidebar = ({
                           : "#666666",
                       display: "flex",
                       justifyContent: "center",
-                      marginRight: collapsed ? 0 : "12px",
+                      marginRight: collapsed ? 0 : "10px",
                     }}
                   >
-                    {item.icon}
+                    <Box sx={{ fontSize: collapsed ? 18 : 20, display: 'flex', alignItems: 'center' }}>
+                      {item.icon}
+                    </Box>
                   </ListItemIcon>
                   {!collapsed && (
                     <>
@@ -382,7 +385,7 @@ const Sidebar = ({
                 </ListItemButton>
               </ListItem>
 
-              {item.hasSubItems && !collapsed && (
+              {item.hasSubItems && (
                 <Collapse
                   in={expandedItems[item.id]}
                   timeout="auto"
@@ -395,7 +398,7 @@ const Sidebar = ({
                           sx={{
                             borderRadius: "6px",
                             marginBottom: "2px",
-                            padding: "6px 16px 6px 40px",
+                            padding: collapsed ? "4px 6px" : "4px 14px 4px 36px",
                             // backgroundColor: activeItem === subItem.id ? '#E3F2FD' : 'transparent',
                             // '&:hover': {
                             //   backgroundColor: activeItem === subItem.id ? '#E3F2FD' : '#F0F0F0',
@@ -404,39 +407,59 @@ const Sidebar = ({
                               backgroundColor: "#F0F0F0",
                             },
                             transition: "all 0.2s ease",
-                            minHeight: "30px",
+                            minHeight: "28px",
                             whiteSpace: "nowrap",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
+                            justifyContent: collapsed ? "center" : "flex-start",
+                            backgroundColor:
+                              activeItem === subItem.id ? "transparent" : "transparent",
+                            marginLeft: collapsed ? 0 : 0,
                           }}
                           onClick={() =>
                             handleSubItemClick(subItem.id, item.id)
                           }
                         >
-                          <ListItemText
-                            sx={{
+                          <Tooltip title={subItem.title} placement="right" disableHoverListener={!collapsed}>
+                            <ListItemIcon
+                              sx={{
+                              minWidth: "auto",
+                              color: activeItem === subItem.id ? "#1877F2" : "#666666",
                               display: "flex",
-                              alignItems: "center",
-                              position: "relative",
-                              flex: 1,
-                              minWidth: 0,
-                              "& .MuiListItemText-primary": {
-                                fontFamily: "Arial, sans-serif",
-                                fontSize: "13px",
-                                fontWeight:
-                                  activeItem === subItem.id ? "500" : "400",
-                                color:
-                                  activeItem === subItem.id
-                                    ? "#1877F2"
-                                    : "#555555",
-                                textTransform: "none",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              },
-                            }}
-                            primary={subItem.title}
-                          />
+                              justifyContent: "center",
+                              marginRight: collapsed ? 0 : "10px",
+                              '& svg': { fontSize: collapsed ? 16 : 18 },
+                              }}
+                            >
+                              {subItem.icon}
+                            </ListItemIcon>
+                          </Tooltip>
+                          {!collapsed && (
+                            <ListItemText
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                position: "relative",
+                                flex: 1,
+                                minWidth: 0,
+                                "& .MuiListItemText-primary": {
+                                  fontFamily: "Arial, sans-serif",
+                                  fontSize: "13px",
+                                  fontWeight:
+                                    activeItem === subItem.id ? "500" : "400",
+                                  color:
+                                    activeItem === subItem.id
+                                      ? "#1877F2"
+                                      : "#555555",
+                                  textTransform: "none",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                },
+                              }}
+                              primary={subItem.title}
+                            />
+                          )}
                         </ListItemButton>
                       </ListItem>
                     ))}
