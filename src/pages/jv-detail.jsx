@@ -278,7 +278,7 @@ export default function JVDetailPage() {
       headerAlign: "center",
     },
     {
-      field: "jvNo",
+      field: "sNo",
       headerName: "JV No",
       flex: 1,
       minWidth: 120,
@@ -445,30 +445,6 @@ export default function JVDetailPage() {
         </Box>
       ),
     },
-    {
-      field: "attachmentUrl",
-      headerName: "Attachment",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => {
-        if (!params.value) return "-";
-        return (
-          <Box
-            sx={{
-              cursor: "pointer",
-              color: "#1976d2",
-              textDecoration: "underline",
-              "&:hover": { color: "#1565c0" },
-            }}
-            onClick={() => window.open(params.value, "_blank")}
-          >
-            View
-          </Box>
-        );
-      },
-    },
   ];
 
   // Apply filtering and sorting to the data
@@ -479,7 +455,7 @@ export default function JVDetailPage() {
     if (search) {
       filteredData = filteredData.filter((item) =>
         [
-          "jvNo",
+          "sNo",
           "documentType",
           "businessArea",
           "accountType",
