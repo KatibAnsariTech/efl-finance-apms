@@ -499,15 +499,15 @@ export default function InitiateJVPage() {
                   fontSize: "0.75rem",
                   color: "red",
                   marginRight: "4px",
-                  fontWeight: "500"
+                  fontWeight: "500",
                 }}
               >
                 use a unique serial number for each SAP debit and credit entry
               </span>
             )}
-            <IconButton 
-              size="small" 
-              color="error" 
+            <IconButton
+              size="small"
+              color="error"
               sx={{ p: 0, mr: 0.5 }}
               onClick={() => setShowInfoText(!showInfoText)}
             >
@@ -663,7 +663,7 @@ export default function InitiateJVPage() {
             )}
           </CardContent>
         </Card>
-        
+
         {/* Footer section - only show when there's data */}
         {data.length > 0 && (
           <Box
@@ -674,7 +674,7 @@ export default function InitiateJVPage() {
               flexDirection: { xs: "column", sm: "row" },
               gap: { xs: 2, sm: 0 },
               minHeight: { xs: "auto", sm: "60px" },
-              mt: 2,
+              mt: { xs: 1, xl: 2 },
             }}
           >
             <Box
