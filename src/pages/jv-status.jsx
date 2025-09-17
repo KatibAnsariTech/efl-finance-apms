@@ -16,8 +16,8 @@ import { useCounts } from "src/contexts/CountsContext";
 import { Box, Tooltip } from "@mui/material";
 import RequestModal from "../sections/approvals/RequestModal";
 import { fDateTime } from "src/utils/format-time";
-import swal from 'sweetalert';
-import { showErrorMessage } from 'src/utils/errorUtils';
+import swal from "sweetalert";
+import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
 
 export default function JVStatusPage() {
@@ -126,15 +126,12 @@ export default function JVStatusPage() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      const newData = generateMockData(
-        page * rowsPerPage,
-        rowsPerPage
-      );
-      
+
+      const newData = generateMockData(page * rowsPerPage, rowsPerPage);
+
       setData(newData);
       setTotalCount(1000); // Mock total count
-      
+
       // Calculate status counts
       const counts = {
         all: 1000,
@@ -155,11 +152,10 @@ export default function JVStatusPage() {
   }, [page, rowsPerPage, selectedTab]);
 
   const handleFilterChange = (filterType, value) => {
-    if (filterType === 'search') {
+    if (filterType === "search") {
       setSearch(value);
     }
   };
-
 
   const handleExport = () => {
     // Export functionality
@@ -203,27 +199,26 @@ export default function JVStatusPage() {
 
   const getStatusColor = (status) => {
     const statusColors = {
-      'Approved': '#e8f5e8',
-      'Rejected': '#ffcdd2',
-      'Pending': '#f4f5ba',
+      Approved: "#e8f5e8",
+      Rejected: "#ffcdd2",
+      Pending: "#f4f5ba",
     };
-    return statusColors[status] || '#f5f5f5';
+    return statusColors[status] || "#f5f5f5";
   };
-
 
   const getStatusChip = (status) => {
     return (
       <Box
         sx={{
-          display: 'inline-block',
+          display: "inline-block",
           px: 1.5,
           py: 0.5,
           borderRadius: 1,
           backgroundColor: getStatusColor(status),
-          color: '#333',
-          fontSize: '0.75rem',
+          color: "#333",
+          fontSize: "0.75rem",
           fontWeight: 600,
-          textTransform: 'uppercase',
+          textTransform: "uppercase",
         }}
       >
         {status}
@@ -232,15 +227,6 @@ export default function JVStatusPage() {
   };
 
   const columns = [
-    {
-      field: "createdAt",
-      headerName: "Created Date",
-      flex: 1,
-      minWidth: 200,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
     {
       field: "slNo",
       headerName: "JV No.",
@@ -259,11 +245,22 @@ export default function JVStatusPage() {
             fontWeight: 600,
             "&:hover": { color: "#1565c0" },
           }}
-          onClick={() => router.push(`/jvm/jv-status/jv-detail/${params.row._id}`)}
+          onClick={() =>
+            router.push(`/jvm/jv-status/jv-detail/${params.row._id}`)
+          }
         >
           {params.value}
         </Box>
       ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Created Date",
+      flex: 1,
+      minWidth: 200,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => fDateTime(params.value),
     },
     {
       field: "status",
@@ -272,81 +269,61 @@ export default function JVStatusPage() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => getStatusChip(params.value),
+      // renderCell: (params) => getStatusChip(params.value),
     },
     {
-      field: "documentType",
-      headerName: "Document Type",
+      field: "totalDebit",
+      headerName: "Total Debit",
       flex: 1,
       minWidth: 120,
       align: "center",
       headerAlign: "center",
     },
     {
-      field: "businessArea",
-      headerName: "Business Area",
+      field: "totalCredit",
+      headerName: "Total Credit",
       flex: 1,
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-    },
-    {
-      field: "vendorCustomerGLName",
-      headerName: "Vendor/Customer/GL Name",
-      flex: 1,
-      minWidth: 150,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "amount",
-      headerName: "Amount",
-      flex: 1,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "referenceNumber",
-      headerName: "Reference Number",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
+    }
   ];
 
   // Apply filtering and sorting to the data
   const dataFiltered = (() => {
     let filteredData = [...data];
-    
+
     // Apply status tab filter
     if (selectedTab !== "all") {
-      filteredData = filteredData.filter((item) =>
-        item.status?.toLowerCase() === selectedTab.toLowerCase()
+      filteredData = filteredData.filter(
+        (item) => item.status?.toLowerCase() === selectedTab.toLowerCase()
       );
     }
-    
+
     // Apply search filter if search term exists
     if (search) {
       filteredData = filteredData.filter((item) =>
-        ['documentType', 'businessArea', 'vendorCustomerGLName', 'referenceNumber', 'slNo']
-          .some(field => 
-            item[field]?.toString().toLowerCase().includes(search.toLowerCase())
-          )
+        [
+          "documentType",
+          "businessArea",
+          "vendorCustomerGLName",
+          "referenceNumber",
+          "slNo",
+        ].some((field) =>
+          item[field]?.toString().toLowerCase().includes(search.toLowerCase())
+        )
       );
     }
-    
+
     // Apply sorting
-    const comparator = getComparator('desc', 'createdAt');
+    const comparator = getComparator("desc", "createdAt");
     const stabilizedThis = filteredData.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
       const order = comparator(a[0], b[0]);
       if (order !== 0) return order;
       return a[1] - b[1];
     });
-    
+
     return stabilizedThis.map((el) => el[0]);
   })();
 
@@ -355,7 +332,7 @@ export default function JVStatusPage() {
       <Helmet>
         <title>JV's Status</title>
       </Helmet>
-      
+
       <Container>
         <FormRequestTabs
           selectedTab={selectedTab}
@@ -376,35 +353,16 @@ export default function JVStatusPage() {
               onFilterChange={handleFilterChange}
               placeholder="Search JVs..."
             />
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                fontSize: "0.8rem",
-                fontWeight: "bold",
-                cursor: "pointer",
-                gap: "8px",
-              }}
-            >
-              <span onClick={handleExport} style={{ color: "#167beb" }}>
-                Export{" "}
-                <img src={excel} style={{ width: "1.2rem", marginLeft: "5px" }} />
-              </span>
-            </div>
           </div>
-
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={dataFiltered?.map((row, index) => ({
-                id: row._id,
-                ...row,
-                backgroundColor: getStatusColor(row.status),
-                style: {
-                  backgroundColor: getStatusColor(row.status),
-                },
-              })) || []}
+              rows={
+                dataFiltered?.map((row, index) => ({
+                  id: row._id,
+                  ...row,
+                })) || []
+              }
               columns={columns}
               getRowId={(row) => row?.id}
               loading={loading}
@@ -419,13 +377,13 @@ export default function JVStatusPage() {
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               autoHeight
-              getRowClassName={(params) => {
-                const status = params.row.status?.toLowerCase();
-                if (status === 'pending') return 'row-pending';
-                if (status === 'rejected') return 'row-rejected';
-                if (status === 'approved') return 'row-approved';
-                return '';
-              }}
+              // getRowClassName={(params) => {
+              //   const status = params.row.status?.toLowerCase();
+              //   if (status === "pending") return "row-pending";
+              //   if (status === "rejected") return "row-rejected";
+              //   if (status === "approved") return "row-approved";
+              //   return "";
+              // }}
               disableRowSelectionOnClick
               sx={{
                 "& .MuiDataGrid-cell": {
@@ -475,22 +433,22 @@ export default function JVStatusPage() {
               }}
             />
           </Box>
-        <Box
-          sx={{
-            position: "relative",
-            height: "52px", // Match DataGrid footer height
-            marginTop: "-52px", // Overlap with DataGrid footer
-            display: "flex",
-            alignItems: "center",
-            paddingLeft: "16px",
-            zIndex: 0, // Lower z-index so pagination is clickable
-            pointerEvents: "none", // Allow clicks to pass through
-          }}
-        >
-          <Box sx={{ pointerEvents: "auto" }}>
-            <JVColorIndicators />
+          <Box
+            sx={{
+              position: "relative",
+              height: "52px", // Match DataGrid footer height
+              marginTop: "-52px", // Overlap with DataGrid footer
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "16px",
+              zIndex: 0, // Lower z-index so pagination is clickable
+              pointerEvents: "none", // Allow clicks to pass through
+            }}
+          >
+            {/* <Box sx={{ pointerEvents: "auto" }}>
+              <JVColorIndicators />
+            </Box> */}
           </Box>
-        </Box>
         </Card>
       </Container>
     </>
