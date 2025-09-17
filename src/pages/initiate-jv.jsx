@@ -100,11 +100,12 @@ export default function InitiateJVPage() {
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
 
-  const handleSubmitRequest = () => {
-    setConfirmModalOpen(true);
-  };
+  // const handleSubmitRequest = () => {
+  //   setConfirmModalOpen(true);
+  // };
 
-  const handleConfirmSubmit = async () => {
+  // const handleConfirmSubmit = async () => {
+  const handleSubmitRequest = async () => {
     try {
       setSubmitting(true);
       const journalVouchers = data.map(entry => ({
