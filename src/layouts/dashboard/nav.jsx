@@ -262,36 +262,50 @@ const Sidebar = ({
           }}
         >
           {navigationItems.map((item) => (
-            <React.Fragment key={item.id}>
+            <Box
+              key={item.id}
+              sx={{
+                marginBottom: "4px",
+                borderRadius: "8px",
+                backgroundColor:
+                  activeItem === item.id ||
+                  (item.hasSubItems &&
+                    item.subItems.some(
+                      (subItem) => activeItem === subItem.id
+                    ))
+                    ? "#E3F2FD"
+                    : "transparent",
+                "&:hover": {
+                  backgroundColor:
+                    activeItem === item.id ||
+                    (item.hasSubItems &&
+                      item.subItems.some(
+                        (subItem) => activeItem === subItem.id
+                      ))
+                      ? "#E3F2FD"
+                      : "#F0F0F0",
+                },
+                transition: "all 0.2s ease",
+                overflow: "hidden",
+              }}
+            >
               <ListItem disablePadding>
                 <ListItemButton
                   sx={{
                     borderRadius: "8px",
-                    marginBottom: "4px",
                     padding: "8px 16px",
-                    backgroundColor:
-                      activeItem === item.id ||
-                      (item.hasSubItems &&
-                        item.subItems.some(
-                          (subItem) => activeItem === subItem.id
-                        ))
-                        ? "#E3F2FD"
-                        : "transparent",
+                    backgroundColor: "transparent",
                     "&:hover": {
-                      backgroundColor:
-                        activeItem === item.id ||
-                        (item.hasSubItems &&
-                          item.subItems.some(
-                            (subItem) => activeItem === subItem.id
-                          ))
-                          ? "#E3F2FD"
-                          : "#F0F0F0",
+                      backgroundColor: "transparent",
                     },
                     transition: "all 0.2s ease",
                     minHeight: "36px",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    justifyContent: collapsed ? "center" : "flex-start",
+                    display: "flex",
+                    alignItems: "center",
                   }}
                   onClick={() =>
                     handleItemClick(item.id, item.hasSubItems, item.path)
@@ -310,6 +324,7 @@ const Sidebar = ({
                           : "#666666",
                       display: "flex",
                       justifyContent: "center",
+                      alignItems: "center",
                       marginRight: collapsed ? 0 : "10px",
                     }}
                   >
@@ -396,15 +411,12 @@ const Sidebar = ({
                       <ListItem key={subItem.id} disablePadding>
                         <ListItemButton
                           sx={{
-                            borderRadius: "6px",
-                            marginBottom: "2px",
+                            borderRadius: "0px",
+                            marginBottom: "0px",
                             padding: collapsed ? "4px 6px" : "4px 14px 4px 36px",
-                            // backgroundColor: activeItem === subItem.id ? '#E3F2FD' : 'transparent',
-                            // '&:hover': {
-                            //   backgroundColor: activeItem === subItem.id ? '#E3F2FD' : '#F0F0F0',
-                            // },
+                            backgroundColor: "transparent",
                             "&:hover": {
-                              backgroundColor: "#F0F0F0",
+                              backgroundColor: "rgba(0, 0, 0, 0.04)",
                             },
                             transition: "all 0.2s ease",
                             minHeight: "28px",
@@ -412,9 +424,9 @@ const Sidebar = ({
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             justifyContent: collapsed ? "center" : "flex-start",
-                            backgroundColor:
-                              activeItem === subItem.id ? "transparent" : "transparent",
                             marginLeft: collapsed ? 0 : 0,
+                            display: "flex",
+                            alignItems: "center",
                           }}
                           onClick={() =>
                             handleSubItemClick(subItem.id, item.id)
@@ -427,6 +439,7 @@ const Sidebar = ({
                               color: activeItem === subItem.id ? "#1877F2" : "#666666",
                               display: "flex",
                               justifyContent: "center",
+                              alignItems: "center",
                               marginRight: collapsed ? 0 : "10px",
                               '& svg': { fontSize: collapsed ? 16 : 18 },
                               }}
@@ -466,7 +479,7 @@ const Sidebar = ({
                   </List>
                 </Collapse>
               )}
-            </React.Fragment>
+            </Box>
           ))}
         </List>
       )}
