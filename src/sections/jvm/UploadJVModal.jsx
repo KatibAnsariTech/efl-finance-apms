@@ -109,6 +109,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
               'JVNO': 'sNo',
               'Sr.No': 'sNo',
               'srNo': 'sNo',
+              'sno': 'sNo',
               'srno': 'sNo',
               'SRNO': 'sNo',
               'Serial Number': 'sNo',
