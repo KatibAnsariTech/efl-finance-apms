@@ -134,11 +134,33 @@ export default function JVDetailPage() {
     setLoading(true);
     try {
       // Check if we have data passed from the previous page
-      const passedData = location.state;
+      let passedData = location.state;
+      console.log("Location state:", passedData);
       
-      if (passedData && passedData.rows) {
+      // If location.state is null, try to get data from localStorage
+      if (!passedData) {
+        console.log("Location state is null, trying localStorage...");
+        const storedData = localStorage.getItem('jvDetailData');
+        if (storedData) {
+          try {
+            passedData = JSON.parse(storedData);
+            console.log("Retrieved data from localStorage:", passedData);
+            // Clear the stored data after retrieving
+            localStorage.removeItem('jvDetailData');
+          } catch (error) {
+            console.error("Error parsing stored data:", error);
+          }
+        }
+      }
+      
+      console.log("Final passedData:", passedData);
+      console.log("Has rows property:", passedData?.rows);
+      console.log("Rows length:", passedData?.rows?.length);
+      
+      if (passedData && passedData.rows && Array.isArray(passedData.rows) && passedData.rows.length > 0) {
         // Use the passed data from API directly
         const apiRows = passedData.rows;
+        console.log("API Rows received:", apiRows);
         
         // Process API rows data with minimal transformation
         const processedData = apiRows.map((row, index) => ({
@@ -148,6 +170,8 @@ export default function JVDetailPage() {
           postingDate: new Date(row.postingDate || row.createdAt),
           createdAt: new Date(row.createdAt),
         }));
+        
+        console.log("Processed data:", processedData);
 
         // Create JV info from passed data
         const jvHeaderInfo = {
@@ -163,8 +187,9 @@ export default function JVDetailPage() {
         setTotalCount(processedData.length);
       } else {
         // Fallback to mock data if no data passed
-      const detailData = generateJVDetailData(jvId, 15);
-      const jvHeaderInfo = generateJVInfo(jvId);
+        console.log("Using fallback mock data - no passedData or rows found");
+        const detailData = generateJVDetailData(jvId, 15);
+        const jvHeaderInfo = generateJVInfo(jvId);
 
       // Calculate totals
       const totalDebit = detailData.reduce(

@@ -138,6 +138,10 @@ export default function JVStatusPage() {
       if (response.data.statusCode === 200) {
         const apiData = response.data.data.data;
         const { total, totalGroups } = response.data.data;
+        
+        console.log("API Response:", response.data);
+        console.log("API Data:", apiData);
+        console.log("First item structure:", apiData[0]);
 
         // Use API data directly
         const processedData = apiData.map((item) => ({
@@ -268,6 +272,12 @@ export default function JVStatusPage() {
           }}
           onClick={() => {
             // Pass the complete data to the detail page
+            console.log("Passing data to detail page:", params.row);
+            console.log("Rows in the data:", params.row.rows);
+            
+            // Store data in localStorage as backup
+            localStorage.setItem('jvDetailData', JSON.stringify(params.row));
+            
             router.push(`/jvm/jv-status/jv-detail/${params.row.requestNo}`, { 
               state: params.row 
             });
