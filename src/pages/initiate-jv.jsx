@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 
 // DEVELOPMENT MODE: This page uses mock data and console logging instead of API calls
 // for testing purposes. Replace with actual API calls when backend is ready.
@@ -22,6 +23,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  TextField,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { fDateTime } from "src/utils/format-time";
@@ -48,112 +50,32 @@ export default function InitiateJVPage() {
   const [hasMore, setHasMore] = useState(true);
   const [showInfoText, setShowInfoText] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Generate mock data for infinite scrolling
-  const generateMockData = (startIndex, count) => {
-    const documentTypes = [
-      "Invoice",
-      "Credit Note",
-      "Journal Entry",
-      "Payment Voucher",
-      "Receipt Voucher",
-    ];
-    const businessAreas = [
-      "Sales",
-      "Finance",
-      "Operations",
-      "Procurement",
-      "Marketing",
-    ];
-    const accountTypes = ["Asset", "Liability", "Expense", "Revenue", "Equity"];
-    const postingKeys = [
-      "40 - Customer Invoice",
-      "50 - Vendor Invoice",
-      "11 - Cash Receipt",
-      "21 - Cash Payment",
-      "31 - Bank Receipt",
-    ];
-    const statuses = ["Draft", "Submitted", "Approved", "Rejected", "Pending"];
-    const companies = [
-      "ABC Company Ltd",
-      "XYZ Corporation",
-      "DEF Industries",
-      "GHI Suppliers",
-      "JKL Enterprises",
-      "MNO Solutions",
-      "PQR Systems",
-      "STU Technologies",
-    ];
-
-    return Array.from({ length: count }, (_, index) => {
-      const globalIndex = startIndex + index;
-      const docType = documentTypes[globalIndex % documentTypes.length];
-      const businessArea = businessAreas[globalIndex % businessAreas.length];
-      const accountType = accountTypes[globalIndex % accountTypes.length];
-      const postingKey = postingKeys[globalIndex % postingKeys.length];
-      const status = statuses[globalIndex % statuses.length];
-      const company = companies[globalIndex % companies.length];
-      const amount = Math.floor(Math.random() * 200000) + 10000;
-      const date = new Date(2024, 8, 12 - (globalIndex % 30)); // Random dates in September 2024
-
-      return {
-        _id: `jv_${globalIndex + 1}`,
-        srNo: `JV${String(globalIndex + 1).padStart(3, "0")}`,
-        documentType: docType,
-        documentDate: date,
-        postingDate: date,
-        businessArea: businessArea,
-        accountType: accountType,
-        postingKey: postingKey,
-        vendorCustomerGLName: company,
-        vendorCustomerGLNumber: `GL${String(globalIndex + 1).padStart(3, "0")}`,
-        amount: amount,
-        assignment: `Assignment ${globalIndex + 1}`,
-        costCenter: `CC${String(globalIndex + 1).padStart(3, "0")}`,
-        profitCenter: `PC${String(globalIndex + 1).padStart(3, "0")}`,
-        specialGLIndication: `SGI${String(globalIndex + 1).padStart(3, "0")}`,
-        referenceNumber: `REF${String(globalIndex + 1).padStart(3, "0")}`,
-        personalNumber: `PN${String(globalIndex + 1).padStart(3, "0")}`,
-        remarks: `Sample journal voucher entry ${
-          globalIndex + 1
-        } for ${docType.toLowerCase()} processing`,
-        autoReversal: globalIndex % 3 === 0 ? "Y" : "N",
-        status: status,
-        createdAt: date,
-        sno: globalIndex + 1,
-      };
-    });
-  };
+  const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
 
   const getData = async (isLoadMore = false) => {
     try {
       setLoading(true);
+      const pageParam = paginationModel.page + 1; // API is usually 1-based
+      const limitParam = paginationModel.pageSize;
+      const params = { page: pageParam, limit: limitParam };
+      if (searchTerm && searchTerm.trim()) params.search = searchTerm.trim();
 
-      // For development - using mock data instead of API call
-      console.log("Fetching JV data with params:", {
-        page: paginationModel.page + 1,
-        limit: paginationModel.pageSize,
-        isLoadMore,
-      });
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const startIndex = paginationModel.page * paginationModel.pageSize;
-      const newData = generateMockData(startIndex, paginationModel.pageSize);
+      const response = await axios.get(BASE_URL, { params });
+      const payload = response?.data?.data || {};
+      const items = Array.isArray(payload?.data) ? payload.data : [];
+      const total = Number(payload?.total || 0);
 
       if (isLoadMore) {
-        setData((prevData) => [...prevData, ...newData]);
+        setData((prev) => [...prev, ...items]);
       } else {
-        setData(newData);
+        setData(items);
       }
 
-      // Simulate having more data (in real app, this would come from API response)
-      const totalMockRecords = 1000; // Simulate 1000 total records
-      setTotalCount(totalMockRecords);
-      setHasMore(startIndex + paginationModel.pageSize < totalMockRecords);
-
-      console.log("Mock JV data loaded:", newData);
+      setTotalCount(total);
+      const fetchedSoFar = (pageParam - 1) * limitParam + items.length;
+      setHasMore(fetchedSoFar < total);
     } catch (error) {
       console.error("Failed to fetch JV data:", error);
       showErrorMessage(error, "Failed to fetch journal voucher data", swal);
@@ -164,7 +86,7 @@ export default function InitiateJVPage() {
 
   useEffect(() => {
     getData();
-  }, [paginationModel.page]);
+  }, [paginationModel.page, searchTerm]);
 
   // Handle infinite scrolling
   const handleScroll = useCallback(

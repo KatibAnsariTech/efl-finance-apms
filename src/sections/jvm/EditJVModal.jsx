@@ -24,7 +24,7 @@ import { RxCross2 } from "react-icons/rx";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { userRequest } from "src/requestMethod";
+import axios from "axios";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import Iconify from "src/components/iconify/iconify";
@@ -172,14 +172,10 @@ export default function EditJVModal({ open, onClose, onSuccess, editData }) {
         amount: parseFloat(formData.amount),
       };
 
-      // For development - using console log instead of API call
-      console.log("Updating journal voucher with data:", submitData);
-      console.log("Original data:", editData);
+      const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
+      const id = editData?._id || editData?.id || editData?.srNo;
+      await axios.put(`${BASE_URL}/${id}`, submitData);
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      console.log("Journal voucher updated successfully!");
       onSuccess();
     } catch (error) {
       console.error("Error updating journal voucher:", error);
