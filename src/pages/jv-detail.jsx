@@ -10,12 +10,13 @@ import { useRouter } from "src/routes/hooks";
 import { Box, Tooltip, Typography, IconButton } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 // import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function JVDetailPage() {
   const router = useRouter();
   const { jvId } = useParams();
+  const location = useLocation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -132,9 +133,36 @@ export default function JVDetailPage() {
   const getData = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Check if we have data passed from the previous page
+      const passedData = location.state;
+      
+      if (passedData && passedData.rows) {
+        // Use the passed data from API directly
+        const apiRows = passedData.rows;
+        
+        // Process API rows data with minimal transformation
+        const processedData = apiRows.map((row, index) => ({
+          ...row,
+          id: row._id || `row_${index}`,
+          lineNumber: index + 1,
+          postingDate: new Date(row.postingDate || row.createdAt),
+          createdAt: new Date(row.createdAt),
+        }));
 
+        // Create JV info from passed data
+        const jvHeaderInfo = {
+          requestNo: passedData.requestNo,
+          status: passedData.status,
+          totalDebit: passedData.totalDebit || 0,
+          totalCredit: passedData.totalCredit || 0,
+          createdDate: new Date(passedData.createdAt),
+        };
+
+        setData(processedData);
+        setJvInfo(jvHeaderInfo);
+        setTotalCount(processedData.length);
+      } else {
+        // Fallback to mock data if no data passed
       const detailData = generateJVDetailData(jvId, 15);
       const jvHeaderInfo = generateJVInfo(jvId);
 
@@ -154,6 +182,7 @@ export default function JVDetailPage() {
       setData(detailData);
       setJvInfo(jvHeaderInfo);
       setTotalCount(detailData.length);
+      }
     } catch (error) {
       console.error("Error fetching JV detail data:", error);
     } finally {
@@ -249,60 +278,86 @@ export default function JVDetailPage() {
       headerAlign: "center",
     },
     {
-      field: "glAccount",
-      headerName: "GL Account",
-      flex: 1,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "accountCode",
-      headerName: "Account Description",
-      flex: 2,
-      minWidth: 200,
-      align: "left",
-      headerAlign: "center",
-    },
-    {
-      field: "description",
-      headerName: "Line Description",
-      flex: 2.5,
-      minWidth: 250,
-      align: "left",
-      headerAlign: "center",
-    },
-    {
-      field: "debitAmount",
-      headerName: "Debit Amount",
-      flex: 1.2,
-      minWidth: 130,
-      align: "right",
-      headerAlign: "center",
-      renderCell: (params) =>
-        params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
-    },
-    {
-      field: "creditAmount",
-      headerName: "Credit Amount",
-      flex: 1.2,
-      minWidth: 130,
-      align: "right",
-      headerAlign: "center",
-      renderCell: (params) =>
-        params.value > 0 ? `₹${params.value?.toLocaleString()}` : "-",
-    },
-    {
-      field: "reference",
-      headerName: "Reference",
+      field: "jvNo",
+      headerName: "JV No",
       flex: 1,
       minWidth: 120,
       align: "center",
       headerAlign: "center",
     },
     {
-      field: "costCenter",
-      headerName: "Cost Center",
+      field: "documentType",
+      headerName: "Document Type",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "documentDate",
+      headerName: "Document Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => fDateTime(params.value),
+    },
+    {
+      field: "businessArea",
+      headerName: "Business Area",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "accountType",
+      headerName: "Account Type",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "postingKey",
+      headerName: "Posting Key",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "vendorCustomerGLNumber",
+      headerName: "GL Number",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "vendorCustomerGLName",
+      headerName: "GL Name",
+      flex: 2,
+      minWidth: 200,
+      align: "left",
+      headerAlign: "center",
+    },
+    {
+      field: "amount",
+      headerName: "Amount",
+      flex: 1.2,
+      minWidth: 130,
+      align: "right",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const amount = params.value;
+        const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
+        return amount >= 0 ? formattedAmount : `(${formattedAmount})`;
+      },
+    },
+    {
+      field: "assignment",
+      headerName: "Assignment",
       flex: 1,
       minWidth: 120,
       align: "center",
@@ -317,6 +372,30 @@ export default function JVDetailPage() {
       headerAlign: "center",
     },
     {
+      field: "specialGLIndication",
+      headerName: "Special GL",
+      flex: 1,
+      minWidth: 100,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "referenceNumber",
+      headerName: "Reference",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "remarks",
+      headerName: "Remarks",
+      flex: 2,
+      minWidth: 200,
+      align: "left",
+      headerAlign: "center",
+    },
+    {
       field: "postingDate",
       headerName: "Posting Date",
       flex: 1,
@@ -324,6 +403,71 @@ export default function JVDetailPage() {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => fDateTime(params.value),
+    },
+    {
+      field: "costCenter",
+      headerName: "Cost Center",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "personalNumber",
+      headerName: "Personal No.",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "autoReversal",
+      headerName: "Auto Reversal",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: "inline-block",
+            px: 1,
+            py: 0.5,
+            borderRadius: 1,
+            backgroundColor: params.value === "Y" ? "#e8f5e8" : "#f5f5f5",
+            color: params.value === "Y" ? "#2e7d32" : "#666",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            textTransform: "uppercase",
+          }}
+        >
+          {params.value}
+        </Box>
+      ),
+    },
+    {
+      field: "attachmentUrl",
+      headerName: "Attachment",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        if (!params.value) return "-";
+        return (
+          <Box
+            sx={{
+              cursor: "pointer",
+              color: "#1976d2",
+              textDecoration: "underline",
+              "&:hover": { color: "#1565c0" },
+            }}
+            onClick={() => window.open(params.value, "_blank")}
+          >
+            View
+          </Box>
+        );
+      },
     },
   ];
 
@@ -335,12 +479,21 @@ export default function JVDetailPage() {
     if (search) {
       filteredData = filteredData.filter((item) =>
         [
-          "glAccount",
-          "accountCode",
-          "description",
-          "reference",
-          "costCenter",
+          "jvNo",
+          "documentType",
+          "businessArea",
+          "accountType",
+          "postingKey",
+          "vendorCustomerGLNumber",
+          "vendorCustomerGLName",
+          "assignment",
           "profitCenter",
+          "specialGLIndication",
+          "referenceNumber",
+          "remarks",
+          "costCenter",
+          "personalNumber",
+          "autoReversal",
         ].some((field) =>
           item[field]?.toString().toLowerCase().includes(search.toLowerCase())
         )
@@ -485,7 +638,7 @@ export default function JVDetailPage() {
             <FormTableToolbar
               search={search}
               onFilterChange={handleFilterChange}
-              placeholder="Search by account, description, reference..."
+              placeholder="Search by JV No, document type, GL account, remarks, reference..."
             />
             <Box
               sx={{
@@ -539,12 +692,7 @@ export default function JVDetailPage() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={
-                dataFiltered?.map((row, index) => ({
-                  id: row.id,
-                  ...row,
-                })) || []
-              }
+              rows={dataFiltered || []}
               columns={columns}
               getRowId={(row) => row?.id}
               loading={loading}

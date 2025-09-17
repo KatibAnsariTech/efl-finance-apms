@@ -124,24 +124,45 @@ export default function JVStatusPage() {
   const getData = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await userRequest.get(
+        `https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers/getAllJV`,
+        {
+          params: {
+            page: page + 1, // API uses 1-based pagination
+            limit: rowsPerPage,
+            status: selectedTab !== "all" ? selectedTab : undefined,
+          },
+        }
+      );
 
-      const newData = generateMockData(page * rowsPerPage, rowsPerPage);
+      if (response.data.statusCode === 200) {
+        const apiData = response.data.data.data;
+        const { total, totalGroups } = response.data.data;
 
-      setData(newData);
-      setTotalCount(1000); // Mock total count
+        // Use API data directly
+        const processedData = apiData.map((item) => ({
+          ...item,
+          createdAt: new Date(item.createdAt),
+          updatedAt: new Date(item.updatedAt),
+        }));
 
-      // Calculate status counts
-      const counts = {
-        all: 1000,
-        pending: Math.floor(1000 / 3),
-        approved: Math.floor(1000 / 3),
-        rejected: Math.floor(1000 / 3),
-      };
-      setStatusCounts(counts);
+        setData(processedData);
+        setTotalCount(total);
+
+        // Calculate status counts (you might need a separate API call for this)
+        const counts = {
+          all: total,
+          pending: Math.floor(total / 3), // This should come from API
+          approved: Math.floor(total / 3),
+          rejected: Math.floor(total / 3),
+        };
+        setStatusCounts(counts);
+      } else {
+        throw new Error(response.data.message || "Failed to fetch data");
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
+      showErrorMessage(error, "Failed to fetch JV data", swal);
     } finally {
       setLoading(false);
     }
@@ -228,8 +249,8 @@ export default function JVStatusPage() {
 
   const columns = [
     {
-      field: "slNo",
-      headerName: "JV No.",
+      field: "requestNo",
+      headerName: "Request No.",
       flex: 1,
       minWidth: 160,
       align: "center",
@@ -245,9 +266,12 @@ export default function JVStatusPage() {
             fontWeight: 600,
             "&:hover": { color: "#1565c0" },
           }}
-          onClick={() =>
-            router.push(`/jvm/jv-status/jv-detail/${params.row._id}`)
-          }
+          onClick={() => {
+            // Pass the complete data to the detail page
+            router.push(`/jvm/jv-status/jv-detail/${params.row.requestNo}`, { 
+              state: params.row 
+            });
+          }}
         >
           {params.value}
         </Box>
@@ -278,6 +302,7 @@ export default function JVStatusPage() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => `₹${params.value?.toLocaleString() || '0'}`,
     },
     {
       field: "totalCredit",
@@ -286,6 +311,7 @@ export default function JVStatusPage() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => `₹${params.value?.toLocaleString() || '0'}`,
     }
   ];
 
@@ -304,11 +330,8 @@ export default function JVStatusPage() {
     if (search) {
       filteredData = filteredData.filter((item) =>
         [
-          "documentType",
-          "businessArea",
-          "vendorCustomerGLName",
-          "referenceNumber",
-          "slNo",
+          "requestNo",
+          "status",
         ].some((field) =>
           item[field]?.toString().toLowerCase().includes(search.toLowerCase())
         )
@@ -357,14 +380,9 @@ export default function JVStatusPage() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={
-                dataFiltered?.map((row, index) => ({
-                  id: row._id,
-                  ...row,
-                })) || []
-              }
+              rows={dataFiltered || []}
               columns={columns}
-              getRowId={(row) => row?.id}
+              getRowId={(row) => row?.requestNo}
               loading={loading}
               pagination
               paginationMode="server"
