@@ -53,8 +53,7 @@ export default function InitiateJVPage() {
     const entryWithId = {
       ...newEntry,
       _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      sno: data.length + 1,
-      srNo: newEntry.srNo || (data.length + 1).toString(),
+      sNo: newEntry.sNo || '',
       createdAt: new Date().toISOString(),
     };
     setData(prev => [...prev, entryWithId]);
@@ -63,21 +62,13 @@ export default function InitiateJVPage() {
   // Update JV entry in local state
   const updateJVEntry = (updatedEntry) => {
     setData(prev => prev.map(item => 
-      item._id === updatedEntry._id ? { ...updatedEntry, sno: item.sno } : item
+      item._id === updatedEntry._id ? { ...updatedEntry, sNo: item.sNo } : item
     ));
   };
 
   // Remove JV entry from local state
   const removeJVEntry = (entryId) => {
-    setData(prev => {
-      const filtered = prev.filter(item => item._id !== entryId);
-      // Reassign serial numbers
-      return filtered.map((item, index) => ({ 
-        ...item, 
-        sno: index + 1,
-        srNo: item.srNo || (index + 1).toString()
-      }));
-    });
+    setData(prev => prev.filter(item => item._id !== entryId));
   };
 
   const handleAddSuccess = (newEntry) => {
@@ -111,7 +102,7 @@ export default function InitiateJVPage() {
     try {
       setSubmitting(true);
       const journalVouchers = data.map(entry => ({
-        srNo: entry.srNo || entry.sno?.toString(),
+        sNo: entry.sNo?.toString(),
         documentType: entry.documentType,
         documentDate: entry.documentDate,
         businessArea: entry.businessArea,
@@ -171,13 +162,14 @@ export default function InitiateJVPage() {
 
   const columns = [
     {
-      field: "sno",
-      headerName: "Sr.No",
-      width: 80,
+      field: "sNo",
+      headerName: "JV No",
+      width: 120,
       align: "center",
       headerAlign: "center",
       resizable: true,
-      renderCell: (params) => params.row.sno || params.row.srNo || params.value,
+      editable: true,
+      renderCell: (params) => params.row.sNo || params.value || '',
     },
     {
       field: "documentType",
@@ -528,7 +520,7 @@ export default function InitiateJVPage() {
                 <DataGrid
                   rows={data}
                   columns={columns}
-                  getRowId={(row) => row._id || row.sno}
+                  getRowId={(row) => row._id || row.sNo}
                   loading={loading}
                   pagination={false}
                   disableRowSelectionOnClick
@@ -538,6 +530,14 @@ export default function InitiateJVPage() {
                   hideFooter
                   autoHeight={false}
                   columnResizeMode="onResize"
+                  editMode="cell"
+                  processRowUpdate={(updatedRow, originalRow) => {
+                    updateJVEntry(updatedRow);
+                    return updatedRow;
+                  }}
+                  onProcessRowUpdateError={(error) => {
+                    console.error('Error updating row:', error);
+                  }}
                   sx={{
                     height: "100%",
                     border: "none",

@@ -102,8 +102,18 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
           if (value !== undefined && value !== null && value !== '') {
             // Map common column names to our field names
             const fieldMap = {
-              'Sr.No': 'srNo',
-              'Serial Number': 'srNo',
+              // JV No variations - all map to sNo for backend compatibility
+              'JV No': 'sNo',
+              'jvNo': 'sNo',
+              'jvno': 'sNo',
+              'JVNO': 'sNo',
+              'Sr.No': 'sNo',
+              'srNo': 'sNo',
+              'srno': 'sNo',
+              'SRNO': 'sNo',
+              'Serial Number': 'sNo',
+              'serial number': 'sNo',
+              'SERIAL NUMBER': 'sNo',
               'Document Type': 'documentType',
               'Document Date': 'documentDate',
               'Business Area': 'businessArea',
@@ -141,7 +151,12 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
               'autoReversal': 'autoReversal'
             };
             
-            const fieldName = fieldMap[header] || header.toLowerCase().replace(/\s+/g, '');
+            // Case-insensitive field mapping
+            const normalizedHeader = header?.toString().trim();
+            const fieldName = fieldMap[normalizedHeader] || 
+                             fieldMap[normalizedHeader?.toLowerCase()] || 
+                             fieldMap[normalizedHeader?.toUpperCase()] ||
+                             normalizedHeader?.toLowerCase().replace(/\s+/g, '');
             entry[fieldName] = value;
           }
         });
@@ -149,7 +164,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         // Ensure required fields have default values
         return {
           ...entry,
-          srNo: entry.srNo || (index + 1).toString(),
+          sNo: entry.sNo || '',
           documentType: entry.documentType || 'DR',
           documentDate: entry.documentDate || new Date().toISOString().split('T')[0],
           postingDate: entry.postingDate || new Date().toISOString().split('T')[0],
