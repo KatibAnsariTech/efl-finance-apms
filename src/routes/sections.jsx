@@ -98,7 +98,8 @@ export default function Router() {
     const firstAvailablePage = navConfig.find((nav) =>
       nav.roles.includes(userRole)
     );
-    const redirectPath = firstAvailablePage?.path || "/credit-deviation/request";
+    const redirectPath =
+      firstAvailablePage?.path || "/credit-deviation/request";
     return <Navigate to={redirectPath} replace />;
   };
 
@@ -118,18 +119,149 @@ export default function Router() {
       children: [
         { element: <IndexPage />, index: true },
         // { index: true, element: <RoleBasedRedirect /> },
+
         {
-          path: "dashboard",
-          element: <IndexPage />,
+          path: "/jvm",
+          element: <RoleRoute path="/jvm" element={<JVMPage />} />,
         },
         {
-          path: "request",
-          element: <RoleRoute path="/request" element={<RaiseTicket />} />,
+          path: "/import-payment",
+          element: (
+            <RoleRoute path="/import-payment" element={<ImportPaymentPage />} />
+          ),
+        },
+        {
+          path: "/custom-duty",
+          element: (
+            <RoleRoute path="/custom-duty" element={<CustomDutyPage />} />
+          ),
+        },
+        {
+          path: "/petty-cash",
+          element: <RoleRoute path="/petty-cash" element={<PettyCashPage />} />,
+        },
+        {
+          path: "/credit-deviation",
+          element: (
+            <RoleRoute
+              path="/credit-deviation"
+              element={<CreditDeviationPage />}
+            />
+          ),
+        },
+        {
+          path: "/credit-deviation/dashboard",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/dashboard"
+              element={<CreditDeviationDashboard />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/dashboard",
+          element: (
+            <RoleRoute path="/jvm/dashboard" element={<JVMDashboard />} />
+          ),
+        },
+        {
+          path: "/import-payment/dashboard",
+          element: (
+            <RoleRoute
+              path="/import-payment/dashboard"
+              element={<ImportPaymentDashboard />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/dashboard",
+          element: (
+            <RoleRoute
+              path="/custom-duty/dashboard"
+              element={<CustomDutyDashboard />}
+            />
+          ),
+        },
+        {
+          path: "/petty-cash/dashboard",
+          element: (
+            <RoleRoute
+              path="/petty-cash/dashboard"
+              element={<PettyCashDashboard />}
+            />
+          ),
+        },
+        // Credit Deviation subpages
+        {
+          path: "/credit-deviation/request",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/request"
+              element={<RaiseTicket />}
+            />
+          ),
+        },
+        {
+          path: "/credit-deviation/request-status",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/request-status"
+              element={<FormView />}
+            />
+          ),
+        },
+        {
+          path: "/credit-deviation/approvals",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/approvals"
+              element={<ApprovalView />}
+            />
+          ),
+        },
+        {
+          path: "/credit-deviation/master",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/master"
+              element={<MasterView />}
+            />
+          ),
+        },
+        {
+          path: "/credit-deviation/usermanagement",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/usermanagement"
+              element={<UserManagementView />}
+            />
+          ),
+        },
+        {
+          path: "/credit-deviation/master-sheet",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/master-sheet"
+              element={<MasterSheetView />}
+            />
+          ),
+        },
+        {
+          path: "/credit-deviation/hierarchy-management",
+          element: (
+            <RoleRoute
+              path="/credit-deviation/hierarchy-management"
+              element={<HierarchyManagementView />}
+            />
+          ),
         },
         {
           path: "credit-deviation/approvals/view/:id",
           element: (
-            <RoleRoute path="/credit-deviation/approvals" element={<FormDetailsView />} />
+            <RoleRoute
+              path="/credit-deviation/approvals"
+              element={<FormDetailsView />}
+            />
           ),
         },
         {
@@ -141,83 +273,18 @@ export default function Router() {
             />
           ),
         },
-        {
-          path: "/jvm",
-          element: <RoleRoute path="/jvm" element={<JVMPage />} />,
-        },
-        {
-          path: "/import-payment",
-          element: <RoleRoute path="/import-payment" element={<ImportPaymentPage />} />,
-        },
-        {
-          path: "/custom-duty",
-          element: <RoleRoute path="/custom-duty" element={<CustomDutyPage />} />,
-        },
-        {
-          path: "/petty-cash",
-          element: <RoleRoute path="/petty-cash" element={<PettyCashPage />} />,
-        },
-        {
-          path: "/credit-deviation",
-          element: <RoleRoute path="/credit-deviation" element={<CreditDeviationPage />} />,
-        },
-        {
-          path: "/credit-deviation/dashboard",
-          element: <RoleRoute path="/credit-deviation/dashboard" element={<CreditDeviationDashboard />} />,
-        },
-        {
-          path: "/jvm/dashboard",
-          element: <RoleRoute path="/jvm/dashboard" element={<JVMDashboard />} />,
-        },
-        {
-          path: "/import-payment/dashboard",
-          element: <RoleRoute path="/import-payment/dashboard" element={<ImportPaymentDashboard />} />,
-        },
-        {
-          path: "/custom-duty/dashboard",
-          element: <RoleRoute path="/custom-duty/dashboard" element={<CustomDutyDashboard />} />,
-        },
-        {
-          path: "/petty-cash/dashboard",
-          element: <RoleRoute path="/petty-cash/dashboard" element={<PettyCashDashboard />} />,
-        },
-        // Credit Deviation subpages
-        {
-          path: "/credit-deviation/request",
-          element: <RoleRoute path="/credit-deviation/request" element={<FormView />} />,
-        },
-        {
-          path: "/credit-deviation/request-status",
-          element: <RoleRoute path="/credit-deviation/request-status" element={<FormView />} />,
-        },
-        {
-          path: "/credit-deviation/approvals",
-          element: <RoleRoute path="/credit-deviation/approvals" element={<ApprovalView />} />,
-        },
-        {
-          path: "/credit-deviation/master",
-          element: <RoleRoute path="/credit-deviation/master" element={<MasterView />} />,
-        },
-        {
-          path: "/credit-deviation/usermanagement",
-          element: <RoleRoute path="/credit-deviation/usermanagement" element={<UserManagementView />} />,
-        },
-        {
-          path: "/credit-deviation/master-sheet",
-          element: <RoleRoute path="/credit-deviation/master-sheet" element={<MasterSheetView />} />,
-        },
-        {
-          path: "/credit-deviation/hierarchy-management",
-          element: <RoleRoute path="/credit-deviation/hierarchy-management" element={<HierarchyManagementView />} />,
-        },
         // JVM subpages
         {
           path: "/jvm/jv-status",
-          element: <RoleRoute path="/jvm/jv-status" element={<JVStatusPage />} />,
+          element: (
+            <RoleRoute path="/jvm/jv-status" element={<JVStatusPage />} />
+          ),
         },
         {
           path: "/jvm/initiate-jv",
-          element: <RoleRoute path="/jvm/initiate-jv" element={<InitiateJVPage />} />,
+          element: (
+            <RoleRoute path="/jvm/initiate-jv" element={<InitiateJVPage />} />
+          ),
         },
         {
           path: "/jvm/jv-status/jv-detail/:jvId",
@@ -226,17 +293,32 @@ export default function Router() {
         // Import Payment subpages
         {
           path: "/import-payment/upload",
-          element: <RoleRoute path="/import-payment/upload" element={<ImportPaymentUploadPage />} />,
+          element: (
+            <RoleRoute
+              path="/import-payment/upload"
+              element={<ImportPaymentUploadPage />}
+            />
+          ),
         },
         // Custom Duty subpages
         {
           path: "/custom-duty/payment",
-          element: <RoleRoute path="/custom-duty/payment" element={<CustomDutyPaymentPage />} />,
+          element: (
+            <RoleRoute
+              path="/custom-duty/payment"
+              element={<CustomDutyPaymentPage />}
+            />
+          ),
         },
         // Petty Cash subpages
         {
           path: "/petty-cash/request",
-          element: <RoleRoute path="/petty-cash/request" element={<PettyCashRequestPage />} />,
+          element: (
+            <RoleRoute
+              path="/petty-cash/request"
+              element={<PettyCashRequestPage />}
+            />
+          ),
         },
       ],
     },
@@ -246,7 +328,11 @@ export default function Router() {
     },
     {
       path: "/otp-verification",
-      element: isLoggedIn ? <Navigate to="/" replace /> : <OTPVerificationPage />,
+      element: isLoggedIn ? (
+        <Navigate to="/" replace />
+      ) : (
+        <OTPVerificationPage />
+      ),
     },
     {
       path: "/reset-password",
