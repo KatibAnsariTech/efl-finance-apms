@@ -274,15 +274,6 @@ export default function MyRequests() {
       headerAlign: "center",
     },
     {
-      field: "status",
-      headerName: "Status",
-      flex: 1,
-      minWidth: 130,
-      align: "center",
-      headerAlign: "center",
-      //   renderCell: (params) => getStatusChip(params.value),
-    },
-    {
       field: "challanNo",
       headerName: "Challan No.",
       flex: 1,
@@ -299,17 +290,8 @@ export default function MyRequests() {
       headerAlign: "center",
     },
     {
-      field: "transactionAmount",
-      headerName: "Amount",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
       field: "typeOfTransaction",
-      headerName: "Type",
+      headerName: "Type of Transaction",
       flex: 1,
       minWidth: 100,
       align: "center",
@@ -322,6 +304,87 @@ export default function MyRequests() {
       //       variant="outlined"
       //     />
       //   ),
+    },
+    {
+      field: "transactionDate",
+      headerName: "Transaction Date",
+      width: 200,
+      resizable: true,
+      renderCell: (params) => {
+        if (!params.value) return "";
+        const date = new Date(params.value);
+        return isNaN(date.getTime())
+          ? params.value
+          : date.toLocaleString("en-GB", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              fractionalSecondDigits: 3,
+            });
+      },
+    },
+    {
+      field: "transactionAmount",
+      headerName: "Transaction Amount",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      minWidth: 130,
+      align: "center",
+      headerAlign: "center",
+      //   renderCell: (params) => getStatusChip(params.value),
+    },
+    {
+      field: "company",
+      headerName: "Company",
+      flex: 1,
+      minWidth: 130,
+      align: "center",
+      headerAlign: "center",
+      renderCell: () => "EFL",
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      flex: 1,
+      minWidth: 130,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "referenceId",
+      headerName: "Reference ID",
+      width: 200,
+      resizable: true,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+          title={params.value}
+        >
+          {params.value}
+        </Box>
+      ),
+    },
+    {
+      field: "icegateAckNo",
+      headerName: "Icegate Ack. No.",
+      width: 200,
+      resizable: true,
     },
   ];
 
