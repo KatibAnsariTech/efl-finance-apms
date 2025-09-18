@@ -62,13 +62,13 @@ export default function RaiseRequest() {
   const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
 
 
-  // useEffect(() => {
-  //   setIsAfter3PM(checkTimeRestriction());    
-  //   const interval = setInterval(() => {
-  //     setIsAfter3PM(checkTimeRestriction());
-  //   }, 60000);
-  //   return () => clearInterval(interval);
-  // }, [checkTimeRestriction]);
+  useEffect(() => {
+    setIsAfter3PM(checkTimeRestriction());    
+    const interval = setInterval(() => {
+      setIsAfter3PM(checkTimeRestriction());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [checkTimeRestriction]);
 
   // Add new custom duty entry to local state
   const addCustomDutyEntry = (newEntry) => {
