@@ -10,6 +10,14 @@ import { userRequest } from "src/requestMethod";
 import MasterTabs from "../master-tab";
 import { headLabel } from "./getHeadLabel";
 import { Box, IconButton, Tooltip, Chip } from "@mui/material";
+
+// Permission mapping for display
+const permissionLabels = {
+  controlledCheque: "Controlled Cheque",
+  cfMaster: "CF Master",
+  dsobenchmark: "DSO Benchmark",
+  dsostandard: "DSO Standard",
+};
 import Iconify from "src/components/iconify";
 import { fDateTime } from "src/utils/format-time";
 const AddRequester = lazy(() => import("../Modals/AddRequester"));
@@ -259,11 +267,13 @@ export default function UserManagementView() {
 
         <Box sx={{ width: "100%" }}>
           <DataGrid
-            rows={dataFiltered?.map((row, index) => ({
-              id: row._id,
-              sno: page * rowsPerPage + index + 1,
-              ...row,
-            })) || []}
+            rows={
+              dataFiltered?.map((row, index) => ({
+                id: row._id,
+                sno: page * rowsPerPage + index + 1,
+                ...row,
+              })) || []
+            }
             columns={[
               ...headLabel(selectedTab)
                 .filter((col) => col.id !== "action") // Filter out the action column from headLabel
@@ -272,7 +282,7 @@ export default function UserManagementView() {
                   headerName: col.label,
                   width: col.width || 150,
                   minWidth: col.minWidth || 100,
-                  maxWidth: col.maxWidth || 300,
+                  // maxWidth: col.maxWidth || 300,
                   sortable: col.sortable !== false,
                   align: col.align || "center",
                   headerAlign: col.align || "center",
@@ -301,6 +311,18 @@ export default function UserManagementView() {
                     if (col.id === "name") {
                       return params.row.username || "-";
                     }
+                    if (col.id === "mastersheetPermissions") {
+                      if (
+                        !params.value ||
+                        !Array.isArray(params.value) ||
+                        params.value.length === 0
+                      ) {
+                        return "-";
+                      }
+                      return params.value
+                        .map((permission) => permissionLabels[permission] || permission)
+                        .join(", ");
+                    }
                     return params.value;
                   },
                 })),
@@ -317,7 +339,11 @@ export default function UserManagementView() {
                 renderCell: (params) => (
                   <Box
                     onClick={(event) => event.stopPropagation()}
-                    sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
                     <Tooltip title="Edit">
                       <IconButton
@@ -325,7 +351,10 @@ export default function UserManagementView() {
                         onClick={(event) => handleEdit(params.row, event)}
                         sx={{ mr: 1 }}
                       >
-                        <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
+                        <Iconify
+                          icon="eva:edit-fill"
+                          sx={{ color: "primary.main" }}
+                        />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete">
