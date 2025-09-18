@@ -137,6 +137,13 @@ const navConfig = [
         icon: <AccountBalanceIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
+      { 
+        id: 'custom-duty-my-requests', 
+        title: 'My Requests', 
+        path: '/custom-duty/my-requests',
+        icon: <AccountBalanceIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
     ],
   },
   {
