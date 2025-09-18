@@ -163,7 +163,7 @@ export default function Requests() {
     }
   };
 
-  const getAllData = async () => {
+  const getAllData = async (shouldSelectAll = false) => {
     try {
       setSelectAllLoading(true);
       
@@ -185,6 +185,12 @@ export default function Requests() {
       setData(filteredData);
       setTotalCount(filteredData.length);
       setHasMore(false);
+
+      // If this is called from select all, select all the loaded data
+      if (shouldSelectAll) {
+        setSelectedRows(filteredData.map((item) => item.id));
+        setIsSelectAll(true);
+      }
 
     } catch (err) {
       console.log("err:", err);
@@ -210,12 +216,16 @@ export default function Requests() {
 
   const handleSelectAll = async (event) => {
     if (event.target.checked) {
-      // If not all data is loaded, fetch all data first
-      if (hasMore || data.length < totalCount) {
-        await getAllData();
-      }
+      // Show loading state and select all current data
+      setSelectAllLoading(true);
+      
+      // Simulate a brief loading state
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      // Select all currently loaded data
       setSelectedRows(data.map((item) => item.id));
       setIsSelectAll(true);
+      setSelectAllLoading(false);
     } else {
       setSelectedRows([]);
       setIsSelectAll(false);
@@ -283,17 +293,25 @@ export default function Requests() {
     {
       field: "checkbox",
       headerName: (
-        <Checkbox
-          checked={isSelectAll}
-          indeterminate={selectedRows.length > 0 && selectedRows.length < data.length}
-          onChange={handleSelectAll}
-          disabled={selectAllLoading}
-          size="small"
-        />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          {selectAllLoading ? (
+            <CircularProgress size={20} />
+          ) : (
+            <Checkbox
+              checked={isSelectAll}
+              onChange={handleSelectAll}
+              size="small"
+            />
+          )}
+        </Box>
       ),
-      width: 50,
+      width: 80,
       sortable: false,
       filterable: false,
+      resizable: false,
+      disableColumnMenu: true,
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params) => (
         <Checkbox
           checked={selectedRows.includes(params.row.id)}
@@ -433,16 +451,25 @@ export default function Requests() {
             }}
             sx={{
               "& .MuiDataGrid-cell": {
+                "&:focus": { outline: "none" },
+                "&:focus-visible": { outline: "none" },
+              },
+              "& .MuiDataGrid-cell[data-field='checkbox']": {
                 justifyContent: "center",
                 display: "flex",
                 alignItems: "center",
-                "&:focus": { outline: "none" },
-                "&:focus-visible": { outline: "none" },
+                padding: "8px 0",
               },
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: "#f5f6f8",
                 fontWeight: "bold",
                 color: "#637381",
+              },
+              "& .MuiDataGrid-columnHeader[data-field='checkbox']": {
+                justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                padding: "8px 0",
               },
               "& .MuiDataGrid-columnHeaderTitle": {
                 width: "100%",
@@ -478,16 +505,6 @@ export default function Requests() {
             </Box>
           )}
           
-          
-          {/* Select All Loading Indicator */}
-          {selectAllLoading && (
-            <Alert severity="info" sx={{ mt: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <CircularProgress size={20} sx={{ mr: 1 }} />
-                Loading all data for selection...
-              </Box>
-            </Alert>
-          )}
         </Box>
 
         {/* Action Section */}
