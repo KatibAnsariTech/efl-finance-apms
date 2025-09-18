@@ -44,10 +44,13 @@ export default function RaiseRequest() {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentTime = currentHour * 60 + currentMinute;
-    const cutoffTime = 15 * 60; // 3:00 PM = 15:00 = 900 minutes
-    return currentTime >= cutoffTime;
+    
+    // Restriction starts at 2:59:59 PM (14:59) and ends at 11:59:59 PM (23:59)
+    const restrictionStartTime = 14 * 60 + 59; // 2:59 PM = 899 minutes
+    const restrictionEndTime = 23 * 60 + 59;   // 11:59 PM = 1439 minutes
+    
+    return currentTime >= restrictionStartTime && currentTime <= restrictionEndTime;
   }, []);
-
 
   const companies = [
     { id: 1, name: "EFL" },
@@ -57,9 +60,8 @@ export default function RaiseRequest() {
 
   const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
 
-
   useEffect(() => {
-    setIsAfter3PM(checkTimeRestriction());    
+    setIsAfter3PM(checkTimeRestriction());
     const interval = setInterval(() => {
       setIsAfter3PM(checkTimeRestriction());
     }, 60000);
@@ -81,7 +83,9 @@ export default function RaiseRequest() {
     // Add _id to each uploaded entry and replace existing data
     const entriesWithId = uploadedEntries.map((entry, index) => ({
       ...entry,
-      _id: `uploaded_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+      _id: `uploaded_${Date.now()}_${index}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
     }));
     setData(entriesWithId);
     setUploadModalOpen(false);
@@ -90,10 +94,14 @@ export default function RaiseRequest() {
 
   const handleSubmitRequest = async () => {
     if (isAfter3PM) {
-      swal("Time Restriction", "Cannot generate requests after 3:00 PM. Please try again tomorrow.", "warning");
+      swal(
+        "Time Restriction",
+        "Cannot generate requests after 3:00 PM. Please try again tomorrow.",
+        "warning"
+      );
       return;
     }
-    
+
     // Show SweetAlert confirmation
     const result = await swal({
       title: "Confirm Submission",
@@ -101,11 +109,11 @@ export default function RaiseRequest() {
       icon: "warning",
       buttons: {
         cancel: "Cancel",
-        confirm: "Submit"
+        confirm: "Submit",
       },
       dangerMode: true,
     });
-    
+
     if (result) {
       await handleConfirmSubmit();
     }
@@ -264,7 +272,7 @@ export default function RaiseRequest() {
   return (
     <>
       <Helmet>
-        <title>Raise Request -  Custom Duty</title>
+        <title>Raise Request - Custom Duty</title>
       </Helmet>
 
       <Container maxWidth="xl" sx={{ mb: -15 }}>
@@ -311,7 +319,7 @@ export default function RaiseRequest() {
                     },
                     "& .MuiInputBase-input": {
                       fontSize: "0.85rem",
-                      fontWeight:"500"
+                      fontWeight: "500",
                     },
                     "& .MuiInputBase-input::placeholder": {
                       fontSize: "0.85rem",
@@ -338,22 +346,10 @@ export default function RaiseRequest() {
                   fontWeight: "500",
                 }}
               >
-                Cannot generate requests or upload files after 3:00 PM. Please try again tomorrow.
+                Cannot generate requests or upload files after 3:00 PM. Please
+                try again tomorrow.
               </span>
-            ) : (
-              showInfoText && (
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "red",
-                    marginRight: "4px",
-                    fontWeight: "500",
-                  }}
-                >
-                  use a unique serial number for each SAP debit and credit entry
-                </span>
-              )
-            )}
+            ) : null}
             <IconButton
               size="small"
               color="error"
@@ -376,7 +372,11 @@ export default function RaiseRequest() {
               size="small"
               onClick={() => {
                 if (isAfter3PM) {
-                  swal("Time Restriction", "Cannot upload files after 3:00 PM. Please try again tomorrow.", "warning");
+                  swal(
+                    "Time Restriction",
+                    "Cannot upload files after 3:00 PM. Please try again tomorrow.",
+                    "warning"
+                  );
                   return;
                 }
                 setUploadModalOpen(true);
@@ -448,7 +448,9 @@ export default function RaiseRequest() {
                 <DataGrid
                   rows={data}
                   columns={columns}
-                  getRowId={(row) => row._id || row.srNo || `row-${Math.random()}`}
+                  getRowId={(row) =>
+                    row._id || row.srNo || `row-${Math.random()}`
+                  }
                   loading={submitting}
                   pagination={false}
                   disableRowSelectionOnClick
@@ -517,8 +519,7 @@ export default function RaiseRequest() {
                 width: { xs: "100%", sm: "auto" },
                 justifyContent: { xs: "center", sm: "flex-start" },
               }}
-            >
-            </Box>
+            ></Box>
 
             <Button
               variant="contained"
@@ -533,7 +534,9 @@ export default function RaiseRequest() {
                 width: { xs: "100%", sm: "auto" },
                 minWidth: { xs: "auto", sm: "240px" },
                 "&.Mui-disabled": {
-                  backgroundColor: isAfter3PM ? "error.main" : "rgba(0, 0, 0, 0.12)",
+                  backgroundColor: isAfter3PM
+                    ? "error.main"
+                    : "rgba(0, 0, 0, 0.12)",
                   color: isAfter3PM ? "white" : "rgba(0, 0, 0, 0.26)",
                 },
               }}

@@ -7,6 +7,7 @@ import {
   Paper,
   Chip,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { fDateTime } from "src/utils/format-time";
@@ -18,6 +19,7 @@ import { applyFilter, getComparator } from "src/utils/utils";
 import excel from "../../../../../public/assets/excel.svg";
 import ColorIndicators from "../components/ColorIndicators";
 import CustomDutyRequestModal from "../components/CustomDutyRequestModal";
+import Iconify from "src/components/iconify";
 
 export default function MyRequests() {
   const router = useRouter();
@@ -399,6 +401,32 @@ export default function MyRequests() {
       </Helmet>
 
       <Container>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            gap: 0.2,
+          }}
+        >
+          <IconButton
+            size="small"
+            color="error"
+            sx={{ p: 0, mr: 0.5 }}
+          >
+            <Iconify icon="eva:info-fill" />
+          </IconButton>
+          <span
+            style={{
+              fontSize: "0.75rem",
+              color: "red",
+              marginRight: "4px",
+              fontWeight: "500",
+            }}
+          >
+            Requests pending after 3:30 PM will be auto rejected.
+          </span>
+        </Box>
         <Card sx={{ mt: 2, p: 2 }}>
           {/* <div
             style={{
