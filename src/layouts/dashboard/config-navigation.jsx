@@ -123,10 +123,17 @@ const navConfig = [
     roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
+      // { 
+      //   id: 'custom-duty-payment', 
+      //   title: 'Duty Payment', 
+      //   path: '/custom-duty/payment',
+      //   icon: <AccountBalanceIcon />,
+      //   roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      // },
       { 
-        id: 'custom-duty-payment', 
-        title: 'Duty Payment', 
-        path: '/custom-duty/payment',
+        id: 'custom-duty-raise-request', 
+        title: 'Raise Request', 
+        path: '/custom-duty/raise-request',
         icon: <AccountBalanceIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },

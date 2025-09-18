@@ -1,9 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 
-// DEVELOPMENT MODE: This page uses mock data and console logging instead of API calls
-// for testing purposes. Replace with actual API calls when backend is ready.
 import {
   Container,
   Typography,
@@ -31,15 +28,12 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { AddJVModal, EditJVModal, UploadJVModal } from "../sections/jvm";
-import ConfirmationModal from "../components/ConfirmationModal";
+import { UploadJVModal } from "../../components";
+import ConfirmationModal from "src/components/ConfirmationModal";
 
-export default function InitiateJVPage() {
+export default function RaiseRequest() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editData, setEditData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [autoReversal, setAutoReversal] = useState("No");
   const [showInfoText, setShowInfoText] = useState(false);
@@ -59,50 +53,18 @@ export default function InitiateJVPage() {
     setData((prev) => [...prev, entryWithId]);
   };
 
-  // Update JV entry in local state
-  const updateJVEntry = (updatedEntry) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item._id === updatedEntry._id
-          ? { ...updatedEntry, sNo: item.sNo }
-          : item
-      )
-    );
-  };
-
-  // Remove JV entry from local state
-  const removeJVEntry = (entryId) => {
-    setData((prev) => prev.filter((item) => item._id !== entryId));
-  };
-
-  const handleAddSuccess = (newEntry) => {
-    addJVEntry(newEntry);
-    setAddModalOpen(false);
-    swal("Success!", "Journal voucher added successfully!", "success");
-  };
-
-  const handleEditSuccess = (updatedEntry) => {
-    updateJVEntry(updatedEntry);
-    setEditModalOpen(false);
-    setEditData(null);
-    swal("Success!", "Journal voucher updated successfully!", "success");
-  };
 
   const handleUploadSuccess = (uploadedEntries) => {
-    // Add all uploaded entries to local state
     uploadedEntries.forEach((entry) => addJVEntry(entry));
     setUploadModalOpen(false);
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
 
-  // const handleSubmitRequest = async () => {
-  const handleConfirmSubmit = () => {
-    // setConfirmModalOpen(true);
-    console.log("Submit confirmed");
+  const handleSubmitRequest = async () => {
+    setConfirmModalOpen(true);
   };
 
-  // const handleConfirmSubmit = async () => {
-  const handleSubmitRequest = async () => {
+  const handleConfirmSubmit = async () => {
     try {
       setSubmitting(true);
       const journalVouchers = data.map((entry) => ({
@@ -331,72 +293,7 @@ export default function InitiateJVPage() {
       resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 120,
-      align: "center",
-      headerAlign: "center",
-      resizable: false,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-          }}
-        >
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(params.row);
-            }}
-          >
-            <Iconify icon="eva:edit-fill" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(params.row);
-            }}
-          >
-            <Iconify icon="eva:trash-2-fill" />
-          </IconButton>
-        </Box>
-      ),
-    },
   ];
-
-  const handleEdit = (row) => {
-    setEditData(row);
-    setEditModalOpen(true);
-  };
-
-  const handleDelete = async (row) => {
-    const result = await swal({
-      title: "Are you sure?",
-      text: "You will not be able to recover this journal voucher!",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    });
-
-    if (result) {
-      try {
-        removeJVEntry(row._id);
-        swal("Deleted!", "Journal voucher has been deleted.", "success");
-      } catch (error) {
-        console.error("Delete error:", error);
-        showErrorMessage(error, "Failed to delete journal voucher", swal);
-      }
-    }
-  };
 
   return (
     <>
@@ -434,28 +331,6 @@ export default function InitiateJVPage() {
             >
               <Iconify icon="eva:info-fill" />
             </IconButton>
-            <span
-              style={{
-                fontSize: "0.875rem",
-                fontWeight: "bold",
-                color: "#2c72d8",
-              }}
-            >
-              |
-            </span>
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => setAddModalOpen(true)}
-              sx={{
-                fontSize: "0.875rem",
-                "&:hover": {
-                  backgroundColor: "transparent",
-                },
-              }}
-            >
-              Add Manual
-            </Button>
             <span
               style={{
                 fontSize: "0.875rem",
@@ -506,7 +381,7 @@ export default function InitiateJVPage() {
                     width: 48,
                     height: 48,
                     color: "text.disabled",
-                    // mb: 1.5,
+                    mb: 1.5,
                   }}
                 />
                 <Typography
@@ -516,14 +391,6 @@ export default function InitiateJVPage() {
                   sx={{ fontSize: "1rem" }}
                 >
                   No Data
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ fontSize: "0.875rem" }}
-                >
-                  No journal voucher entries found. Click "Add Manual" or
-                  "Upload File" to get started.
                 </Typography>
               </Paper>
             ) : (
@@ -549,13 +416,13 @@ export default function InitiateJVPage() {
                   autoHeight={false}
                   columnResizeMode="onResize"
                   editMode="cell"
-                  processRowUpdate={(updatedRow, originalRow) => {
-                    updateJVEntry(updatedRow);
-                    return updatedRow;
-                  }}
-                  onProcessRowUpdateError={(error) => {
-                    console.error("Error updating row:", error);
-                  }}
+                  // processRowUpdate={(updatedRow, originalRow) => {
+                  //   updateJVEntry(updatedRow);
+                  //   return updatedRow;
+                  // }}
+                  // onProcessRowUpdateError={(error) => {
+                  //   console.error("Error updating row:", error);
+                  // }}
                   sx={{
                     height: "100%",
                     border: "none",
@@ -667,22 +534,6 @@ export default function InitiateJVPage() {
             </Button>
           </Box>
         )}
-
-        <AddJVModal
-          open={addModalOpen}
-          onClose={() => setAddModalOpen(false)}
-          onSuccess={handleAddSuccess}
-        />
-
-        <EditJVModal
-          open={editModalOpen}
-          onClose={() => {
-            setEditModalOpen(false);
-            setEditData(null);
-          }}
-          onSuccess={handleEditSuccess}
-          editData={editData}
-        />
 
         <UploadJVModal
           open={uploadModalOpen}
