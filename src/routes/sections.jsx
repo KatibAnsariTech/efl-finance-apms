@@ -39,7 +39,7 @@ import ImportPaymentUploadPage from "src/pages/import-payment-upload";
 import CustomDutyPaymentPage from "src/pages/custom-duty-payment";
 // Petty Cash subpages
 import PettyCashRequestPage from "src/pages/petty-cash-request";
-import { RaiseRequest } from "src/features/custom-duty/pages";
+import { RaiseRequest } from "src/features/custom-duty";
 // Master Data subpages
 // User Management subpages
 // Hierarchy Management subpages

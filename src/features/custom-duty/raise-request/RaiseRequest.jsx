@@ -29,7 +29,7 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { UploadCustomDutyModal } from "../../components";
+import { UploadCustomDutyModal } from "./components";
 
 export default function RaiseRequest() {
   const [data, setData] = useState([]);
@@ -71,15 +71,19 @@ export default function RaiseRequest() {
     const entryWithId = {
       ...newEntry,
       _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      sNo: newEntry.sNo || "",
+      srNo: newEntry.srNo || "",
       createdAt: new Date().toISOString(),
     };
     setData((prev) => [...prev, entryWithId]);
   };
 
   const handleUploadSuccess = (uploadedEntries) => {
-    // Replace existing data with uploaded entries
-    setData(uploadedEntries);
+    // Add _id to each uploaded entry and replace existing data
+    const entriesWithId = uploadedEntries.map((entry, index) => ({
+      ...entry,
+      _id: `uploaded_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+    }));
+    setData(entriesWithId);
     setUploadModalOpen(false);
     swal("Success!", "Custom duty entries uploaded successfully!", "success");
   };
@@ -444,7 +448,7 @@ export default function RaiseRequest() {
                 <DataGrid
                   rows={data}
                   columns={columns}
-                  getRowId={(row) => row._id || row.sNo}
+                  getRowId={(row) => row._id || row.srNo || `row-${Math.random()}`}
                   loading={submitting}
                   pagination={false}
                   disableRowSelectionOnClick
