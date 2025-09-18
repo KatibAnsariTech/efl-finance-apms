@@ -17,6 +17,7 @@ import { FormTableToolbar } from "src/components/table";
 import { applyFilter, getComparator } from "src/utils/utils";
 import excel from "../../../../../public/assets/excel.svg";
 import ColorIndicators from "../components/ColorIndicators";
+import CustomDutyRequestModal from "../components/CustomDutyRequestModal";
 
 export default function MyRequests() {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function MyRequests() {
   const [refund, setRefund] = useState();
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
   // Status color mapping
   const getStatusColor = (status) => {
@@ -249,7 +252,8 @@ export default function MyRequests() {
             "&:hover": { color: "#1565c0" },
           }}
           onClick={() => {
-            router.push(`/custom-duty/request-detail/${params.value}`);
+            setSelectedRowData(params.row);
+            setOpenModal(true);
           }}
         >
           {params.value}
@@ -503,6 +507,13 @@ export default function MyRequests() {
           </Box>
         </Card>
       </Container>
+      <CustomDutyRequestModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        rowData={selectedRowData}
+        getRequestData={getData}
+        selectedTab="myRequests"
+      />
     </>
   );
 }
