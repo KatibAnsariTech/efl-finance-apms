@@ -41,6 +41,7 @@ import CustomDutyPaymentPage from "src/pages/custom-duty-payment";
 import PettyCashRequestPage from "src/pages/petty-cash-request";
 import RaiseRequest from "src/features/custom-duty/raise-request/pages/RaiseRequest.jsx";
 import MyRequests from "src/features/custom-duty/my-requests/pages/MyRequests";
+import Requests from "src/features/custom-duty/requests/pages/Requests";
 // Master Data subpages
 // User Management subpages
 // Hierarchy Management subpages
@@ -327,6 +328,15 @@ export default function Router() {
             <RoleRoute
               path="/custom-duty/my-requests"
               element={<MyRequests />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/requests",
+          element: (
+            <RoleRoute
+              path="/custom-duty/requests"
+              element={<Requests />}
             />
           ),
         },
