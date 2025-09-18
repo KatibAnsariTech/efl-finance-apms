@@ -30,15 +30,11 @@ import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { UploadCustomDutyModal } from "../../components";
-import ConfirmationModal from "src/components/ConfirmationModal";
 
 export default function RaiseRequest() {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [autoReversal, setAutoReversal] = useState("No");
   const [showInfoText, setShowInfoText] = useState(false);
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isAfter3PM, setIsAfter3PM] = useState(false);
@@ -93,35 +89,41 @@ export default function RaiseRequest() {
       swal("Time Restriction", "Cannot generate requests after 3:00 PM. Please try again tomorrow.", "warning");
       return;
     }
-    setConfirmModalOpen(true);
+    
+    // Show SweetAlert confirmation
+    const result = await swal({
+      title: "Confirm Submission",
+      text: `Are you sure you want to submit ${data.length} custom duty entries?`,
+      icon: "warning",
+      buttons: {
+        cancel: "Cancel",
+        confirm: "Submit"
+      },
+      dangerMode: true,
+    });
+    
+    if (result) {
+      await handleConfirmSubmit();
+    }
   };
 
   const handleConfirmSubmit = async () => {
     try {
       setSubmitting(true);
-      const journalVouchers = data.map((entry) => ({
-        sNo: entry.sNo?.toString(),
-        documentType: entry.documentType,
-        documentDate: entry.documentDate,
-        businessArea: entry.businessArea,
-        accountType: entry.accountType,
-        postingKey: entry.postingKey,
-        vendorCustomerGLNumber: entry.vendorCustomerGLNumber,
-        amount: parseFloat(entry.amount),
-        assignment: entry.assignment,
-        profitCenter: entry.profitCenter,
-        specialGLIndication: entry.specialGLIndication,
-        referenceNumber: entry.referenceNumber,
-        remarks: entry.remarks,
-        postingDate: entry.postingDate,
-        vendorCustomerGLName: entry.vendorCustomerGLName,
-        costCenter: entry.costCenter,
-        personalNumber: entry.personalNumber,
-        autoReversal: autoReversal === "Yes" ? "Y" : "N",
+      const customDutyEntries = data.map((entry) => ({
+        srNo: entry.srNo?.toString(),
+        challanNo: entry.challanNo,
+        documentNo: entry.documentNo,
+        transactionDate: entry.transactionDate,
+        referenceId: entry.referenceId,
+        description: entry.description,
+        typeOfTransaction: entry.typeOfTransaction,
+        transactionAmount: parseFloat(entry.transactionAmount),
+        icegateAckNo: entry.icegateAckNo,
       }));
 
       const requestBody = {
-        journalVouchers,
+        customDutyEntries,
       };
 
       // Call the custom duty API endpoint
@@ -138,8 +140,6 @@ export default function RaiseRequest() {
 
       // Reset form
       setData([]);
-      setAutoReversal("No");
-      setConfirmModalOpen(false);
     } catch (error) {
       console.error("Submit error:", error);
       showErrorMessage(error, "Failed to submit custom duty request", swal);
@@ -404,7 +404,7 @@ export default function RaiseRequest() {
               },
             }}
           >
-            {data.length === 0 && !loading ? (
+            {data.length === 0 && !submitting ? (
               <Paper
                 sx={{
                   p: 6,
@@ -445,7 +445,7 @@ export default function RaiseRequest() {
                   rows={data}
                   columns={columns}
                   getRowId={(row) => row._id || row.sNo}
-                  loading={loading}
+                  loading={submitting}
                   pagination={false}
                   disableRowSelectionOnClick
                   disableRowClick
@@ -520,7 +520,7 @@ export default function RaiseRequest() {
               variant="contained"
               color="primary"
               onClick={handleSubmitRequest}
-              disabled={data.length === 0 || isAfter3PM}
+              disabled={data.length === 0 || isAfter3PM || submitting}
               sx={{
                 px: { xs: 2, sm: 3 },
                 py: { xs: 1.5, sm: 1 },
@@ -534,7 +534,7 @@ export default function RaiseRequest() {
                 },
               }}
             >
-              Submit Request
+              {submitting ? "Submitting..." : "Submit Request"}
             </Button>
           </Box>
         )}
@@ -543,16 +543,6 @@ export default function RaiseRequest() {
           open={uploadModalOpen}
           onClose={() => setUploadModalOpen(false)}
           onSuccess={handleUploadSuccess}
-        />
-
-        {/* Confirmation Modal */}
-        <ConfirmationModal
-          open={confirmModalOpen}
-          onClose={() => setConfirmModalOpen(false)}
-          onConfirm={handleConfirmSubmit}
-          data={data}
-          autoReversal={autoReversal}
-          loading={submitting}
         />
       </Container>
     </>
