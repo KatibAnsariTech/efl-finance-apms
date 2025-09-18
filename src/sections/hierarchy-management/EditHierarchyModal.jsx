@@ -158,7 +158,7 @@ function EditHierarchyModal({ handleClose, open, editData, getData, region }) {
       }
 
       await userRequest.post("/admin/assignUserToApprovalType", {
-        userId: foundUser._id,
+        userId: foundUser.userRoleId,
         approvalTypeId: editData.id,
       });
 

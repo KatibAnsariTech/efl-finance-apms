@@ -366,7 +366,7 @@ export default function HierarchyManagementView() {
                 rows={data.map((row, index) => {
                   const mappedRow = {
                     ...row,
-                    id: row._id || row.sno || index,
+                    id: row?.id,
                     sno: row?.sno,
                     level: row?.value || "-",
                     username: row?.users[0]?.username || "-",
