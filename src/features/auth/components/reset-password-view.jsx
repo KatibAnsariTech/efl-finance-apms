@@ -16,7 +16,7 @@ import Divider from "@mui/material/Divider";
 import Iconify from "src/components/iconify";
 import { publicRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
-import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
+import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 import { getPasswordStrength } from "src/utils/utils";
 
 export default function ResetPasswordView() {

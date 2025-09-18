@@ -15,11 +15,11 @@ import Divider from "@mui/material/Divider";
 
 import Iconify from "src/components/iconify";
 import { publicRequest, setTokens, userRequest } from "src/requestMethod";
-import image1 from "../../../public/assets/image1.png";
-import companyLogo from "../../../public/assets/spacetotech.png";
+import image1 from "../../../../public/assets/image1.png";
+import companyLogo from "../../../../public/assets/spacetotech.png";
 import { useForm } from "react-hook-form";
 import { useCounts } from "src/contexts/CountsContext";
-import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
+import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 
 export default function LoginView() {
   const {

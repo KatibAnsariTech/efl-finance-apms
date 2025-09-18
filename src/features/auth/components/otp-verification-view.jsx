@@ -17,7 +17,7 @@ import Iconify from "src/components/iconify";
 import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
 // import { useCounts } from "src/contexts/CountsContext";
-import LoginLeftPanel from "src/sections/login/LoginLeftPanel";
+import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 
 export default function OTPVerificationView() {
   const {

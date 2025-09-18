@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 
-import { OTPVerificationView } from 'src/sections/login';
+import { OTPVerificationView } from 'src/features/auth/pages';
 
 // ----------------------------------------------------------------------
 

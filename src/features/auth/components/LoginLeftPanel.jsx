@@ -1,6 +1,6 @@
 import React from "react";
 import Box from "@mui/material/Box";
-import loginImage from "../../../public/assets/loginImage.webp";
+import loginImage from "../../../../public/assets/loginImage.webp";
 
 export default function LoginLeftPanel() {
   return (
