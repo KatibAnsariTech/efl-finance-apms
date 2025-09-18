@@ -29,7 +29,7 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { UploadCustomDutyModal } from "./components";
+import UploadCustomDutyModal from "../components/UploadCustomDutyModal.jsx";
 
 export default function RaiseRequest() {
   const [data, setData] = useState([]);
