@@ -4,9 +4,9 @@ import swal from "sweetalert";
 import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import { getErrorMessage, showErrorMessage } from "src/utils/errorUtils";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 
-export default function UploadJVModal({ open, onClose, onSuccess }) {
+export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -71,130 +71,197 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
 
     try {
       let jsonData;
-      
-      if (selectedFile.name.toLowerCase().endsWith('.csv')) {
+
+      if (selectedFile.name.toLowerCase().endsWith(".csv")) {
         // Handle CSV file
         const text = await selectedFile.text();
-        const lines = text.split('\n');
-        jsonData = lines.map(line => line.split(','));
+        const lines = text.split("\n");
+        jsonData = lines.map((line) => line.split(","));
       } else {
         // Handle Excel file
         const arrayBuffer = await selectedFile.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
         // Get the first worksheet
         const worksheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[worksheetName];
-        
+
         // Convert to JSON
         jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       }
-      
+
       // Skip header row and process data
       const headers = jsonData[0];
       const dataRows = jsonData.slice(1);
-      
-      // Map the data to our JV structure
-      const extractedData = dataRows.map((row, index) => {
-        const entry = {};
-        headers.forEach((header, colIndex) => {
-          const value = row[colIndex];
-          if (value !== undefined && value !== null && value !== '') {
-            // Map common column names to our field names
-            const fieldMap = {
-              // JV No variations - all map to sNo for backend compatibility
-              'JV No': 'sNo',
-              'jvNo': 'sNo',
-              'jvno': 'sNo',
-              'JVNO': 'sNo',
-              'Sr.No': 'sNo',
-              'srNo': 'sNo',
-              'sno': 'sNo',
-              'srno': 'sNo',
-              'SRNO': 'sNo',
-              'Serial Number': 'sNo',
-              'serial number': 'sNo',
-              'SERIAL NUMBER': 'sNo',
-              'Document Type': 'documentType',
-              'Document Date': 'documentDate',
-              'Business Area': 'businessArea',
-              'Account Type': 'accountType',
-              'Posting Key': 'postingKey',
-              'Vendor/Customer/GL Number': 'vendorCustomerGLNumber',
-              'Vendor/Customer/GL Name': 'vendorCustomerGLName',
-              'Amount': 'amount',
-              'Assignment': 'assignment',
-              'Cost Center': 'costCenter',
-              'Profit Center': 'profitCenter',
-              'Special GL Indication': 'specialGLIndication',
-              'Reference Number': 'referenceNumber',
-              'Personal Number': 'personalNumber',
-              'Remarks': 'remarks',
-              'Posting Date': 'postingDate',
-              'Auto Reversal': 'autoReversal',
-              // Direct field name mapping
-              'documentType': 'documentType',
-              'documentDate': 'documentDate',
-              'businessArea': 'businessArea',
-              'accountType': 'accountType',
-              'postingKey': 'postingKey',
-              'vendorCustomerGLNumber': 'vendorCustomerGLNumber',
-              'vendorCustomerGLName': 'vendorCustomerGLName',
-              'amount': 'amount',
-              'assignment': 'assignment',
-              'costCenter': 'costCenter',
-              'profitCenter': 'profitCenter',
-              'specialGLIndication': 'specialGLIndication',
-              'referenceNumber': 'referenceNumber',
-              'personalNumber': 'personalNumber',
-              'remarks': 'remarks',
-              'postingDate': 'postingDate',
-              'autoReversal': 'autoReversal'
-            };
-            
-            // Case-insensitive field mapping
-            const normalizedHeader = header?.toString().trim();
-            const fieldName = fieldMap[normalizedHeader] || 
-                             fieldMap[normalizedHeader?.toLowerCase()] || 
-                             fieldMap[normalizedHeader?.toUpperCase()] ||
-                             normalizedHeader?.toLowerCase().replace(/\s+/g, '');
-            entry[fieldName] = value;
-          }
-        });
-        
-        // Ensure required fields have default values
-        return {
-          ...entry,
-          sNo: entry.sNo || '',
-          documentType: entry.documentType || 'DR',
-          documentDate: entry.documentDate || new Date().toISOString().split('T')[0],
-          postingDate: entry.postingDate || new Date().toISOString().split('T')[0],
-          businessArea: entry.businessArea || '1000',
-          accountType: entry.accountType || 'S',
-          postingKey: entry.postingKey || '40',
-          amount: parseFloat(entry.amount) || 0,
-          assignment: entry.assignment || '',
-          profitCenter: entry.profitCenter || '1000',
-          specialGLIndication: entry.specialGLIndication || 'N',
-          referenceNumber: entry.referenceNumber || '',
-          remarks: entry.remarks || '',
-          vendorCustomerGLName: entry.vendorCustomerGLName || '',
-          costCenter: entry.costCenter || '1000',
-          personalNumber: entry.personalNumber || '',
-          autoReversal: entry.autoReversal || 'N'
-        };
-      }).filter(entry => entry.amount > 0); // Filter out entries with zero amount
+
+      // Map the data to our custom duty structure
+      const extractedData = dataRows
+        .map((row, index) => {
+          const entry = {};
+          headers.forEach((header, colIndex) => {
+            const value = row[colIndex];
+            if (value !== undefined && value !== null && value !== "") {
+              // Map common column names to our field names for Custom Duty
+              const fieldMap = {
+                // Serial Number variations
+                "Sr.No": "srNo",
+                srNo: "srNo",
+                sno: "srNo",
+                srno: "srNo",
+                SRNO: "srNo",
+                "Serial Number": "srNo",
+                "serial number": "srNo",
+                "SERIAL NUMBER": "srNo",
+                "Sr No": "srNo",
+                "Sr. No": "srNo",
+
+                // Challan Number variations
+                "Challan No": "challanNo",
+                "Challan No.": "challanNo",
+                challanNo: "challanNo",
+                challanno: "challanNo",
+                CHALLANNO: "challanNo",
+                "Challan Number": "challanNo",
+                "challan number": "challanNo",
+                "CHALLAN NUMBER": "challanNo",
+
+                // Document Number variations
+                "Document No": "documentNo",
+                "Document No.": "documentNo",
+                documentNo: "documentNo",
+                documentno: "documentNo",
+                DOCUMENTNO: "documentNo",
+                "Document Number": "documentNo",
+                "document number": "documentNo",
+                "DOCUMENT NUMBER": "documentNo",
+
+                // Transaction Date variations
+                "Transaction Date": "transactionDate",
+                transactionDate: "transactionDate",
+                transactiondate: "transactionDate",
+                TRANSACTIONDATE: "transactionDate",
+                Date: "transactionDate",
+                date: "transactionDate",
+                DATE: "transactionDate",
+                "Txn Date": "transactionDate",
+                txnDate: "transactionDate",
+                TxnDate: "transactionDate",
+
+                // Reference ID variations
+                "Reference ID": "referenceId",
+                referenceId: "referenceId",
+                referenceid: "referenceId",
+                REFERENCEID: "referenceId",
+                Reference: "referenceId",
+                reference: "referenceId",
+                REFERENCE: "referenceId",
+                "Ref ID": "referenceId",
+                refId: "referenceId",
+                RefId: "referenceId",
+
+                // Description variations
+                Description: "description",
+                description: "description",
+                DESCRIPTION: "description",
+                Desc: "description",
+                desc: "description",
+                DESC: "description",
+                Remarks: "description",
+                remarks: "description",
+                REMARKS: "remarks",
+
+                // Type of Transaction variations
+                "Type of Transaction": "typeOfTransaction",
+                typeOfTransaction: "typeOfTransaction",
+                typeoftransaction: "typeOfTransaction",
+                TYPEOFTRANSACTION: "typeOfTransaction",
+                "Transaction Type": "typeOfTransaction",
+                transactionType: "typeOfTransaction",
+                TransactionType: "typeOfTransaction",
+                Type: "typeOfTransaction",
+                type: "typeOfTransaction",
+                TYPE: "typeOfTransaction",
+                "Txn Type": "typeOfTransaction",
+                txnType: "typeOfTransaction",
+                TxnType: "typeOfTransaction",
+
+                // Transaction Amount variations
+                "Transaction Amount": "transactionAmount",
+                transactionAmount: "transactionAmount",
+                transactionamount: "transactionAmount",
+                TRANSACTIONAMOUNT: "transactionAmount",
+                Amount: "transactionAmount",
+                amount: "transactionAmount",
+                AMOUNT: "transactionAmount",
+                "Txn Amount": "transactionAmount",
+                txnAmount: "transactionAmount",
+                TxnAmount: "transactionAmount",
+                Value: "transactionAmount",
+                value: "transactionAmount",
+                VALUE: "transactionAmount",
+
+                // Icegate Acknowledgement Number variations
+                "Icegate Ack. No.": "icegateAckNo",
+                icegateAckNo: "icegateAckNo",
+                icegateackno: "icegateAckNo",
+                ICEGATEACKNO: "icegateAckNo",
+                "Icegate Ack No": "icegateAckNo",
+                "Icegate Ack No.": "icegateAckNo",
+                "Icegate Acknowledgement": "icegateAckNo",
+                "icegate acknowledgement": "icegateAckNo",
+                "ICEGATE ACKNOWLEDGEMENT": "icegateAckNo",
+                "Ack No": "icegateAckNo",
+                ackNo: "icegateAckNo",
+                AckNo: "icegateAckNo",
+                Acknowledgement: "icegateAckNo",
+                acknowledgement: "icegateAckNo",
+                ACKNOWLEDGEMENT: "icegateAckNo",
+              };
+
+              // Case-insensitive field mapping
+              const normalizedHeader = header?.toString().trim();
+              const fieldName =
+                fieldMap[normalizedHeader] ||
+                fieldMap[normalizedHeader?.toLowerCase()] ||
+                fieldMap[normalizedHeader?.toUpperCase()] ||
+                normalizedHeader?.toLowerCase().replace(/\s+/g, "");
+              entry[fieldName] = value;
+            }
+          });
+
+          // Ensure required fields have default values for Custom Duty
+          return {
+            ...entry,
+            srNo: entry.srNo || (index + 1).toString(),
+            challanNo: entry.challanNo || "",
+            documentNo: entry.documentNo || "",
+            transactionDate:
+              entry.transactionDate || new Date().toISOString().split("T")[0],
+            referenceId: entry.referenceId || "",
+            description: entry.description || "",
+            typeOfTransaction: entry.typeOfTransaction || "Debit",
+            transactionAmount: parseFloat(entry.transactionAmount) || 0,
+            icegateAckNo: entry.icegateAckNo || "",
+          };
+        })
+        .filter((entry) => entry.transactionAmount > 0);
 
       setUploadProgress(100);
       setUploadSuccess(true);
       setSelectedFile(null);
 
-      swal("Upload Successful!", `Successfully extracted ${extractedData.length} journal voucher entries from the file.`, "success");
+      swal(
+        "Upload Successful!",
+        `Successfully extracted ${extractedData.length} custom duty entries from the file.`,
+        "success"
+      );
 
       if (onSuccess) onSuccess(extractedData);
     } catch (err) {
       console.error("Error processing Excel file:", err);
-      setUploadError("Error processing Excel file. Please ensure the file format is correct.");
+      setUploadError(
+        "Error processing Excel file. Please ensure the file format is correct."
+      );
       showErrorMessage(
         err,
         "Error processing Excel file. Please check the file format and try again.",
@@ -207,10 +274,10 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
 
   // Simple sample download
   const handleDownloadSample = () => {
-    const sampleUrl = "/sample-files/jv-sample.csv"; // <-- fixed location
+    const sampleUrl = "/sample-files/custom-duty-sample.csv";
     const a = document.createElement("a");
     a.href = sampleUrl;
-    a.download = "Sample_JV.csv";
+    a.download = "Sample_Custom_Duty.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

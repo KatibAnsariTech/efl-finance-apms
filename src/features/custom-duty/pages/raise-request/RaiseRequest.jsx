@@ -29,7 +29,7 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { UploadJVModal } from "../../components";
+import { UploadCustomDutyModal } from "../../components";
 import ConfirmationModal from "src/components/ConfirmationModal";
 
 export default function RaiseRequest() {
@@ -41,19 +41,37 @@ export default function RaiseRequest() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [isAfter3PM, setIsAfter3PM] = useState(false);
 
-  // Sample company data - replace with actual API call
+  const checkTimeRestriction = useCallback(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTime = currentHour * 60 + currentMinute;
+    const cutoffTime = 15 * 60; // 3:00 PM = 15:00 = 900 minutes
+    return currentTime >= cutoffTime;
+  }, []);
+
+
   const companies = [
     { id: 1, name: "EFL" },
     { id: 2, name: "Eureka Forbes" },
-    { id: 3, name: "SpaceToTech" },
-    { id: 4, name: "Eureka Industries" },
+    { id: 3, name: "Eureka Industries" },
   ];
 
   const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
 
-  // Add new JV entry to local state
-  const addJVEntry = (newEntry) => {
+
+  // useEffect(() => {
+  //   setIsAfter3PM(checkTimeRestriction());    
+  //   const interval = setInterval(() => {
+  //     setIsAfter3PM(checkTimeRestriction());
+  //   }, 60000);
+  //   return () => clearInterval(interval);
+  // }, [checkTimeRestriction]);
+
+  // Add new custom duty entry to local state
+  const addCustomDutyEntry = (newEntry) => {
     const entryWithId = {
       ...newEntry,
       _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -64,12 +82,17 @@ export default function RaiseRequest() {
   };
 
   const handleUploadSuccess = (uploadedEntries) => {
-    uploadedEntries.forEach((entry) => addJVEntry(entry));
+    // Replace existing data with uploaded entries
+    setData(uploadedEntries);
     setUploadModalOpen(false);
-    swal("Success!", "Journal vouchers uploaded successfully!", "success");
+    swal("Success!", "Custom duty entries uploaded successfully!", "success");
   };
 
   const handleSubmitRequest = async () => {
+    if (isAfter3PM) {
+      swal("Time Restriction", "Cannot generate requests after 3:00 PM. Please try again tomorrow.", "warning");
+      return;
+    }
     setConfirmModalOpen(true);
   };
 
@@ -101,15 +124,15 @@ export default function RaiseRequest() {
         journalVouchers,
       };
 
-      // Call the importJV API endpoint
+      // Call the custom duty API endpoint
       const response = await userRequest.post(
-        `${BASE_URL}/createJV`,
+        `${BASE_URL}/createCustomDuty`,
         requestBody
       );
 
       swal(
         "Success!",
-        "Journal voucher request submitted successfully!",
+        "Custom duty request submitted successfully!",
         "success"
       );
 
@@ -119,7 +142,7 @@ export default function RaiseRequest() {
       setConfirmModalOpen(false);
     } catch (error) {
       console.error("Submit error:", error);
-      showErrorMessage(error, "Failed to submit journal voucher request", swal);
+      showErrorMessage(error, "Failed to submit custom duty request", swal);
     } finally {
       setSubmitting(false);
     }
@@ -210,14 +233,14 @@ export default function RaiseRequest() {
       headerName: "Type of Transaction",
       width: 180,
       resizable: true,
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          color={params.value === "Debit" ? "error" : "success"}
-          size="small"
-          variant="outlined"
-        />
-      ),
+      // renderCell: (params) => (
+      //   <Chip
+      //     label={params.value}
+      //     color={params.value === "Debit" ? "error" : "success"}
+      //     size="small"
+      //     variant="outlined"
+      //   />
+      // ),
     },
     {
       field: "transactionAmount",
@@ -302,7 +325,7 @@ export default function RaiseRequest() {
               gap: 0.2,
             }}
           >
-            {showInfoText && (
+            {isAfter3PM ? (
               <span
                 style={{
                   fontSize: "0.75rem",
@@ -311,8 +334,21 @@ export default function RaiseRequest() {
                   fontWeight: "500",
                 }}
               >
-                use a unique serial number for each SAP debit and credit entry
+                Cannot generate requests or upload files after 3:00 PM. Please try again tomorrow.
               </span>
+            ) : (
+              showInfoText && (
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "red",
+                    marginRight: "4px",
+                    fontWeight: "500",
+                  }}
+                >
+                  use a unique serial number for each SAP debit and credit entry
+                </span>
+              )
             )}
             <IconButton
               size="small"
@@ -334,11 +370,23 @@ export default function RaiseRequest() {
             <Button
               variant="text"
               size="small"
-              onClick={() => setUploadModalOpen(true)}
+              onClick={() => {
+                if (isAfter3PM) {
+                  swal("Time Restriction", "Cannot upload files after 3:00 PM. Please try again tomorrow.", "warning");
+                  return;
+                }
+                setUploadModalOpen(true);
+              }}
+              disabled={isAfter3PM}
               sx={{
                 fontSize: "0.875rem",
+                color: isAfter3PM ? "red" : "primary.main",
                 "&:hover": {
                   backgroundColor: "transparent",
+                },
+                "&.Mui-disabled": {
+                  color: "red",
+                  opacity: 0.8,
                 },
               }}
             >
@@ -387,7 +435,7 @@ export default function RaiseRequest() {
             ) : (
               <Box
                 sx={{
-                  height: "calc(100vh - 220px)",
+                  height: "calc(100vh - 200px)",
                   marginBottom: { xs: "0px", sm: "0px" },
                   minHeight: "300px",
                   maxHeight: "70vh",
@@ -407,13 +455,6 @@ export default function RaiseRequest() {
                   autoHeight={false}
                   columnResizeMode="onResize"
                   editMode="cell"
-                  // processRowUpdate={(updatedRow, originalRow) => {
-                  //   updateJVEntry(updatedRow);
-                  //   return updatedRow;
-                  // }}
-                  // onProcessRowUpdateError={(error) => {
-                  //   console.error("Error updating row:", error);
-                  // }}
                   sx={{
                     height: "100%",
                     border: "none",
@@ -473,45 +514,13 @@ export default function RaiseRequest() {
                 justifyContent: { xs: "center", sm: "flex-start" },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                    whiteSpace: "nowrap",
-                    fontWeight: 500,
-                  }}
-                >
-                  Auto-reversal this transaction:
-                </Typography>
-                <FormControl
-                  sx={{
-                    minWidth: 80,
-                    "& .MuiOutlinedInput-root": {
-                      height: "40px",
-                    },
-                  }}
-                >
-                  <Select
-                    value={autoReversal}
-                    onChange={(e) => setAutoReversal(e.target.value)}
-                    displayEmpty
-                    sx={{
-                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                    }}
-                  >
-                    <MenuItem value="Yes">Yes</MenuItem>
-                    <MenuItem value="No">No</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
             </Box>
 
             <Button
               variant="contained"
               color="primary"
               onClick={handleSubmitRequest}
-              disabled={data.length === 0}
+              disabled={data.length === 0 || isAfter3PM}
               sx={{
                 px: { xs: 2, sm: 3 },
                 py: { xs: 1.5, sm: 1 },
@@ -519,6 +528,10 @@ export default function RaiseRequest() {
                 fontWeight: "bold",
                 width: { xs: "100%", sm: "auto" },
                 minWidth: { xs: "auto", sm: "240px" },
+                "&.Mui-disabled": {
+                  backgroundColor: isAfter3PM ? "error.main" : "rgba(0, 0, 0, 0.12)",
+                  color: isAfter3PM ? "white" : "rgba(0, 0, 0, 0.26)",
+                },
               }}
             >
               Submit Request
@@ -526,7 +539,7 @@ export default function RaiseRequest() {
           </Box>
         )}
 
-        <UploadJVModal
+        <UploadCustomDutyModal
           open={uploadModalOpen}
           onClose={() => setUploadModalOpen(false)}
           onSuccess={handleUploadSuccess}

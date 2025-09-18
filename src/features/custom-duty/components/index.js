@@ -1,1 +1,1 @@
-export { default as UploadJVModal } from './UploadJVModal';
+export { default as UploadCustomDutyModal } from './UploadCustomDutyModal';
