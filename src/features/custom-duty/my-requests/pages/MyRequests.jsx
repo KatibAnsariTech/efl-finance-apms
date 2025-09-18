@@ -4,7 +4,6 @@ import {
   Typography,
   Box,
   Card,
-  CardContent,
   Paper,
   Chip,
   CircularProgress,
@@ -14,11 +13,27 @@ import { fDateTime } from "src/utils/format-time";
 import { userRequest } from "src/requestMethod";
 import { Helmet } from "react-helmet-async";
 import { useRouter } from "src/routes/hooks";
+import { FormTableToolbar } from "src/components/table";
+import { applyFilter, getComparator } from "src/utils/utils";
+import excel from "../../../../../public/assets/excel.svg";
+import ColorIndicators from "../components/ColorIndicators";
 
 export default function MyRequests() {
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("createdAt");
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [region, setRegion] = useState();
+  const [status, setStatus] = useState();
+  const [refund, setRefund] = useState();
+  const [startDate, setStartDate] = useState();
+  const [endDate, setEndDate] = useState();
 
   // Status color mapping
   const getStatusColor = (status) => {
@@ -37,7 +52,7 @@ export default function MyRequests() {
       case "submitted":
         return "#bbdefb";
       case "rejected":
-        return "#ffcdd2";
+        return "#e6b2aa";
       default:
         return "white";
     }
@@ -57,117 +72,101 @@ export default function MyRequests() {
     return <Chip label={config.label} color={config.color} size="small" />;
   };
 
-  // Fetch data on component mount
+  // Debounced search
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 600);
 
-  const fetchRequests = async () => {
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  // Fetch data
+  const getData = async () => {
     try {
       setLoading(true);
-      // Dummy data for demonstration
-      const dummyData = [
-        {
-          _id: "1",
-          requestNo: "CDR-2024-001",
-          requestedDate: "2024-01-15T10:30:00Z",
-          boeNumber: "BOE-2024-001",
-          srNo: "1",
-          challanNo: "2056627067",
-          documentNo: "4145750",
-          transactionDate: "2024-01-15T17:09:29.276Z",
-          referenceId: "007000BEINDEL4145750",
-          description: "Duty Payment",
-          typeOfTransaction: "Debit",
-          transactionAmount: 220823,
-          icegateAckNo: "IG108292025064509",
-          status: "Approved",
-        },
-        {
-          _id: "2",
-          requestNo: "CDR-2024-002",
-          requestedDate: "2024-01-16T09:15:00Z",
-          boeNumber: "BOE-2024-002",
-          srNo: "2",
-          challanNo: "2056627068",
-          documentNo: "4145751",
-          transactionDate: "2024-01-16T14:22:15.123Z",
-          referenceId: "007000BEINDEL4145751",
-          description: "Custom Duty Payment",
-          typeOfTransaction: "Credit",
-          transactionAmount: 150000,
-          icegateAckNo: "IG108292025064510",
-          status: "Pending",
-        },
-        {
-          _id: "3",
-          requestNo: "CDR-2024-003",
-          requestedDate: "2024-01-17T11:45:00Z",
-          boeNumber: "BOE-2024-003",
-          srNo: "3",
-          challanNo: "2056627069",
-          documentNo: "4145752",
-          transactionDate: "2024-01-17T16:30:45.789Z",
-          referenceId: "007000BEINDEL4145752",
-          description: "Import Duty",
-          typeOfTransaction: "Debit",
-          transactionAmount: 350000,
-          icegateAckNo: "IG108292025064511",
-          status: "Submitted",
-        },
-        {
-          _id: "4",
-          requestNo: "CDR-2024-004",
-          requestedDate: "2024-01-18T08:20:00Z",
-          boeNumber: "BOE-2024-004",
-          srNo: "4",
-          challanNo: "2056627070",
-          documentNo: "4145753",
-          transactionDate: "2024-01-18T13:15:30.456Z",
-          referenceId: "007000BEINDEL4145753",
-          description: "Export Duty Refund",
-          typeOfTransaction: "Credit",
-          transactionAmount: 75000,
-          icegateAckNo: "IG108292025064512",
-          status: "Rejected",
-        },
-        {
-          _id: "5",
-          requestNo: "CDR-2024-005",
-          requestedDate: "2024-01-19T14:10:00Z",
-          boeNumber: "BOE-2024-005",
-          srNo: "5",
-          challanNo: "2056627071",
-          documentNo: "4145754",
-          transactionDate: "2024-01-19T18:45:12.321Z",
-          referenceId: "007000BEINDEL4145754",
-          description: "Additional Duty",
-          typeOfTransaction: "Debit",
-          transactionAmount: 180000,
-          icegateAckNo: "IG108292025064513",
-          status: "Clarification Needed",
-        },
-        {
-          _id: "6",
-          requestNo: "CDR-2024-006",
-          requestedDate: "2024-01-20T12:30:00Z",
-          boeNumber: "BOE-2024-006",
-          srNo: "6",
-          challanNo: "2056627072",
-          documentNo: "4145755",
-          transactionDate: "2024-01-20T15:20:18.654Z",
-          referenceId: "007000BEINDEL4145755",
-          description: "Countervailing Duty",
-          typeOfTransaction: "Debit",
-          transactionAmount: 420000,
-          icegateAckNo: "IG108292025064514",
-          status: "Draft",
-        },
-      ];
-      
+      // Generate dummy data for demonstration
+      const generateDummyData = (startId, count) => {
+        const statuses = ["Pending", "Approved", "Rejected"];
+        const descriptions = [
+          "Duty Payment",
+          "Custom Duty Payment",
+          "Import Duty",
+          "Export Duty Refund",
+          "Additional Duty",
+          "Countervailing Duty",
+          "Anti-dumping Duty",
+          "Safeguard Duty",
+        ];
+        const transactionTypes = ["Debit", "Credit"];
+
+        return Array.from({ length: count }, (_, index) => {
+          const id = startId + index;
+          const status = statuses[Math.floor(Math.random() * statuses.length)];
+          const description =
+            descriptions[Math.floor(Math.random() * descriptions.length)];
+          const typeOfTransaction =
+            transactionTypes[
+              Math.floor(Math.random() * transactionTypes.length)
+            ];
+          const amount = Math.floor(Math.random() * 500000) + 50000;
+
+          return {
+            id: id.toString(),
+            _id: id.toString(),
+            requestNo: `CDR-2024-${String(id).padStart(3, "0")}`,
+            requestedDate: new Date(
+              2024,
+              0,
+              15 + Math.floor(Math.random() * 30),
+              Math.floor(Math.random() * 24),
+              Math.floor(Math.random() * 60)
+            ).toISOString(),
+            boeNumber: `BOE-2024-${String(id).padStart(3, "0")}`,
+            srNo: id.toString(),
+            challanNo: `2056627${String(67 + id).padStart(3, "0")}`,
+            documentNo: `41457${String(50 + id).padStart(3, "0")}`,
+            transactionDate: new Date(
+              2024,
+              0,
+              15 + Math.floor(Math.random() * 30),
+              Math.floor(Math.random() * 24),
+              Math.floor(Math.random() * 60)
+            ).toISOString(),
+            referenceId: `007000BEINDEL41457${String(50 + id).padStart(
+              3,
+              "0"
+            )}`,
+            description,
+            typeOfTransaction,
+            transactionAmount: amount,
+            icegateAckNo: `IG1082920250645${String(509 + id).padStart(3, "0")}`,
+            status,
+            createdAt: new Date(
+              2024,
+              0,
+              15 + Math.floor(Math.random() * 30),
+              Math.floor(Math.random() * 24),
+              Math.floor(Math.random() * 60)
+            ).toISOString(),
+          };
+        });
+      };
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setData(dummyData);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Generate 50 total records for pagination demo
+      const allData = generateDummyData(1, 50);
+      const totalRecords = allData.length;
+      setTotalCount(totalRecords);
+
+      // Get paginated data
+      const startIndex = page * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      const paginatedData = allData.slice(startIndex, endIndex);
+
+      setData(paginatedData);
     } catch (error) {
       console.error("Error fetching requests:", error);
       setData([]);
@@ -176,15 +175,68 @@ export default function MyRequests() {
     }
   };
 
+  useEffect(() => {
+    getData();
+  }, [
+    debouncedSearch,
+    page,
+    rowsPerPage,
+    region,
+    status,
+    refund,
+    startDate,
+    endDate,
+  ]);
+
+  const sortableColumns = ["createdAt", "requestNo"];
+
+  const handleSort = (event, id) => {
+    if (sortableColumns.includes(id)) {
+      const isAsc = orderBy === id && order === "asc";
+      setOrder(isAsc ? "desc" : "asc");
+      setOrderBy(id);
+    }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+    setRowsPerPage(rowsPerPage);
+    window.scrollTo(0, 0);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setPage(0);
+    setRowsPerPage(parseInt(event.target.value));
+  };
+
+  const handleFilterChange = (field, value) => {
+    setPage(0);
+    setSearch(value);
+  };
+
+  const dataFiltered = applyFilter({
+    inputData: data,
+    comparator: getComparator(order, orderBy),
+    search,
+  });
+
+  const handleExport = async () => {
+    try {
+      // Simulate export functionality
+      console.log("Exporting data...");
+    } catch (error) {
+      console.error("Export error:", error);
+    }
+  };
+
   const columns = [
-    // Additional columns at the beginning
     {
       field: "requestNo",
       headerName: "Request No.",
-      width: 160,
+      flex: 1,
+      minWidth: 160,
       align: "center",
       headerAlign: "center",
-      resizable: true,
       renderCell: (params) => (
         <Box
           sx={{
@@ -197,7 +249,6 @@ export default function MyRequests() {
             "&:hover": { color: "#1565c0" },
           }}
           onClick={() => {
-            // Navigate to request detail page
             router.push(`/custom-duty/request-detail/${params.value}`);
           }}
         >
@@ -208,122 +259,69 @@ export default function MyRequests() {
     {
       field: "requestedDate",
       headerName: "Requested Date",
-      width: 180,
+      flex: 1,
+      minWidth: 200,
       align: "center",
       headerAlign: "center",
-      resizable: true,
       renderCell: (params) => fDateTime(params.value),
     },
     {
       field: "boeNumber",
       headerName: "BOE Number",
-      width: 150,
+      flex: 1,
+      minWidth: 150,
       align: "center",
       headerAlign: "center",
-      resizable: true,
-    },
-    // Standard columns from raise ticket table
-    {
-      field: "srNo",
-      headerName: "Sr.no.",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-    },
-    {
-      field: "challanNo",
-      headerName: "Challan No.",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "documentNo",
-      headerName: "Document No",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleString("en-GB", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              fractionalSecondDigits: 3,
-            });
-      },
-    },
-    {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "typeOfTransaction",
-      headerName: "Type of Transaction",
-      width: 180,
-      resizable: true,
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          color={params.value === "Debit" ? "error" : "success"}
-          size="small"
-          variant="outlined"
-        />
-      ),
-    },
-    {
-      field: "transactionAmount",
-      headerName: "Transaction Amount",
-      width: 180,
-      resizable: true,
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-      resizable: true,
     },
     {
       field: "status",
       headerName: "Status",
-      width: 150,
+      flex: 1,
+      minWidth: 130,
       align: "center",
       headerAlign: "center",
-      resizable: true,
-      renderCell: (params) => getStatusChip(params.value),
+      //   renderCell: (params) => getStatusChip(params.value),
+    },
+    {
+      field: "challanNo",
+      headerName: "Challan No.",
+      flex: 1,
+      minWidth: 140,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "documentNo",
+      headerName: "Document No",
+      flex: 1,
+      minWidth: 130,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "transactionAmount",
+      headerName: "Amount",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+    {
+      field: "typeOfTransaction",
+      headerName: "Type",
+      flex: 1,
+      minWidth: 100,
+      align: "center",
+      headerAlign: "center",
+      //   renderCell: (params) => (
+      //     <Chip
+      //       label={params.value}
+      //       color={params.value === "Debit" ? "error" : "success"}
+      //       size="small"
+      //       variant="outlined"
+      //     />
+      //   ),
     },
   ];
 
@@ -333,109 +331,113 @@ export default function MyRequests() {
         <title>My Custom Duty Requests</title>
       </Helmet>
 
-      <Container maxWidth="xl">
-        <Card>
-          <CardContent
-            sx={{
-              p: 0,
-              "&:last-child": {
-                pb: 0,
-              },
+      <Container>
+        <Card sx={{ mt: 2, p: 2 }}>
+          {/* <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginRight: "20px",
             }}
           >
-            {loading ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "400px",
-                }}
-              >
-                <CircularProgress />
-              </Box>
-            ) : data.length === 0 ? (
-              <Paper
-                sx={{
-                  p: 6,
-                  textAlign: "center",
-                  backgroundColor: "#fafafa",
-                  borderRadius: 2,
-                  m: 2,
-                }}
-              >
-                <Typography variant="h6" color="text.secondary">
-                  No requests found
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 1 }}
-                >
-                  You haven't submitted any custom duty requests yet.
-                </Typography>
-              </Paper>
-            ) : (
-              <Box
-                sx={{
-                  height: "calc(100vh - 200px)",
-                  marginBottom: { xs: "0px", sm: "0px" },
-                  minHeight: "300px",
-                  maxHeight: "70vh",
-                }}
-              >
-                <DataGrid
-                  rows={data.map((row, index) => ({
-                    ...row,
-                    id: row._id || row.requestNo || `row-${index}`,
-                    backgroundColor: getStatusColor(row.status),
-                  }))}
-                  columns={columns}
-                  loading={loading}
-                  pagination={false}
-                  disableRowSelectionOnClick
-                  disableRowClick
-                  columnResize
-                  disableColumnResize={false}
-                  hideFooter
-                  autoHeight={false}
-                  columnResizeMode="onResize"
-                  editMode="cell"
-                  sx={{
-                    height: "100%",
-                    border: "none",
-                    "& .MuiDataGrid-cell": {
-                      "&:focus": {
-                        outline: "none",
-                      },
-                      "&:focus-visible": {
-                        outline: "none",
-                      },
-                    },
-                    "& .MuiDataGrid-row": {
-                      "&:focus": {
-                        outline: "none",
-                      },
-                      "&:focus-visible": {
-                        outline: "none",
-                      },
-                    },
-                    "& .MuiDataGrid-columnHeaders": {
-                      backgroundColor: "#f5f6f8",
-                      fontWeight: "bold",
-                      color: "#637381",
-                    },
-                    "& .MuiDataGrid-cell:focus": {
-                      outline: "none",
-                    },
-                    "& .MuiDataGrid-row:hover": {
-                      backgroundColor: "rgba(0, 0, 0, 0.04)",
-                    },
-                  }}
-                />
-              </Box>
-            )}
-          </CardContent>
+            <FormTableToolbar
+              search={search}
+              onFilterChange={handleFilterChange}
+              placeholder="Search requests..."
+            />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "0.8rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+                gap: "8px",
+              }}
+            >
+              <span onClick={handleExport} style={{ color: "#167beb" }}>
+                Export{" "}
+                <img src={excel} style={{ width: "1.2rem", marginLeft: "5px" }} />
+              </span>
+            </div>
+          </div> */}
+
+          <Box sx={{ width: "100%" }}>
+            <DataGrid
+              rows={
+                dataFiltered?.map((row, index) => ({
+                  ...row,
+                  id: row._id || row.requestNo || `row-${index}`,
+                  backgroundColor: getStatusColor(row.status),
+                })) || []
+              }
+              columns={columns}
+              getRowId={(row) => row?.id}
+              loading={loading}
+              pagination
+              paginationMode="server"
+              rowCount={totalCount}
+              paginationModel={{ page: page, pageSize: rowsPerPage }}
+              onPaginationModelChange={(newModel) => {
+                setPage(newModel.page);
+                setRowsPerPage(newModel.pageSize);
+              }}
+              pageSizeOptions={[5, 10, 25, 50]}
+              autoHeight
+              getRowClassName={(params) => {
+                const status = params.row.status?.toLowerCase();
+                if (status === "pending") return "row-pending";
+                if (status === "rejected") return "row-rejected";
+                if (status === "approved") return "row-approved";
+                if (status === "clarification needed")
+                  return "row-clarification";
+                return "";
+              }}
+              disableRowSelectionOnClick
+              sx={{
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor: "#f5f6f8",
+                  fontWeight: "bold",
+                  color: "#637381",
+                },
+                "& .MuiDataGrid-cell:focus": {
+                  outline: "none",
+                },
+                "& .MuiDataGrid-row:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                },
+                "& .row-pending": {
+                  backgroundColor: "#f4f5ba !important",
+                },
+                "& .row-rejected": {
+                  backgroundColor: "#e6b2aa !important",
+                },
+                "& .row-approved": {
+                  backgroundColor: "#baf5c2 !important",
+                },
+                "& .row-clarification": {
+                  backgroundColor: "#9be7fa !important",
+                },
+              }}
+            />
+          </Box>
+          <Box
+            sx={{
+              position: "relative",
+              height: "52px", // Match DataGrid footer height
+              marginTop: "-52px", // Overlap with DataGrid footer
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "16px",
+              zIndex: 0, // Lower z-index so pagination is clickable
+              pointerEvents: "none", // Allow clicks to pass through
+            }}
+          >
+            <Box sx={{ pointerEvents: "auto" }}>
+              <ColorIndicators />
+            </Box>
+          </Box>
         </Card>
       </Container>
     </>
