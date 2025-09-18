@@ -59,7 +59,7 @@ export const headLabel = (selectedTab) => {
           id: "mastersheetPermissions",
           name: "mastersheetPermissions",
           label: "MasterSheet Permissions",
-          minWidth: 200,
+          minWidth: 500,
           sortable: true,
         },
         { id: "action", label: "Action", minWidth: 150 },
