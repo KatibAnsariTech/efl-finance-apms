@@ -21,6 +21,7 @@ import {
   MenuItem,
   InputLabel,
   TextField,
+  Autocomplete,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { fDateTime } from "src/utils/format-time";
@@ -39,6 +40,15 @@ export default function RaiseRequest() {
   const [showInfoText, setShowInfoText] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+
+  // Sample company data - replace with actual API call
+  const companies = [
+    { id: 1, name: "EFL" },
+    { id: 2, name: "Eureka Forbes" },
+    { id: 3, name: "SpaceToTech" },
+    { id: 4, name: "Eureka Industries" },
+  ];
 
   const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
 
@@ -52,7 +62,6 @@ export default function RaiseRequest() {
     };
     setData((prev) => [...prev, entryWithId]);
   };
-
 
   const handleUploadSuccess = (uploadedEntries) => {
     uploadedEntries.forEach((entry) => addJVEntry(entry));
@@ -131,125 +140,49 @@ export default function RaiseRequest() {
 
   const columns = [
     {
-      field: "sNo",
-      headerName: "JV No",
-      width: 120,
+      field: "srNo",
+      headerName: "Sr.no.",
+      width: 80,
       align: "center",
       headerAlign: "center",
       resizable: true,
-      editable: true,
-      renderCell: (params) => params.row.sNo || params.value || "",
     },
     {
-      field: "documentType",
-      headerName: "Document Type",
-      width: 140,
-      resizable: true,
-    },
-    {
-      field: "documentDate",
-      headerName: "Document Date",
-      width: 140,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        // Handle both ISO date strings and YYYY-MM-DD format
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
-    },
-    {
-      field: "postingDate",
-      headerName: "Posting Date",
-      width: 140,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        // Handle both ISO date strings and YYYY-MM-DD format
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
-    },
-    {
-      field: "businessArea",
-      headerName: "Business Area",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "accountType",
-      headerName: "Account Type",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "postingKey",
-      headerName: "Posting Key",
-      width: 160,
-      resizable: true,
-    },
-    {
-      field: "vendorCustomerGLName",
-      headerName: "Vendor/Customer/GL Name",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "vendorCustomerGLNumber",
-      headerName: "Vendor/Customer/GL Number",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "amount",
-      headerName: "Amount",
-      width: 120,
-      resizable: true,
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "assignment",
-      headerName: "Assignment",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "costCenter",
-      headerName: "Cost Center",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "profitCenter",
-      headerName: "Profit Center",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "specialGLIndication",
-      headerName: "Special GL Indication",
-      width: 170,
-      resizable: true,
-    },
-    {
-      field: "referenceNumber",
-      headerName: "Reference Number",
+      field: "challanNo",
+      headerName: "Challan No.",
       width: 150,
       resizable: true,
     },
     {
-      field: "personalNumber",
-      headerName: "Personal Number",
+      field: "documentNo",
+      headerName: "Document No",
       width: 150,
       resizable: true,
     },
     {
-      field: "remarks",
-      headerName: "Remarks",
+      field: "transactionDate",
+      headerName: "Transaction Date",
+      width: 200,
+      resizable: true,
+      renderCell: (params) => {
+        if (!params.value) return "";
+        const date = new Date(params.value);
+        return isNaN(date.getTime())
+          ? params.value
+          : date.toLocaleString("en-GB", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              fractionalSecondDigits: 3,
+            });
+      },
+    },
+    {
+      field: "referenceId",
+      headerName: "Reference ID",
       width: 200,
       resizable: true,
       renderCell: (params) => (
@@ -267,31 +200,37 @@ export default function RaiseRequest() {
       ),
     },
     {
-      field: "autoReversal",
-      headerName: "Auto Reversal",
-      width: 130,
+      field: "description",
+      headerName: "Description",
+      width: 150,
       resizable: true,
-      renderCell: (params) =>
-        // <Chip
-        //   label={params.value === "Y" ? "Yes" : "No"}
-        //   color={params.value === "Y" ? "success" : "default"}
-        //   size="small"
-        // />
-        params.value === "Y" ? "Yes" : "No",
     },
-    // {
-    //   field: "status",
-    //   headerName: "Status",
-    //   flex: 1,
-    //   minWidth: 100,
-    //   renderCell: (params) => getStatusChip(params.value),
-    // },
     {
-      field: "createdAt",
-      headerName: "Created At",
-      width: 140,
+      field: "typeOfTransaction",
+      headerName: "Type of Transaction",
+      width: 180,
       resizable: true,
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={params.value === "Debit" ? "error" : "success"}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
+    {
+      field: "transactionAmount",
+      headerName: "Transaction Amount",
+      width: 180,
+      resizable: true,
+      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+    {
+      field: "icegateAckNo",
+      headerName: "Icegate Ack. No.",
+      width: 200,
+      resizable: true,
     },
   ];
 
@@ -302,7 +241,59 @@ export default function RaiseRequest() {
       </Helmet>
 
       <Container maxWidth="xl" sx={{ mb: -15 }}>
-        <Box sx={{ mb: 0 }}>
+        <Box
+          sx={{
+            mb: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{ fontSize: "0.85rem", fontWeight: 800 }}
+            >
+              Company:
+            </Typography>
+            <Autocomplete
+              value={selectedCompany}
+              onChange={(event, newValue) => {
+                setSelectedCompany(newValue);
+              }}
+              options={companies}
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              sx={{ minWidth: 160 }}
+              ListboxProps={{
+                sx: {
+                  "& .MuiAutocomplete-option": {
+                    fontSize: "0.85rem",
+                  },
+                },
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Select"
+                  size="small"
+                  variant="standard"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px",
+                    },
+                    "& .MuiInputBase-input": {
+                      fontSize: "0.85rem",
+                      fontWeight:"500"
+                    },
+                    "& .MuiInputBase-input::placeholder": {
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Box>
           <Box
             sx={{
               display: "flex",
