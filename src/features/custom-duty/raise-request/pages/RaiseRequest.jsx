@@ -264,7 +264,7 @@ export default function RaiseRequest() {
   return (
     <>
       <Helmet>
-        <title>Initiate Journal Voucher</title>
+        <title>Raise Request -  Custom Duty</title>
       </Helmet>
 
       <Container maxWidth="xl" sx={{ mb: -15 }}>
