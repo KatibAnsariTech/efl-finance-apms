@@ -391,7 +391,7 @@ export default function Requests() {
             position: "relative",
           }}
         >
-          {/* Unified loading overlay */}
+          {/* Custom loading overlay - perfectly centered */}
           {(loading || loadingMore) && (
             <Box
               sx={{
@@ -406,6 +406,8 @@ export default function Requests() {
                 alignItems: "center",
                 backgroundColor: "rgba(255, 255, 255, 0.9)",
                 zIndex: 10,
+                height: "100%",
+                width: "100%",
               }}
             >
               <CircularProgress size={50} thickness={4} />
@@ -415,9 +417,10 @@ export default function Requests() {
                   mt: 2,
                   color: "text.secondary",
                   fontWeight: 500,
+                  textAlign: "center",
                 }}
               >
-                {loading ? "Loading data..." : "Loading more data..."}
+                {loading ? "Loading data..." : loadingMore ? "Loading more data..." : "Loading..."}
               </Typography>
             </Box>
           )}
@@ -425,7 +428,7 @@ export default function Requests() {
           <DataGrid
             rows={data}
             columns={columns}
-            loading={loading}
+            loading={false}
             disableRowSelectionOnClick
             hideFooterSelectedRowCount
             pagination={false}
@@ -433,35 +436,6 @@ export default function Requests() {
             onRowsScrollEnd={handleLoadMore}
             slots={{
               footer: () => null,
-              loadingOverlay: () => (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100%",
-                    width: "100%",
-                    backgroundColor: "rgba(255, 255, 255, 0.8)",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    zIndex: 1,
-                  }}
-                >
-                  <CircularProgress size={40} thickness={4} />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 2,
-                      color: "text.secondary",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Loading data...
-                  </Typography>
-                </Box>
-              ),
             }}
             sx={{
               "& .MuiDataGrid-cell": {
