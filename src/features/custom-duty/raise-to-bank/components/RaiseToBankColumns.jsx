@@ -9,9 +9,9 @@ export const SubmittedColumns = () => {
   return [
     {
       field: "submitRequestNo",
-      headerName: "Final - Submit Request No.",
+      headerName: "Final Request No.",
       flex: 1,
-      minWidth: 200,
+      minWidth: 180,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
@@ -37,7 +37,7 @@ export const SubmittedColumns = () => {
     },
     {
       field: "submitDate",
-      headerName: "Submit Date and Time",
+      headerName: "Submitted At",
       flex: 1,
       minWidth: 180,
       align: "center",
@@ -59,9 +59,9 @@ export const SubmittedColumns = () => {
     },
     {
       field: "totalRecords",
-      headerName: "Total Records Submitted",
+      headerName: "Total Records",
       flex: 1,
-      minWidth: 180,
+      minWidth: 120,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
@@ -82,9 +82,9 @@ export const SubmittedColumns = () => {
     },
     {
       field: "downloadLink",
-      headerName: "Download Submitted Record Details",
+      headerName: "Bank Download Records",
       flex: 1,
-      minWidth: 250,
+      minWidth: 200,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
