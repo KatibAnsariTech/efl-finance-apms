@@ -6,6 +6,8 @@ import MasterTabs from "../components/MasterTabs";
 import AddEditCompany from "../components/Modals/AddEditCompany";
 import { Box } from "@mui/material";
 import { CompanyTable } from "../components/tables";
+import swal from "sweetalert";
+import { userRequest } from "src/requestMethod";
 
 const menuItems = [
   "Company"
@@ -32,14 +34,37 @@ export default function CustomDutyMaster() {
     setEditData(null);
   };
 
-  const handleDelete = (id) => {
-    console.log("Delete:", id);
-    // Add delete logic here
+  const handleDelete = async (id) => {
+    try {
+      const result = await swal({
+        title: "Are you sure?",
+        text: "You won't be able to revert this action!",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
+      });
+
+      if (result) {
+        console.log("Deleting company with ID:", id);
+        // Add actual delete API call here
+        // await userRequest.delete(`/admin/deleteMaster/${id}`);
+        
+        // Show success message
+        swal("Deleted!", "Company has been deleted successfully.", "success");
+        
+        // Refresh data
+        getData();
+      }
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      swal("Error!", "Failed to delete company. Please try again.", "error");
+    }
   };
 
   const getData = () => {
     // This function is now handled by individual table components
     console.log("Data refresh requested");
+    // The table will refresh automatically when needed
   };
 
   return (
@@ -86,7 +111,12 @@ export default function CustomDutyMaster() {
         )}
 
         <Box sx={{ width: "100%" }}>
-          {selectedTab === 0 && <CompanyTable />}
+          {selectedTab === 0 && (
+            <CompanyTable 
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+            />
+          )}
         </Box>
       </Card>
     </Container>

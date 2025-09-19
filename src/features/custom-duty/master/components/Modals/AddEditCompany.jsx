@@ -1,113 +1,148 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Box,
-  FormControlLabel,
-  Switch,
-} from "@mui/material";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import { RxCross2 } from "react-icons/rx";
+import swal from "sweetalert";
+import { userRequest } from "src/requestMethod";
+import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function AddEditCompany({ open, handleClose, editData, getData }) {
-  const [formData, setFormData] = useState({
-    companyName: "",
-    govtIdentifier: "",
-    bankAccountNumber: "",
-    isActive: true,
-  });
+function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
+  const { register, handleSubmit, reset, setValue } = useForm();
 
-  useEffect(() => {
-    if (editData) {
-      setFormData({
-        companyName: editData.companyName || "",
-        govtIdentifier: editData.govtIdentifier || "",
-        bankAccountNumber: editData.bankAccountNumber || "",
-        isActive: editData.isActive !== undefined ? editData.isActive : true,
-      });
+  React.useEffect(() => {
+    if (companyData) {
+      setValue("companyName", companyData.companyName);
+      setValue("govtIdentifier", companyData.govtIdentifier);
+      setValue("bankAccountNumber", companyData.bankAccountNumber);
+      setValue("isActive", companyData.isActive);
     } else {
-      setFormData({
-        companyName: "",
-        govtIdentifier: "",
-        bankAccountNumber: "",
-        isActive: true,
-      });
+      reset();
     }
-  }, [editData, open]);
+  }, [companyData, setValue, reset]);
 
-  const handleChange = (field) => (event) => {
-    const value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
+  const handleSaveData = async (data) => {
     try {
-      console.log("Saving company:", formData);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      getData();
+      const formattedData = {
+        key: "Company",
+        ...data,
+      };
+      if (companyData?._id) {
+        await userRequest.put(`/admin/updateMaster?id=${companyData._id}`, formattedData);
+        getData();
+        swal("Updated!", "Company data updated successfully!", "success");
+      } else {
+        await userRequest.post("/admin/createMasters", formattedData);
+        getData();
+        swal("Success!", "Company data saved successfully!", "success");
+      }
+
+      reset();
       handleClose();
     } catch (error) {
-      console.error("Error saving company:", error);
+      console.error("Error saving data:", error);
+      showErrorMessage(error, "Error saving data. Please try again later.", swal);
     }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {editData ? "Edit Company" : "Add Company"}
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ pt: 2 }}>
+    <Modal open={open} onClose={handleClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "50%",
+          bgcolor: "background.paper",
+          borderRadius: 5,
+          p: 4,
+        }}
+      >
+        <Typography
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
+            {companyData ? "Edit Company" : "Add Company"}
+          </span>
+          <RxCross2
+            onClick={handleClose}
+            style={{
+              color: "#B22222",
+              fontWeight: "bolder",
+              cursor: "pointer",
+              height: "24px",
+              width: "24px",
+            }}
+          />
+        </Typography>
+        <Box
+          component="form"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            mt: 4,
+            width: "100%",
+          }}
+          onSubmit={handleSubmit(handleSaveData)}
+        >
           <TextField
-            fullWidth
+            id="companyName"
             label="Company Name"
-            value={formData.companyName}
-            onChange={handleChange("companyName")}
-            margin="normal"
+            {...register("companyName", { required: true })}
+            fullWidth
             required
           />
           <TextField
-            fullWidth
+            id="govtIdentifier"
             label="Govt Identifier (Code)"
-            value={formData.govtIdentifier}
-            onChange={handleChange("govtIdentifier")}
-            margin="normal"
+            {...register("govtIdentifier", { required: true })}
+            fullWidth
             required
             helperText="GST number or other government identifier"
           />
           <TextField
-            fullWidth
+            id="bankAccountNumber"
             label="Bank Account Number"
-            value={formData.bankAccountNumber}
-            onChange={handleChange("bankAccountNumber")}
-            margin="normal"
+            {...register("bankAccountNumber", { required: true })}
+            fullWidth
             required
             type="number"
             inputProps={{ pattern: "[0-9]*" }}
           />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.isActive}
-                onChange={handleChange("isActive")}
-              />
-            }
-            label="Active"
-            sx={{ mt: 2 }}
-          />
+          <TextField
+            id="isActive"
+            label="Active Status"
+            {...register("isActive")}
+            select
+            fullWidth
+            SelectProps={{
+              native: true,
+            }}
+          >
+            <option value={true}>Active</option>
+            <option value={false}>Inactive</option>
+          </TextField>
+          <Button
+            sx={{ marginTop: "20px", height: "50px" }}
+            variant="contained"
+            color="primary"
+            type="submit"
+          >
+            {companyData ? "Update" : "Save"}
+          </Button>
         </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {editData ? "Update" : "Add"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </Modal>
   );
 }
+
+export default AddEditCompany;

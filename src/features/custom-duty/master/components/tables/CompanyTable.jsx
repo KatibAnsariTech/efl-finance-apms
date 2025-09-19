@@ -10,7 +10,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function CompanyTable() {
+export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -180,18 +180,23 @@ export default function CompanyTable() {
     fetchData();
   }, [paginationModel]);
 
-  const handleEdit = (event, id) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const handleEdit = (id) => {
     console.log("Edit Company:", id);
-    // Add edit logic here
+    if (parentHandleEdit) {
+      const rowData = data.find(item => item.id === id);
+      parentHandleEdit(rowData);
+    } else {
+      alert(`Edit Company: ${id}`);
+    }
   };
 
-  const handleDelete = (event, id) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const handleDelete = (id) => {
     console.log("Delete Company:", id);
-    // Add delete logic here
+    if (parentHandleDelete) {
+      parentHandleDelete(id);
+    } else {
+      alert(`Delete Company: ${id}`);
+    }
   };
 
   const columns = [
@@ -298,7 +303,10 @@ export default function CompanyTable() {
         >
           <IconButton
             size="small"
-            onClick={(event) => handleEdit(event, params.row.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleEdit(params.row.id);
+            }}
             sx={{
               color: theme.palette.primary.main,
               "&:hover": {
@@ -310,7 +318,10 @@ export default function CompanyTable() {
           </IconButton>
           <IconButton
             size="small"
-            onClick={(event) => handleDelete(event, params.row.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDelete(params.row.id);
+            }}
             sx={{
               color: theme.palette.error.main,
               "&:hover": {
