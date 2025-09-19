@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-// DEVELOPMENT MODE: This modal uses console logging instead of API calls
-// for testing purposes. Replace with actual API calls when backend is ready.
 
 import {
   Modal,
