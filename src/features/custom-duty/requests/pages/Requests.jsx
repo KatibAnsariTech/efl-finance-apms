@@ -70,55 +70,6 @@ export default function Requests() {
     }
   };
 
-  // Generate mock data for demonstration
-  const generateMockData = (startId, count) => {
-    const statuses = ["Pending", "Approved", "Rejected", "Draft"];
-    const descriptions = [
-      "Duty Payment",
-      "Custom Duty Payment", 
-      "Import Duty",
-      "Export Duty Refund",
-      "Additional Duty",
-      "Countervailing Duty",
-      "Anti-dumping Duty",
-      "Safeguard Duty",
-    ];
-    const transactionTypes = ["Debit", "Credit"];
-
-    return Array.from({ length: count }, (_, index) => {
-      const id = startId + index;
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const description = descriptions[Math.floor(Math.random() * descriptions.length)];
-      const typeOfTransaction = transactionTypes[Math.floor(Math.random() * transactionTypes.length)];
-      const amount = Math.floor(Math.random() * 500000) + 50000;
-
-      return {
-        id: id.toString(),
-        requestNo: `2056627${String(67 + id).padStart(3, "0")}`,
-        requestedDate: new Date(
-          2024,
-          0,
-          15 + Math.floor(Math.random() * 30),
-          Math.floor(Math.random() * 24),
-          Math.floor(Math.random() * 60)
-        ).toISOString(),
-        boeNumber: `41457${String(50 + id).padStart(3, "0")}`,
-        challanNumber: `2056627${String(67 + id).padStart(3, "0")}`,
-        transactionType: typeOfTransaction,
-        transactionDate: new Date(
-          2024,
-          0,
-          15 + Math.floor(Math.random() * 30),
-          Math.floor(Math.random() * 24),
-          Math.floor(Math.random() * 60)
-        ).toISOString(),
-        transactionAmount: amount,
-        status,
-        company: "EFL",
-        description,
-      };
-    });
-  };
 
   const getData = async (pageNum = 0, isLoadMore = false) => {
     try {
@@ -128,35 +79,51 @@ export default function Requests() {
         setLoading(true);
       }
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Generate mock data - in real app, this would be an API call
-      const startId = pageNum * rowsPerPage + 1;
-      const newData = generateMockData(startId, rowsPerPage);
+      let allApiData;
       
-      // Filter data based on selected tab
-      let filteredData = newData;
-      if (selectedTab === "pendingWithMe") {
-        filteredData = newData.filter((item) => item.status === "Pending");
-      } else if (selectedTab === "submitted") {
-        filteredData = newData.filter((item) => item.status === "Approved");
+      try {
+        const response = await userRequest.get(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        allApiData = response.data;
+      } catch (userRequestError) {
+        const fetchResponse = await fetch(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        const fetchData = await fetchResponse.json();
+        allApiData = fetchData;
       }
+      
+      const transformedData = allApiData.map((item, index) => ({
+        id: item.id,
+        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
+        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
+        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
+        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
+        transactionType: item.transactionType,
+        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
+        transactionAmount: parseFloat(item.transactionAmount),
+        status: item.status,
+        company: item.company,
+        description: item.description,
+      }));
+
+      const startIndex = pageNum * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      const paginatedData = transformedData.slice(startIndex, endIndex);
 
       if (isLoadMore) {
-        setData(prev => [...prev, ...filteredData]);
+        setData(prev => [...prev, ...paginatedData]);
       } else {
-        setData(filteredData);
-        setAllData(filteredData);
+        setData(paginatedData);
+        setAllData(paginatedData);
       }
 
-      // Simulate total count - in real app, this would come from API
-      const totalRecords = 100; // Mock total
+      const totalRecords = allApiData.length;
       setTotalCount(totalRecords);
-      setHasMore((pageNum + 1) * rowsPerPage < totalRecords);
+      setHasMore(endIndex < totalRecords);
 
     } catch (err) {
-      console.log("err:", err);
+      setData([]);
+      setAllData([]);
+      setTotalCount(0);
+      setHasMore(false);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -240,8 +207,26 @@ export default function Requests() {
     }
   }, [hasMore, loadingMore, loading, page]);
 
-  // Auto-scroll detection - using DataGrid's built-in onRowsScrollEnd event
-  // The handleLoadMore function is called automatically when user scrolls to the end
+  // Manual scroll detection as backup
+  useEffect(() => {
+    const dataGrid = document.querySelector('.MuiDataGrid-root');
+    if (!dataGrid) return;
+
+    const scrollableElement = dataGrid.querySelector('.MuiDataGrid-virtualScroller');
+    if (!scrollableElement) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
+      
+      if (isNearBottom && hasMore && !loadingMore && !loading) {
+        handleLoadMore();
+      }
+    };
+
+    scrollableElement.addEventListener('scroll', handleScroll);
+    return () => scrollableElement.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loadingMore, loading, handleLoadMore]);
 
   const handleSelectRow = (rowId) => {
     setSelectedRows((prev) => {
@@ -431,15 +416,44 @@ export default function Requests() {
 
       {/* Data Table */}
       <Card sx={{ mt: 2, p: 2 }}>
-        <Box sx={{ width: "100%" }}>
+        <Box sx={{ 
+          width: "100%", 
+          height: 600,
+          "& .MuiDataGrid-root": {
+            "& .MuiDataGrid-virtualScroller": {
+              "&::-webkit-scrollbar": {
+                display: "none !important",
+                width: "0 !important",
+                height: "0 !important",
+              },
+              "&::-webkit-scrollbar-track": {
+                display: "none !important",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                display: "none !important",
+              },
+              "-ms-overflow-style": "none !important",
+              "scrollbar-width": "none !important",
+            },
+            "& .MuiDataGrid-main": {
+              "&::-webkit-scrollbar": {
+                display: "none !important",
+                width: "0 !important",
+                height: "0 !important",
+              },
+              "-ms-overflow-style": "none !important",
+              "scrollbar-width": "none !important",
+            },
+          }
+        }}>
           <DataGrid
             rows={data}
             columns={columns}
             loading={loading}
-            autoHeight
             disableRowSelectionOnClick
             hideFooterSelectedRowCount
             pagination={false}
+            hideFooterPagination
             onRowsScrollEnd={handleLoadMore}
             slots={{
               loadingOverlay: () => (
@@ -460,6 +474,11 @@ export default function Requests() {
                 alignItems: "center",
                 padding: "8px 0",
               },
+              "& .MuiDataGrid-cell[data-field='requestNo']": {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+              },
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: "#f5f6f8",
                 fontWeight: "bold",
@@ -470,6 +489,11 @@ export default function Requests() {
                 display: "flex",
                 alignItems: "center",
                 padding: "8px 0",
+              },
+              "& .MuiDataGrid-columnHeader[data-field='requestNo']": {
+                justifyContent: "flex-start",
+                display: "flex",
+                alignItems: "center",
               },
               "& .MuiDataGrid-columnHeaderTitle": {
                 width: "100%",
