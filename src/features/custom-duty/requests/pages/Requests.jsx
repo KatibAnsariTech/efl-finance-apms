@@ -447,7 +447,6 @@ export default function Requests() {
               loadingOverlay: () => (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
                   <CircularProgress size={24} />
-                  <Typography sx={{ ml: 1 }}>Loading...</Typography>
                 </Box>
               ),
             }}
@@ -507,11 +506,8 @@ export default function Requests() {
               backgroundColor: '#f5f5f5',
               borderRadius: 1
             }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <CircularProgress size={16} sx={{ mr: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  Loading more data...
-                </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+                <CircularProgress size={24} />
               </Box>
             </Box>
           )}
