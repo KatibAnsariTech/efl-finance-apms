@@ -421,6 +421,7 @@ export default function Requests() {
             hideFooterPagination
             onRowsScrollEnd={handleLoadMore}
             slots={{
+              footer: () => null,
               loadingOverlay: () => (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
                   <CircularProgress size={24} />
