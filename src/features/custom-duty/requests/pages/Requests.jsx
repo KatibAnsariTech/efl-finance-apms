@@ -69,7 +69,7 @@ export default function Requests() {
     }
   };
 
-  const getData = async (pageNum = 0, isLoadMore = false) => {
+  const getData = async (pageNum = 1, isLoadMore = false) => {
     try {
       if (isLoadMore) {
         setLoadingMore(true);
@@ -77,19 +77,33 @@ export default function Requests() {
         setLoading(true);
       }
 
-      let allApiData;
+      // Use mock API pagination parameters
+      const page = pageNum;
+      const limit = rowsPerPage;
+      
+      let apiData;
+      let totalCount;
 
       try {
         const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
+          {
+            params: {
+              page: page,
+              limit: limit
+            }
+          }
         );
-        allApiData = response.data;
+        apiData = response.data;
+        // Mock API returns total count in headers or we can calculate it
+        totalCount = response.headers['x-total-count'] || 100; // Fallback to 100 if not provided
       } catch (userRequestError) {
         const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
         );
         const fetchData = await fetchResponse.json();
-        allApiData = fetchData;
+        apiData = fetchData;
+        totalCount = 100; // Fallback count
       }
 
       // Add minimum delay to ensure loading indicator is visible
@@ -99,7 +113,7 @@ export default function Requests() {
 
       if (selectedTab === "submitted") {
         // Transform data for "Raise to Bank" tab
-        transformedData = allApiData.map((item, index) => ({
+        transformedData = apiData.map((item, index) => ({
           id: item.id,
           submitRequestNo: `2056627067`, // Mock submit request number
           submitDate: new Date(item.requestedDate * 1000).toISOString(),
@@ -109,7 +123,7 @@ export default function Requests() {
         }));
       } else {
         // Transform data for other tabs
-        transformedData = allApiData.map((item, index) => ({
+        transformedData = apiData.map((item, index) => ({
           id: item.id,
           requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
           requestedDate: new Date(item.requestedDate * 1000).toISOString(),
@@ -124,20 +138,15 @@ export default function Requests() {
         }));
       }
 
-      const startIndex = pageNum * rowsPerPage;
-      const endIndex = startIndex + rowsPerPage;
-      const paginatedData = transformedData.slice(startIndex, endIndex);
-
       if (isLoadMore) {
-        setData((prev) => [...prev, ...paginatedData]);
+        setData((prev) => [...prev, ...transformedData]);
       } else {
-        setData(paginatedData);
-        setAllData(paginatedData);
+        setData(transformedData);
+        setAllData(transformedData);
       }
 
-      const totalRecords = allApiData.length;
-      setTotalCount(totalRecords);
-      setHasMore(endIndex < totalRecords);
+      setTotalCount(totalCount);
+      setHasMore(page * limit < totalCount);
     } catch (err) {
       setData([]);
       setAllData([]);
@@ -153,16 +162,23 @@ export default function Requests() {
     try {
       setSelectAllLoading(true);
 
+      // For select all, we need to get all data without pagination
       let allApiData;
 
       try {
         const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
+          {
+            params: {
+              page: 1,
+              limit: 1000 // Get a large number to get all data
+            }
+          }
         );
         allApiData = response.data;
       } catch (userRequestError) {
         const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=1&limit=1000`
         );
         const fetchData = await fetchResponse.json();
         allApiData = fetchData;
@@ -217,12 +233,13 @@ export default function Requests() {
   };
 
   useEffect(() => {
-    setPage(0);
+    setPage(1);
     setData([]);
     setAllData([]);
     setSelectedRows([]);
     setIsSelectAll(false);
-    getData(0);
+    setLoading(true); // Ensure loading is set to true when tab changes
+    getData(1);
   }, [selectedTab]);
 
   const handleTabChange = (event, newValue) => {
@@ -351,8 +368,40 @@ export default function Requests() {
           sx={{
             width: "100%",
             height: 500,
+            position: "relative",
           }}
         >
+          {/* Unified loading overlay */}
+          {(loading || loadingMore) && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                zIndex: 10,
+              }}
+            >
+              <CircularProgress size={50} thickness={4} />
+              <Typography
+                variant="h6"
+                sx={{
+                  mt: 2,
+                  color: "text.secondary",
+                  fontWeight: 500,
+                }}
+              >
+                {loading ? "Loading data..." : "Loading more data..."}
+              </Typography>
+            </Box>
+          )}
+          
           <DataGrid
             rows={data}
             columns={columns}
@@ -368,12 +417,29 @@ export default function Requests() {
                 <Box
                   sx={{
                     display: "flex",
+                    flexDirection: "column",
                     justifyContent: "center",
                     alignItems: "center",
-                    p: 2,
+                    height: "100%",
+                    width: "100%",
+                    backgroundColor: "rgba(255, 255, 255, 0.8)",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    zIndex: 1,
                   }}
                 >
-                  <CircularProgress size={24} />
+                  <CircularProgress size={40} thickness={4} />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 2,
+                      color: "text.secondary",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Loading data...
+                  </Typography>
                 </Box>
               ),
             }}
@@ -424,29 +490,6 @@ export default function Requests() {
             }}
           />
 
-          {loadingMore && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                mt: 1,
-                py: 1,
-                backgroundColor: "#f5f5f5",
-                borderRadius: 1,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  p: 2,
-                }}
-              >
-                <CircularProgress size={24} />
-              </Box>
-            </Box>
-          )}
         </Box>
 
         {selectedRows.length > 0 && selectedTab !== "submitted" && (
