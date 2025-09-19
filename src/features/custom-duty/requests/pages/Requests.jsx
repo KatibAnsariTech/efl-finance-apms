@@ -410,32 +410,6 @@ export default function Requests() {
         <Box sx={{ 
           width: "100%", 
           height: 600,
-          "& .MuiDataGrid-root": {
-            "& .MuiDataGrid-virtualScroller": {
-              "&::-webkit-scrollbar": {
-                display: "none !important",
-                width: "0 !important",
-                height: "0 !important",
-              },
-              "&::-webkit-scrollbar-track": {
-                display: "none !important",
-              },
-              "&::-webkit-scrollbar-thumb": {
-                display: "none !important",
-              },
-              "-ms-overflow-style": "none !important",
-              "scrollbar-width": "none !important",
-            },
-            "& .MuiDataGrid-main": {
-              "&::-webkit-scrollbar": {
-                display: "none !important",
-                width: "0 !important",
-                height: "0 !important",
-              },
-              "-ms-overflow-style": "none !important",
-              "scrollbar-width": "none !important",
-            },
-          }
         }}>
           <DataGrid
             rows={data}
