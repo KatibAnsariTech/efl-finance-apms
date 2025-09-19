@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import CreditDeviationDashboard from './credit-deviation-dashboard';
+import CreditDeviationDashboard from '../components/CreditDeviationDashboard';
 
 export default function CreditDeviationPage() {
   return (
