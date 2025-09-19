@@ -17,6 +17,7 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 
 import { useResponsive } from "src/hooks/use-responsive";
+import { getCurrentTitle } from "src/layouts/dashboard/routeTitles";
 
 import { bgBlur } from "src/theme/css";
 
@@ -84,25 +85,6 @@ export default function Header({ onOpenNav, collapsed }) {
   //   };
   // }, []);
 
-  const getCurrentTitle = (path) => {
-    if (path === "/") return "";
-    if (path.startsWith("/credit-deviation/dashboard")) return "Credit Deviation Dashboard";
-    if (path.startsWith("/credit-deviation/request-status")) return "My Requests";
-    if (path.startsWith("/credit-deviation/request")) return "Request";
-    if (path.startsWith("/credit-deviation/approvals/view/")) return "Request Details";
-    if (path.startsWith("/credit-deviation/request-status/view/")) return "Request Details";
-    if (path.startsWith("/credit-deviation/approvals")) return "Approvals Requests";
-    if (path.startsWith("/credit-deviation/usermanagement")) return "User Management";
-    if (path.startsWith("/credit-deviation/master")) return "Master Data";
-    if (path.startsWith("/credit-deviation/hierarchy-management")) return "Hierarchy Management";
-    if (path.startsWith("/credit-deviation/master-sheet")) return "Master Sheet";
-    if (path.startsWith("/jvm/dashboard")) return "JVM Dashboard";
-    if (path.startsWith("/jvm/initiate-jv")) return "Initiate Journal Voucher";
-    if (path.startsWith("/import-payment/dashboard")) return "Import Payment Dashboard";
-    if (path.startsWith("/custom-duty/dashboard")) return "Custom Duty Dashboard";
-    if (path.startsWith("/petty-cash/dashboard")) return "Petty Cash Dashboard";
-    return "Welcome back 👋";
-  };
 
   const currentTitle = getCurrentTitle(location.pathname);
 
