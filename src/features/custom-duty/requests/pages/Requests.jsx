@@ -46,6 +46,7 @@ export default function Requests() {
   const [selectAllLoading, setSelectAllLoading] = useState(false);
   const [allData, setAllData] = useState([]);
   const [isSelectAll, setIsSelectAll] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const menuItems = [
     { label: "Pending with Me", value: "pendingWithMe" },
@@ -238,6 +239,7 @@ export default function Requests() {
     setAllData([]);
     setSelectedRows([]);
     setIsSelectAll(false);
+    setIsLoadingMore(false);
     setLoading(true); // Ensure loading is set to true when tab changes
     getData(1);
   }, [selectedTab]);
@@ -259,12 +261,15 @@ export default function Requests() {
   };
 
   const handleLoadMore = useCallback(() => {
-    if (hasMore && !loadingMore && !loading) {
+    if (hasMore && !loadingMore && !loading && !isLoadingMore) {
+      setIsLoadingMore(true);
       const nextPage = page + 1;
       setPage(nextPage);
-      getData(nextPage, true);
+      getData(nextPage, true).finally(() => {
+        setIsLoadingMore(false);
+      });
     }
-  }, [hasMore, loadingMore, loading, page]);
+  }, [hasMore, loadingMore, loading, page, isLoadingMore]);
 
   useEffect(() => {
     const dataGrid = document.querySelector(".MuiDataGrid-root");
@@ -275,18 +280,33 @@ export default function Requests() {
     );
     if (!scrollableElement) return;
 
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
+    let isScrolling = false;
+    let scrollTimeout;
 
-      if (isNearBottom && hasMore && !loadingMore && !loading) {
-        handleLoadMore();
-      }
+    const handleScroll = () => {
+      if (isScrolling) return;
+      
+      isScrolling = true;
+      clearTimeout(scrollTimeout);
+      
+      scrollTimeout = setTimeout(() => {
+        const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50; // Increased threshold
+
+        if (isNearBottom && hasMore && !loadingMore && !loading && !isLoadingMore) {
+          handleLoadMore();
+        }
+        
+        isScrolling = false;
+      }, 100); // Debounce scroll events
     };
 
-    scrollableElement.addEventListener("scroll", handleScroll);
-    return () => scrollableElement.removeEventListener("scroll", handleScroll);
-  }, [hasMore, loadingMore, loading, handleLoadMore]);
+    scrollableElement.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      scrollableElement.removeEventListener("scroll", handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
 
   const handleSelectRow = (rowId) => {
     setSelectedRows((prev) => {
