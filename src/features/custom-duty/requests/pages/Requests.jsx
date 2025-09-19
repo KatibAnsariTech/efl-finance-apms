@@ -48,7 +48,7 @@ export default function Requests() {
 
   const menuItems = [
     { label: "Pending with Me", value: "pendingWithMe" },
-    { label: "Submitted", value: "submitted" },
+    { label: "Raise to Bank", value: "submitted" },
     { label: "All Requests", value: "allRequests" },
   ];
 
