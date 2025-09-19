@@ -281,15 +281,15 @@ export default function Router() {
         },
         // JVM subpages
         {
-          path: "/jvm/jv-status",
-          element: (
-            <RoleRoute path="/jvm/jv-status" element={<JVStatusPage />} />
-          ),
-        },
-        {
           path: "/jvm/initiate-jv",
           element: (
             <RoleRoute path="/jvm/initiate-jv" element={<InitiateJVPage />} />
+          ),
+        },
+        {
+          path: "/jvm/jv-status",
+          element: (
+            <RoleRoute path="/jvm/jv-status" element={<JVStatusPage />} />
           ),
         },
         {
@@ -337,10 +337,7 @@ export default function Router() {
         {
           path: "/custom-duty/requests",
           element: (
-            <RoleRoute
-              path="/custom-duty/requests"
-              element={<Requests />}
-            />
+            <RoleRoute path="/custom-duty/requests" element={<Requests />} />
           ),
         },
         {
