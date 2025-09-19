@@ -42,6 +42,7 @@ import PettyCashRequestPage from "src/pages/petty-cash-request";
 import RaiseRequest from "src/features/custom-duty/raise-request/pages/RaiseRequest.jsx";
 import MyRequests from "src/features/custom-duty/my-requests/pages/MyRequests";
 import Requests from "src/features/custom-duty/requests/pages/Requests";
+import RaiseToBank from "src/features/custom-duty/raise-to-bank/pages/RaiseToBank";
 // Master Data subpages
 // User Management subpages
 // Hierarchy Management subpages
@@ -337,6 +338,15 @@ export default function Router() {
             <RoleRoute
               path="/custom-duty/requests"
               element={<Requests />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/raise-to-bank",
+          element: (
+            <RoleRoute
+              path="/custom-duty/raise-to-bank"
+              element={<RaiseToBank />}
             />
           ),
         },

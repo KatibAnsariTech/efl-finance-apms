@@ -151,6 +151,13 @@ const navConfig = [
         icon: <AccountBalanceIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
+      { 
+        id: 'custom-duty-raise-to-bank', 
+        title: 'Raise to Bank', 
+        path: '/custom-duty/raise-to-bank',
+        icon: <AccountBalanceIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
     ],
   },
   {

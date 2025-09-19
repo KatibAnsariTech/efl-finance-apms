@@ -27,7 +27,7 @@ import { fDateTime } from "src/utils/format-time";
 import { useRouter } from "src/routes/hooks";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { SubmittedColumns, RequestColumns } from "../components/RequestColumns";
+import { RequestColumns } from "../components/RequestColumns";
 
 export default function Requests() {
   const router = useRouter();
@@ -50,7 +50,6 @@ export default function Requests() {
 
   const menuItems = [
     { label: "Pending with Me", value: "pendingWithMe" },
-    { label: "Raise to Bank", value: "submitted" },
     { label: "All Requests", value: "allRequests" },
   ];
 
@@ -78,7 +77,6 @@ export default function Requests() {
         setLoading(true);
       }
 
-      // Use mock API pagination parameters
       const page = pageNum;
       const limit = rowsPerPage;
       
@@ -96,48 +94,33 @@ export default function Requests() {
           }
         );
         apiData = response.data;
-        // Mock API returns total count in headers or we can calculate it
-        totalCount = response.headers['x-total-count'] || 100; // Fallback to 100 if not provided
+        totalCount = response.headers['x-total-count'] || 100;
       } catch (userRequestError) {
         const fetchResponse = await fetch(
           `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
         );
         const fetchData = await fetchResponse.json();
         apiData = fetchData;
-        totalCount = 100; // Fallback count
+        totalCount = 100;
       }
 
-      // Add minimum delay to ensure loading indicator is visible
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       let transformedData;
 
-      if (selectedTab === "submitted") {
-        // Transform data for "Raise to Bank" tab
-        transformedData = apiData.map((item, index) => ({
-          id: item.id,
-          submitRequestNo: `2056627067`, // Mock submit request number
-          submitDate: new Date(item.requestedDate * 1000).toISOString(),
-          totalRecords: Math.floor(Math.random() * 50) + 20, // Random number between 20-70
-          downloadLink: "Download File",
-          submittedBy: "shweta@efl.com", // Mock submitted by
-        }));
-      } else {
-        // Transform data for other tabs
-        transformedData = apiData.map((item, index) => ({
-          id: item.id,
-          requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-          requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-          boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-          challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
-          transactionType: item.transactionType,
-          transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-          transactionAmount: parseFloat(item.transactionAmount),
-          status: item.status,
-          company: item.company,
-          description: item.description,
-        }));
-      }
+      transformedData = apiData.map((item, index) => ({
+        id: item.id,
+        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
+        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
+        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
+        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
+        transactionType: item.transactionType,
+        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
+        transactionAmount: parseFloat(item.transactionAmount),
+        status: item.status,
+        company: item.company,
+        description: item.description,
+      }));
 
       if (isLoadMore) {
         setData((prev) => [...prev, ...transformedData]);
@@ -163,7 +146,6 @@ export default function Requests() {
     try {
       setSelectAllLoading(true);
 
-      // For select all, we need to get all data without pagination
       let allApiData;
 
       try {
@@ -172,7 +154,7 @@ export default function Requests() {
           {
             params: {
               page: 1,
-              limit: 1000 // Get a large number to get all data
+              limit: 1000
             }
           }
         );
@@ -187,32 +169,19 @@ export default function Requests() {
 
       let transformedData;
 
-      if (selectedTab === "submitted") {
-        // Transform data for "Raise to Bank" tab
-        transformedData = allApiData.map((item, index) => ({
-          id: item.id,
-          submitRequestNo: `2056627067`, // Mock submit request number
-          submitDate: new Date(item.requestedDate * 1000).toISOString(),
-          totalRecords: Math.floor(Math.random() * 50) + 20, // Random number between 20-70
-          downloadLink: "Download File",
-          submittedBy: "shweta@efl.com", // Mock submitted by
-        }));
-      } else {
-        // Transform data for other tabs
-        transformedData = allApiData.map((item, index) => ({
-          id: item.id,
-          requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-          requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-          boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-          challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
-          transactionType: item.transactionType,
-          transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-          transactionAmount: parseFloat(item.transactionAmount),
-          status: item.status,
-          company: item.company,
-          description: item.description,
-        }));
-      }
+      transformedData = allApiData.map((item, index) => ({
+        id: item.id,
+        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
+        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
+        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
+        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
+        transactionType: item.transactionType,
+        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
+        transactionAmount: parseFloat(item.transactionAmount),
+        status: item.status,
+        company: item.company,
+        description: item.description,
+      }));
 
       setAllData(transformedData);
       setData(transformedData);
@@ -240,7 +209,7 @@ export default function Requests() {
     setSelectedRows([]);
     setIsSelectAll(false);
     setIsLoadingMore(false);
-    setLoading(true); // Ensure loading is set to true when tab changes
+    setLoading(true);
     getData(1);
   }, [selectedTab]);
 
@@ -252,7 +221,6 @@ export default function Requests() {
 
   const handleSelectAll = async (event) => {
     if (event.target.checked) {
-      // Load all data from API and select all
       await getAllData(true);
     } else {
       setSelectedRows([]);
@@ -291,14 +259,14 @@ export default function Requests() {
       
       scrollTimeout = setTimeout(() => {
         const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50; // Increased threshold
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
 
         if (isNearBottom && hasMore && !loadingMore && !loading && !isLoadingMore) {
           handleLoadMore();
         }
         
         isScrolling = false;
-      }, 100); // Debounce scroll events
+      }, 100);
     };
 
     scrollableElement.addEventListener("scroll", handleScroll, { passive: true });
@@ -352,17 +320,13 @@ export default function Requests() {
     }
   };
 
-  // Get columns based on selected tab
-  const columns =
-    selectedTab === "submitted"
-      ? SubmittedColumns()
-      : RequestColumns({
-          isSelectAll,
-          handleSelectAll,
-          selectAllLoading,
-          selectedRows,
-          handleSelectRow,
-        });
+  const columns = RequestColumns({
+    isSelectAll,
+    handleSelectAll,
+    selectAllLoading,
+    selectedRows,
+    handleSelectRow,
+  });
 
   return (
     <Container>
@@ -391,7 +355,6 @@ export default function Requests() {
             position: "relative",
           }}
         >
-          {/* Custom loading overlay - perfectly centered */}
           {(loading || loadingMore) && (
             <Box
               sx={{
