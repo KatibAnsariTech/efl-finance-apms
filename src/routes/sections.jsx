@@ -43,6 +43,7 @@ import RaiseRequest from "src/features/custom-duty/raise-request/pages/RaiseRequ
 import MyRequests from "src/features/custom-duty/my-requests/pages/MyRequests";
 import Requests from "src/features/custom-duty/requests/pages/Requests";
 import RaiseToBank from "src/features/custom-duty/raise-to-bank/pages/RaiseToBank";
+import SubmitDetail from "src/features/custom-duty/submit-detail/pages/SubmitDetail";
 // Master Data subpages
 // User Management subpages
 // Hierarchy Management subpages
@@ -347,6 +348,15 @@ export default function Router() {
             <RoleRoute
               path="/custom-duty/raise-to-bank"
               element={<RaiseToBank />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/raise-to-bank/submit-detail/:id",
+          element: (
+            <RoleRoute
+              path="/custom-duty/raise-to-bank/submit-detail/:id"
+              element={<SubmitDetail />}
             />
           ),
         },
