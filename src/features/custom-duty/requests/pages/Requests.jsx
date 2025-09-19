@@ -88,6 +88,9 @@ export default function Requests() {
         allApiData = fetchData;
       }
       
+      // Add minimum delay to ensure loading indicator is visible
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const transformedData = allApiData.map((item, index) => ({
         id: item.id,
         requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
