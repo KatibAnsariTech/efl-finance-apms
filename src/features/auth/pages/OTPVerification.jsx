@@ -1,16 +1,12 @@
 import { Helmet } from 'react-helmet-async';
-
-import { OTPVerificationView } from 'src/features/auth/pages';
-
-// ----------------------------------------------------------------------
+import { OTPVerificationView } from '../components';
 
 export default function OTPVerificationPage() {
   return (
     <>
       <Helmet>
-        <title> OTP Verification </title>
+        <title>OTP Verification</title>
       </Helmet>
-
       <OTPVerificationView />
     </>
   );
