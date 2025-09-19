@@ -37,7 +37,6 @@ export default function Requests() {
   const [comment, setComment] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   
-  // Pagination and infinite scroll states
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -53,7 +52,6 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  // Status color mapping
   const getStatusColor = (status) => {
     const normalizedStatus = (status || "").toLowerCase();
     switch (normalizedStatus) {
@@ -134,33 +132,46 @@ export default function Requests() {
     try {
       setSelectAllLoading(true);
       
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Generate all data for select all functionality
-      const allMockData = generateMockData(1, 100);
+      let allApiData;
       
-      // Filter data based on selected tab
-      let filteredData = allMockData;
-      if (selectedTab === "pendingWithMe") {
-        filteredData = allMockData.filter((item) => item.status === "Pending");
-      } else if (selectedTab === "submitted") {
-        filteredData = allMockData.filter((item) => item.status === "Approved");
+      try {
+        const response = await userRequest.get(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        allApiData = response.data;
+      } catch (userRequestError) {
+        const fetchResponse = await fetch(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        const fetchData = await fetchResponse.json();
+        allApiData = fetchData;
       }
+      
+      const transformedData = allApiData.map((item, index) => ({
+        id: item.id,
+        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
+        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
+        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
+        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
+        transactionType: item.transactionType,
+        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
+        transactionAmount: parseFloat(item.transactionAmount),
+        status: item.status,
+        company: item.company,
+        description: item.description,
+      }));
 
-      setAllData(filteredData);
-      setData(filteredData);
-      setTotalCount(filteredData.length);
+      setAllData(transformedData);
+      setData(transformedData);
+      setTotalCount(transformedData.length);
       setHasMore(false);
 
-      // If this is called from select all, select all the loaded data
       if (shouldSelectAll) {
-        setSelectedRows(filteredData.map((item) => item.id));
+        setSelectedRows(transformedData.map((item) => item.id));
         setIsSelectAll(true);
       }
 
     } catch (err) {
-      console.log("err:", err);
+      setAllData([]);
+      setData([]);
+      setTotalCount(0);
+      setHasMore(false);
     } finally {
       setSelectAllLoading(false);
     }
@@ -183,16 +194,8 @@ export default function Requests() {
 
   const handleSelectAll = async (event) => {
     if (event.target.checked) {
-      // Show loading state and select all current data
-      setSelectAllLoading(true);
-      
-      // Simulate a brief loading state
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      // Select all currently loaded data
-      setSelectedRows(data.map((item) => item.id));
-      setIsSelectAll(true);
-      setSelectAllLoading(false);
+      // Load all data from API and select all
+      await getAllData(true);
     } else {
       setSelectedRows([]);
       setIsSelectAll(false);
@@ -207,7 +210,6 @@ export default function Requests() {
     }
   }, [hasMore, loadingMore, loading, page]);
 
-  // Manual scroll detection as backup
   useEffect(() => {
     const dataGrid = document.querySelector('.MuiDataGrid-root');
     if (!dataGrid) return;
@@ -234,7 +236,6 @@ export default function Requests() {
         ? prev.filter((id) => id !== rowId)
         : [...prev, rowId];
       
-      // Update select all state based on current selection
       setIsSelectAll(newSelection.length === data.length && data.length > 0);
       
       return newSelection;
@@ -259,7 +260,6 @@ export default function Requests() {
     try {
       setActionLoading(true);
 
-      // Mock API call - replace with actual implementation
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       swal("Success", `Requests ${action} successfully`, "success");
@@ -369,16 +369,6 @@ export default function Requests() {
       headerName: "Status",
       flex: 1,
       minWidth: 120,
-      // renderCell: (params) => (
-      //   <Chip
-      //     label={params.value}
-      //     sx={{
-      //       backgroundColor: getStatusColor(params.value),
-      //       fontWeight: "bold",
-      //       color: "#000",
-      //     }}
-      //   />
-      // ),
     },
     {
       field: "company",
@@ -396,7 +386,6 @@ export default function Requests() {
 
   return (
     <Container>
-      {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
         <Tabs
           value={selectedTab}
@@ -414,7 +403,6 @@ export default function Requests() {
         </Tabs>
       </Box>
 
-      {/* Data Table */}
       <Card sx={{ mt: 2, p: 2 }}>
         <Box sx={{ 
           width: "100%", 
@@ -510,7 +498,6 @@ export default function Requests() {
             }}
           />
           
-          {/* Loading More Indicator */}
           {loadingMore && (
             <Box sx={{ 
               display: 'flex', 
@@ -531,7 +518,6 @@ export default function Requests() {
           
         </Box>
 
-        {/* Action Section */}
         {selectedRows.length > 0 && (
           <Box
             sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
