@@ -9,7 +9,8 @@ export const RequestColumns = ({
   handleSelectAll, 
   selectAllLoading, 
   selectedRows, 
-  handleSelectRow 
+  handleSelectRow,
+  onRequestClick
 }) => {
   const router = useRouter();
 
@@ -58,7 +59,7 @@ export const RequestColumns = ({
             fontWeight: 600,
             "&:hover": { color: "#1565c0" },
           }}
-          onClick={() => router.push(`/request-detail/${params.value}`)}
+          onClick={() => onRequestClick ? onRequestClick(params.row) : router.push(`/request-detail/${params.value}`)}
         >
           {params.value}
         </Typography>

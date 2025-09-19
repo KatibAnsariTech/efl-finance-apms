@@ -28,6 +28,7 @@ import { useRouter } from "src/routes/hooks";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
+import RequestStatus from "../components/RequestStatus";
 
 export default function Requests() {
   const router = useRouter();
@@ -47,6 +48,8 @@ export default function Requests() {
   const [allData, setAllData] = useState([]);
   const [isSelectAll, setIsSelectAll] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
   const menuItems = [
     { label: "Pending with Me", value: "pendingWithMe" },
@@ -320,12 +323,23 @@ export default function Requests() {
     }
   };
 
+  const handleRequestClick = (rowData) => {
+    setSelectedRowData(rowData);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedRowData(null);
+  };
+
   const columns = RequestColumns({
     isSelectAll,
     handleSelectAll,
     selectAllLoading,
     selectedRows,
     handleSelectRow,
+    onRequestClick: handleRequestClick,
   });
 
   return (
@@ -500,6 +514,14 @@ export default function Requests() {
           </Box>
         )}
       </Card>
+      
+      <RequestStatus
+        open={openModal}
+        onClose={handleCloseModal}
+        rowData={selectedRowData}
+        getRequestData={getData}
+        selectedTab="requests"
+      />
     </Container>
   );
 }
