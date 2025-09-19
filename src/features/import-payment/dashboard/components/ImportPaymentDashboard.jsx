@@ -1,23 +1,23 @@
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
-import AppCurrentVisits from '../sections/overview/app-current-visits';
-import AppWebsiteVisits from '../sections/overview/app-website-visits';
-import AppWidgetSummary from '../sections/overview/app-widget-summary';
+import AppCurrentVisits from 'src/sections/overview/app-current-visits';
+import AppWebsiteVisits from 'src/sections/overview/app-website-visits';
+import AppWidgetSummary from 'src/sections/overview/app-widget-summary';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { BACKEND_URL } from 'src/config/config';
 import { userRequest } from 'src/requestMethod';
 import { useRouter } from 'src/routes/hooks';
-import ReportTable from '../sections/overview/app-report-table';
-import { AnalyticsConversionRates } from '../sections/overview/analytics-conversion-rates';
-import { AnalyticsWebsiteVisits } from '../sections/overview/analytics-website-visits';
-import { AnalyticsCurrentSubject } from '../sections/overview/analytics-current-subject';
+import ReportTable from 'src/sections/overview/app-report-table';
+import { AnalyticsConversionRates } from 'src/sections/overview/analytics-conversion-rates';
+import { AnalyticsWebsiteVisits } from 'src/sections/overview/analytics-website-visits';
+import { AnalyticsCurrentSubject } from 'src/sections/overview/analytics-current-subject';
 import swal from 'sweetalert';
 import { showErrorMessage } from 'src/utils/errorUtils';
 import { Helmet } from 'react-helmet-async';
 
-export default function PettyCashDashboard() {
+export default function ImportPaymentDashboard() {
   const [cardData, setCardData] = useState();
   const [filter, setFilter] = useState('weekly');
   const [pieFilter, setPieFilter] = useState('weekly');
@@ -98,11 +98,11 @@ export default function PettyCashDashboard() {
     switch (cardType) {
       case 'todayRequests':
       case 'totalRequests':
-        router.push('/petty-cash/request');
+        router.push('/import-payment/upload');
         break;
       case 'completedRequests':
       case 'pendingRequests':
-        router.push('/petty-cash/request');
+        router.push('/import-payment/upload');
         break;
       default:
         break;
@@ -112,14 +112,14 @@ export default function PettyCashDashboard() {
   return (
     <>
       <Helmet>
-        <title>Petty Cash Dashboard</title>
+        <title>Import Payment Dashboard</title>
       </Helmet>
       
       <Container maxWidth="xl">
         <Grid container spacing={3}>
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Today Petty Cash"
+              title="Today Payments"
               total={cardData && cardData.todayForms}
               color="success"
               icon={<img alt="icon" src="/assets/icons/glass/today-requests.svg" />}
@@ -129,7 +129,7 @@ export default function PettyCashDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Total Petty Cash"
+              title="Total Payments"
               total={cardData && cardData.totalForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/total-requests.svg" />}
@@ -139,7 +139,7 @@ export default function PettyCashDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Approved Requests"
+              title="Processed Payments"
               total={cardData && cardData.completedForms}
               color="warning"
               icon={<img alt="icon" src="/assets/icons/glass/completed-requests.svg" />}
@@ -149,7 +149,7 @@ export default function PettyCashDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Pending Requests"
+              title="Pending Payments"
               total={cardData && cardData.pendingForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/pending-requests.svg" />}
@@ -172,7 +172,7 @@ export default function PettyCashDashboard() {
             ) : (
               <AppWebsiteVisits
                 style={{ height: '100%' }}
-                title="Petty Cash Overview"
+                title="Import Payment Overview"
                 setFilter={setFilter}
                 filter={filter}
                 chart={{
@@ -180,7 +180,7 @@ export default function PettyCashDashboard() {
                     chartData && chartData.length > 0 ? chartData.map((data) => getLabel(data)) : [],
                   series: [
                     {
-                      name: 'Total Requests',
+                      name: 'Total Payments',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -189,7 +189,7 @@ export default function PettyCashDashboard() {
                           : [],
                     },
                     {
-                      name: 'Approved Requests',
+                      name: 'Processed Payments',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -198,7 +198,7 @@ export default function PettyCashDashboard() {
                           : [],
                     },
                     {
-                      name: 'Pending Requests',
+                      name: 'Pending Payments',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -207,7 +207,7 @@ export default function PettyCashDashboard() {
                           : [],
                     },
                   ],
-                  colors: ['#9C27B0', '#00a65e', '#da0000'],
+                  colors: ['#2E7D32', '#00a65e', '#da0000'],
                 }}
               />
             )}
@@ -227,7 +227,7 @@ export default function PettyCashDashboard() {
               </div>
             ) : (
               <AppCurrentVisits
-                title="Petty Cash by Region"
+                title="Payments by Region"
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
@@ -245,26 +245,26 @@ export default function PettyCashDashboard() {
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsConversionRates
-              title="Petty Cash Approval Rates"
-              subheader="Request approval rates by category"
+              title="Payment Processing Rates"
+              subheader="Payment processing rates by category"
               chart={{
                 series: [
-                  { name: 'Approved', data: [85, 78, 92, 88, 90] },
-                  { name: 'Pending', data: [15, 22, 8, 12, 10] }
+                  { name: 'Processed', data: [88, 82, 92, 85, 90] },
+                  { name: 'Pending', data: [12, 18, 8, 15, 10] }
                 ],
-                categories: ['Office Supplies', 'Travel', 'Meals', 'Utilities', 'Miscellaneous']
+                categories: ['Import', 'Export', 'Customs', 'Shipping', 'Finance']
               }}
             />
           </Grid>
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsWebsiteVisits
-              title="Petty Cash Trends"
-              subheader="Weekly request volume"
+              title="Payment Trends"
+              subheader="Weekly payment volume"
               chart={{
                 series: [
-                  { name: 'This Week', data: [8, 5, 7, 10, 6, 8, 12] },
-                  { name: 'Last Week', data: [10, 8, 9, 12, 7, 10, 15] }
+                  { name: 'This Week', data: [18, 12, 15, 20, 14, 18, 25] },
+                  { name: 'Last Week', data: [22, 18, 20, 28, 16, 22, 30] }
                 ],
                 categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
               }}
@@ -273,13 +273,13 @@ export default function PettyCashDashboard() {
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsCurrentSubject
-              title="Petty Cash Department Performance"
-              subheader="Request processing efficiency by department"
+              title="Payment Department Performance"
+              subheader="Payment processing efficiency by department"
               chart={{
                 series: [
-                  { name: 'Finance', data: [90, 75, 55, 65, 95, 45] },
-                  { name: 'HR', data: [35, 55, 65, 90, 35, 90] },
-                  { name: 'Operations', data: [65, 85, 90, 35, 65, 30] }
+                  { name: 'Finance', data: [90, 70, 50, 60, 100, 40] },
+                  { name: 'Operations', data: [30, 50, 60, 90, 30, 90] },
+                  { name: 'IT', data: [60, 85, 90, 25, 60, 20] }
                 ],
                 categories: ['Speed', 'Accuracy', 'Processing', 'Follow-up', 'Resolution', 'Satisfaction']
               }}

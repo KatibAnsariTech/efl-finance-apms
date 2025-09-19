@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import PettyCashDashboard from './petty-cash-dashboard';
+import PettyCashDashboard from '../components/PettyCashDashboard';
 
 export default function PettyCashPage() {
   return (

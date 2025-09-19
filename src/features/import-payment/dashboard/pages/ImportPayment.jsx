@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import ImportPaymentDashboard from './import-payment-dashboard';
+import ImportPaymentDashboard from '../components/ImportPaymentDashboard';
 
 export default function ImportPaymentPage() {
   return (

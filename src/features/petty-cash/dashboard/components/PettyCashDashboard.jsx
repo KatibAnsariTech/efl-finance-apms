@@ -1,23 +1,23 @@
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
-import AppCurrentVisits from '../sections/overview/app-current-visits';
-import AppWebsiteVisits from '../sections/overview/app-website-visits';
-import AppWidgetSummary from '../sections/overview/app-widget-summary';
+import AppCurrentVisits from 'src/sections/overview/app-current-visits';
+import AppWebsiteVisits from 'src/sections/overview/app-website-visits';
+import AppWidgetSummary from 'src/sections/overview/app-widget-summary';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { BACKEND_URL } from 'src/config/config';
 import { userRequest } from 'src/requestMethod';
 import { useRouter } from 'src/routes/hooks';
-import ReportTable from '../sections/overview/app-report-table';
-import { AnalyticsConversionRates } from '../sections/overview/analytics-conversion-rates';
-import { AnalyticsWebsiteVisits } from '../sections/overview/analytics-website-visits';
-import { AnalyticsCurrentSubject } from '../sections/overview/analytics-current-subject';
+import ReportTable from 'src/sections/overview/app-report-table';
+import { AnalyticsConversionRates } from 'src/sections/overview/analytics-conversion-rates';
+import { AnalyticsWebsiteVisits } from 'src/sections/overview/analytics-website-visits';
+import { AnalyticsCurrentSubject } from 'src/sections/overview/analytics-current-subject';
 import swal from 'sweetalert';
 import { showErrorMessage } from 'src/utils/errorUtils';
 import { Helmet } from 'react-helmet-async';
 
-export default function ImportPaymentDashboard() {
+export default function PettyCashDashboard() {
   const [cardData, setCardData] = useState();
   const [filter, setFilter] = useState('weekly');
   const [pieFilter, setPieFilter] = useState('weekly');
@@ -98,11 +98,11 @@ export default function ImportPaymentDashboard() {
     switch (cardType) {
       case 'todayRequests':
       case 'totalRequests':
-        router.push('/import-payment/upload');
+        router.push('/petty-cash/request');
         break;
       case 'completedRequests':
       case 'pendingRequests':
-        router.push('/import-payment/upload');
+        router.push('/petty-cash/request');
         break;
       default:
         break;
@@ -112,14 +112,14 @@ export default function ImportPaymentDashboard() {
   return (
     <>
       <Helmet>
-        <title>Import Payment Dashboard</title>
+        <title>Petty Cash Dashboard</title>
       </Helmet>
       
       <Container maxWidth="xl">
         <Grid container spacing={3}>
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Today Payments"
+              title="Today Requests"
               total={cardData && cardData.todayForms}
               color="success"
               icon={<img alt="icon" src="/assets/icons/glass/today-requests.svg" />}
@@ -129,7 +129,7 @@ export default function ImportPaymentDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Total Payments"
+              title="Total Requests"
               total={cardData && cardData.totalForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/total-requests.svg" />}
@@ -139,7 +139,7 @@ export default function ImportPaymentDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Processed Payments"
+              title="Approved Requests"
               total={cardData && cardData.completedForms}
               color="warning"
               icon={<img alt="icon" src="/assets/icons/glass/completed-requests.svg" />}
@@ -149,7 +149,7 @@ export default function ImportPaymentDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Pending Payments"
+              title="Pending Requests"
               total={cardData && cardData.pendingForms}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/pending-requests.svg" />}
@@ -172,7 +172,7 @@ export default function ImportPaymentDashboard() {
             ) : (
               <AppWebsiteVisits
                 style={{ height: '100%' }}
-                title="Import Payment Overview"
+                title="Petty Cash Overview"
                 setFilter={setFilter}
                 filter={filter}
                 chart={{
@@ -180,7 +180,7 @@ export default function ImportPaymentDashboard() {
                     chartData && chartData.length > 0 ? chartData.map((data) => getLabel(data)) : [],
                   series: [
                     {
-                      name: 'Total Payments',
+                      name: 'Total Requests',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -189,7 +189,7 @@ export default function ImportPaymentDashboard() {
                           : [],
                     },
                     {
-                      name: 'Processed Payments',
+                      name: 'Approved Requests',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -198,7 +198,7 @@ export default function ImportPaymentDashboard() {
                           : [],
                     },
                     {
-                      name: 'Pending Payments',
+                      name: 'Pending Requests',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -227,7 +227,7 @@ export default function ImportPaymentDashboard() {
               </div>
             ) : (
               <AppCurrentVisits
-                title="Payments by Region"
+                title="Requests by Department"
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
@@ -245,22 +245,22 @@ export default function ImportPaymentDashboard() {
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsConversionRates
-              title="Payment Processing Rates"
-              subheader="Payment processing rates by category"
+              title="Request Approval Rates"
+              subheader="Request approval rates by category"
               chart={{
                 series: [
-                  { name: 'Processed', data: [88, 82, 92, 85, 90] },
+                  { name: 'Approved', data: [88, 82, 92, 85, 90] },
                   { name: 'Pending', data: [12, 18, 8, 15, 10] }
                 ],
-                categories: ['Import', 'Export', 'Customs', 'Shipping', 'Finance']
+                categories: ['Office Supplies', 'Travel', 'Meals', 'Transport', 'Miscellaneous']
               }}
             />
           </Grid>
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsWebsiteVisits
-              title="Payment Trends"
-              subheader="Weekly payment volume"
+              title="Request Trends"
+              subheader="Weekly request volume"
               chart={{
                 series: [
                   { name: 'This Week', data: [18, 12, 15, 20, 14, 18, 25] },
@@ -273,13 +273,13 @@ export default function ImportPaymentDashboard() {
 
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsCurrentSubject
-              title="Payment Department Performance"
-              subheader="Payment processing efficiency by department"
+              title="Department Performance"
+              subheader="Request processing efficiency by department"
               chart={{
                 series: [
                   { name: 'Finance', data: [90, 70, 50, 60, 100, 40] },
                   { name: 'Operations', data: [30, 50, 60, 90, 30, 90] },
-                  { name: 'IT', data: [60, 85, 90, 25, 60, 20] }
+                  { name: 'HR', data: [60, 85, 90, 25, 60, 20] }
                 ],
                 categories: ['Speed', 'Accuracy', 'Processing', 'Follow-up', 'Resolution', 'Satisfaction']
               }}
