@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import CustomDutyDashboard from './custom-duty-dashboard';
+import CustomDutyDashboard from '../components/CustomDutyDashboard';
 
 export default function CustomDutyPage() {
   return (

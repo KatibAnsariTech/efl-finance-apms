@@ -21,13 +21,13 @@ import navConfig from "src/layouts/dashboard/config-navigation";
 import HierarchyManagementView from "src/sections/hierarchy-management/view/hierarchy-management-view";
 import JVMPage from "src/features/jvm/dashboard/pages/JVM";
 import ImportPaymentPage from "src/features/import-payment/dashboard/pages/ImportPayment";
-import CustomDutyPage from "src/pages/custom-duty";
+import CustomDutyPage from "src/features/custom-duty/dashboard/pages/CustomDuty";
 import PettyCashPage from "src/features/petty-cash/dashboard/pages/PettyCash";
 import CreditDeviationPage from "src/pages/credit-deviation";
 import CreditDeviationDashboard from "src/pages/credit-deviation-dashboard";
 import JVMDashboard from "src/features/jvm/dashboard/components/JVMDashboard";
 import ImportPaymentDashboard from "src/features/import-payment/dashboard/components/ImportPaymentDashboard";
-import CustomDutyDashboard from "src/pages/custom-duty-dashboard";
+import CustomDutyDashboard from "src/features/custom-duty/dashboard/components/CustomDutyDashboard";
 import PettyCashDashboard from "src/features/petty-cash/dashboard/components/PettyCashDashboard";
 // JVM subpages
 import JVStatusPage from "src/features/jvm/jvs-status/pages/JVStatus";
@@ -36,7 +36,6 @@ import JVDetailPage from "src/features/jvm/jvs-status/pages/JVDetails";
 // Import Payment subpages
 import ImportPaymentUploadPage from "src/features/import-payment/upload/pages/ImportPaymentUpload";
 // Custom Duty subpages
-import CustomDutyPaymentPage from "src/pages/custom-duty-payment";
 // Petty Cash subpages
 import PettyCashRequestPage from "src/features/petty-cash/request/pages/PettyCashRequest";
 import RaiseRequest from "src/features/custom-duty/raise-request/pages/RaiseRequest.jsx";
@@ -307,15 +306,6 @@ export default function Router() {
           ),
         },
         // Custom Duty subpages
-        {
-          path: "/custom-duty/payment",
-          element: (
-            <RoleRoute
-              path="/custom-duty/payment"
-              element={<CustomDutyPaymentPage />}
-            />
-          ),
-        },
         {
           path: "/custom-duty/raise-request",
           element: (
