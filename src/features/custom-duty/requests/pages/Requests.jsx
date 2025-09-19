@@ -37,7 +37,7 @@ export default function Requests() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [comment, setComment] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
-  
+
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -69,7 +69,6 @@ export default function Requests() {
     }
   };
 
-
   const getData = async (pageNum = 0, isLoadMore = false) => {
     try {
       if (isLoadMore) {
@@ -79,21 +78,25 @@ export default function Requests() {
       }
 
       let allApiData;
-      
+
       try {
-        const response = await userRequest.get(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        const response = await userRequest.get(
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+        );
         allApiData = response.data;
       } catch (userRequestError) {
-        const fetchResponse = await fetch(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        const fetchResponse = await fetch(
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+        );
         const fetchData = await fetchResponse.json();
         allApiData = fetchData;
       }
-      
+
       // Add minimum delay to ensure loading indicator is visible
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       let transformedData;
-      
+
       if (selectedTab === "submitted") {
         // Transform data for "Raise to Bank" tab
         transformedData = allApiData.map((item, index) => ({
@@ -126,7 +129,7 @@ export default function Requests() {
       const paginatedData = transformedData.slice(startIndex, endIndex);
 
       if (isLoadMore) {
-        setData(prev => [...prev, ...paginatedData]);
+        setData((prev) => [...prev, ...paginatedData]);
       } else {
         setData(paginatedData);
         setAllData(paginatedData);
@@ -135,7 +138,6 @@ export default function Requests() {
       const totalRecords = allApiData.length;
       setTotalCount(totalRecords);
       setHasMore(endIndex < totalRecords);
-
     } catch (err) {
       setData([]);
       setAllData([]);
@@ -150,20 +152,24 @@ export default function Requests() {
   const getAllData = async (shouldSelectAll = false) => {
     try {
       setSelectAllLoading(true);
-      
+
       let allApiData;
-      
+
       try {
-        const response = await userRequest.get(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        const response = await userRequest.get(
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+        );
         allApiData = response.data;
       } catch (userRequestError) {
-        const fetchResponse = await fetch(`https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`);
+        const fetchResponse = await fetch(
+          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`
+        );
         const fetchData = await fetchResponse.json();
         allApiData = fetchData;
       }
-      
+
       let transformedData;
-      
+
       if (selectedTab === "submitted") {
         // Transform data for "Raise to Bank" tab
         transformedData = allApiData.map((item, index) => ({
@@ -200,7 +206,6 @@ export default function Requests() {
         setSelectedRows(transformedData.map((item) => item.id));
         setIsSelectAll(true);
       }
-
     } catch (err) {
       setAllData([]);
       setData([]);
@@ -245,23 +250,25 @@ export default function Requests() {
   }, [hasMore, loadingMore, loading, page]);
 
   useEffect(() => {
-    const dataGrid = document.querySelector('.MuiDataGrid-root');
+    const dataGrid = document.querySelector(".MuiDataGrid-root");
     if (!dataGrid) return;
 
-    const scrollableElement = dataGrid.querySelector('.MuiDataGrid-virtualScroller');
+    const scrollableElement = dataGrid.querySelector(
+      ".MuiDataGrid-virtualScroller"
+    );
     if (!scrollableElement) return;
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
-      
+
       if (isNearBottom && hasMore && !loadingMore && !loading) {
         handleLoadMore();
       }
     };
 
-    scrollableElement.addEventListener('scroll', handleScroll);
-    return () => scrollableElement.removeEventListener('scroll', handleScroll);
+    scrollableElement.addEventListener("scroll", handleScroll);
+    return () => scrollableElement.removeEventListener("scroll", handleScroll);
   }, [hasMore, loadingMore, loading, handleLoadMore]);
 
   const handleSelectRow = (rowId) => {
@@ -269,9 +276,9 @@ export default function Requests() {
       const newSelection = prev.includes(rowId)
         ? prev.filter((id) => id !== rowId)
         : [...prev, rowId];
-      
+
       setIsSelectAll(newSelection.length === data.length && data.length > 0);
-      
+
       return newSelection;
     });
   };
@@ -309,15 +316,16 @@ export default function Requests() {
   };
 
   // Get columns based on selected tab
-  const columns = selectedTab === "submitted" 
-    ? SubmittedColumns() 
-    : RequestColumns({
-        isSelectAll,
-        handleSelectAll,
-        selectAllLoading,
-        selectedRows,
-        handleSelectRow
-      });
+  const columns =
+    selectedTab === "submitted"
+      ? SubmittedColumns()
+      : RequestColumns({
+          isSelectAll,
+          handleSelectAll,
+          selectAllLoading,
+          selectedRows,
+          handleSelectRow,
+        });
 
   return (
     <Container>
@@ -339,10 +347,12 @@ export default function Requests() {
       </Box>
 
       <Card sx={{ mt: 2, p: 2 }}>
-        <Box sx={{ 
-          width: "100%", 
-          height: 600,
-        }}>
+        <Box
+          sx={{
+            width: "100%",
+            height: 500,
+          }}
+        >
           <DataGrid
             rows={data}
             columns={columns}
@@ -355,7 +365,14 @@ export default function Requests() {
             slots={{
               footer: () => null,
               loadingOverlay: () => (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    p: 2,
+                  }}
+                >
                   <CircularProgress size={24} />
                 </Box>
               ),
@@ -406,22 +423,30 @@ export default function Requests() {
               },
             }}
           />
-          
+
           {loadingMore && (
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              mt: 1, 
-              py: 1,
-              backgroundColor: '#f5f5f5',
-              borderRadius: 1
-            }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mt: 1,
+                py: 1,
+                backgroundColor: "#f5f5f5",
+                borderRadius: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  p: 2,
+                }}
+              >
                 <CircularProgress size={24} />
               </Box>
             </Box>
           )}
-          
         </Box>
 
         {selectedRows.length > 0 && selectedTab !== "submitted" && (
