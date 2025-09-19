@@ -30,8 +30,9 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { AddJVModal, EditJVModal, UploadJVModal } from "../sections/jvm";
-import ConfirmationModal from "../components/ConfirmationModal";
+import { AddJVModal, EditJVModal, UploadJVModal } from "../components/InitiateJV";
+import ConfirmationModal from "src/components/ConfirmationModal";
+
 
 export default function InitiateJV() {
   const [data, setData] = useState([]);

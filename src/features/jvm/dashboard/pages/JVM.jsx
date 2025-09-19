@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import JVMDashboard from './jvm-dashboard';
+import JVMDashboard from '../components/JVMDashboard';
 
 export default function JVMPage() {
   return (

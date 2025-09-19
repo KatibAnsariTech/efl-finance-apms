@@ -19,20 +19,20 @@ import Page404 from "src/pages/page-not-found";
 import { MasterSheetView } from "src/sections/master-sheet/view";
 import navConfig from "src/layouts/dashboard/config-navigation";
 import HierarchyManagementView from "src/sections/hierarchy-management/view/hierarchy-management-view";
-import JVMPage from "src/pages/jvm";
+import JVMPage from "src/features/jvm/dashboard/pages/JVM";
 import ImportPaymentPage from "src/pages/import-payment";
 import CustomDutyPage from "src/pages/custom-duty";
 import PettyCashPage from "src/pages/petty-cash";
 import CreditDeviationPage from "src/pages/credit-deviation";
 import CreditDeviationDashboard from "src/pages/credit-deviation-dashboard";
-import JVMDashboard from "src/pages/jvm-dashboard";
+import JVMDashboard from "src/features/jvm/dashboard/components/JVMDashboard";
 import ImportPaymentDashboard from "src/pages/import-payment-dashboard";
 import CustomDutyDashboard from "src/pages/custom-duty-dashboard";
 import PettyCashDashboard from "src/pages/petty-cash-dashboard";
 // JVM subpages
-import JVStatusPage from "src/pages/jv-status";
-import InitiateJVPage from "src/pages/initiate-jv";
-import JVDetailPage from "src/pages/jv-detail";
+import JVStatusPage from "src/features/jvm/jvs-status/pages/JVStatus";
+import InitiateJVPage from "src/features/jvm/initiate-jv/pages/InitiateJV";
+import JVDetailPage from "src/features/jvm/jvs-status/pages/JVDetails";
 // Import Payment subpages
 import ImportPaymentUploadPage from "src/pages/import-payment-upload";
 // Custom Duty subpages
