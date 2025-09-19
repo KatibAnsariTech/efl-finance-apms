@@ -26,7 +26,7 @@ import { usePathname } from "src/routes/hooks";
 import { useResponsive } from "src/hooks/use-responsive";
 
 import { NAV } from "./config-layout";
-import Logo from "../../../public/assets/image1.png";
+import Logo from "../../../public/assets/logo-image.png";
 import EurekaForbes from "../../../public/assets/eurekafobesimage2.png";
 import navConfig from "./config-navigation";
 
@@ -226,7 +226,7 @@ const Sidebar = ({
             src={Logo}
             alt="Description of your image"
             style={{
-              width: "60%",
+              width: "50%",
               marginTop: "20px",
               cursor: "pointer",
             }}
