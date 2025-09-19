@@ -27,6 +27,7 @@ import { fDateTime } from "src/utils/format-time";
 import { useRouter } from "src/routes/hooks";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
+import { SubmittedColumns, RequestColumns } from "../components/RequestColumns";
 
 export default function Requests() {
   const router = useRouter();
@@ -91,19 +92,34 @@ export default function Requests() {
       // Add minimum delay to ensure loading indicator is visible
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const transformedData = allApiData.map((item, index) => ({
-        id: item.id,
-        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
-        transactionType: item.transactionType,
-        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-        transactionAmount: parseFloat(item.transactionAmount),
-        status: item.status,
-        company: item.company,
-        description: item.description,
-      }));
+      let transformedData;
+      
+      if (selectedTab === "submitted") {
+        // Transform data for "Raise to Bank" tab
+        transformedData = allApiData.map((item, index) => ({
+          id: item.id,
+          submitRequestNo: `2056627067`, // Mock submit request number
+          submitDate: new Date(item.requestedDate * 1000).toISOString(),
+          totalRecords: Math.floor(Math.random() * 50) + 20, // Random number between 20-70
+          downloadLink: "Download File",
+          submittedBy: "shweta@efl.com", // Mock submitted by
+        }));
+      } else {
+        // Transform data for other tabs
+        transformedData = allApiData.map((item, index) => ({
+          id: item.id,
+          requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
+          requestedDate: new Date(item.requestedDate * 1000).toISOString(),
+          boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
+          challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
+          transactionType: item.transactionType,
+          transactionDate: new Date(item.transactionDate * 1000).toISOString(),
+          transactionAmount: parseFloat(item.transactionAmount),
+          status: item.status,
+          company: item.company,
+          description: item.description,
+        }));
+      }
 
       const startIndex = pageNum * rowsPerPage;
       const endIndex = startIndex + rowsPerPage;
@@ -146,19 +162,34 @@ export default function Requests() {
         allApiData = fetchData;
       }
       
-      const transformedData = allApiData.map((item, index) => ({
-        id: item.id,
-        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
-        transactionType: item.transactionType,
-        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-        transactionAmount: parseFloat(item.transactionAmount),
-        status: item.status,
-        company: item.company,
-        description: item.description,
-      }));
+      let transformedData;
+      
+      if (selectedTab === "submitted") {
+        // Transform data for "Raise to Bank" tab
+        transformedData = allApiData.map((item, index) => ({
+          id: item.id,
+          submitRequestNo: `2056627067`, // Mock submit request number
+          submitDate: new Date(item.requestedDate * 1000).toISOString(),
+          totalRecords: Math.floor(Math.random() * 50) + 20, // Random number between 20-70
+          downloadLink: "Download File",
+          submittedBy: "shweta@efl.com", // Mock submitted by
+        }));
+      } else {
+        // Transform data for other tabs
+        transformedData = allApiData.map((item, index) => ({
+          id: item.id,
+          requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
+          requestedDate: new Date(item.requestedDate * 1000).toISOString(),
+          boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
+          challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
+          transactionType: item.transactionType,
+          transactionDate: new Date(item.transactionDate * 1000).toISOString(),
+          transactionAmount: parseFloat(item.transactionAmount),
+          status: item.status,
+          company: item.company,
+          description: item.description,
+        }));
+      }
 
       setAllData(transformedData);
       setData(transformedData);
@@ -277,115 +308,16 @@ export default function Requests() {
     }
   };
 
-  const columns = [
-    {
-      field: "checkbox",
-      headerName: (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          {selectAllLoading ? (
-            <CircularProgress size={20} />
-          ) : (
-            <Checkbox
-              checked={isSelectAll}
-              onChange={handleSelectAll}
-              size="small"
-            />
-          )}
-        </Box>
-      ),
-      width: 80,
-      sortable: false,
-      filterable: false,
-      resizable: false,
-      disableColumnMenu: true,
-      headerAlign: 'center',
-      align: 'center',
-      renderCell: (params) => (
-        <Checkbox
-          checked={selectedRows.includes(params.row.id)}
-          onChange={() => handleSelectRow(params.row.id)}
-          size="small"
-        />
-      ),
-    },
-    {
-      field: "requestNo",
-      headerName: "Request No.",
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params) => (
-        <Typography
-          sx={{
-            color: "#1976d2",
-            textDecoration: "underline",
-            cursor: "pointer",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => router.push(`/request-detail/${params.value}`)}
-        >
-          {params.value}
-        </Typography>
-      ),
-    },
-    {
-      field: "requestedDate",
-      headerName: "Requested Date",
-      flex: 1,
-      minWidth: 180,
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "boeNumber",
-      headerName: "BOE number",
-      flex: 1,
-      minWidth: 120,
-    },
-    {
-      field: "challanNumber",
-      headerName: "Challan number",
-      flex: 1,
-      minWidth: 140,
-    },
-    {
-      field: "transactionType",
-      headerName: "Type of transaction",
-      flex: 1,
-      minWidth: 150,
-    },
-    {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      flex: 1,
-      minWidth: 180,
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "transactionAmount",
-      headerName: "Transaction amount",
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params) => params.value?.toLocaleString(),
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      flex: 1,
-      minWidth: 120,
-    },
-    {
-      field: "company",
-      headerName: "Company",
-      flex: 1,
-      minWidth: 100,
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      flex: 1,
-      minWidth: 150,
-    },
-  ];
+  // Get columns based on selected tab
+  const columns = selectedTab === "submitted" 
+    ? SubmittedColumns() 
+    : RequestColumns({
+        isSelectAll,
+        handleSelectAll,
+        selectAllLoading,
+        selectedRows,
+        handleSelectRow
+      });
 
   return (
     <Container>
@@ -492,7 +424,7 @@ export default function Requests() {
           
         </Box>
 
-        {selectedRows.length > 0 && (
+        {selectedRows.length > 0 && selectedTab !== "submitted" && (
           <Box
             sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
           >
