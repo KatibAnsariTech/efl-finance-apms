@@ -33,6 +33,7 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/custom-duty/my-requests")) return "My Requests";
   if (path.startsWith("/custom-duty/raise-request")) return "Raise Request";
   if (path.startsWith("/custom-duty/payment")) return "Custom Duty Payment";
+  if (path.startsWith("/custom-duty/master")) return "Custom Duty Master Data";
 
   // Petty Cash routes
   if (path.startsWith("/petty-cash/request")) return "Petty Cash Request";
@@ -83,6 +84,7 @@ export const ROUTE_TITLES = {
   CUSTOM_DUTY_MY_REQUESTS: "My Requests",
   RAISE_REQUEST: "Raise Request",
   CUSTOM_DUTY_PAYMENT: "Custom Duty Payment",
+  CUSTOM_DUTY_MASTER: "Custom Duty Master Data",
 
   // Petty Cash
   PETTY_CASH_REQUEST: "Petty Cash Request",

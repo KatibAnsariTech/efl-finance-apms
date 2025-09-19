@@ -158,6 +158,13 @@ const navConfig = [
         icon: <AccountBalanceIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
       },
+      { 
+        id: 'custom-duty-master', 
+        title: 'Master Data', 
+        path: '/custom-duty/master',
+        icon: <AssignmentIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
+      },
     ],
   },
   {
