@@ -16,15 +16,15 @@ import CustomDutyPage from "src/features/custom-duty/dashboard/pages/CustomDuty"
 import PettyCashPage from "src/features/petty-cash/dashboard/pages/PettyCash";
 import CreditDeviationPage from "src/features/credit-deviation/pages/CreditDeviation";
 import CreditDeviationDashboard from "src/features/credit-deviation/dashboard/components/CreditDeviationDashboard";
-import { RaiseTicket } from "src/features/credit-deviation/request/components/view";
-import { FormView } from "src/features/credit-deviation/request-status/components/view";
-import { ApprovalView } from "src/features/credit-deviation/approvals/components/view";
-import { MasterView } from "src/features/credit-deviation/master/components/view";
-import UserManagementView from "src/features/credit-deviation/usermanagement/components/view/usermanagement-view";
-import { MasterSheetView } from "src/features/credit-deviation/master-sheet/components/view";
-import HierarchyManagementView from "src/features/credit-deviation/hierarchy-management/components/view/hierarchy-management-view";
-import FormDetailsView from "src/features/credit-deviation/approvals/components/form-details/view/FormDetailsView";
-import FormDetailsViewForm from "src/features/credit-deviation/request-status/components/form-details/view/FormDetailsView";
+import RequestPage from "src/features/credit-deviation/request/pages/Request";
+import RequestStatusPage from "src/features/credit-deviation/request-status/pages/RequestStatus";
+import ApprovalsPage from "src/features/credit-deviation/approvals/pages/Approvals";
+import MasterPage from "src/features/credit-deviation/master/pages/Master";
+import UserManagementPage from "src/features/credit-deviation/usermanagement/pages/UserManagement";
+import MasterSheetPage from "src/features/credit-deviation/master-sheet/pages/MasterSheet";
+import HierarchyManagementPage from "src/features/credit-deviation/hierarchy-management/pages/HierarchyManagement";
+import FormDetailsPage from "src/features/credit-deviation/approvals/pages/form-details/FormDetails";
+import FormDetailsViewForm from "src/features/credit-deviation/request-status/components/form-details/FormDetailsView";
 import JVMDashboard from "src/features/jvm/dashboard/components/JVMDashboard";
 import ImportPaymentDashboard from "src/features/import-payment/dashboard/components/ImportPaymentDashboard";
 import CustomDutyDashboard from "src/features/custom-duty/dashboard/components/CustomDutyDashboard";
@@ -123,7 +123,6 @@ export default function Router() {
       ),
       children: [
         { element: <IndexPage />, index: true },
-        // { index: true, element: <RoleBasedRedirect /> },
 
         {
           path: "/jvm",
@@ -202,7 +201,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/request"
-              element={<RaiseTicket />}
+              element={<RequestPage />}
             />
           ),
         },
@@ -211,7 +210,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/request-status"
-              element={<FormView />}
+              element={<RequestStatusPage />}
             />
           ),
         },
@@ -220,7 +219,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/approvals"
-              element={<ApprovalView />}
+              element={<ApprovalsPage />}
             />
           ),
         },
@@ -229,7 +228,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/master"
-              element={<MasterView />}
+              element={<MasterPage />}
             />
           ),
         },
@@ -238,7 +237,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/usermanagement"
-              element={<UserManagementView />}
+              element={<UserManagementPage />}
             />
           ),
         },
@@ -247,7 +246,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/master-sheet"
-              element={<MasterSheetView />}
+              element={<MasterSheetPage />}
             />
           ),
         },
@@ -256,7 +255,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/hierarchy-management"
-              element={<HierarchyManagementView />}
+              element={<HierarchyManagementPage />}
             />
           ),
         },
@@ -265,7 +264,7 @@ export default function Router() {
           element: (
             <RoleRoute
               path="/credit-deviation/approvals"
-              element={<FormDetailsView />}
+              element={<FormDetailsPage />}
             />
           ),
         },

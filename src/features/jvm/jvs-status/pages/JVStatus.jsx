@@ -7,7 +7,7 @@ import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { applyFilter, getComparator } from "src/utils/utils";
 import { publicRequest, userRequest } from "src/requestMethod";
-import FormRequestTabs from "src/features/credit-deviation/approvals/components/view/form-request-tabs";
+import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
 import { action } from "src/theme/palette";
 import { format } from "date-fns";
 import { useRouter } from "src/routes/hooks";

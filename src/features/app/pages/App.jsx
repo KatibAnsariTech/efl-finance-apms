@@ -1,5 +1,6 @@
+import React from "react";
 import { Helmet } from 'react-helmet-async';
-import { ApplicationsDashboard } from 'src/sections/overview/view';
+import ApplicationsDashboard from '../components/ApplicationsDashboard';
 
 export default function AppPage() {
   return (
