@@ -11,13 +11,13 @@ import CustomerOrderDetails from "../CustomerOderDetails/CustomerOrderDetails";
 
 
 const FormDetails = lazy(() =>
-  import("src/sections/forms/form-details/FormDetails")
+  import("../FormDetails")
 );
 const CurrentStatus = lazy(() =>
-  import("src/sections/forms/form-details/CurrentStatus")
+  import("../CurrentStatus")
 );
 const ApprovalForm = lazy(() =>
-  import("src/sections/forms/form-details/ApprovalForm")
+  import("../ApprovalForm")
 );
 
 function FormDetailsView() {

@@ -10,10 +10,10 @@ import { useRouter } from "src/routes/hooks";
 import CustomerOrderDetails from "../CustomerOderDetails/CustomerOrderDetails";
 
 const CurrentStatus = lazy(() =>
-  import("src/sections/approvals/form-details/CurrentStatus")
+  import("../CurrentStatus")
 );
 const ApprovalForm = lazy(() =>
-  import("src/sections/approvals/form-details/ApprovalForm")
+  import("../ApprovalForm")
 );
 
 function FormDetailsView() {

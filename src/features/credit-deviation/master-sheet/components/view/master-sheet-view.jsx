@@ -2,7 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Box, Container, Card } from "@mui/material";
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { userRequest } from "src/requestMethod";
-import excel from "../../../../public/assets/excel.svg";
+import excel from "/assets/excel.svg";
 import UploadFileModal from "../UploadFileModal";
 import { headLabel } from "../getHeadLabel";
 import MasterTabs from "../master-tab";

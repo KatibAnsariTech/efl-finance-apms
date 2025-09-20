@@ -19,7 +19,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Add as AddIcon, Edit as EditIcon } from "@mui/icons-material";
 import { userRequest } from "src/requestMethod";
 import CircularIndeterminate from "src/utils/loader";
-import excel from "../../../../public/assets/excel.svg";
+import excel from "/assets/excel.svg";
 import EditHierarchyModal from "../EditHierarchyModal";
 import swal from "sweetalert";
 import { showErrorMessage } from 'src/utils/errorUtils';

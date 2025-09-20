@@ -1,4 +1,4 @@
-import { ColorIndicatorGroup } from '../../components/ColorIndicator';
+import { ColorIndicatorGroup } from 'src/components/ColorIndicator';
 
 // Main component to render all color indicators for forms/approvals
 const ColorIndicators = () => (

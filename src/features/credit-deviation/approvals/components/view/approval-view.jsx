@@ -6,7 +6,7 @@ import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { applyFilter, getComparator } from "src/utils/utils";
-import excel from "../../../../public/assets/excel.svg";
+import excel from "/assets/excel.svg";
 import { publicRequest, userRequest } from "src/requestMethod";
 import FilterModal from "../FilterModal";
 import FormRequestTabs from "./form-request-tabs";
@@ -21,18 +21,9 @@ import { fDateTime } from "src/utils/format-time";
 import swal from 'sweetalert';
 import { showErrorMessage } from 'src/utils/errorUtils';
 
-export default function FormPage() {
-  const { clarificationCount } = useCounts();
-  const menuItems = [
-    {
-      label: `Clarification Needed${
-        clarificationCount > 0 ? ` (${clarificationCount})` : ""
-      }`,
-      value: "myPending",
-    },
-    { label: "My Requests", value: "myRaised" },
-  ];
-  const [selectedTab, setSelectedTab] = useState("myPending");
+export default function ApprovalPage() {
+  const router = useRouter();
+  const [selectedTab, setSelectedTab] = useState("myAssigned");
   const [data, setData] = useState([]);
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [search, setSearch] = useState("");
@@ -50,9 +41,9 @@ export default function FormPage() {
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
   const [openModal, setOpenModal] = useState(false);
-  const router = useRouter();
 
   const [regionData, setRegionData] = React.useState();
+  const { approvalCount } = useCounts();
 
   // Status color mapping
   const getStatusColor = (status) => {
@@ -70,6 +61,11 @@ export default function FormPage() {
         return "white";
     }
   };
+  const menuItems = [
+    { label: `Pending With Me${approvalCount > 0 ? ` (${approvalCount})` : ''}`, value: "myAssigned" },
+    // { label: `Pending With Me`, value: "myAssigned" },
+    { label: "All", value: "all" },
+  ];
 
   const getRegionData = async () => {
     try {
@@ -80,23 +76,19 @@ export default function FormPage() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     getRegionData();
   }, []);
-
-  React.useEffect(() => {
-    setData([]);
-  }, [selectedTab]);
 
   const getData = async () => {
     try {
       setLoading(true);
       // Determine the API endpoint based on selectedTab
-      const endpoint =
-        selectedTab === "myRaised"
-          ? "/admin/getForms?action=myRaised"
-          : `/admin/getInitiatedRequestForms`;
-
+      // const endpoint =
+      //   selectedTab === "myPending"
+      //     ? "/admin/getPendingRequestForms?action=myPending"
+      //     : `/admin/getForms?action=${selectedTab}`;
+      const endpoint = `/admin/getPendingRequestForms?action=${selectedTab}`;
       const res = await userRequest.get(endpoint, {
         params: {
           page: page + 1,
@@ -185,11 +177,10 @@ export default function FormPage() {
   const handleClose = () => setOpen(false);
 
   let notFound = !dataFiltered.length;
-
   const headLabel = [
     { id: "createdAt", label: "Requested Date", minWidth: 200, sortable: true },
     { id: "slNo", label: "Request No.", minWidth: 160 },
-    { id: "status", label: "Status", minWidth: 180 },
+    { id: "status", label: "Status", minWidth: 130 },
     { id: "customerCode", label: "Customer Code", minWidth: 140 },
     { id: "channel", label: "Channel", minWidth: 110 },
     { id: "region", label: "Region", minWidth: 110 },
@@ -253,13 +244,76 @@ export default function FormPage() {
     }
   };
 
+  const calculatePendingDays = (data) => {
+    if (!data || !data.requestDetails) {
+      return "N/A";
+    }
+
+    const currentDate = new Date();
+    const steps = data.requestDetails;
+    let lastApprovedStep = -1;
+    let oldestPendingDate = null;
+
+    // Identify the last approved step
+    Object.keys(steps)
+      .filter((key) => key.startsWith("step"))
+      .sort(
+        (a, b) =>
+          parseInt(a.replace("step", ""), 10) -
+          parseInt(b.replace("step", ""), 10)
+      )
+      .forEach((stepKey) => {
+        const stepData = steps[stepKey];
+
+        if (stepData.some((item) => item.status === "Approved")) {
+          lastApprovedStep = parseInt(stepKey.replace("step", ""), 10);
+        }
+      });
+
+    // Find the earliest pending step AFTER the last approved step
+    Object.keys(steps)
+      .filter((key) => key.startsWith("step"))
+      .sort(
+        (a, b) =>
+          parseInt(a.replace("step", ""), 10) -
+          parseInt(b.replace("step", ""), 10)
+      )
+      .forEach((stepKey) => {
+        const stepNumber = parseInt(stepKey.replace("step", ""), 10);
+        const stepData = steps[stepKey];
+
+        // Skip steps that were approved already
+        if (stepNumber <= lastApprovedStep) {
+          return;
+        }
+
+        stepData.forEach((item) => {
+          if (item.status === "Pending") {
+            const stepDate = new Date(item.createdAt);
+            if (!oldestPendingDate || stepDate < oldestPendingDate) {
+              oldestPendingDate = stepDate;
+            }
+          }
+        });
+      });
+
+    // Calculate pending days
+    if (oldestPendingDate) {
+      return Math.floor(
+        (currentDate - oldestPendingDate) / (1000 * 60 * 60 * 24)
+      );
+    }
+
+    return "N/A";
+  };
+
   return (
     <Container>
       <FormRequestTabs
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
         menuItems={menuItems}
-        clarificationCount={clarificationCount}
+        approvalCount={approvalCount}
       />
       <Card sx={{ mt: 2, p: 2 }}>
         <div
@@ -327,16 +381,16 @@ export default function FormPage() {
                 field: "createdAt",
                 headerName: "Requested Date",
                 flex: 1,
-                minWidth: 180,
+                minWidth: 200,
                 align: "center",
                 headerAlign: "center",
                 renderCell: (params) => fDateTime(params.value),
               },
               {
                 field: "slNo",
-                headerName: "SL No",
+                headerName: "Request No.",
                 flex: 1,
-                minWidth: 120,
+                minWidth: 160,
                 align: "center",
                 headerAlign: "center",
                 renderCell: (params) => (
@@ -350,7 +404,7 @@ export default function FormPage() {
                       fontWeight: 600,
                       "&:hover": { color: "#1565c0" },
                     }}
-                    onClick={() => router.push(`/request-status/view/${params.row._id}`)}
+                    onClick={() => router.push(`/approvals/view/${params.row._id}`)}
                   >
                     {params.value}
                   </Box>
@@ -360,7 +414,7 @@ export default function FormPage() {
                 field: "status",
                 headerName: "Status",
                 flex: 1,
-                minWidth: 150,
+                minWidth: 130,
                 align: "center",
                 headerAlign: "center",
                 renderCell: (params) => (
@@ -387,7 +441,7 @@ export default function FormPage() {
                 field: "customerCode",
                 headerName: "Customer Code",
                 flex: 1,
-                minWidth: 150,
+                minWidth: 140,
                 align: "center",
                 headerAlign: "center",
               },
@@ -395,7 +449,7 @@ export default function FormPage() {
                 field: "channel",
                 headerName: "Channel",
                 flex: 1,
-                minWidth: 120,
+                minWidth: 110,
                 align: "center",
                 headerAlign: "center",
               },
@@ -403,7 +457,7 @@ export default function FormPage() {
                 field: "region",
                 headerName: "Region",
                 flex: 1,
-                minWidth: 120,
+                minWidth: 110,
                 align: "center",
                 headerAlign: "center",
               },
@@ -411,7 +465,7 @@ export default function FormPage() {
                 field: "salesOffice",
                 headerName: "Sales Office",
                 flex: 1,
-                minWidth: 150,
+                minWidth: 140,
                 align: "center",
                 headerAlign: "center",
               },
@@ -419,7 +473,7 @@ export default function FormPage() {
                 field: "salesGroup",
                 headerName: "Sales Group",
                 flex: 1,
-                minWidth: 150,
+                minWidth: 140,
                 align: "center",
                 headerAlign: "center",
               },
