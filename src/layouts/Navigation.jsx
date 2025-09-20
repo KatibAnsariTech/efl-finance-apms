@@ -25,10 +25,10 @@ import { useRouter } from "src/routes/hooks";
 import { usePathname } from "src/routes/hooks";
 import { useResponsive } from "src/hooks/use-responsive";
 
-import { NAV } from "./config-layout";
-import Logo from "../../../public/assets/logo-image.png";
-import EurekaForbes from "../../../public/assets/eurekafobesimage2.png";
-import navConfig from "./config-navigation";
+import { NAV } from "./config/layout";
+import Logo from "../../public/assets/logo-image.png";
+import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
+import navConfig from "./config/navigation";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LockIcon from "@mui/icons-material/Lock";

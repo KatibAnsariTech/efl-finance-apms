@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 
 import Box from '@mui/material/Box';
 
-import Nav from './nav';
-import Main from './main';
-import Header from './header';
+import Nav from './Navigation';
+import Main from './Main';
+import Header from './Header';
 
 // ----------------------------------------------------------------------
 
-export default function DashboardLayout({ children }) {
+export default function Layout({ children }) {
   const [openNav, setOpenNav] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -50,6 +50,6 @@ export default function DashboardLayout({ children }) {
   );
 }
 
-DashboardLayout.propTypes = {
+Layout.propTypes = {
   children: PropTypes.node,
 };

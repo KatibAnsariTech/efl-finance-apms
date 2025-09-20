@@ -3,13 +3,13 @@ import { lazy, Suspense } from "react";
 import { ToastContainer } from "react-toastify";
 import { Outlet, Navigate, useRoutes } from "react-router-dom";
 
-import DashboardLayout from "src/layouts/dashboard";
+import Layout from "src/layouts";
 import IndexPage from "src/features/app/pages/App";
 import LoginPage from "src/features/auth/pages/Login";
 import OTPVerificationPage from "src/features/auth/pages/OTPVerification";
 import ResetPasswordPage from "src/features/auth/pages/ResetPassword";
 import Page404 from "src/features/error/pages/PageNotFound";
-import navConfig from "src/layouts/dashboard/config-navigation";
+import navConfig from "src/layouts/config/navigation";
 import JVMPage from "src/features/jvm/dashboard/pages/JVM";
 import ImportPaymentPage from "src/features/import-payment/dashboard/pages/ImportPayment";
 import CustomDutyPage from "src/features/custom-duty/dashboard/pages/CustomDuty";
@@ -112,12 +112,12 @@ export default function Router() {
     {
       path: "/",
       element: isLoggedIn ? (
-        <DashboardLayout>
+        <Layout>
           <Suspense>
             <ToastContainer />
             <Outlet />
           </Suspense>
-        </DashboardLayout>
+        </Layout>
       ) : (
         <Navigate to="/login" replace />
       ),
