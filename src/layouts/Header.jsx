@@ -1,6 +1,3 @@
-/* eslint-disable perfectionist/sort-imports */
-/* eslint-disable import/order */
-// eslint-disable-line react-hooks/exhaustive-deps
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import "react-toastify/dist/ReactToastify.css";

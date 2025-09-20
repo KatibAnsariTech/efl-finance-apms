@@ -7,7 +7,7 @@ export default function RequestStatusPage() {
       <Helmet>
         <title>Credit Deviation Request Status</title>
       </Helmet>
-      <FormView />
+      <FormsView />
     </>
   );
 }

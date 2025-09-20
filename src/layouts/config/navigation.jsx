@@ -13,6 +13,11 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 const navConfig = [
   {
@@ -28,49 +33,56 @@ const navConfig = [
         title: "Request",
         path: "/credit-deviation/request",
         icon: <RequestPageIcon />,
-        roles: ["REQUESTER"],
+        // roles: ["REQUESTER"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "request-status",
         title: "Request Status",
         path: "/credit-deviation/request-status",
         icon: <TableChartIcon />,
-        roles: ["REQUESTER"],
+        // roles: ["REQUESTER"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "approval",
         title: "Approval",
         path: "/credit-deviation/approvals",
         icon: <CheckCircleIcon />,
-        roles: ["APPROVER"],
+        //  roles: ["APPROVER"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "master-data",
         title: "Master Data",
         path: "/credit-deviation/master",
         icon: <AssignmentIcon />,
-        roles: ["SUPER_ADMIN"],
+        // roles: ["SUPER_ADMIN"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "user-management",
         title: "User Management",
         path: "/credit-deviation/usermanagement",
         icon: <ManageAccountsIcon />,
-        roles: ["SUPER_ADMIN"],
+        // roles: ["SUPER_ADMIN"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "master-sheet",
         title: "Master Sheet",
         path: "/credit-deviation/master-sheet",
         icon: <TableChartIcon />,
-        roles: ["ADMIN", "SUPER_ADMIN"],
+        // roles: ["ADMIN", "SUPER_ADMIN"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "h-management",
         title: "H. Management",
         path: "/credit-deviation/hierarchy-management",
         icon: <AccountTreeIcon />,
-        roles: ["SUPER_ADMIN"],
+        // roles: ["SUPER_ADMIN"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
     ],
   },
@@ -134,35 +146,35 @@ const navConfig = [
         id: "custom-duty-raise-request",
         title: "Raise Request",
         path: "/custom-duty/raise-request",
-        icon: <AccountBalanceIcon />,
+        icon: <AddCircleIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "custom-duty-my-requests",
         title: "My Requests",
         path: "/custom-duty/my-requests",
-        icon: <AccountBalanceIcon />,
+        icon: <ListAltIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "custom-duty-requests",
         title: "Requests",
         path: "/custom-duty/requests",
-        icon: <AccountBalanceIcon />,
+        icon: <ViewListIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "custom-duty-raise-to-bank",
         title: "Raise to Bank",
         path: "/custom-duty/raise-to-bank",
-        icon: <AccountBalanceIcon />,
+        icon: <AccountBalanceWalletIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "custom-duty-master",
         title: "Master Data",
         path: "/custom-duty/master",
-        icon: <AssignmentIcon />,
+        icon: <SettingsIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
     ],
