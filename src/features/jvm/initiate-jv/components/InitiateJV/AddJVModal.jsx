@@ -60,10 +60,6 @@ const postingKeys = [
   "41 - Bank Payment",
 ];
 
-const autoReversalOptions = [
-  { value: "Y", label: "Yes" },
-  { value: "N", label: "No" },
-];
 
 export default function AddJVModal({ open, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -84,7 +80,6 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
     vendorCustomerGLName: "",
     costCenter: "",
     personalNumber: "",
-    autoReversal: "N",
   });
 
   const [loading, setLoading] = useState(false);
@@ -111,7 +106,6 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
         vendorCustomerGLName: "",
         costCenter: "",
         personalNumber: "",
-        autoReversal: "N",
       });
       setErrors({});
     }
@@ -527,38 +521,11 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
+                    justifyContent: "flex-end",
                     gap: 3,
                     width: "100%",
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontSize: "0.875rem", minWidth: "fit-content" }}
-                    >
-                      Auto-reversal this transaction?
-                    </Typography>
-                    <FormControl
-                      error={!!errors.autoReversal}
-                      size="small"
-                      sx={{ minWidth: 120 }}
-                    >
-                      <Select
-                        value={formData.autoReversal}
-                        onChange={(e) =>
-                          handleChange("autoReversal", e.target.value)
-                        }
-                        sx={{ minWidth: 120 }}
-                      >
-                        {autoReversalOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
                   <Box sx={{ display: "flex", gap: 2 }}>
                     <Button
                       variant="contained"
