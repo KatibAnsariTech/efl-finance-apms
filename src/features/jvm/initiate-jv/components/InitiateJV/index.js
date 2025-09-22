@@ -1,3 +1,2 @@
-export { default as AddJVModal } from './AddJVModal';
-export { default as EditJVModal } from './EditJVModal';
+export { default as JVModal } from './JVModal';
 export { default as UploadJVModal } from './UploadJVModal';

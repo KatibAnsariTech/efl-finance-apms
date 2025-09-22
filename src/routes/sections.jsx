@@ -21,6 +21,8 @@ const JVMDashboard = lazy(() => import("src/features/jvm/dashboard/components/JV
 const JVStatusPage = lazy(() => import("src/features/jvm/jvs-status/pages/JVStatus"));
 const InitiateJVPage = lazy(() => import("src/features/jvm/initiate-jv/pages/InitiateJV"));
 const JVDetailPage = lazy(() => import("src/features/jvm/jvs-status/pages/JVDetails"));
+const AutoReversalPage = lazy(() => import("src/features/jvm/auto-reversal/pages/AutoReversal"));
+const AutoReversalDetailPage = lazy(() => import("src/features/jvm/auto-reversal/pages/AutoReversalDetails"));
 
 const ImportPaymentPage = lazy(() => import("src/features/import-payment/dashboard/pages/ImportPayment"));
 const ImportPaymentDashboard = lazy(() => import("src/features/import-payment/dashboard/components/ImportPaymentDashboard"));
@@ -276,8 +278,18 @@ export default function Router() {
           ),
         },
         {
+          path: "/jvm/auto-reversal",
+          element: (
+            <RoleRoute path="/jvm/auto-reversal" element={<AutoReversalPage />} />
+          ),
+        },
+        {
           path: "/jvm/requested-jvs/jv-detail/:jvId",
           element: <JVDetailPage />,
+        },
+        {
+          path: "/jvm/auto-reversal/ar-detail/:arId",
+          element: <AutoReversalDetailPage />,
         },
         // Import Payment subpages
         {

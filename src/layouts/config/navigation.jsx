@@ -108,6 +108,13 @@ const navConfig = [
         icon: <AssignmentTurnedInIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
+      {
+        id: "auto-reversal",
+        title: "Auto Reversal",
+        path: "/jvm/auto-reversal",
+        icon: <AddCircleIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
     ],
   },
   {

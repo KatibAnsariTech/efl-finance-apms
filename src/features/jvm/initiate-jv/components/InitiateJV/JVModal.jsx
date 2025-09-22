@@ -60,8 +60,15 @@ const postingKeys = [
   "41 - Bank Payment",
 ];
 
+export default function JVModal({
+  open,
+  onClose,
+  onSuccess,
+  editData,
+  mode = "add",
+}) {
+  const isEditMode = mode === "edit";
 
-export default function AddJVModal({ open, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     srNo: "",
     documentType: "",
@@ -87,29 +94,56 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
 
   useEffect(() => {
     if (open) {
-      // Reset form when modal opens
-      setFormData({
-        srNo: "",
-        documentType: "",
-        documentDate: new Date(),
-        businessArea: "",
-        accountType: "",
-        postingKey: "",
-        vendorCustomerGLNumber: "",
-        amount: "",
-        assignment: "",
-        profitCenter: "",
-        specialGLIndication: "",
-        referenceNumber: "",
-        remarks: "",
-        postingDate: new Date(),
-        vendorCustomerGLName: "",
-        costCenter: "",
-        personalNumber: "",
-      });
+      if (isEditMode && editData) {
+        // Populate form with edit data
+        setFormData({
+          srNo: editData.srNo || "",
+          documentType: editData.documentType || "",
+          documentDate: editData.documentDate
+            ? new Date(editData.documentDate)
+            : new Date(),
+          businessArea: editData.businessArea || "",
+          accountType: editData.accountType || "",
+          postingKey: editData.postingKey || "",
+          vendorCustomerGLNumber: editData.vendorCustomerGLNumber || "",
+          amount: editData.amount || "",
+          assignment: editData.assignment || "",
+          profitCenter: editData.profitCenter || "",
+          specialGLIndication: editData.specialGLIndication || "",
+          referenceNumber: editData.referenceNumber || "",
+          remarks: editData.remarks || "",
+          postingDate: editData.postingDate
+            ? new Date(editData.postingDate)
+            : new Date(),
+          vendorCustomerGLName: editData.vendorCustomerGLName || "",
+          costCenter: editData.costCenter || "",
+          personalNumber: editData.personalNumber || "",
+        });
+      } else {
+        // Reset form for add mode
+        setFormData({
+          srNo: "",
+          documentType: "",
+          documentDate: new Date(),
+          businessArea: "",
+          accountType: "",
+          postingKey: "",
+          vendorCustomerGLNumber: "",
+          amount: "",
+          assignment: "",
+          profitCenter: "",
+          specialGLIndication: "",
+          referenceNumber: "",
+          remarks: "",
+          postingDate: new Date(),
+          vendorCustomerGLName: "",
+          costCenter: "",
+          personalNumber: "",
+        });
+      }
       setErrors({});
     }
-  }, [open]);
+  }, [open, editData, isEditMode]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -176,16 +210,32 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
 
       const submitData = {
         ...formData,
-        documentDate: formData.documentDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
-        postingDate: formData.postingDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        documentDate: formData.documentDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+        postingDate: formData.postingDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
         amount: parseFloat(formData.amount),
       };
 
-      // Call onSuccess with the form data instead of API call
-      onSuccess(submitData);
+      if (isEditMode) {
+        // Update existing record
+        const BASE_URL =
+          "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
+        const id = editData?._id || editData?.id || editData?.srNo;
+        await axios.put(`${BASE_URL}/${id}`, submitData);
+        onSuccess();
+      } else {
+        // Create new record
+        onSuccess(submitData);
+      }
     } catch (error) {
-      console.error("Error creating journal voucher:", error);
-      showErrorMessage(error, "Failed to create journal voucher", swal);
+      console.error(
+        `Error ${isEditMode ? "updating" : "creating"} journal voucher:`,
+        error
+      );
+      showErrorMessage(
+        error,
+        `Failed to ${isEditMode ? "update" : "create"} journal voucher`,
+        swal
+      );
     } finally {
       setLoading(false);
     }
@@ -203,7 +253,6 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
           }}
         >
           <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            {/* Add Journal Voucher */}
             Today Date:{" "}
             {new Date().toLocaleDateString("en-GB", {
               day: "2-digit",
@@ -293,7 +342,7 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                 />
               </Grid>
 
-              {/* Row 2: Business Area, Account Type, Posting Key, Vendor/Customer/GL Name */}
+              {/* Row 2: Business Area, Account Type, Posting Key, Auto Reversal (Edit only) */}
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
@@ -375,7 +424,7 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                 />
               </Grid>
 
-              {/* Row 3: Vendor/Customer/GL Number, Amount, Assignment, Cost Center */}
+              {/* Row 3: Vendor/Customer/GL Number, Amount, Assignment */}
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
@@ -412,6 +461,8 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                   helperText={errors.assignment}
                 />
               </Grid>
+
+              {/* Row 4: Cost Center, Profit Center, Special GL Indication, Reference Number */}
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
@@ -423,8 +474,6 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                   helperText={errors.costCenter}
                 />
               </Grid>
-
-              {/* Row 4: Profit Center, Special GL Indication, Reference Number, Personal Number */}
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
@@ -462,6 +511,8 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                   helperText={errors.referenceNumber}
                 />
               </Grid>
+
+              {/* Row 5: Personal Number, Remarks, Upload Documents (Add only) */}
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
@@ -475,8 +526,6 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                   helperText={errors.personalNumber}
                 />
               </Grid>
-
-              {/* Row 5: Remarks (spans 2), Upload Supporting Documents */}
               <Grid item xs={12} sm={6} md={6}>
                 <TextField
                   fullWidth
@@ -490,32 +539,31 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                   helperText={errors.remarks}
                 />
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
-                >
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: "0.875rem" }}
+              {!isEditMode && (
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
                   >
-                    Upload Supporting Documents (if any)
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    endIcon={<Iconify icon="eva:download-fill" />}
-                    sx={{ alignSelf: "flex-start", fontSize: "0.875rem" }}
-                  >
-                    Choose File
-                  </Button>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                {/* Empty space to maintain layout */}
-              </Grid>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: "0.875rem" }}
+                    >
+                      Upload Supporting Documents (if any)
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      endIcon={<Iconify icon="eva:download-fill" />}
+                      sx={{ alignSelf: "flex-start", fontSize: "0.875rem" }}
+                    >
+                      Choose File
+                    </Button>
+                  </Box>
+                </Grid>
+              )}
 
-              {/* Row 6: Auto-reversal and Add Record Button */}
+              {/* Action Buttons */}
               <Grid item xs={12} sm={12} md={12}>
                 <Box
                   sx={{
@@ -527,6 +575,16 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                   }}
                 >
                   <Box sx={{ display: "flex", gap: 2 }}>
+                    {isEditMode && (
+                      <Button
+                        variant="outlined"
+                        onClick={onClose}
+                        disabled={loading}
+                        sx={{ minWidth: 100 }}
+                      >
+                        Cancel
+                      </Button>
+                    )}
                     <Button
                       variant="contained"
                       size="small"
@@ -535,9 +593,19 @@ export default function AddJVModal({ open, onClose, onSuccess }) {
                       startIcon={
                         loading ? <CircularProgress size={16} /> : null
                       }
-                      sx={{ minWidth: 250, height: 36, fontSize: "0.875rem" }}
+                      sx={{
+                        minWidth: isEditMode ? 100 : 250,
+                        height: 36,
+                        fontSize: "0.875rem",
+                      }}
                     >
-                      {loading ? "Adding..." : "Add Record"}
+                      {loading
+                        ? isEditMode
+                          ? "Updating..."
+                          : "Adding..."
+                        : isEditMode
+                        ? "Update"
+                        : "Add Record"}
                     </Button>
                   </Box>
                 </Box>

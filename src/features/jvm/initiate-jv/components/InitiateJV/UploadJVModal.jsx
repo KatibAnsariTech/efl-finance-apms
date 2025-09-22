@@ -131,7 +131,6 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
               'Personal Number': 'personalNumber',
               'Remarks': 'remarks',
               'Posting Date': 'postingDate',
-              'Auto Reversal': 'autoReversal',
               // Direct field name mapping
               'documentType': 'documentType',
               'documentDate': 'documentDate',
@@ -148,8 +147,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
               'referenceNumber': 'referenceNumber',
               'personalNumber': 'personalNumber',
               'remarks': 'remarks',
-              'postingDate': 'postingDate',
-              'autoReversal': 'autoReversal'
+              'postingDate': 'postingDate'
             };
             
             // Case-insensitive field mapping
@@ -180,8 +178,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
           remarks: entry.remarks || '',
           vendorCustomerGLName: entry.vendorCustomerGLName || '',
           costCenter: entry.costCenter || '1000',
-          personalNumber: entry.personalNumber || '',
-          autoReversal: entry.autoReversal || 'N'
+          personalNumber: entry.personalNumber || ''
         };
       }).filter(entry => entry.amount > 0); // Filter out entries with zero amount
 

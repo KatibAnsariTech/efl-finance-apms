@@ -30,15 +30,15 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { AddJVModal, EditJVModal, UploadJVModal } from "../components/InitiateJV";
+import { JVModal, UploadJVModal } from "../components/InitiateJV";
 import ConfirmationModal from "src/components/ConfirmationModal";
 
 
 export default function InitiateJV() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
   const [editData, setEditData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [autoReversal, setAutoReversal] = useState("No");
@@ -75,17 +75,16 @@ export default function InitiateJV() {
     setData((prev) => prev.filter((item) => item._id !== entryId));
   };
 
-  const handleAddSuccess = (newEntry) => {
-    addJVEntry(newEntry);
-    setAddModalOpen(false);
-    swal("Success!", "Journal voucher added successfully!", "success");
-  };
-
-  const handleEditSuccess = (updatedEntry) => {
-    updateJVEntry(updatedEntry);
-    setEditModalOpen(false);
-    setEditData(null);
-    swal("Success!", "Journal voucher updated successfully!", "success");
+  const handleModalSuccess = (entry) => {
+    if (modalMode === "add") {
+      addJVEntry(entry);
+      swal("Success!", "Journal voucher added successfully!", "success");
+    } else {
+      updateJVEntry(entry);
+      setEditData(null);
+      swal("Success!", "Journal voucher updated successfully!", "success");
+    }
+    setModalOpen(false);
   };
 
   const handleUploadSuccess = (uploadedEntries) => {
@@ -375,7 +374,14 @@ export default function InitiateJV() {
 
   const handleEdit = (row) => {
     setEditData(row);
-    setEditModalOpen(true);
+    setModalMode("edit");
+    setModalOpen(true);
+  };
+
+  const handleAdd = () => {
+    setEditData(null);
+    setModalMode("add");
+    setModalOpen(true);
   };
 
   const handleDelete = async (row) => {
@@ -446,7 +452,7 @@ export default function InitiateJV() {
             <Button
               variant="text"
               size="small"
-              onClick={() => setAddModalOpen(true)}
+              onClick={handleAdd}
               sx={{
                 fontSize: "0.875rem",
                 "&:hover": {
@@ -668,20 +674,15 @@ export default function InitiateJV() {
           </Box>
         )}
 
-        <AddJVModal
-          open={addModalOpen}
-          onClose={() => setAddModalOpen(false)}
-          onSuccess={handleAddSuccess}
-        />
-
-        <EditJVModal
-          open={editModalOpen}
+        <JVModal
+          open={modalOpen}
           onClose={() => {
-            setEditModalOpen(false);
+            setModalOpen(false);
             setEditData(null);
           }}
-          onSuccess={handleEditSuccess}
+          onSuccess={handleModalSuccess}
           editData={editData}
+          mode={modalMode}
         />
 
         <UploadJVModal

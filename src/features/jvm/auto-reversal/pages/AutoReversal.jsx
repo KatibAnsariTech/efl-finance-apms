@@ -19,7 +19,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
 
-export default function JVStatus() {
+export default function AutoReversal() {
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,7 @@ export default function JVStatus() {
     { label: "Rejected", value: "rejected", count: statusCounts.rejected },
   ];
 
-  // Generate mock data for JV Status
+  // Generate mock data for Auto Reversal Status
   const generateMockData = (startIndex, count) => {
     const documentTypes = [
       "Invoice",
@@ -92,8 +92,9 @@ export default function JVStatus() {
       const date = new Date(2024, 8, 12 - (globalIndex % 30)); // Random dates in September 2024
 
       return {
-        _id: `jv_${globalIndex + 1}`,
-        slNo: `JV${String(globalIndex + 1).padStart(3, "0")}`,
+        _id: `ar_${globalIndex + 1}`,
+        requestNo: `AR${String(globalIndex + 1).padStart(3, "0")}`,
+        slNo: `AR${String(globalIndex + 1).padStart(3, "0")}`,
         documentType: docType,
         documentDate: date,
         postingDate: date,
@@ -109,13 +110,15 @@ export default function JVStatus() {
         specialGLIndication: `SGI${String(globalIndex + 1).padStart(3, "0")}`,
         referenceNumber: `REF${String(globalIndex + 1).padStart(3, "0")}`,
         personalNumber: `PN${String(globalIndex + 1).padStart(3, "0")}`,
-        remarks: `Sample journal voucher entry ${
+        remarks: `Sample auto reversal entry ${
           globalIndex + 1
         } for ${docType.toLowerCase()} processing`,
-        autoReversal: globalIndex % 3 === 0 ? "Y" : "N",
+        autoReversal: "Y", // Always Y for auto reversal
         status: status,
         createdAt: date,
         sno: globalIndex + 1,
+        totalDebit: amount,
+        totalCredit: amount,
       };
     });
   };
@@ -186,8 +189,8 @@ export default function JVStatus() {
     console.log("Export clicked");
   };
 
-  // Custom ColorIndicators component for JV Status
-  const JVColorIndicators = () => {
+  // Custom ColorIndicators component for Auto Reversal Status
+  const AutoReversalColorIndicators = () => {
     // Custom circle component for displaying each color with label on hover
     const ColorCircle = ({ color, label }) => (
       <Tooltip title={label} arrow>
@@ -213,7 +216,7 @@ export default function JVStatus() {
           marginLeft: 2,
         }}
       >
-        {/* Status color legend for JV Status */}
+        {/* Status color legend for Auto Reversal Status */}
         <ColorCircle color="#e8f5e8" label="Approved" />
         <ColorCircle color="#f4f5ba" label="Pending" />
         <ColorCircle color="#ffcdd2" label="Rejected" />
@@ -275,9 +278,9 @@ export default function JVStatus() {
             console.log("Rows in the data:", params.row.rows);
             
             // Store data in localStorage as backup
-            localStorage.setItem('jvDetailData', JSON.stringify(params.row));
+            localStorage.setItem('arDetailData', JSON.stringify(params.row));
             
-            router.push(`/jvm/requested-jvs/jv-detail/${params.row.requestNo}`, { 
+            router.push(`/jvm/auto-reversal/ar-detail/${params.row.requestNo}`, { 
               state: params.row 
             });
           }}
@@ -371,7 +374,7 @@ export default function JVStatus() {
   return (
     <>
       <Helmet>
-        <title>JV's Status</title>
+        <title>Auto Reversal Status</title>
       </Helmet>
 
       <Container>
@@ -392,7 +395,7 @@ export default function JVStatus() {
             <FormTableToolbar
               search={search}
               onFilterChange={handleFilterChange}
-              placeholder="Search JVs..."
+              placeholder="Search Auto Reversals..."
             />
           </div>
 
@@ -482,7 +485,7 @@ export default function JVStatus() {
             }}
           >
             {/* <Box sx={{ pointerEvents: "auto" }}>
-              <JVColorIndicators />
+              <AutoReversalColorIndicators />
             </Box> */}
           </Box>
         </Card>
