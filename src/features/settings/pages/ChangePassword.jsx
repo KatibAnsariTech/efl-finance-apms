@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -18,6 +18,7 @@ import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import swal from "sweetalert";
 
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
@@ -43,8 +44,6 @@ const changePasswordSchema = yup.object().shape({
 export default function ChangePassword() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -63,10 +62,9 @@ export default function ChangePassword() {
     },
   });
 
+
   const onSubmit = async (data) => {
     setLoading(true);
-    setError("");
-    setMessage("");
 
     try {
       // const response = await userRequest.put("/user/change-password", {
@@ -75,17 +73,31 @@ export default function ChangePassword() {
       // });
 
       // if (response.data.success) {
-      //   setMessage("Password changed successfully!");
       //   reset();
       // } else {
-      //   setError(response.data.message || "Failed to change password");
+      //   await swal({
+      //     title: "Error!",
+      //     text: response.data.message || "Failed to change password",
+      //     icon: "error",
+      //     button: "OK"
+      //   });
       // }
-      setMessage("Password changed successfully!");
+      
+      // Simulate success for now
+      await swal({
+        title: "Success!",
+        text: "Password changed successfully!",
+        icon: "success",
+        button: "OK"
+      });
+      reset();
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "An error occurred while changing password"
-      );
+      await swal({
+        title: "Error!",
+        text: err.response?.data?.message || "An error occurred while changing password",
+        icon: "error",
+        button: "OK"
+      });
     } finally {
       setLoading(false);
     }
@@ -109,21 +121,9 @@ export default function ChangePassword() {
         </Stack>
 
         <Card sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-            Update Your Password
-          </Typography>
-
-          {message && (
-            <Alert severity="success" sx={{ mb: 3 }}>
-              {message}
-            </Alert>
-          )}
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
+           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+             Update Your Password
+           </Typography>
 
           <Box component="form" onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={3}>

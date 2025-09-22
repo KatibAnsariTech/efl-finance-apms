@@ -10,13 +10,13 @@ import {
   Stack,
   Avatar,
   TextField,
-  Alert,
   CircularProgress,
 } from "@mui/material";
 import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import swal from "sweetalert";
 
 import { useAccount } from "src/hooks/use-account";
 import Iconify from "src/components/iconify";
@@ -36,8 +36,6 @@ export default function Profile() {
   const navigate = useNavigate();
   const account = useAccount();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const {
     register,
@@ -66,29 +64,36 @@ export default function Profile() {
     }
   }, [account, setValue]);
 
+
   const onSubmit = async (data) => {
     setLoading(true);
-    setError("");
-    setMessage("");
 
     try {
       // const response = await userRequest.put("/user/profile", data);
       // if (response.data.success) {
-      //   setMessage("Profile updated successfully!");
       //   // Update local storage with new data
       //   const updatedUser = { ...account, ...data };
       //   localStorage.setItem("user", JSON.stringify(updatedUser));
       //   // Refresh the page to update the account context
       //   window.location.reload();
-      setMessage("Profile updated successfully!");
       // } else {
-      //   setError(response.data.message || "Failed to update profile");
+      //   swal("Error", response.data.message || "Failed to update profile", "error");
       // }
+      
+      // Simulate success for now
+      await swal({
+        title: "Success!",
+        text: "Profile updated successfully!",
+        icon: "success",
+        button: "OK"
+      });
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "An error occurred while updating profile"
-      );
+      await swal({
+        title: "Error!",
+        text: err.response?.data?.message || "An error occurred while updating profile",
+        icon: "error",
+        button: "OK"
+      });
     } finally {
       setLoading(false);
     }
@@ -134,21 +139,9 @@ export default function Profile() {
           {/* Profile Form */}
           <Grid item xs={12} md={8}>
             <Card sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-                Personal Information
-              </Typography>
-
-              {message && (
-                <Alert severity="success" sx={{ mb: 3 }}>
-                  {message}
-                </Alert>
-              )}
-
-              {error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
-                  {error}
-                </Alert>
-              )}
+               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                 Personal Information
+               </Typography>
 
               <Box component="form" onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={3}>
