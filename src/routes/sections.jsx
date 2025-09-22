@@ -4,72 +4,53 @@ import { ToastContainer } from "react-toastify";
 import { Outlet, Navigate, useRoutes } from "react-router-dom";
 
 import Layout from "src/layouts";
-import IndexPage from "src/features/app/pages/App";
-import LoginPage from "src/features/auth/pages/Login";
-import OTPVerificationPage from "src/features/auth/pages/OTPVerification";
-import ResetPasswordPage from "src/features/auth/pages/ResetPassword";
-import Page404 from "src/features/error/pages/PageNotFound";
 import navConfig from "src/layouts/config/navigation";
-import JVMPage from "src/features/jvm/dashboard/pages/JVM";
-import ImportPaymentPage from "src/features/import-payment/dashboard/pages/ImportPayment";
-import CustomDutyPage from "src/features/custom-duty/dashboard/pages/CustomDuty";
-import PettyCashPage from "src/features/petty-cash/dashboard/pages/PettyCash";
-import CreditDeviationPage from "src/features/credit-deviation/pages/CreditDeviation";
-import CreditDeviationDashboard from "src/features/credit-deviation/dashboard/components/CreditDeviationDashboard";
-import RequestPage from "src/features/credit-deviation/request/pages/Request";
-import RequestStatusPage from "src/features/credit-deviation/request-status/pages/RequestStatus";
-import ApprovalsPage from "src/features/credit-deviation/approvals/pages/Approvals";
-import MasterPage from "src/features/credit-deviation/master/pages/Master";
-import UserManagementPage from "src/features/credit-deviation/usermanagement/pages/UserManagement";
-import MasterSheetPage from "src/features/credit-deviation/master-sheet/pages/MasterSheet";
-import HierarchyManagementPage from "src/features/credit-deviation/hierarchy-management/pages/HierarchyManagement";
-import FormDetailsPage from "src/features/credit-deviation/approvals/pages/form-details/FormDetails";
-import FormDetailsViewForm from "src/features/credit-deviation/request-status/components/form-details/FormDetailsView";
-import JVMDashboard from "src/features/jvm/dashboard/components/JVMDashboard";
-import ImportPaymentDashboard from "src/features/import-payment/dashboard/components/ImportPaymentDashboard";
-import CustomDutyDashboard from "src/features/custom-duty/dashboard/components/CustomDutyDashboard";
-import PettyCashDashboard from "src/features/petty-cash/dashboard/components/PettyCashDashboard";
-// JVM subpages
-import JVStatusPage from "src/features/jvm/jvs-status/pages/JVStatus";
-import InitiateJVPage from "src/features/jvm/initiate-jv/pages/InitiateJV";
-import JVDetailPage from "src/features/jvm/jvs-status/pages/JVDetails";
-// Import Payment subpages
-import ImportPaymentUploadPage from "src/features/import-payment/upload/pages/ImportPaymentUpload";
-// Custom Duty subpages
-// Petty Cash subpages
-import PettyCashRequestPage from "src/features/petty-cash/request/pages/PettyCashRequest";
-import RaiseRequest from "src/features/custom-duty/raise-request/pages/RaiseRequest.jsx";
-import MyRequests from "src/features/custom-duty/my-requests/pages/MyRequests";
-import Requests from "src/features/custom-duty/requests/pages/Requests";
-import RaiseToBank from "src/features/custom-duty/raise-to-bank/pages/RaiseToBank";
-import SubmitDetail from "src/features/custom-duty/raise-to-bank/pages/SubmitDetail";
-import CustomDutyMaster from "src/features/custom-duty/master/pages/CustomDutyMaster";
-// Master Data subpages
-// User Management subpages
-// Hierarchy Management subpages
-// import { RaiseTicket } from 'src/sections/raise-ticket/view';
 
-// export const IndexPage = lazy(() => import("src/pages/app"));
-// export const LoginPage = lazy(() => import("src/pages/login"));
-// export const FormView = lazy(() =>
-//   import("src/sections/forms/view/forms-view")
-// );
-// export const ApprovalView = lazy(() =>
-//   import("src/sections/approvals/view/approval-view")
-// );
-// export const FormDetailsView = lazy(() =>
-//   import("src/sections/approvals/form-details/view/FormDetailsView")
-// );
-// export const FormDetailsViewForm = lazy(() =>
-//   import("src/sections/forms/form-details/view/FormDetailsView")
-// );
-// export const RaiseTicket = lazy(() =>
-//   import("src/sections/raise-ticket/view/raise-ticket")
-// );
-// export const MasterView = lazy(() =>
-//   import("src/sections/master/view/master-view")
-// );
-// export const Page404 = lazy(() => import("src/pages/page-not-found"));
+// Lazy load all feature components
+const IndexPage = lazy(() => import("src/features/app/pages/App"));
+const ApplicationsDashboard = lazy(() => import("src/features/app/components/ApplicationsDashboard"));
+
+const LoginPage = lazy(() => import("src/features/auth/pages/Login"));
+const OTPVerificationPage = lazy(() => import("src/features/auth/pages/OTPVerification"));
+const ResetPasswordPage = lazy(() => import("src/features/auth/pages/ResetPassword"));
+
+const Page404 = lazy(() => import("src/features/error/pages/PageNotFound"));
+
+const JVMPage = lazy(() => import("src/features/jvm/dashboard/pages/JVM"));
+const JVMDashboard = lazy(() => import("src/features/jvm/dashboard/components/JVMDashboard"));
+const JVStatusPage = lazy(() => import("src/features/jvm/jvs-status/pages/JVStatus"));
+const InitiateJVPage = lazy(() => import("src/features/jvm/initiate-jv/pages/InitiateJV"));
+const JVDetailPage = lazy(() => import("src/features/jvm/jvs-status/pages/JVDetails"));
+
+const ImportPaymentPage = lazy(() => import("src/features/import-payment/dashboard/pages/ImportPayment"));
+const ImportPaymentDashboard = lazy(() => import("src/features/import-payment/dashboard/components/ImportPaymentDashboard"));
+const ImportPaymentUploadPage = lazy(() => import("src/features/import-payment/upload/pages/ImportPaymentUpload"));
+
+const CustomDutyPage = lazy(() => import("src/features/custom-duty/dashboard/pages/CustomDuty"));
+const CustomDutyDashboard = lazy(() => import("src/features/custom-duty/dashboard/components/CustomDutyDashboard"));
+const RaiseRequest = lazy(() => import("src/features/custom-duty/raise-request/pages/RaiseRequest"));
+const MyRequests = lazy(() => import("src/features/custom-duty/my-requests/pages/MyRequests"));
+const Requests = lazy(() => import("src/features/custom-duty/requests/pages/Requests"));
+const RaiseToBank = lazy(() => import("src/features/custom-duty/raise-to-bank/pages/RaiseToBank"));
+const SubmitDetail = lazy(() => import("src/features/custom-duty/raise-to-bank/pages/SubmitDetail"));
+const CustomDutyMaster = lazy(() => import("src/features/custom-duty/master/pages/CustomDutyMaster"));
+
+const PettyCashPage = lazy(() => import("src/features/petty-cash/dashboard/pages/PettyCash"));
+const PettyCashDashboard = lazy(() => import("src/features/petty-cash/dashboard/components/PettyCashDashboard"));
+const PettyCashRequestPage = lazy(() => import("src/features/petty-cash/request/pages/PettyCashRequest"));
+
+const CreditDeviationPage = lazy(() => import("src/features/credit-deviation/pages/CreditDeviation"));
+const CreditDeviationDashboard = lazy(() => import("src/features/credit-deviation/dashboard/components/CreditDeviationDashboard"));
+const RequestPage = lazy(() => import("src/features/credit-deviation/request/pages/Request"));
+const RequestStatusPage = lazy(() => import("src/features/credit-deviation/request-status/pages/RequestStatus"));
+const ApprovalsPage = lazy(() => import("src/features/credit-deviation/approvals/pages/Approvals"));
+const MasterPage = lazy(() => import("src/features/credit-deviation/master/pages/Master"));
+const UserManagementPage = lazy(() => import("src/features/credit-deviation/usermanagement/pages/UserManagement"));
+const MasterSheetPage = lazy(() => import("src/features/credit-deviation/master-sheet/pages/MasterSheet"));
+const HierarchyManagementPage = lazy(() => import("src/features/credit-deviation/hierarchy-management/pages/HierarchyManagement"));
+const FormDetailsPage = lazy(() => import("src/features/credit-deviation/approvals/pages/form-details/FormDetails"));
+const FormDetailsViewForm = lazy(() => import("src/features/credit-deviation/request-status/components/form-details/FormDetailsView"));
+
 
 export default function Router() {
   const isLoggedIn = localStorage.getItem("accessToken");
@@ -113,10 +94,10 @@ export default function Router() {
       path: "/",
       element: isLoggedIn ? (
         <Layout>
-          <Suspense>
-            <ToastContainer />
-            <Outlet />
-          </Suspense>
+        <Suspense>
+          <ToastContainer />
+          <Outlet />
+        </Suspense>
         </Layout>
       ) : (
         <Navigate to="/login" replace />
@@ -370,23 +351,41 @@ export default function Router() {
     },
     {
       path: "/login",
-      element: isLoggedIn ? <Navigate to="/" replace /> : <LoginPage />,
+      element: isLoggedIn ? (
+        <Navigate to="/" replace />
+      ) : (
+        <Suspense>
+          <LoginPage />
+        </Suspense>
+      ),
     },
     {
       path: "/otp-verification",
       element: isLoggedIn ? (
         <Navigate to="/" replace />
       ) : (
-        <OTPVerificationPage />
+        <Suspense>
+          <OTPVerificationPage />
+        </Suspense>
       ),
     },
     {
       path: "/reset-password",
-      element: isLoggedIn ? <Navigate to="/" replace /> : <ResetPasswordPage />,
+      element: isLoggedIn ? (
+        <Navigate to="/" replace />
+      ) : (
+        <Suspense>
+          <ResetPasswordPage />
+        </Suspense>
+      ),
     },
     {
       path: "404",
-      element: <Page404 />,
+      element: (
+        <Suspense>
+          <Page404 />
+        </Suspense>
+      ),
     },
     {
       path: "*",
