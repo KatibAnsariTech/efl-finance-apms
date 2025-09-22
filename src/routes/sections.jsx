@@ -41,6 +41,9 @@ const AutoReversalPage = lazy(() =>
 const AutoReversalDetailPage = lazy(() =>
   import("src/features/jvm/auto-reversal/pages/AutoReversalDetails")
 );
+const JVMMasterPage = lazy(() =>
+  import("src/features/jvm/master/pages/JVMMaster")
+);
 
 const ImportPaymentPage = lazy(() =>
   import("src/features/import-payment/dashboard/pages/ImportPayment")
@@ -363,6 +366,15 @@ export default function Router() {
             <RoleRoute
               path="/jvm/auto-reversal"
               element={<AutoReversalPage />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/master",
+          element: (
+            <RoleRoute
+              path="/jvm/master"
+              element={<JVMMasterPage />}
             />
           ),
         },

@@ -1,0 +1,272 @@
+import React, { useState, useEffect } from "react";
+import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { IconButton, Box, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import Iconify from "src/components/iconify";
+import { userRequest } from "src/requestMethod";
+import { fDate } from "src/utils/format-time";
+import swal from "sweetalert";
+import { showErrorMessage } from "src/utils/errorUtils";
+import CircularIndeterminate from "src/utils/loader";
+
+export default function PostingKeyTable({ handleEdit, handleDelete }) {
+  const theme = useTheme();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [rowCount, setRowCount] = useState(0);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await userRequest.get(
+        `/admin/getMasters?key=PostingKey&page=${paginationModel.page + 1}&limit=${
+          paginationModel.pageSize
+        }`
+      );
+      if (response.data.success) {
+        const mappedData = response.data.data.masters.map((item, index) => ({
+          id: item._id,
+          sno: paginationModel.page * paginationModel.pageSize + index + 1,
+          postingKey: item.value || "-",
+          description: item.description || "-",
+          debitCredit: item.debitCredit || "-",
+          isActive: item.isActive !== undefined ? item.isActive : true,
+          createdAt: item.createdAt,
+          ...item,
+        }));
+        setData(mappedData);
+        setRowCount(response.data.data.pagination.total);
+      }
+    } catch (error) {
+      console.error("Error fetching Posting Key data:", error);
+      showErrorMessage(error, "Error fetching Posting Key data", swal);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [paginationModel]);
+
+  const handleEditClick = (event, id) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const row = data.find(item => item.id === id);
+    if (row) {
+      handleEdit(row);
+    }
+  };
+
+  const handleDeleteClick = (event, id) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleDelete(id);
+  };
+
+  const columns = [
+    {
+      field: "sno",
+      headerName: "S.No.",
+      width: 90,
+      sortable: false,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "postingKey",
+      headerName: "Posting Key",
+      minWidth: 150,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      minWidth: 200,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2">
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "debitCredit",
+      headerName: "Debit/Credit",
+      width: 120,
+      sortable: false,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            px: 1,
+            py: 0.5,
+            borderRadius: 1,
+            backgroundColor: params.value === "Debit" ? "error.light" : "success.light",
+            color: params.value === "Debit" ? "error.dark" : "success.dark",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+          }}
+        >
+          {params.value || "-"}
+        </Box>
+      ),
+    },
+    {
+      field: "isActive",
+      headerName: "Status",
+      width: 120,
+      sortable: false,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            px: 1,
+            py: 0.5,
+            borderRadius: 1,
+            backgroundColor: params.value ? "success.light" : "grey.300",
+            color: params.value ? "success.dark" : "grey.600",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+          }}
+        >
+          {params.value ? "Active" : "Inactive"}
+        </Box>
+      ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Created Date",
+      width: 150,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Typography variant="body2" color="text.secondary">
+          {params.value ? fDate(params.value) : "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 120,
+      sortable: false,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <IconButton
+            size="small"
+            onClick={(event) => handleEditClick(event, params.row.id)}
+            sx={{
+              color: theme.palette.primary.main,
+              "&:hover": {
+                backgroundColor: theme.palette.primary.lighter,
+              },
+            }}
+          >
+            <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={(event) => handleDeleteClick(event, params.row.id)}
+            sx={{
+              color: theme.palette.error.main,
+              "&:hover": {
+                backgroundColor: theme.palette.error.lighter,
+              },
+            }}
+          >
+            <Iconify icon="solar:trash-bin-trash-bold" />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
+
+  return (
+    <DataGrid
+      rows={data}
+      columns={columns}
+      loading={loading}
+      paginationMode="server"
+      rowCount={rowCount}
+      paginationModel={paginationModel}
+      onPaginationModelChange={setPaginationModel}
+      pageSizeOptions={[5, 10, 25, 50]}
+      disableRowSelectionOnClick
+      disableColumnResize={false}
+      autoHeight
+      sx={{
+        "& .MuiDataGrid-root": {
+          tableLayout: "fixed",
+        },
+        "& .MuiDataGrid-cell": {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        "& .MuiDataGrid-cell:focus": {
+          outline: "none",
+        },
+        "& .MuiDataGrid-cell:focus-visible": {
+          outline: "none",
+        },
+        "& .MuiDataGrid-row:focus": {
+          outline: "none",
+        },
+        "& .MuiDataGrid-row:focus-visible": {
+          outline: "none",
+        },
+        "& .MuiIconButton-root:focus": {
+          outline: "none",
+        },
+        "& .MuiIconButton-root:focus-visible": {
+          outline: "none",
+        },
+        "& .MuiSwitch-root:focus": {
+          outline: "none",
+        },
+        "& .MuiSwitch-root:focus-visible": {
+          outline: "none",
+        },
+        "& .MuiDataGrid-columnSeparator": {
+          display: "none",
+        },
+        "& .MuiDataGrid-columnHeader:hover .MuiDataGrid-columnSeparator": {
+          display: "block",
+          opacity: 0.3,
+          color: "#637381",
+        },
+      }}
+    />
+  );
+}
