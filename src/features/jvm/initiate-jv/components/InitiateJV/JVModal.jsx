@@ -60,6 +60,8 @@ const postingKeys = [
   "41 - Bank Payment",
 ];
 
+const typeOptions = ["Debit", "Credit"];
+
 export default function JVModal({
   open,
   onClose,
@@ -76,6 +78,7 @@ export default function JVModal({
     businessArea: "",
     accountType: "",
     postingKey: "",
+    type: "",
     vendorCustomerGLNumber: "",
     amount: "",
     assignment: "",
@@ -105,6 +108,7 @@ export default function JVModal({
           businessArea: editData.businessArea || "",
           accountType: editData.accountType || "",
           postingKey: editData.postingKey || "",
+          type: editData.type || "",
           vendorCustomerGLNumber: editData.vendorCustomerGLNumber || "",
           amount: editData.amount || "",
           assignment: editData.assignment || "",
@@ -128,6 +132,7 @@ export default function JVModal({
           businessArea: "",
           accountType: "",
           postingKey: "",
+          type: "",
           vendorCustomerGLNumber: "",
           amount: "",
           assignment: "",
@@ -173,6 +178,7 @@ export default function JVModal({
     if (!formData.accountType)
       newErrors.accountType = "Account Type is required";
     if (!formData.postingKey) newErrors.postingKey = "Posting Key is required";
+    if (!formData.type) newErrors.type = "Type is required";
     if (!formData.vendorCustomerGLNumber.trim())
       newErrors.vendorCustomerGLNumber =
         "Vendor/Customer/GL Number is required";
@@ -411,6 +417,33 @@ export default function JVModal({
                 )}
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth error={!!errors.type} size="small">
+                  <InputLabel>Type *</InputLabel>
+                  <Select
+                    value={formData.type}
+                    onChange={(e) => handleChange("type", e.target.value)}
+                    label="Type *"
+                  >
+                    {typeOptions.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {errors.type && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ mt: 0.5, ml: 1.5, fontSize: "0.75rem" }}
+                  >
+                    {errors.type}
+                  </Typography>
+                )}
+              </Grid>
+
+              {/* Row 3: Vendor/Customer/GL Name, Vendor/Customer/GL Number, Amount, Assignment */}
+              <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
                   size="small"
@@ -423,8 +456,6 @@ export default function JVModal({
                   helperText={errors.vendorCustomerGLName}
                 />
               </Grid>
-
-              {/* Row 3: Vendor/Customer/GL Number, Amount, Assignment */}
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
