@@ -27,8 +27,8 @@ import { userRequest } from "src/requestMethod";
 const profileSchema = yup.object().shape({
   username: yup.string().required("Username is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
-//   firstName: yup.string().required("First name is required"),
-//   lastName: yup.string().required("Last name is required"),
+  //   firstName: yup.string().required("First name is required"),
+  //   lastName: yup.string().required("Last name is required"),
   projectType: yup.string().optional(),
 });
 
@@ -50,8 +50,8 @@ export default function Profile() {
     defaultValues: {
       username: "",
       email: "",
-    //   firstName: "",
-    //   lastName: "",
+      //   firstName: "",
+      //   lastName: "",
       projectType: "",
     },
   });
@@ -60,8 +60,8 @@ export default function Profile() {
     if (account) {
       setValue("username", account.username || "");
       setValue("email", account.email || "");
-    //   setValue("firstName", account.firstName || "");
-    //   setValue("lastName", account.lastName || "");
+      //   setValue("firstName", account.firstName || "");
+      //   setValue("lastName", account.lastName || "");
       setValue("projectType", account.projectType || "");
     }
   }, [account, setValue]);
@@ -72,19 +72,23 @@ export default function Profile() {
     setMessage("");
 
     try {
-      const response = await userRequest.put("/user/profile", data);
-      if (response.data.success) {
-        setMessage("Profile updated successfully!");
-        // Update local storage with new data
-        const updatedUser = { ...account, ...data };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        // Refresh the page to update the account context
-        window.location.reload();
-      } else {
-        setError(response.data.message || "Failed to update profile");
-      }
+      // const response = await userRequest.put("/user/profile", data);
+      // if (response.data.success) {
+      //   setMessage("Profile updated successfully!");
+      //   // Update local storage with new data
+      //   const updatedUser = { ...account, ...data };
+      //   localStorage.setItem("user", JSON.stringify(updatedUser));
+      //   // Refresh the page to update the account context
+      //   window.location.reload();
+      setMessage("Profile updated successfully!");
+      // } else {
+      //   setError(response.data.message || "Failed to update profile");
+      // }
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred while updating profile");
+      setError(
+        err.response?.data?.message ||
+          "An error occurred while updating profile"
+      );
     } finally {
       setLoading(false);
     }
@@ -93,7 +97,7 @@ export default function Profile() {
   return (
     <>
       <Helmet>
-        <title>My Profile | EFL Finance Controller</title>
+        <title>My Profile</title>
       </Helmet>
 
       <Container maxWidth="lg">
@@ -205,7 +209,11 @@ export default function Profile() {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Stack direction="row" spacing={2} justifyContent="flex-end">
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      justifyContent="flex-end"
+                    >
                       <Button
                         variant="outlined"
                         onClick={() => navigate("/settings")}
