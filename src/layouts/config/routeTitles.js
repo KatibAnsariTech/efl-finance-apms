@@ -43,60 +43,14 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/otp-verification")) return "OTP Verification";
   if (path.startsWith("/reset-password")) return "Reset Password";
 
+  // settings routes
+  if (path.startsWith("/settings")) return "Settings";
+  if (path.startsWith("/settings/profile")) return "Profie";
+  if (path.startsWith("/settings/change-password")) return "Change Password";
+
   // Error routes
   if (path.startsWith("/404")) return "Page Not Found";
 
   return "Welcome back 👋";
 };
 
-// Route title constants for easy reference
-export const ROUTE_TITLES = {
-  // Dashboard
-  HOME: "",
-  CREDIT_DEVIATION_DASHBOARD: "Credit Deviation Dashboard",
-  JVM_DASHBOARD: "JVM Dashboard",
-  IMPORT_PAYMENT_DASHBOARD: "Import Payment Dashboard",
-  CUSTOM_DUTY_DASHBOARD: "Custom Duty Dashboard",
-  PETTY_CASH_DASHBOARD: "Petty Cash Dashboard",
-
-  // Credit Deviation
-  REQUEST_DETAILS: "Request Details",
-  MY_REQUESTS: "My Requests",
-  REQUEST: "Request",
-  APPROVALS_REQUESTS: "Approvals Requests",
-  USER_MANAGEMENT: "User Management",
-  MASTER_DATA: "Master Data",
-  HIERARCHY_MANAGEMENT: "Hierarchy Management",
-  MASTER_SHEET: "Master Sheet",
-
-  // JVM
-  JV_DETAIL: "JV Detail",
-  JV_STATUS: "JV Status",
-  INITIATE_JOURNAL_VOUCHER: "Initiate Journal Voucher",
-
-  // Import Payment
-  IMPORT_PAYMENT_UPLOAD: "Import Payment Upload",
-
-  // Custom Duty
-  SUBMIT_DETAIL: "Submit Detail",
-  RAISE_TO_BANK: "Raise to Bank",
-  REQUESTS: "Requests",
-  CUSTOM_DUTY_MY_REQUESTS: "My Requests",
-  RAISE_REQUEST: "Raise Request",
-  CUSTOM_DUTY_PAYMENT: "Custom Duty Payment",
-  CUSTOM_DUTY_MASTER: "Custom Duty Master Data",
-
-  // Petty Cash
-  PETTY_CASH_REQUEST: "Petty Cash Request",
-
-  // Auth
-  LOGIN: "Login",
-  OTP_VERIFICATION: "OTP Verification",
-  RESET_PASSWORD: "Reset Password",
-
-  // Error
-  PAGE_NOT_FOUND: "Page Not Found",
-
-  // Default
-  DEFAULT: "Welcome back 👋",
-};

@@ -39,6 +39,10 @@ const PettyCashPage = lazy(() => import("src/features/petty-cash/dashboard/pages
 const PettyCashDashboard = lazy(() => import("src/features/petty-cash/dashboard/components/PettyCashDashboard"));
 const PettyCashRequestPage = lazy(() => import("src/features/petty-cash/request/pages/PettyCashRequest"));
 
+const SettingsPage = lazy(() => import("src/features/settings/pages/Settings"));
+const ProfilePage = lazy(() => import("src/features/settings/pages/Profile"));
+const ChangePasswordPage = lazy(() => import("src/features/settings/pages/ChangePassword"));
+
 const CreditDeviationPage = lazy(() => import("src/features/credit-deviation/pages/CreditDeviation"));
 const CreditDeviationDashboard = lazy(() => import("src/features/credit-deviation/dashboard/components/CreditDeviationDashboard"));
 const RequestPage = lazy(() => import("src/features/credit-deviation/request/pages/Request"));
@@ -344,6 +348,34 @@ export default function Router() {
             <RoleRoute
               path="/petty-cash/request"
               element={<PettyCashRequestPage />}
+            />
+          ),
+        },
+        // Settings pages
+        {
+          path: "/settings",
+          element: (
+            <RoleRoute
+              path="/settings"
+              element={<SettingsPage />}
+            />
+          ),
+        },
+        {
+          path: "/settings/profile",
+          element: (
+            <RoleRoute
+              path="/settings/profile"
+              element={<ProfilePage />}
+            />
+          ),
+        },
+        {
+          path: "/settings/change-password",
+          element: (
+            <RoleRoute
+              path="/settings/change-password"
+              element={<ChangePasswordPage />}
             />
           ),
         },

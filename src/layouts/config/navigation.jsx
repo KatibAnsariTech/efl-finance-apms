@@ -196,6 +196,30 @@ const navConfig = [
       },
     ],
   },
+  {
+    id: "settings",
+    title: "Settings",
+    path: "/settings",
+    icon: <SettingsIcon />,
+    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+    hasSubItems: true,
+    subItems: [
+      {
+        id: "profile",
+        title: "My Profile",
+        path: "/settings/profile",
+        icon: <PersonIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: "change-password",
+        title: "Change Password",
+        path: "/settings/change-password",
+        icon: <LockIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+    ],
+  },
 ];
 
 export default navConfig;
