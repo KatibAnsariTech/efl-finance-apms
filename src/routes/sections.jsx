@@ -266,13 +266,13 @@ export default function Router() {
           ),
         },
         {
-          path: "/jvm/jv-status",
+          path: "/jvm/requested-jvs",
           element: (
-            <RoleRoute path="/jvm/jv-status" element={<JVStatusPage />} />
+            <RoleRoute path="/jvm/requested-jvs" element={<JVStatusPage />} />
           ),
         },
         {
-          path: "/jvm/jv-status/jv-detail/:jvId",
+          path: "/jvm/requested-jvs/jv-detail/:jvId",
           element: <JVDetailPage />,
         },
         // Import Payment subpages

@@ -223,7 +223,7 @@ export default function JVDetails() {
   };
 
   const handleBack = () => {
-    router.push("/jvm/jv-status");
+    router.push("/jvm/requested-jvs");
   };
 
   const getStatusColor = (status) => {
