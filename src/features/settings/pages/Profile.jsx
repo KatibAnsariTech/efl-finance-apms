@@ -136,7 +136,6 @@ export default function Profile() {
             </Card>
           </Grid>
 
-          {/* Profile Form */}
           <Grid item xs={12} md={8}>
             <Card sx={{ p: 3 }}>
                <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>

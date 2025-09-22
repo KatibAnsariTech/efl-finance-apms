@@ -23,7 +23,6 @@ import swal from "sweetalert";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 
-// ----------------------------------------------------------------------
 
 const changePasswordSchema = yup.object().shape({
   currentPassword: yup.string().required("Current password is required"),
@@ -83,7 +82,6 @@ export default function ChangePassword() {
       //   });
       // }
       
-      // Simulate success for now
       await swal({
         title: "Success!",
         text: "Password changed successfully!",
