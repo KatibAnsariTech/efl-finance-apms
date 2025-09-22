@@ -5,12 +5,14 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
 function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getData }) {
+  const [loading, setLoading] = React.useState(false);
   const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
@@ -22,6 +24,7 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
   }, [postingKeyData, setValue, reset]);
 
   const handleSaveData = async (data) => {
+    setLoading(true);
     try {
       const formattedData = {
         key: "PostingKey",
@@ -42,6 +45,8 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
     } catch (error) {
       console.error("Error saving data:", error);
       showErrorMessage(error, "Error saving data. Please try again later.", swal);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,6 +102,7 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
             {...register("postingKey", { required: true })}
             fullWidth
             required
+            disabled={loading}
             placeholder="e.g., 40, 50, 60"
           />
           <Button
@@ -104,8 +110,10 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
             variant="contained"
             color="primary"
             type="submit"
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} color="inherit" />}
           >
-            {postingKeyData ? "Update" : "Save"}
+            {loading ? (postingKeyData ? "Updating..." : "Saving...") : (postingKeyData ? "Update" : "Save")}
           </Button>
         </Box>
       </Box>

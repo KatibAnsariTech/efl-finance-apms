@@ -5,12 +5,14 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
 function AddEditDocumentType({ handleClose, open, editData: documentTypeData, getData }) {
+  const [loading, setLoading] = React.useState(false);
   const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
@@ -22,6 +24,7 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
   }, [documentTypeData, setValue, reset]);
 
   const handleSaveData = async (data) => {
+    setLoading(true);
     try {
       const formattedData = {
         key: "DocumentType",
@@ -42,6 +45,8 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
     } catch (error) {
       console.error("Error saving data:", error);
       showErrorMessage(error, "Error saving data. Please try again later.", swal);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,6 +102,7 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
             {...register("documentType", { required: true })}
             fullWidth
             required
+            disabled={loading}
             placeholder="e.g., DR, CR, AB"
           />
           <Button
@@ -104,8 +110,10 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
             variant="contained"
             color="primary"
             type="submit"
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} color="inherit" />}
           >
-            {documentTypeData ? "Update" : "Save"}
+            {loading ? (documentTypeData ? "Updating..." : "Saving...") : (documentTypeData ? "Update" : "Save")}
           </Button>
         </Box>
       </Box>
