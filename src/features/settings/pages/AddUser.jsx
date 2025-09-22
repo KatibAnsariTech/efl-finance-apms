@@ -30,7 +30,6 @@ import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-
 const profileSchema = yup.object().shape({
   username: yup.string().required("Username is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -66,14 +65,14 @@ export default function AddUser() {
       setUploading(true);
       try {
         const formData = new FormData();
-        formData.append('file', file);
-        
-        const response = await userRequest.post('/util/upload', formData, {
+        formData.append("file", file);
+
+        const response = await userRequest.post("/util/upload", formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
-        
+
         if (response.data.success) {
           setprofileImg(response.data.data);
           setImagePreview(response.data.data);
@@ -110,10 +109,7 @@ export default function AddUser() {
         projectType: data.projectType,
       };
 
-      console.log("User data to submit:", userData);
-
       const response = await userRequest.post("/admin/createAdmin", userData);
-      
       if (response.data.success) {
         await swal({
           title: "Success!",
@@ -127,8 +123,6 @@ export default function AddUser() {
         setValue("projectType", []);
         setprofileImg(null);
         setImagePreview(null);
-      } else {
-        throw new Error(response.data.message || "Failed to add user");
       }
     } catch (err) {
       showErrorMessage(err, "An error occurred while adding user", swal);
@@ -184,7 +178,7 @@ export default function AddUser() {
                   )}
                 </Box>
               </Box>
-              
+
               <Box sx={{ mb: 1 }}>
                 <input
                   accept="image/*"
@@ -199,13 +193,19 @@ export default function AddUser() {
                     variant="outlined"
                     component="span"
                     disabled={uploading || loading}
-                    startIcon={uploading ? <CircularProgress size={20} /> : <Iconify icon="eva:camera-fill" />}
+                    startIcon={
+                      uploading ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        <Iconify icon="eva:camera-fill" />
+                      )
+                    }
                   >
                     {uploading ? "Uploading..." : "Upload Photo"}
                   </Button>
                 </label>
               </Box>
-              
+
               <Typography variant="body2" color="text.secondary">
                 Click to upload profile image
               </Typography>
@@ -243,53 +243,71 @@ export default function AddUser() {
                     />
                   </Grid>
 
-                   <Grid item xs={12} sm={6}>
-                     <FormControl fullWidth error={!!errors.projectType}>
-                       <InputLabel id="project-type-label">Project Type</InputLabel>
-                       <Select
-                         labelId="project-type-label"
-                         multiple
-                         input={<OutlinedInput label="Project Type" />}
-                         value={watch("projectType") || []}
-                         onChange={(e) => setValue("projectType", e.target.value)}
-                         disabled={loading}
-                         renderValue={(selected) => (
-                           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                             {selected.map((value) => {
-                               const label = value === "CRD" ? "Credit Deviation" : 
-                                           value === "JVM" ? "JVM" : 
-                                           value === "CUSTOM" ? "Custom Duty" : value;
-                               return (
-                                 <Chip
-                                   key={value}
-                                   label={label}
-                                   onDelete={() =>
-                                     setValue("projectType", 
-                                       (watch("projectType") || []).filter((v) => v !== value)
-                                     )
-                                   }
-                                   onMouseDown={(event) => {
-                                     event.stopPropagation();
-                                   }}
-                                 />
-                               );
-                             })}
-                           </Box>
-                         )}
-                       >
-                         <MenuItem value="CRD">Credit Deviation</MenuItem>
-                         <MenuItem value="JVM">JVM</MenuItem>
-                         <MenuItem value="CUSTOM">Custom Duty</MenuItem>
-                         {/* <MenuItem value="IP">Import Payment</MenuItem> */}
-                         {/* <MenuItem value="PC">Petty Cash</MenuItem> */}
-                       </Select>
-                       {errors.projectType && (
-                         <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                           {errors.projectType.message}
-                         </Typography>
-                       )}
-                     </FormControl>
-                   </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth error={!!errors.projectType}>
+                      <InputLabel id="project-type-label">
+                        Project Type
+                      </InputLabel>
+                      <Select
+                        labelId="project-type-label"
+                        multiple
+                        input={<OutlinedInput label="Project Type" />}
+                        value={watch("projectType") || []}
+                        onChange={(e) =>
+                          setValue("projectType", e.target.value)
+                        }
+                        disabled={loading}
+                        renderValue={(selected) => (
+                          <Box
+                            sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}
+                          >
+                            {selected.map((value) => {
+                              const label =
+                                value === "CRD"
+                                  ? "Credit Deviation"
+                                  : value === "JVM"
+                                  ? "JVM"
+                                  : value === "CUSTOM"
+                                  ? "Custom Duty"
+                                  : value;
+                              return (
+                                <Chip
+                                  key={value}
+                                  label={label}
+                                  onDelete={() =>
+                                    setValue(
+                                      "projectType",
+                                      (watch("projectType") || []).filter(
+                                        (v) => v !== value
+                                      )
+                                    )
+                                  }
+                                  onMouseDown={(event) => {
+                                    event.stopPropagation();
+                                  }}
+                                />
+                              );
+                            })}
+                          </Box>
+                        )}
+                      >
+                        <MenuItem value="CRD">Credit Deviation</MenuItem>
+                        <MenuItem value="JVM">JVM</MenuItem>
+                        <MenuItem value="CUSTOM">Custom Duty</MenuItem>
+                        {/* <MenuItem value="IP">Import Payment</MenuItem> */}
+                        {/* <MenuItem value="PC">Petty Cash</MenuItem> */}
+                      </Select>
+                      {errors.projectType && (
+                        <Typography
+                          variant="caption"
+                          color="error"
+                          sx={{ mt: 0.5, ml: 1.5 }}
+                        >
+                          {errors.projectType.message}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  </Grid>
 
                   <Grid item xs={12}>
                     <Stack
