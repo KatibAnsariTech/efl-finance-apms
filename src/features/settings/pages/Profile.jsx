@@ -151,7 +151,7 @@ export default function Profile() {
                       {...register("username")}
                       error={!!errors.username}
                       helperText={errors.username?.message}
-                      disabled={loading}
+                     disabled
                     />
                   </Grid>
 
@@ -163,7 +163,8 @@ export default function Profile() {
                       {...register("email")}
                       error={!!errors.email}
                       helperText={errors.email?.message}
-                      disabled={loading}
+                      // disabled={loading}
+                      disabled
                     />
                   </Grid>
 
@@ -196,11 +197,11 @@ export default function Profile() {
                       {...register("projectType")}
                       error={!!errors.projectType}
                       helperText={errors.projectType?.message}
-                      disabled={loading}
+                      disabled
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  {/* <Grid item xs={12}>
                     <Stack
                       direction="row"
                       spacing={2}
@@ -222,7 +223,7 @@ export default function Profile() {
                         {loading ? "Updating..." : "Update Profile"}
                       </Button>
                     </Stack>
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </Box>
             </Card>
