@@ -8,55 +8,135 @@ import navConfig from "src/layouts/config/navigation";
 
 // Lazy load all feature components
 const IndexPage = lazy(() => import("src/features/app/pages/App"));
-const ApplicationsDashboard = lazy(() => import("src/features/app/components/ApplicationsDashboard"));
+const ApplicationsDashboard = lazy(() =>
+  import("src/features/app/components/ApplicationsDashboard")
+);
 
 const LoginPage = lazy(() => import("src/features/auth/pages/Login"));
-const OTPVerificationPage = lazy(() => import("src/features/auth/pages/OTPVerification"));
-const ResetPasswordPage = lazy(() => import("src/features/auth/pages/ResetPassword"));
+const OTPVerificationPage = lazy(() =>
+  import("src/features/auth/pages/OTPVerification")
+);
+const ResetPasswordPage = lazy(() =>
+  import("src/features/auth/pages/ResetPassword")
+);
 
 const Page404 = lazy(() => import("src/features/error/pages/PageNotFound"));
 
 const JVMPage = lazy(() => import("src/features/jvm/dashboard/pages/JVM"));
-const JVMDashboard = lazy(() => import("src/features/jvm/dashboard/components/JVMDashboard"));
-const JVStatusPage = lazy(() => import("src/features/jvm/jvs-status/pages/JVStatus"));
-const InitiateJVPage = lazy(() => import("src/features/jvm/initiate-jv/pages/InitiateJV"));
-const JVDetailPage = lazy(() => import("src/features/jvm/jvs-status/pages/JVDetails"));
-const AutoReversalPage = lazy(() => import("src/features/jvm/auto-reversal/pages/AutoReversal"));
-const AutoReversalDetailPage = lazy(() => import("src/features/jvm/auto-reversal/pages/AutoReversalDetails"));
+const JVMDashboard = lazy(() =>
+  import("src/features/jvm/dashboard/components/JVMDashboard")
+);
+const JVStatusPage = lazy(() =>
+  import("src/features/jvm/jvs-status/pages/JVStatus")
+);
+const InitiateJVPage = lazy(() =>
+  import("src/features/jvm/initiate-jv/pages/InitiateJV")
+);
+const JVDetailPage = lazy(() =>
+  import("src/features/jvm/jvs-status/pages/JVDetails")
+);
+const AutoReversalPage = lazy(() =>
+  import("src/features/jvm/auto-reversal/pages/AutoReversal")
+);
+const AutoReversalDetailPage = lazy(() =>
+  import("src/features/jvm/auto-reversal/pages/AutoReversalDetails")
+);
 
-const ImportPaymentPage = lazy(() => import("src/features/import-payment/dashboard/pages/ImportPayment"));
-const ImportPaymentDashboard = lazy(() => import("src/features/import-payment/dashboard/components/ImportPaymentDashboard"));
-const ImportPaymentUploadPage = lazy(() => import("src/features/import-payment/upload/pages/ImportPaymentUpload"));
+const ImportPaymentPage = lazy(() =>
+  import("src/features/import-payment/dashboard/pages/ImportPayment")
+);
+const ImportPaymentDashboard = lazy(() =>
+  import(
+    "src/features/import-payment/dashboard/components/ImportPaymentDashboard"
+  )
+);
+const ImportPaymentUploadPage = lazy(() =>
+  import("src/features/import-payment/upload/pages/ImportPaymentUpload")
+);
 
-const CustomDutyPage = lazy(() => import("src/features/custom-duty/dashboard/pages/CustomDuty"));
-const CustomDutyDashboard = lazy(() => import("src/features/custom-duty/dashboard/components/CustomDutyDashboard"));
-const RaiseRequest = lazy(() => import("src/features/custom-duty/raise-request/pages/RaiseRequest"));
-const MyRequests = lazy(() => import("src/features/custom-duty/my-requests/pages/MyRequests"));
-const Requests = lazy(() => import("src/features/custom-duty/requests/pages/Requests"));
-const RaiseToBank = lazy(() => import("src/features/custom-duty/raise-to-bank/pages/RaiseToBank"));
-const SubmitDetail = lazy(() => import("src/features/custom-duty/raise-to-bank/pages/SubmitDetail"));
-const CustomDutyMaster = lazy(() => import("src/features/custom-duty/master/pages/CustomDutyMaster"));
+const CustomDutyPage = lazy(() =>
+  import("src/features/custom-duty/dashboard/pages/CustomDuty")
+);
+const CustomDutyDashboard = lazy(() =>
+  import("src/features/custom-duty/dashboard/components/CustomDutyDashboard")
+);
+const RaiseRequest = lazy(() =>
+  import("src/features/custom-duty/raise-request/pages/RaiseRequest")
+);
+const MyRequests = lazy(() =>
+  import("src/features/custom-duty/my-requests/pages/MyRequests")
+);
+const Requests = lazy(() =>
+  import("src/features/custom-duty/requests/pages/Requests")
+);
+const RaiseToBank = lazy(() =>
+  import("src/features/custom-duty/raise-to-bank/pages/RaiseToBank")
+);
+const SubmitDetail = lazy(() =>
+  import("src/features/custom-duty/raise-to-bank/pages/SubmitDetail")
+);
+const CustomDutyMaster = lazy(() =>
+  import("src/features/custom-duty/master/pages/CustomDutyMaster")
+);
 
-const PettyCashPage = lazy(() => import("src/features/petty-cash/dashboard/pages/PettyCash"));
-const PettyCashDashboard = lazy(() => import("src/features/petty-cash/dashboard/components/PettyCashDashboard"));
-const PettyCashRequestPage = lazy(() => import("src/features/petty-cash/request/pages/PettyCashRequest"));
+const PettyCashPage = lazy(() =>
+  import("src/features/petty-cash/dashboard/pages/PettyCash")
+);
+const PettyCashDashboard = lazy(() =>
+  import("src/features/petty-cash/dashboard/components/PettyCashDashboard")
+);
+const PettyCashRequestPage = lazy(() =>
+  import("src/features/petty-cash/request/pages/PettyCashRequest")
+);
 
 const SettingsPage = lazy(() => import("src/features/settings/pages/Settings"));
 const ProfilePage = lazy(() => import("src/features/settings/pages/Profile"));
-const ChangePasswordPage = lazy(() => import("src/features/settings/pages/ChangePassword"));
+const AddUserPage = lazy(() => import("src/features/settings/pages/AddUser"));
+const ChangePasswordPage = lazy(() =>
+  import("src/features/settings/pages/ChangePassword")
+);
 
-const CreditDeviationPage = lazy(() => import("src/features/credit-deviation/pages/CreditDeviation"));
-const CreditDeviationDashboard = lazy(() => import("src/features/credit-deviation/dashboard/components/CreditDeviationDashboard"));
-const RequestPage = lazy(() => import("src/features/credit-deviation/request/pages/Request"));
-const RequestStatusPage = lazy(() => import("src/features/credit-deviation/request-status/pages/RequestStatus"));
-const ApprovalsPage = lazy(() => import("src/features/credit-deviation/approvals/pages/Approvals"));
-const MasterPage = lazy(() => import("src/features/credit-deviation/master/pages/Master"));
-const UserManagementPage = lazy(() => import("src/features/credit-deviation/usermanagement/pages/UserManagement"));
-const MasterSheetPage = lazy(() => import("src/features/credit-deviation/master-sheet/pages/MasterSheet"));
-const HierarchyManagementPage = lazy(() => import("src/features/credit-deviation/hierarchy-management/pages/HierarchyManagement"));
-const FormDetailsPage = lazy(() => import("src/features/credit-deviation/approvals/pages/form-details/FormDetails"));
-const FormDetailsViewForm = lazy(() => import("src/features/credit-deviation/request-status/components/form-details/FormDetailsView"));
-
+const CreditDeviationPage = lazy(() =>
+  import("src/features/credit-deviation/pages/CreditDeviation")
+);
+const CreditDeviationDashboard = lazy(() =>
+  import(
+    "src/features/credit-deviation/dashboard/components/CreditDeviationDashboard"
+  )
+);
+const RequestPage = lazy(() =>
+  import("src/features/credit-deviation/request/pages/Request")
+);
+const RequestStatusPage = lazy(() =>
+  import("src/features/credit-deviation/request-status/pages/RequestStatus")
+);
+const ApprovalsPage = lazy(() =>
+  import("src/features/credit-deviation/approvals/pages/Approvals")
+);
+const MasterPage = lazy(() =>
+  import("src/features/credit-deviation/master/pages/Master")
+);
+const UserManagementPage = lazy(() =>
+  import("src/features/credit-deviation/usermanagement/pages/UserManagement")
+);
+const MasterSheetPage = lazy(() =>
+  import("src/features/credit-deviation/master-sheet/pages/MasterSheet")
+);
+const HierarchyManagementPage = lazy(() =>
+  import(
+    "src/features/credit-deviation/hierarchy-management/pages/HierarchyManagement"
+  )
+);
+const FormDetailsPage = lazy(() =>
+  import(
+    "src/features/credit-deviation/approvals/pages/form-details/FormDetails"
+  )
+);
+const FormDetailsViewForm = lazy(() =>
+  import(
+    "src/features/credit-deviation/request-status/components/form-details/FormDetailsView"
+  )
+);
 
 export default function Router() {
   const isLoggedIn = localStorage.getItem("accessToken");
@@ -100,10 +180,10 @@ export default function Router() {
       path: "/",
       element: isLoggedIn ? (
         <Layout>
-        <Suspense>
-          <ToastContainer />
-          <Outlet />
-        </Suspense>
+          <Suspense>
+            <ToastContainer />
+            <Outlet />
+          </Suspense>
         </Layout>
       ) : (
         <Navigate to="/login" replace />
@@ -280,7 +360,10 @@ export default function Router() {
         {
           path: "/jvm/auto-reversal",
           element: (
-            <RoleRoute path="/jvm/auto-reversal" element={<AutoReversalPage />} />
+            <RoleRoute
+              path="/jvm/auto-reversal"
+              element={<AutoReversalPage />}
+            />
           ),
         },
         {
@@ -366,20 +449,12 @@ export default function Router() {
         // Settings pages
         {
           path: "/settings",
-          element: (
-            <RoleRoute
-              path="/settings"
-              element={<SettingsPage />}
-            />
-          ),
+          element: <RoleRoute path="/settings" element={<SettingsPage />} />,
         },
         {
           path: "/settings/profile",
           element: (
-            <RoleRoute
-              path="/settings/profile"
-              element={<ProfilePage />}
-            />
+            <RoleRoute path="/settings/profile" element={<ProfilePage />} />
           ),
         },
         {
@@ -389,6 +464,12 @@ export default function Router() {
               path="/settings/change-password"
               element={<ChangePasswordPage />}
             />
+          ),
+        },
+        {
+          path: "/settings/add-user",
+          element: (
+            <RoleRoute path="/settings/add-user" element={<AddUserPage />} />
           ),
         },
       ],

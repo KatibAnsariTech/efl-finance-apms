@@ -45,10 +45,11 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/reset-password")) return "Reset Password";
 
   // settings routes
-  if (path.startsWith("/settings")) return "Settings";
   if (path.startsWith("/settings/profile")) return "Profile";
   if (path.startsWith("/settings/change-password")) return "Change Password";
-
+  if (path.startsWith("/settings/add-user")) return "Add User";
+  if (path.startsWith("/settings")) return "Settings";
+  
   // Error routes
   if (path.startsWith("/404")) return "Page Not Found";
 

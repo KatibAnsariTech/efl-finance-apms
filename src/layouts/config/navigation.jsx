@@ -18,6 +18,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import SettingsIcon from "@mui/icons-material/Settings";
+import UndoIcon from "@mui/icons-material/Undo";
 
 const navConfig = [
   {
@@ -112,7 +113,7 @@ const navConfig = [
         id: "auto-reversal",
         title: "Auto Reversal",
         path: "/jvm/auto-reversal",
-        icon: <AddCircleIcon />,
+        icon: <UndoIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
     ],
@@ -222,6 +223,13 @@ const navConfig = [
         id: "change-password",
         title: "Change Password",
         path: "/settings/change-password",
+        icon: <LockIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: "add-user",
+        title: "Add User",
+        path: "/settings/add-user",
         icon: <LockIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
