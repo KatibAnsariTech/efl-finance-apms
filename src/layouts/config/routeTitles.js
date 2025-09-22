@@ -45,7 +45,7 @@ export const getCurrentTitle = (path) => {
 
   // settings routes
   if (path.startsWith("/settings")) return "Settings";
-  if (path.startsWith("/settings/profile")) return "Profie";
+  if (path.startsWith("/settings/profile")) return "Profile";
   if (path.startsWith("/settings/change-password")) return "Change Password";
 
   // Error routes

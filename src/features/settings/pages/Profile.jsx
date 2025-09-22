@@ -27,9 +27,9 @@ import { userRequest } from "src/requestMethod";
 const profileSchema = yup.object().shape({
   username: yup.string().required("Username is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
-  firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
-  phone: yup.string().optional(),
+//   firstName: yup.string().required("First name is required"),
+//   lastName: yup.string().required("Last name is required"),
+  projectType: yup.string().optional(),
 });
 
 export default function Profile() {
@@ -50,9 +50,9 @@ export default function Profile() {
     defaultValues: {
       username: "",
       email: "",
-      firstName: "",
-      lastName: "",
-      phone: "",
+    //   firstName: "",
+    //   lastName: "",
+      projectType: "",
     },
   });
 
@@ -60,9 +60,9 @@ export default function Profile() {
     if (account) {
       setValue("username", account.username || "");
       setValue("email", account.email || "");
-      setValue("firstName", account.firstName || "");
-      setValue("lastName", account.lastName || "");
-      setValue("phone", account.phone || "");
+    //   setValue("firstName", account.firstName || "");
+    //   setValue("lastName", account.lastName || "");
+      setValue("projectType", account.projectType || "");
     }
   }, [account, setValue]);
 
@@ -171,7 +171,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  {/* <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="First Name"
@@ -191,15 +191,15 @@ export default function Profile() {
                       helperText={errors.lastName?.message}
                       disabled={loading}
                     />
-                  </Grid>
+                  </Grid> */}
 
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Phone Number"
-                      {...register("phone")}
-                      error={!!errors.phone}
-                      helperText={errors.phone?.message}
+                      label="Project Type"
+                      {...register("projectType")}
+                      error={!!errors.projectType}
+                      helperText={errors.projectType?.message}
                       disabled={loading}
                     />
                   </Grid>
