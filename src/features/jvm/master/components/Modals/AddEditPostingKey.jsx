@@ -1,187 +1,116 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import * as React from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-const postingKeySchema = yup.object().shape({
-  postingKey: yup.string().required("Posting Key is required"),
-  description: yup.string().required("Description is required"),
-  debitCredit: yup.string().required("Debit/Credit is required"),
-  isActive: yup.boolean(),
-});
+function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getData }) {
+  const { register, handleSubmit, reset, setValue } = useForm();
 
-const debitCreditOptions = [
-  { value: "Debit", label: "Debit" },
-  { value: "Credit", label: "Credit" },
-];
-
-export default function AddEditPostingKey({ open, handleClose, getData, editData }) {
-  const [loading, setLoading] = useState(false);
-  const isEditMode = !!editData;
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue,
-    watch,
-  } = useForm({
-    resolver: yupResolver(postingKeySchema),
-    defaultValues: {
-      postingKey: "",
-      description: "",
-      debitCredit: "",
-      isActive: true,
-    },
-  });
-
-  useEffect(() => {
-    if (editData) {
-      setValue("postingKey", editData.postingKey || "");
-      setValue("description", editData.description || "");
-      setValue("debitCredit", editData.debitCredit || "");
-      setValue("isActive", editData.isActive !== undefined ? editData.isActive : true);
+  React.useEffect(() => {
+    if (postingKeyData) {
+      setValue("postingKey", postingKeyData.postingKey);
     } else {
       reset();
     }
-  }, [editData, setValue, reset]);
+  }, [postingKeyData, setValue, reset]);
 
-  const onSubmit = async (data) => {
-    setLoading(true);
+  const handleSaveData = async (data) => {
     try {
-      const payload = {
+      const formattedData = {
         key: "PostingKey",
         value: data.postingKey,
-        description: data.description,
-        debitCredit: data.debitCredit,
-        isActive: data.isActive,
       };
-
-      if (isEditMode) {
-        await userRequest.put(`/admin/updateMaster?id=${editData._id}`, payload);
-        await swal({
-          title: "Success!",
-          text: "Posting Key updated successfully!",
-          icon: "success",
-          button: "OK",
-        });
+      if (postingKeyData?._id) {
+        await userRequest.put(`/jvm/updateMasters?id=${postingKeyData._id}`, formattedData);
+        getData();
+        swal("Updated!", "Posting Key data updated successfully!", "success");
       } else {
-        await userRequest.post("/admin/createMasters", payload);
-        await swal({
-          title: "Success!",
-          text: "Posting Key created successfully!",
-          icon: "success",
-          button: "OK",
-        });
+        await userRequest.post("/jvm/createMasters", formattedData);
+        getData();
+        swal("Success!", "Posting Key data saved successfully!", "success");
       }
-      
-      getData();
+
+      reset();
       handleClose();
     } catch (error) {
-      showErrorMessage(error, `Failed to ${isEditMode ? "update" : "create"} Posting Key`, swal);
-    } finally {
-      setLoading(false);
+      console.error("Error saving data:", error);
+      showErrorMessage(error, "Error saving data. Please try again later.", swal);
     }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          {isEditMode ? "Edit Posting Key" : "Add Posting Key"}
+    <Modal open={open} onClose={handleClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "50%",
+          bgcolor: "background.paper",
+          borderRadius: 5,
+          p: 4,
+        }}
+      >
+        <Typography
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
+            {postingKeyData ? "Edit Posting Key" : "Add Posting Key"}
+          </span>
+          <RxCross2
+            onClick={handleClose}
+            style={{
+              color: "#B22222",
+              fontWeight: "bolder",
+              cursor: "pointer",
+              height: "24px",
+              width: "24px",
+            }}
+          />
         </Typography>
-      </DialogTitle>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 1 }}>
-            <TextField
-              fullWidth
-              label="Posting Key"
-              {...register("postingKey")}
-              error={!!errors.postingKey}
-              helperText={errors.postingKey?.message}
-              disabled={loading}
-              placeholder="e.g., 40, 50, 60"
-            />
-
-            <TextField
-              fullWidth
-              label="Description"
-              {...register("description")}
-              error={!!errors.description}
-              helperText={errors.description?.message}
-              disabled={loading}
-              multiline
-              rows={3}
-              placeholder="Enter description for the posting key"
-            />
-
-            <FormControl fullWidth error={!!errors.debitCredit}>
-              <InputLabel>Debit/Credit</InputLabel>
-              <Select
-                {...register("debitCredit")}
-                value={watch("debitCredit") || ""}
-                onChange={(e) => setValue("debitCredit", e.target.value)}
-                disabled={loading}
-                label="Debit/Credit"
-              >
-                {debitCreditOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.debitCredit && (
-                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                  {errors.debitCredit.message}
-                </Typography>
-              )}
-            </FormControl>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <input
-                type="checkbox"
-                {...register("isActive")}
-                disabled={loading}
-                style={{ transform: "scale(1.2)" }}
-              />
-              <Typography variant="body2">Active</Typography>
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button onClick={handleClose} disabled={loading}>
-            Cancel
-          </Button>
+        <Box
+          component="form"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            mt: 4,
+            width: "100%",
+          }}
+          onSubmit={handleSubmit(handleSaveData)}
+        >
+          <TextField
+            id="postingKey"
+            label="Posting Key"
+            {...register("postingKey", { required: true })}
+            fullWidth
+            required
+            placeholder="e.g., 40, 50, 60"
+          />
           <Button
-            type="submit"
+            sx={{ marginTop: "20px", height: "50px" }}
             variant="contained"
-            disabled={loading}
-            startIcon={loading && <CircularProgress size={20} />}
+            color="primary"
+            type="submit"
           >
-            {loading ? "Saving..." : isEditMode ? "Update" : "Create"}
+            {postingKeyData ? "Update" : "Save"}
           </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
+        </Box>
+      </Box>
+    </Modal>
   );
 }
+
+export default AddEditPostingKey;

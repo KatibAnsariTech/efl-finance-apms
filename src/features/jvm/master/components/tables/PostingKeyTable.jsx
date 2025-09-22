@@ -9,7 +9,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function PostingKeyTable({ handleEdit, handleDelete }) {
+export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function PostingKeyTable({ handleEdit, handleDelete }) {
     setLoading(true);
     try {
       const response = await userRequest.get(
-        `/admin/getMasters?key=PostingKey&page=${paginationModel.page + 1}&limit=${
+        `/jvm/getMasters?key=PostingKey&page=${paginationModel.page + 1}&limit=${
           paginationModel.pageSize
         }`
       );
@@ -32,14 +32,10 @@ export default function PostingKeyTable({ handleEdit, handleDelete }) {
           id: item._id,
           sno: paginationModel.page * paginationModel.pageSize + index + 1,
           postingKey: item.value || "-",
-          description: item.description || "-",
-          debitCredit: item.debitCredit || "-",
-          isActive: item.isActive !== undefined ? item.isActive : true,
-          createdAt: item.createdAt,
           ...item,
         }));
         setData(mappedData);
-        setRowCount(response.data.data.pagination.total);
+        setRowCount(response.data.data.total);
       }
     } catch (error) {
       console.error("Error fetching Posting Key data:", error);
@@ -52,6 +48,12 @@ export default function PostingKeyTable({ handleEdit, handleDelete }) {
   useEffect(() => {
     fetchData();
   }, [paginationModel]);
+
+  useEffect(() => {
+    if (refreshTrigger) {
+      fetchData();
+    }
+  }, [refreshTrigger]);
 
   const handleEditClick = (event, id) => {
     event.preventDefault();
@@ -80,7 +82,7 @@ export default function PostingKeyTable({ handleEdit, handleDelete }) {
     {
       field: "postingKey",
       headerName: "Posting Key",
-      minWidth: 150,
+      minWidth: 200,
       flex: 1,
       sortable: true,
       align: "center",
@@ -89,80 +91,6 @@ export default function PostingKeyTable({ handleEdit, handleDelete }) {
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {params.value || "-"}
-        </Typography>
-      ),
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      minWidth: 200,
-      flex: 1,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-      renderCell: (params) => (
-        <Typography variant="body2">
-          {params.value || "-"}
-        </Typography>
-      ),
-    },
-    {
-      field: "debitCredit",
-      headerName: "Debit/Credit",
-      width: 120,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            px: 1,
-            py: 0.5,
-            borderRadius: 1,
-            backgroundColor: params.value === "Debit" ? "error.light" : "success.light",
-            color: params.value === "Debit" ? "error.dark" : "success.dark",
-            fontSize: "0.75rem",
-            fontWeight: 500,
-          }}
-        >
-          {params.value || "-"}
-        </Box>
-      ),
-    },
-    {
-      field: "isActive",
-      headerName: "Status",
-      width: 120,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            px: 1,
-            py: 0.5,
-            borderRadius: 1,
-            backgroundColor: params.value ? "success.light" : "grey.300",
-            color: params.value ? "success.dark" : "grey.600",
-            fontSize: "0.75rem",
-            fontWeight: 500,
-          }}
-        >
-          {params.value ? "Active" : "Inactive"}
-        </Box>
-      ),
-    },
-    {
-      field: "createdAt",
-      headerName: "Created Date",
-      width: 150,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Typography variant="body2" color="text.secondary">
-          {params.value ? fDate(params.value) : "-"}
         </Typography>
       ),
     },

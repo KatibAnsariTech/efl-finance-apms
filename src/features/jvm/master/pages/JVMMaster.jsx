@@ -19,6 +19,7 @@ export default function JVMMaster() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [editData, setEditData] = useState(null);
   const [open, setOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const selectedCategory = menuItems[selectedTab];
 
   const handleEdit = (row) => {
@@ -64,9 +65,8 @@ export default function JVMMaster() {
   };
 
   const getData = () => {
-    // This function is now handled by individual table components
-    console.log("Data refresh requested");
-    // The table will refresh automatically when needed
+    // Trigger table refresh by updating the refresh trigger
+    setRefreshTrigger(prev => prev + 1);
   };
 
   return (
@@ -128,12 +128,14 @@ export default function JVMMaster() {
             <DocumentTypeTable 
               handleEdit={handleEdit}
               handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
             />
           )}
           {selectedTab === 1 && (
             <PostingKeyTable 
               handleEdit={handleEdit}
               handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
             />
           )}
         </Box>
