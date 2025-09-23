@@ -82,7 +82,7 @@ export default function Requests() {
 
       const page = pageNum;
       const limit = rowsPerPage;
-      
+
       let apiData;
       let totalCount;
 
@@ -92,12 +92,12 @@ export default function Requests() {
           {
             params: {
               page: page,
-              limit: limit
-            }
+              limit: limit,
+            },
           }
         );
         apiData = response.data;
-        totalCount = response.headers['x-total-count'] || 100;
+        totalCount = response.headers["x-total-count"] || 100;
       } catch (userRequestError) {
         const fetchResponse = await fetch(
           `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
@@ -157,8 +157,8 @@ export default function Requests() {
           {
             params: {
               page: 1,
-              limit: 1000
-            }
+              limit: 1000,
+            },
           }
         );
         allApiData = response.data;
@@ -256,23 +256,31 @@ export default function Requests() {
 
     const handleScroll = () => {
       if (isScrolling) return;
-      
+
       isScrolling = true;
       clearTimeout(scrollTimeout);
-      
+
       scrollTimeout = setTimeout(() => {
         const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
         const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
 
-        if (isNearBottom && hasMore && !loadingMore && !loading && !isLoadingMore) {
+        if (
+          isNearBottom &&
+          hasMore &&
+          !loadingMore &&
+          !loading &&
+          !isLoadingMore
+        ) {
           handleLoadMore();
         }
-        
+
         isScrolling = false;
       }, 100);
     };
 
-    scrollableElement.addEventListener("scroll", handleScroll, { passive: true });
+    scrollableElement.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
     return () => {
       scrollableElement.removeEventListener("scroll", handleScroll);
       clearTimeout(scrollTimeout);
@@ -365,7 +373,7 @@ export default function Requests() {
         <Box
           sx={{
             width: "100%",
-            height: 500,
+            height: 300,
             position: "relative",
           }}
         >
@@ -397,11 +405,15 @@ export default function Requests() {
                   textAlign: "center",
                 }}
               >
-                {loading ? "Loading data..." : loadingMore ? "Loading more data..." : "Loading..."}
+                {loading
+                  ? "Loading data..."
+                  : loadingMore
+                  ? "Loading more data..."
+                  : "Loading..."}
               </Typography>
             </Box>
           )}
-          
+
           <DataGrid
             rows={data}
             columns={columns}
@@ -460,16 +472,49 @@ export default function Requests() {
               },
             }}
           />
-
         </Box>
 
         {selectedRows.length > 0 && selectedTab !== "submitted" && (
           <Box
             sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
           >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-              Total Selected BOE's: {selectedRows.length}
-            </Typography>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              // sx={{ mb: 2 }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                Total Selected BOE's: {selectedRows.length}
+              </Typography>
+
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => handleApprovalAction("approved")}
+                  disabled={actionLoading}
+                  startIcon={
+                    actionLoading ? <CircularProgress size={20} /> : null
+                  }
+                  sx={{ minWidth: 120 }}
+                >
+                  {actionLoading ? "Processing..." : "Approved"}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleApprovalAction("rejected")}
+                  disabled={actionLoading}
+                  startIcon={
+                    actionLoading ? <CircularProgress size={20} /> : null
+                  }
+                  sx={{ minWidth: 120 }}
+                >
+                  {actionLoading ? "Processing..." : "Rejected"}
+                </Button>
+              </Stack>
+            </Stack>
 
             <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
               Leave a comment with your response
@@ -484,37 +529,10 @@ export default function Requests() {
               onChange={(e) => setComment(e.target.value)}
               sx={{ mb: 2, backgroundColor: "#fff" }}
             />
-
-            <Stack direction="row" spacing={2}>
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() => handleApprovalAction("approved")}
-                disabled={actionLoading}
-                startIcon={
-                  actionLoading ? <CircularProgress size={20} /> : null
-                }
-                sx={{ minWidth: 120 }}
-              >
-                {actionLoading ? "Processing..." : "Approved"}
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => handleApprovalAction("rejected")}
-                disabled={actionLoading}
-                startIcon={
-                  actionLoading ? <CircularProgress size={20} /> : null
-                }
-                sx={{ minWidth: 120 }}
-              >
-                {actionLoading ? "Processing..." : "Rejected"}
-              </Button>
-            </Stack>
           </Box>
         )}
       </Card>
-      
+
       <RequestStatus
         open={openModal}
         onClose={handleCloseModal}
