@@ -130,7 +130,6 @@ export default function MyRequests() {
             boeNumber: `BOE-2024-${String(id).padStart(3, "0")}`,
             srNo: id.toString(),
             challanNo: `2056627${String(67 + id).padStart(3, "0")}`,
-            documentNo: `41457${String(50 + id).padStart(3, "0")}`,
             transactionDate: new Date(
               2024,
               0,
@@ -284,14 +283,6 @@ export default function MyRequests() {
       headerName: "Challan No.",
       flex: 1,
       minWidth: 140,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "documentNo",
-      headerName: "Document No",
-      flex: 1,
-      minWidth: 130,
       align: "center",
       headerAlign: "center",
     },
