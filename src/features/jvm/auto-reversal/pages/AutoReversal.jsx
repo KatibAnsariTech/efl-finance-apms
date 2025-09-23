@@ -246,7 +246,7 @@ export default function AutoReversal() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => getStatusChip(params.value),
+      // renderCell: (params) => getStatusChip(params.value),
     },
     {
       field: "totalDebit",
