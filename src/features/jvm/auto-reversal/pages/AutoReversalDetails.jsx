@@ -11,6 +11,7 @@ import { Box, Tooltip, Typography, IconButton } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import { Helmet } from "react-helmet-async";
 import { useParams, useLocation } from "react-router-dom";
+import { AutoReversalForm } from "../components/AutoReversalDetail";
 // import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function AutoReversalDetails() {
@@ -224,6 +225,11 @@ export default function AutoReversalDetails() {
 
   const handleBack = () => {
     router.push("/jvm/auto-reversal");
+  };
+
+  const handleFormSubmit = (formData) => {
+    console.log("Form submitted with data:", formData);
+    // Add your submit logic here
   };
 
   const getStatusColor = (status) => {
@@ -515,6 +521,9 @@ export default function AutoReversalDetails() {
       </Helmet>
 
       <Container>
+        {/* Auto-Reversal Form */}
+        <AutoReversalForm onSubmit={handleFormSubmit} />
+
         <Card sx={{ mt: 2, p: 2 }}>
           <Box
             sx={{

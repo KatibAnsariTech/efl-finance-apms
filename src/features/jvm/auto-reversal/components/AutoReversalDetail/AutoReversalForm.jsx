@@ -39,9 +39,9 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
 
   return (
     <Card sx={{ mt: 2, p: 3, mb: 2 }}>
-      <Typography variant="h5" sx={{ mb: 3, textAlign: 'center', fontWeight: 'bold', color: '#333' }}>
+      {/* <Typography variant="h5" sx={{ mb: 3, textAlign: 'center', fontWeight: 'bold', color: '#333' }}>
         AUTO-REVERSAL FORM
-      </Typography>
+      </Typography> */}
       
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Grid container spacing={3}>
