@@ -24,9 +24,9 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
   });
 
   const handleFormChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -42,14 +42,11 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
       {/* <Typography variant="h5" sx={{ mb: 3, textAlign: 'center', fontWeight: 'bold', color: '#333' }}>
         AUTO-REVERSAL FORM
       </Typography> */}
-      
+
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Grid container spacing={3}>
           {/* User and General Information Section */}
           <Grid item xs={12}>
-            <Typography variant="h6" sx={{ mb: 2, color: '#1976d2', fontWeight: 'bold' }}>
-              User and General Information
-            </Typography>
             <Grid container spacing={2}>
               {/* <Grid item xs={12} sm={6} md={3}>
                 <TextField
@@ -65,8 +62,8 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                     }
                   }}
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Grid> */}
+              {/* <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Initiated Date"
                   value={new Date('2025-09-19')}
@@ -82,8 +79,8 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                     }
                   }}
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Grid> */}
+              {/* <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
                   label="Company Code"
@@ -99,11 +96,83 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 />
               </Grid> */}
               <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  label="WID"
+                  value="73050"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-input": {
+                      backgroundColor: "#f5f5f5",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <DatePicker
+                  label="Document Date"
+                  value={new Date("2025-09-01")}
+                  readOnly
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      sx: {
+                        "& .MuiInputBase-input": {
+                          backgroundColor: "#f5f5f5",
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <DatePicker
+                  label="Posting Date"
+                  value={new Date("2025-09-01")}
+                  readOnly
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      sx: {
+                        "& .MuiInputBase-input": {
+                          backgroundColor: "#f5f5f5",
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  label="SAP Document Number"
+                  value="21002006"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-input": {
+                      backgroundColor: "#f5f5f5",
+                    },
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+
+          {/* Auto-Reversal Details Section */}
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
                 <FormControl fullWidth>
                   <InputLabel>Fiscal Year *</InputLabel>
                   <Select
                     value={formData.fiscalYear}
-                    onChange={(e) => handleFormChange('fiscalYear', e.target.value)}
+                    onChange={(e) =>
+                      handleFormChange("fiscalYear", e.target.value)
+                    }
                     label="Fiscal Year *"
                   >
                     <MenuItem value="2023">2023</MenuItem>
@@ -113,98 +182,29 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                   </Select>
                 </FormControl>
               </Grid>
-            </Grid>
-          </Grid>
-
-          {/* Auto-Reversal Details Section */}
-          <Grid item xs={12}>
-            <Typography variant="h6" sx={{ mb: 2, color: '#1976d2', fontWeight: 'bold' }}>
-              Auto-Reversal Details
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={2}>
-                <TextField
-                  fullWidth
-                  label="WID"
-                  value="73050"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{
-                    '& .MuiInputBase-input': {
-                      backgroundColor: '#f5f5f5',
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2}>
-                <DatePicker
-                  label="Document Date"
-                  value={new Date('2025-09-01')}
-                  readOnly
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      sx: {
-                        '& .MuiInputBase-input': {
-                          backgroundColor: '#f5f5f5',
-                        }
-                      }
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2}>
-                <DatePicker
-                  label="Posting Date"
-                  value={new Date('2025-09-01')}
-                  readOnly
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      sx: {
-                        '& .MuiInputBase-input': {
-                          backgroundColor: '#f5f5f5',
-                        }
-                      }
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2}>
-                <TextField
-                  fullWidth
-                  label="SAP Document Number"
-                  value="21002006"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{
-                    '& .MuiInputBase-input': {
-                      backgroundColor: '#f5f5f5',
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2}>
+              <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
                   label="Reversal Reason"
                   value={formData.reversalReason}
-                  onChange={(e) => handleFormChange('reversalReason', e.target.value)}
+                  onChange={(e) =>
+                    handleFormChange("reversalReason", e.target.value)
+                  }
                   placeholder="Enter reversal reason"
                 />
               </Grid>
-              <Grid item xs={12} sm={6} md={2}>
+              <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Reversal Posting Date"
                   value={formData.reversalPostingDate}
-                  onChange={(newValue) => handleFormChange('reversalPostingDate', newValue)}
+                  onChange={(newValue) =>
+                    handleFormChange("reversalPostingDate", newValue)
+                  }
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      placeholder: "Select date"
-                    }
+                      placeholder: "Select date",
+                    },
                   }}
                 />
               </Grid>
@@ -212,19 +212,23 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
           </Grid>
 
           {/* Submit Button */}
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Grid
+            item
+            xs={12}
+            sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}
+          >
             <Button
               variant="contained"
               onClick={handleSubmit}
               sx={{
-                backgroundColor: '#1976d2',
-                '&:hover': {
-                  backgroundColor: '#1565c0',
+                backgroundColor: "#1976d2",
+                "&:hover": {
+                  backgroundColor: "#1565c0",
                 },
                 px: 4,
                 py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 'bold'
+                fontSize: "1rem",
+                fontWeight: "bold",
               }}
             >
               Submit
