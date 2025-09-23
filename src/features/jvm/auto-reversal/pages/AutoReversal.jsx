@@ -32,96 +32,18 @@ export default function AutoReversal() {
   const [approvalCount, setApprovalCount] = useState(0);
   const [statusCounts, setStatusCounts] = useState({
     all: 0,
-    pending: 0,
-    approved: 0,
-    rejected: 0,
+    active: 0,
+    delayed: 0,
+    accepted: 0,
   });
 
   const menuItems = [
     { label: "All", value: "all", count: statusCounts.all },
-    { label: "Pending", value: "pending", count: statusCounts.pending },
-    { label: "Approved", value: "approved", count: statusCounts.approved },
-    { label: "Rejected", value: "rejected", count: statusCounts.rejected },
+    { label: "Active", value: "active", count: statusCounts.active },
+    { label: "Delayed", value: "delayed", count: statusCounts.delayed },
+    { label: "Accepted", value: "accepted", count: statusCounts.accepted },
   ];
 
-  // Generate mock data for Auto Reversal Status
-  const generateMockData = (startIndex, count) => {
-    const documentTypes = [
-      "Invoice",
-      "Credit Note",
-      "Journal Entry",
-      "Payment Voucher",
-      "Receipt Voucher",
-    ];
-    const businessAreas = [
-      "Sales",
-      "Finance",
-      "Operations",
-      "Procurement",
-      "Marketing",
-    ];
-    const accountTypes = ["Asset", "Liability", "Expense", "Revenue", "Equity"];
-    const postingKeys = [
-      "40 - Customer Invoice",
-      "50 - Vendor Invoice",
-      "11 - Cash Receipt",
-      "21 - Cash Payment",
-      "31 - Bank Receipt",
-    ];
-    const statuses = ["Pending", "Approved", "Rejected"];
-    const companies = [
-      "ABC Company Ltd",
-      "XYZ Corporation",
-      "DEF Industries",
-      "GHI Suppliers",
-      "JKL Enterprises",
-      "MNO Solutions",
-      "PQR Systems",
-      "STU Technologies",
-    ];
-
-    return Array.from({ length: count }, (_, index) => {
-      const globalIndex = startIndex + index;
-      const docType = documentTypes[globalIndex % documentTypes.length];
-      const businessArea = businessAreas[globalIndex % businessAreas.length];
-      const accountType = accountTypes[globalIndex % accountTypes.length];
-      const postingKey = postingKeys[globalIndex % postingKeys.length];
-      const status = statuses[globalIndex % statuses.length];
-      const company = companies[globalIndex % companies.length];
-      const amount = Math.floor(Math.random() * 200000) + 10000;
-      const date = new Date(2024, 8, 12 - (globalIndex % 30)); // Random dates in September 2024
-
-      return {
-        _id: `ar_${globalIndex + 1}`,
-        requestNo: `AR${String(globalIndex + 1).padStart(3, "0")}`,
-        slNo: `AR${String(globalIndex + 1).padStart(3, "0")}`,
-        documentType: docType,
-        documentDate: date,
-        postingDate: date,
-        businessArea: businessArea,
-        accountType: accountType,
-        postingKey: postingKey,
-        vendorCustomerGLName: company,
-        vendorCustomerGLNumber: `GL${String(globalIndex + 1).padStart(3, "0")}`,
-        amount: amount,
-        assignment: `Assignment ${globalIndex + 1}`,
-        costCenter: `CC${String(globalIndex + 1).padStart(3, "0")}`,
-        profitCenter: `PC${String(globalIndex + 1).padStart(3, "0")}`,
-        specialGLIndication: `SGI${String(globalIndex + 1).padStart(3, "0")}`,
-        referenceNumber: `REF${String(globalIndex + 1).padStart(3, "0")}`,
-        personalNumber: `PN${String(globalIndex + 1).padStart(3, "0")}`,
-        remarks: `Sample auto reversal entry ${
-          globalIndex + 1
-        } for ${docType.toLowerCase()} processing`,
-        autoReversal: "Y", // Always Y for auto reversal
-        status: status,
-        createdAt: date,
-        sno: globalIndex + 1,
-        totalDebit: amount,
-        totalCredit: amount,
-      };
-    });
-  };
 
   const getData = async () => {
     setLoading(true);
@@ -140,12 +62,6 @@ export default function AutoReversal() {
       if (response.data.statusCode === 200) {
         const apiData = response.data.data.data;
         const { total, totalGroups } = response.data.data;
-        
-        console.log("API Response:", response.data);
-        console.log("API Data:", apiData);
-        console.log("First item structure:", apiData[0]);
-
-        // Use API data directly
         const processedData = apiData.map((item) => ({
           ...item,
           createdAt: new Date(item.createdAt),
@@ -158,9 +74,9 @@ export default function AutoReversal() {
         // Calculate status counts (you might need a separate API call for this)
         const counts = {
           all: total,
-          pending: Math.floor(total / 3), // This should come from API
-          approved: Math.floor(total / 3),
-          rejected: Math.floor(total / 3),
+          active: Math.floor(total / 3), // This should come from API
+          delayed: Math.floor(total / 3),
+          accepted: Math.floor(total / 3),
         };
         setStatusCounts(counts);
       } else {
@@ -217,18 +133,18 @@ export default function AutoReversal() {
         }}
       >
         {/* Status color legend for Auto Reversal Status */}
-        <ColorCircle color="#e8f5e8" label="Approved" />
-        <ColorCircle color="#f4f5ba" label="Pending" />
-        <ColorCircle color="#ffcdd2" label="Rejected" />
+        <ColorCircle color="#e8f5e8" label="Delayed" />
+        <ColorCircle color="#f4f5ba" label="Active" />
+        <ColorCircle color="#ffcdd2" label="Accepted" />
       </Box>
     );
   };
 
   const getStatusColor = (status) => {
     const statusColors = {
-      Approved: "#e8f5e8",
-      Rejected: "#ffcdd2",
-      Pending: "#f4f5ba",
+      Delayed: "#e8f5e8",
+      Accepted: "#ffcdd2",
+      Active: "#f4f5ba",
     };
     return statusColors[status] || "#f5f5f5";
   };
@@ -418,9 +334,9 @@ export default function AutoReversal() {
               autoHeight
               // getRowClassName={(params) => {
               //   const status = params.row.status?.toLowerCase();
-              //   if (status === "pending") return "row-pending";
-              //   if (status === "rejected") return "row-rejected";
-              //   if (status === "approved") return "row-approved";
+              //   if (status === "active") return "row-active";
+              //   if (status === "accepted") return "row-accepted";
+              //   if (status === "delayed") return "row-delayed";
               //   return "";
               // }}
               disableRowSelectionOnClick
@@ -453,13 +369,13 @@ export default function AutoReversal() {
                     outline: "none",
                   },
                 },
-                "& .MuiDataGrid-row.row-pending": {
+                "& .MuiDataGrid-row.row-active": {
                   backgroundColor: "#f4f5ba !important",
                 },
-                "& .MuiDataGrid-row.row-rejected": {
+                "& .MuiDataGrid-row.row-accepted": {
                   backgroundColor: "#ffcdd2 !important",
                 },
-                "& .MuiDataGrid-row.row-approved": {
+                "& .MuiDataGrid-row.row-delayed": {
                   backgroundColor: "#e8f5e8 !important",
                 },
                 "& .MuiDataGrid-row": {
