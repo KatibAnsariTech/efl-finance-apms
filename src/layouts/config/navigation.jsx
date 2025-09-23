@@ -50,7 +50,7 @@ const navConfig = [
         title: "Approval",
         path: "/credit-deviation/approvals",
         icon: <CheckCircleIcon />,
-         roles: ["APPROVER"],
+        roles: ["APPROVER"],
         // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
@@ -122,6 +122,14 @@ const navConfig = [
         path: "/jvm/master",
         icon: <AssignmentIcon />,
         roles: ["ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: "jvm-user-management",
+        title: "User Management",
+        path: "/jvm/usermanagement",
+        icon: <ManageAccountsIcon />,
+        // roles: ["SUPER_ADMIN"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
     ],
   },
