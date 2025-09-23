@@ -18,7 +18,7 @@ import { useRouter } from "src/routes/hooks";
 
 export default function AutoReversalForm({ onSubmit, initialData = {} }) {
   const router = useRouter();
-  
+
   // Form state for editable fields
   const [formData, setFormData] = useState({
     fiscalYear: initialData.fiscalYear || "2024",
@@ -50,12 +50,12 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
         sx={{
           display: "flex",
           alignItems: "center",
-          justifyContent:"flex-end",
+          justifyContent: "flex-end",
           cursor: "pointer",
           position: "relative",
           "&:hover .close-tooltip": { opacity: 1, pointerEvents: "auto" },
           mr: 1,
-          mb:3
+          mb: 3,
         }}
         onClick={handleBack}
       >
@@ -105,6 +105,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
               {/* <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="User Name"
                   value="Rohan Bhagwat"
                   InputProps={{
@@ -117,39 +118,41 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                   }}
                 />
               </Grid> */}
-              {/* <Grid item xs={12} sm={6} md={3}>
+              <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Initiated Date"
-                  value={new Date('2025-09-19')}
+                  value={new Date("2025-09-19")}
                   readOnly
                   slotProps={{
                     textField: {
                       fullWidth: true,
+                      size: "small",
                       sx: {
-                        '& .MuiInputBase-input': {
-                          backgroundColor: '#f5f5f5',
-                        }
-                      }
-                    }
+                        "& .MuiInputBase-input": {
+                          backgroundColor: "#f5f5f5",
+                        },
+                      },
+                    },
                   }}
                 />
-              </Grid> */}
-              {/* <Grid item xs={12} sm={6} md={3}>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="Company Code"
                   value="EFL"
                   InputProps={{
                     readOnly: true,
                   }}
                   sx={{
-                    '& .MuiInputBase-input': {
-                      backgroundColor: '#f5f5f5',
-                    }
+                    "& .MuiInputBase-input": {
+                      backgroundColor: "#f5f5f5",
+                    },
                   }}
                 />
-              </Grid> */}
-              <Grid item xs={12} sm={6} md={3}>
+              </Grid>
+              {/* <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
                   size="small"
@@ -164,7 +167,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                     },
                   }}
                 />
-              </Grid>
+              </Grid> */}
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Document Date"
@@ -201,6 +204,12 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                   }}
                 />
               </Grid>
+            </Grid>
+          </Grid>
+
+          {/* Auto-Reversal Details Section */}
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   fullWidth
@@ -217,12 +226,6 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                   }}
                 />
               </Grid>
-            </Grid>
-          </Grid>
-
-          {/* Auto-Reversal Details Section */}
-          <Grid item xs={12}>
-            <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={3}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Fiscal Year *</InputLabel>
@@ -275,7 +278,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
           <Grid
             // item`
             xs={12}
-            sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}
+            sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}
           >
             <Button
               variant="contained"
@@ -286,7 +289,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 "&:hover": {
                   backgroundColor: "#1565c0",
                 },
-                px: 6,
+                px: 10,
                 py: 2.5,
                 fontSize: "0.875rem",
                 fontWeight: "bold",
