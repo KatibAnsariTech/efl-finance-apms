@@ -11,7 +11,6 @@ import FormRequestTabs from "src/features/credit-deviation/approvals/components/
 import { action } from "src/theme/palette";
 import { format } from "date-fns";
 import { useRouter } from "src/routes/hooks";
-import { useCounts } from "src/contexts/CountsContext";
 import { Box, Tooltip } from "@mui/material";
 import RequestModal from "src/features/credit-deviation/approvals/components/RequestModal";
 import { fDateTime } from "src/utils/format-time";
@@ -247,7 +246,7 @@ export default function AutoReversal() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      // renderCell: (params) => getStatusChip(params.value),
+      renderCell: (params) => getStatusChip(params.value),
     },
     {
       field: "totalDebit",
@@ -337,7 +336,14 @@ export default function AutoReversal() {
             <DataGrid
               rows={dataFiltered || []}
               columns={columns}
-              getRowId={(row) => row?.requestNo}
+              getRowId={(row) => {
+                try {
+                  return row?.requestNo || row?.id || Math.random();
+                } catch (error) {
+                  console.error('Error getting row ID:', error, row);
+                  return Math.random();
+                }
+              }}
               loading={loading}
               pagination
               paginationMode="server"

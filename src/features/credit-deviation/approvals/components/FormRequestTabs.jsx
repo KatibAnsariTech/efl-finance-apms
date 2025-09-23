@@ -15,24 +15,22 @@ function FormRequestTabs({ selectedTab, setSelectedTab, menuItems, approvalCount
         }}
       >
         {menuItems.map((item, index) => {
-          let label = item.label;
-          if (item.value === "myAssigned" && approvalCount > 0) {
-            label = (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {item.label}
-                <span style={{
-                  display: 'inline-block',
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: 'red',
-                  marginLeft: 4,
-                  animation: 'blinker 1s linear infinite',
-                }} />
-                <style>{`@keyframes blinker { 50% { opacity: 0.2; } }`}</style>
-              </span>
-            );
-          }
+          const label = item.value === "myAssigned" && approvalCount > 0 ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {item.label}
+              <span style={{
+                display: 'inline-block',
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: 'red',
+                marginLeft: 4,
+                animation: 'blinker 1s linear infinite',
+              }} />
+              <style>{`@keyframes blinker { 50% { opacity: 0.2; } }`}</style>
+            </span>
+          ) : item.label;
+          
           return <Tab key={index} label={label} value={item.value} />;
         })}
       </Tabs>
