@@ -223,10 +223,6 @@ export default function AutoReversalDetails() {
     }
   };
 
-  const handleBack = () => {
-    router.push("/jvm/auto-reversal");
-  };
-
   const handleFormSubmit = (formData) => {
     console.log("Form submitted with data:", formData);
     // Add your submit logic here
@@ -538,54 +534,6 @@ export default function AutoReversalDetails() {
               onFilterChange={handleFilterChange}
               placeholder="Search by AR No, document type, GL account, remarks, reference..."
             />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-                position: "relative",
-                "&:hover .close-tooltip": { opacity: 1, pointerEvents: "auto" },
-                mr: 1,
-              }}
-              onClick={handleBack}
-            >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="#e53935"
-                stroke="#fff"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ borderRadius: "50%" }}
-              >
-                <circle cx="12" cy="12" r="12" fill="#e53935" />
-                <line x1="8" y1="8" x2="16" y2="16" />
-                <line x1="16" y1="8" x2="8" y2="16" />
-              </svg>
-              <Box
-                className="close-tooltip"
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  right: 35,
-                  background: "#12368d",
-                  color: "#fff",
-                  px: 1.5,
-                  py: 0.5,
-                  borderRadius: 1,
-                  fontSize: "0.85rem",
-                  whiteSpace: "nowrap",
-                  opacity: 0,
-                  pointerEvents: "none",
-                  transition: "opacity 0.2s",
-                  zIndex: 10,
-                }}
-              >
-                Back to Auto Reversal Status
-              </Box>
-            </Box>
           </Box>
 
           <Box sx={{ width: "100%" }}>
