@@ -121,7 +121,8 @@ const navConfig = [
         title: "Master Data",
         path: "/jvm/master",
         icon: <AssignmentIcon />,
-        roles: ["ADMIN", "SUPER_ADMIN"],
+        // roles: ["ADMIN", "SUPER_ADMIN"],
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "jvm-user-management",

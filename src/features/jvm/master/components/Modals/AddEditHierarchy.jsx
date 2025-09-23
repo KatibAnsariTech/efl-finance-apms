@@ -1,94 +1,61 @@
-import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  CircularProgress,
-  Autocomplete,
-} from "@mui/material";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import { Autocomplete } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
-import { useForm, Controller } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
+import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: "90%",
-  maxWidth: "600px",
-  maxHeight: "90vh",
-  bgcolor: "background.paper",
-  borderRadius: 2,
-  p: 3,
-  overflow: "auto",
-};
+function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData }) {
+  const [loading, setLoading] = React.useState(false);
+  const [users, setUsers] = React.useState([]);
+  const [selectedRequester, setSelectedRequester] = React.useState(null);
+  const [selectedApprover1, setSelectedApprover1] = React.useState(null);
+  const [selectedApprover2, setSelectedApprover2] = React.useState(null);
+  const { register, handleSubmit, reset, setValue } = useForm();
 
-const schema = yup.object().shape({
-  requester: yup.string().required("Requester is required"),
-  approver1: yup.string().required("Approver 1 is required"),
-  approver2: yup.string().required("Approver 2 is required"),
-});
-
-export default function AddEditHierarchy({
-  handleClose,
-  open,
-  getData,
-  editData,
-}) {
-  const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState([]);
-  const isEditMode = !!editData;
-
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      requester: "",
-      approver1: "",
-      approver2: "",
-    },
-  });
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (open) {
       fetchUsers();
-      if (isEditMode) {
-        reset({
-          requester: editData.requester || "",
-          approver1: editData.approver1 || "",
-          approver2: editData.approver2 || "",
-        });
-      } else {
-        reset({
-          requester: "",
-          approver1: "",
-          approver2: "",
-        });
-      }
     }
-  }, [open, editData, isEditMode, reset]);
+  }, [open]);
+
+  React.useEffect(() => {
+    if (hierarchyData) {
+      setValue("requester", hierarchyData.requester || "");
+      setValue("approver1", hierarchyData.approver1 || "");
+      setValue("approver2", hierarchyData.approver2 || "");
+    } else {
+      reset();
+      setSelectedRequester(null);
+      setSelectedApprover1(null);
+      setSelectedApprover2(null);
+    }
+  }, [hierarchyData, setValue, reset]);
+
+  React.useEffect(() => {
+    if (hierarchyData && users.length > 0) {
+      const requesterOption = users.find(user => user.username === hierarchyData.requester);
+      const approver1Option = users.find(user => user.username === hierarchyData.approver1);
+      const approver2Option = users.find(user => user.username === hierarchyData.approver2);
+      
+      setSelectedRequester(requesterOption ? { value: requesterOption.username, label: requesterOption.username } : null);
+      setSelectedApprover1(approver1Option ? { value: approver1Option.username, label: approver1Option.username } : null);
+      setSelectedApprover2(approver2Option ? { value: approver2Option.username, label: approver2Option.username } : null);
+    }
+  }, [hierarchyData, users]);
 
   const fetchUsers = async () => {
     try {
-      const response = await userRequest.get("/admin/getAllUsers");
+      const response = await userRequest.get("/admin/getAllAdmins?limit=1000&page=1");
       if (response.data.success) {
-        setUsers(response.data.data || []);
+        setUsers(response.data.data.admins || []);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -96,202 +63,173 @@ export default function AddEditHierarchy({
     }
   };
 
-  const onSubmit = async (data) => {
+  const handleSaveData = async (data) => {
     setLoading(true);
     try {
-      const payload = {
+      const formattedData = {
+        key: "Hierarchy",
         requester: data.requester,
         approver1: data.approver1,
         approver2: data.approver2,
       };
-
-      if (isEditMode) {
-        await userRequest.put(`/jvm/updateMaster/${editData.id}`, payload);
-        swal("Success!", "Hierarchy updated successfully!", "success");
+      if (hierarchyData?._id) {
+        await userRequest.put(`/jvm/updateMasters?id=${hierarchyData._id}`, formattedData);
+        getData();
+        swal("Updated!", "Hierarchy data updated successfully!", "success");
       } else {
-        await userRequest.post("/jvm/createMaster", {
-          key: "Hierarchy",
-          ...payload,
-        });
-        swal("Success!", "Hierarchy created successfully!", "success");
+        await userRequest.post("/jvm/createMasters", formattedData);
+        getData();
+        swal("Success!", "Hierarchy data saved successfully!", "success");
       }
 
-      getData();
+      reset();
+      setSelectedRequester(null);
+      setSelectedApprover1(null);
+      setSelectedApprover2(null);
       handleClose();
     } catch (error) {
-      console.error("Error saving hierarchy:", error);
-      showErrorMessage(
-        error,
-        `Failed to ${isEditMode ? "update" : "create"} hierarchy. Please try again.`,
-        swal
-      );
+      console.error("Error saving data:", error);
+      showErrorMessage(error, "Error saving data. Please try again later.", swal);
     } finally {
       setLoading(false);
     }
   };
 
-  const userOptions = users.map((user) => ({
-    value: user.username || user.name,
-    label: user.username || user.name,
+  const userOptions = users?.map((user) => ({
+    value: user.username,
+    // label: `${user.username} (${user.userType})`,
+    label: `${user.username}`,
   }));
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="hierarchy-modal-title"
-    >
-      <Box sx={style}>
-        <Box
+    <Modal open={open} onClose={handleClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "50%",
+          bgcolor: "background.paper",
+          borderRadius: 5,
+          p: 4,
+        }}
+      >
+        <Typography
           sx={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            mb: 3,
+            justifyContent: "space-between",
           }}
         >
-          <Typography id="hierarchy-modal-title" variant="h6" component="h2">
-            {isEditMode ? "Edit Hierarchy" : "Add Hierarchy"}
-          </Typography>
-          <Button
+          <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
+            {hierarchyData ? "Edit Hierarchy" : "Add Hierarchy"}
+          </span>
+          <RxCross2
             onClick={handleClose}
-            sx={{ minWidth: "auto", p: 1 }}
+            style={{
+              color: "#B22222",
+              fontWeight: "bolder",
+              cursor: "pointer",
+              height: "24px",
+              width: "24px",
+            }}
+          />
+        </Typography>
+        <Box
+          component="form"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            mt: 4,
+            width: "100%",
+          }}
+          onSubmit={handleSubmit(handleSaveData)}
+        >
+          <Autocomplete
+            options={userOptions || []}
+            getOptionLabel={(option) => option?.label || option || ""}
+            value={selectedRequester}
+            onChange={(_, newValue) => {
+              setSelectedRequester(newValue);
+              setValue("requester", newValue?.value || "");
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Requester"
+                {...register("requester", { required: true })}
+                fullWidth
+                required
+                disabled={loading}
+                placeholder="Select Requester"
+              />
+            )}
             disabled={loading}
+            isOptionEqualToValue={(option, value) => option?.value === value?.value}
+          />
+
+          <Autocomplete
+            options={userOptions || []}
+            getOptionLabel={(option) => option?.label || option || ""}
+            value={selectedApprover1}
+            onChange={(_, newValue) => {
+              setSelectedApprover1(newValue);
+              setValue("approver1", newValue?.value || "");
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Approver 1"
+                {...register("approver1", { required: true })}
+                fullWidth
+                required
+                disabled={loading}
+                placeholder="Select Approver 1"
+              />
+            )}
+            disabled={loading}
+            isOptionEqualToValue={(option, value) => option?.value === value?.value}
+          />
+
+          <Autocomplete
+            options={userOptions || []}
+            getOptionLabel={(option) => option?.label || option || ""}
+            value={selectedApprover2}
+            onChange={(_, newValue) => {
+              setSelectedApprover2(newValue);
+              setValue("approver2", newValue?.value || "");
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Approver 2"
+                {...register("approver2", { required: true })}
+                fullWidth
+                required
+                disabled={loading}
+                placeholder="Select Approver 2"
+              />
+            )}
+            disabled={loading}
+            isOptionEqualToValue={(option, value) => option?.value === value?.value}
+          />
+
+          <Button
+            sx={{ marginTop: "20px", height: "50px" }}
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} color="inherit" />}
           >
-            <RxCross2 size={20} />
+            {loading ? (hierarchyData ? "Updating..." : "Saving...") : (hierarchyData ? "Update" : "Save")}
           </Button>
         </Box>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Controller
-                name="requester"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    options={userOptions}
-                    getOptionLabel={(option) => option.label || option}
-                    value={
-                      userOptions.find(
-                        (option) => option.value === field.value
-                      ) || null
-                    }
-                    onChange={(_, newValue) => {
-                      field.onChange(newValue?.value || "");
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Requester"
-                        error={!!errors.requester}
-                        helperText={errors.requester?.message}
-                        fullWidth
-                      />
-                    )}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Controller
-                name="approver1"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    options={userOptions}
-                    getOptionLabel={(option) => option.label || option}
-                    value={
-                      userOptions.find(
-                        (option) => option.value === field.value
-                      ) || null
-                    }
-                    onChange={(_, newValue) => {
-                      field.onChange(newValue?.value || "");
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Approver 1"
-                        error={!!errors.approver1}
-                        helperText={errors.approver1?.message}
-                        fullWidth
-                      />
-                    )}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Controller
-                name="approver2"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    options={userOptions}
-                    getOptionLabel={(option) => option.label || option}
-                    value={
-                      userOptions.find(
-                        (option) => option.value === field.value
-                      ) || null
-                    }
-                    onChange={(_, newValue) => {
-                      field.onChange(newValue?.value || "");
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Approver 2"
-                        error={!!errors.approver2}
-                        helperText={errors.approver2?.message}
-                        fullWidth
-                      />
-                    )}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </Grid>
-          </Grid>
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 2,
-              mt: 4,
-            }}
-          >
-            <Button
-              variant="outlined"
-              onClick={handleClose}
-              disabled={loading}
-              sx={{ minWidth: 100 }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={loading}
-              sx={{ minWidth: 100 }}
-            >
-              {loading ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                isEditMode ? "Update" : "Create"
-              )}
-            </Button>
-          </Box>
-        </form>
       </Box>
     </Modal>
   );
 }
+
+export default AddEditHierarchy;
