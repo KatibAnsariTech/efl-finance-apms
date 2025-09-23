@@ -122,5 +122,13 @@ export const RequestColumns = ({
       flex: 1,
       minWidth: 150,
     },
+    {
+      field: "finalRequestNo",
+      headerName: "Final Request No.",
+      flex: 1,
+      minWidth: 150,
+      align: "center",
+      headerAlign: "center",
+    },
   ];
 };

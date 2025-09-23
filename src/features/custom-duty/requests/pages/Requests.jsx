@@ -184,6 +184,7 @@ export default function Requests() {
         status: item.status,
         company: item.company,
         description: item.description,
+        finalRequestNo: `FREQ${String(item.requestNo).padStart(6, "0")}`,
       }));
 
       setAllData(transformedData);
