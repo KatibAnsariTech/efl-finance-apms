@@ -21,7 +21,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
 
   // Form state for editable fields
   const [formData, setFormData] = useState({
-    fiscalYear: initialData.fiscalYear || "2024",
+    fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
     reversalReason: initialData.reversalReason || "",
     reversalPostingDate: initialData.reversalPostingDate || null,
   });
@@ -227,21 +227,22 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Fiscal Year *</InputLabel>
-                  <Select
-                    value={formData.fiscalYear}
-                    onChange={(e) =>
-                      handleFormChange("fiscalYear", e.target.value)
-                    }
-                    label="Fiscal Year *"
-                  >
-                    <MenuItem value="2023">2023</MenuItem>
-                    <MenuItem value="2024">2024</MenuItem>
-                    <MenuItem value="2025">2025</MenuItem>
-                    <MenuItem value="2026">2026</MenuItem>
-                  </Select>
-                </FormControl>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Fiscal Year *"
+                  type="number"
+                  value={formData.fiscalYear}
+                  onChange={(e) =>
+                    handleFormChange("fiscalYear", e.target.value)
+                  }
+                  placeholder={new Date().getFullYear().toString()}
+                  inputProps={{
+                    min: 2000,
+                    max: 2100,
+                    step: 1,
+                  }}
+                />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
