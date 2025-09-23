@@ -5,14 +5,16 @@ import CircularIndeterminate from "src/utils/loader";
 import MasterTabs from "../components/MasterTabs";
 import AddEditDocumentType from "../components/Modals/AddEditDocumentType";
 import AddEditPostingKey from "../components/Modals/AddEditPostingKey";
+import AddEditHierarchy from "../components/Modals/AddEditHierarchy";
 import { Box } from "@mui/material";
-import { DocumentTypeTable, PostingKeyTable } from "../components/tables";
+import { DocumentTypeTable, PostingKeyTable, HierarchyTable } from "../components/tables";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 
 const menuItems = [
   "Document Type",
-  "Posting Key"
+  "Posting Key",
+  "Hierarchy"
 ];
 
 export default function JVMMaster() {
@@ -123,6 +125,17 @@ export default function JVMMaster() {
           </Suspense>
         )}
 
+        {open && selectedTab === 2 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditHierarchy
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && (
             <DocumentTypeTable 
@@ -133,6 +146,13 @@ export default function JVMMaster() {
           )}
           {selectedTab === 1 && (
             <PostingKeyTable 
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+            />
+          )}
+          {selectedTab === 2 && (
+            <HierarchyTable 
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
