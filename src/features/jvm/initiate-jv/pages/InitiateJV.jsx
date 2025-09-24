@@ -46,8 +46,6 @@ export default function InitiateJV() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
-
   // Add new JV entry to local state
   const addJVEntry = (newEntry) => {
     const entryWithId = {
@@ -94,6 +92,45 @@ export default function InitiateJV() {
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
 
+  // Validation function to check if rows with same sNo have balanced debit/credit amounts
+  const validateSNoBalance = () => {
+    const sNoGroups = {};
+    
+    // Group entries by sNo
+    data.forEach(entry => {
+      const sNo = entry.sNo?.toString().trim();
+      if (sNo) {
+        if (!sNoGroups[sNo]) {
+          sNoGroups[sNo] = { debit: 0, credit: 0, entries: [] };
+        }
+        
+        const amount = parseFloat(entry.amount) || 0;
+        if (entry.type === 'Debit') {
+          sNoGroups[sNo].debit += amount;
+        } else if (entry.type === 'Credit') {
+          sNoGroups[sNo].credit += amount;
+        }
+        sNoGroups[sNo].entries.push(entry);
+      }
+    });
+
+    // Check if any sNo group has unbalanced amounts
+    const unbalancedGroups = [];
+    Object.keys(sNoGroups).forEach(sNo => {
+      const group = sNoGroups[sNo];
+      if (Math.abs(group.debit - group.credit) > 0.01) { // Allow for small floating point differences
+        unbalancedGroups.push({
+          sNo,
+          debit: group.debit,
+          credit: group.credit,
+          difference: Math.abs(group.debit - group.credit)
+        });
+      }
+    });
+
+    return unbalancedGroups;
+  };
+
   // const handleSubmitRequest = async () => {
   const handleConfirmSubmit = () => {
     // setConfirmModalOpen(true);
@@ -104,6 +141,24 @@ export default function InitiateJV() {
   const handleSubmitRequest = async () => {
     try {
       setSubmitting(true);
+      
+      // Validate sNo balance before submitting
+      const unbalancedGroups = validateSNoBalance();
+      if (unbalancedGroups.length > 0) {
+        const errorMessage = unbalancedGroups.map(group => 
+          `Serial Number ${group.sNo}: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
+        ).join('\n');
+        
+        await swal({
+          title: "Validation Error",
+          text: `The following serial numbers have unbalanced debit and credit amounts:\n\n${errorMessage}\n\nPlease ensure that for each serial number, the total debit amount equals the total credit amount.`,
+          icon: "error",
+          button: "OK"
+        });
+        setSubmitting(false);
+        return;
+      }
+      
       const journalVouchers = data.map((entry) => ({
         sNo: entry.sNo?.toString(),
         documentType: entry.documentType,
@@ -111,6 +166,7 @@ export default function InitiateJV() {
         businessArea: entry.businessArea,
         accountType: entry.accountType,
         postingKey: entry.postingKey,
+        type: entry.type,
         vendorCustomerGLNumber: entry.vendorCustomerGLNumber,
         amount: parseFloat(entry.amount),
         assignment: entry.assignment,
@@ -125,14 +181,10 @@ export default function InitiateJV() {
         autoReversal: autoReversal === "Yes" ? "Y" : "N",
       }));
 
-      const requestBody = {
-        journalVouchers,
-      };
-
-      // Call the importJV API endpoint
+      // Call the createRequest API endpoint with array of objects directly
       const response = await userRequest.post(
-        `${BASE_URL}/createJV`,
-        requestBody
+        "jvm/createRequest",
+        journalVouchers
       );
 
       swal(
@@ -240,6 +292,22 @@ export default function InitiateJV() {
       headerName: "Vendor/Customer/GL Number",
       width: 200,
       resizable: true,
+    },
+    {
+      field: "type",
+      headerName: "Type",
+      width: 100,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Chip
+          label={params.value || ""}
+          color={params.value === "Debit" ? "error" : params.value === "Credit" ? "success" : "default"}
+          size="small"
+          variant="filled"
+        />
+      ),
     },
     {
       field: "amount",
@@ -659,7 +727,7 @@ export default function InitiateJV() {
               variant="contained"
               color="primary"
               onClick={handleSubmitRequest}
-              disabled={data.length === 0}
+              disabled={data.length === 0 || validateSNoBalance().length > 0}
               sx={{
                 px: { xs: 2, sm: 3 },
                 py: { xs: 1.5, sm: 1 },
