@@ -56,6 +56,7 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
+  // Status color mapping
   const getStatusColor = (status) => {
     const normalizedStatus = (status || "").toLowerCase();
     switch (normalizedStatus) {
@@ -67,6 +68,12 @@ export default function Requests() {
         return "#baf5c2";
       case "clarification needed":
         return "#9be7fa";
+      case "draft":
+        return "#e0e0e0";
+      case "submitted":
+        return "#bbdefb";
+      case "rejected":
+        return "#e6b2aa";
       default:
         return "white";
     }
@@ -349,6 +356,7 @@ export default function Requests() {
     selectedRows,
     handleSelectRow,
     onRequestClick: handleRequestClick,
+    showCheckboxes: selectedTab === "pendingWithMe",
   });
 
   return (
@@ -427,6 +435,17 @@ export default function Requests() {
             slots={{
               footer: () => null,
             }}
+            getRowClassName={(params) => {
+              const status = params.row.status?.toLowerCase();
+              if (status === "pending") return "row-pending";
+              if (status === "rejected") return "row-rejected";
+              if (status === "approved") return "row-approved";
+              if (status === "clarification needed") return "row-clarification";
+              if (status === "draft") return "row-draft";
+              if (status === "submitted") return "row-submitted";
+              if (status === "declined") return "row-declined";
+              return "";
+            }}
             sx={{
               "& .MuiDataGrid-cell": {
                 "&:focus": { outline: "none" },
@@ -468,8 +487,28 @@ export default function Requests() {
                 "&:focus-visible": { outline: "none" },
               },
               "& .MuiDataGrid-row:hover": {
-                backgroundColor: (theme) => theme.palette.action.hover,
-                opacity: 0.8,
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+              "& .row-pending": {
+                backgroundColor: "#f4f5ba !important",
+              },
+              "& .row-rejected": {
+                backgroundColor: "#e6b2aa !important",
+              },
+              "& .row-approved": {
+                backgroundColor: "#baf5c2 !important",
+              },
+              "& .row-clarification": {
+                backgroundColor: "#9be7fa !important",
+              },
+              "& .row-draft": {
+                backgroundColor: "#e0e0e0 !important",
+              },
+              "& .row-submitted": {
+                backgroundColor: "#bbdefb !important",
+              },
+              "& .row-declined": {
+                backgroundColor: "#e6b2aa !important",
               },
             }}
           />

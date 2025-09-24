@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { lazy, Suspense, useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
@@ -8,8 +8,10 @@ import AddEditPostingKey from "../components/Modals/AddEditPostingKey";
 import AddEditHierarchy from "../components/Modals/AddEditHierarchy";
 import { Box } from "@mui/material";
 import { DocumentTypeTable, PostingKeyTable, HierarchyTable } from "../components/tables";
+import JVMLogTable from "../components/JVMLogTable";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
+import { fDate, fTime } from "src/utils/format-time";
 
 const menuItems = [
   "Document Type",
@@ -22,7 +24,42 @@ export default function JVMMaster() {
   const [editData, setEditData] = useState(null);
   const [open, setOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showLogTable, setShowLogTable] = useState(false);
+  const [latestData, setLatestData] = useState([]);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
   const selectedCategory = menuItems[selectedTab];
+
+  // API URL helpers
+  const getAPIURL = () => {
+    const tabLabel = menuItems[selectedTab];
+    if (tabLabel === "Document Type") return "/admin/getLatestDocumentTypes";
+    if (tabLabel === "Posting Key") return "/admin/getLatestPostingKeys";
+    if (tabLabel === "Hierarchy") return "/admin/getLatestHierarchies";
+    return "/admin/getLatestDocumentTypes";
+  };
+
+  // Fetch latest data for display in toolbar
+  const fetchLatestData = async () => {
+    try {
+      const res = await userRequest.get(getAPIURL(), {
+        params: {
+          page: 1,
+          limit: 1,
+        },
+      });
+      const result = res?.data?.data?.data || [];
+      setLatestData(result);
+    } catch (err) {
+      console.error("Failed to fetch latest data:", err);
+    }
+  };
+
+  useEffect(() => {
+    // Only fetch latest data for hierarchy tab (selectedTab === 2)
+    if (selectedTab === 2) {
+      fetchLatestData();
+    }
+  }, [selectedTab]);
 
   const handleEdit = (row) => {
     setEditData(row);
@@ -69,6 +106,10 @@ export default function JVMMaster() {
   const getData = () => {
     // Trigger table refresh by updating the refresh trigger
     setRefreshTrigger(prev => prev + 1);
+    // Also refresh latest data for toolbar (only for hierarchy tab)
+    if (selectedTab === 2) {
+      fetchLatestData();
+    }
   };
 
   return (
@@ -79,28 +120,93 @@ export default function JVMMaster() {
         menuItems={menuItems}
       />
       <Card sx={{ p: 3 }}>
-        <div
-          style={{
+        <Box
+          sx={{
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "20px",
-            marginRight: "0.5%",
+            mb: 2,
           }}
         >
-          <div
-            style={{
-              fontSize: "0.8rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              gap: "8px",
+          {/* Toolbar left: Latest Updated info and Log toggle - Only for Hierarchy tab */}
+          {selectedTab === 2 ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1,
+              }}
+              onClick={() => setShowLogTable(true)}
+            >
+              <span
+                style={{
+                  color: "#000",
+                  fontSize: "0.8rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                Latest Updated : {latestData[0]?.createdAt ? fDate(latestData[0].createdAt) : "N/A"}
+              </span>
+              |
+              <span
+                style={{
+                  color: "#000",
+                  fontSize: "0.8rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                {latestData[0]?.createdAt ? fTime(latestData[0].createdAt) : "N/A"}
+              </span>
+              {showLogTable && (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="#e53935"
+                  stroke="#fff"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ borderRadius: "50%", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowLogTable(false);
+                  }}
+                >
+                  <circle cx="12" cy="12" r="12" fill="#e53935" />
+                  <line x1="8" y1="8" x2="16" y2="16" />
+                  <line x1="16" y1="8" x2="8" y2="16" />
+                </svg>
+              )}
+            </Box>
+          ) : (
+            <Box></Box>
+          )}
+          {/* Toolbar right: Add button - Always aligned to the right */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: 1,
             }}
           >
-            <span onClick={handleOpen} style={{ color: "#167beb" }}>
+            <span
+              onClick={handleOpen}
+              style={{
+                color: "#167beb",
+                fontSize: "0.8rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
               Add {menuItems[selectedTab]}
             </span>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Conditionally render modals based on selected tab */}
         {open && selectedTab === 0 && (
@@ -137,26 +243,35 @@ export default function JVMMaster() {
         )}
 
         <Box sx={{ width: "100%" }}>
-          {selectedTab === 0 && (
-            <DocumentTypeTable 
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              refreshTrigger={refreshTrigger}
+          {showLogTable && selectedTab === 2 ? (
+            <JVMLogTable
+              selectedTab={selectedTab}
+              menuItems={menuItems}
             />
-          )}
-          {selectedTab === 1 && (
-            <PostingKeyTable 
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              refreshTrigger={refreshTrigger}
-            />
-          )}
-          {selectedTab === 2 && (
-            <HierarchyTable 
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              refreshTrigger={refreshTrigger}
-            />
+          ) : (
+            <>
+              {selectedTab === 0 && (
+                <DocumentTypeTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+              {selectedTab === 1 && (
+                <PostingKeyTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+              {selectedTab === 2 && (
+                <HierarchyTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+            </>
           )}
         </Box>
       </Card>

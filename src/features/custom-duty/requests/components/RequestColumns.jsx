@@ -10,12 +10,16 @@ export const RequestColumns = ({
   selectAllLoading, 
   selectedRows, 
   handleSelectRow,
-  onRequestClick
+  onRequestClick,
+  showCheckboxes = true
 }) => {
   const router = useRouter();
 
-  return [
-    {
+  const columns = [];
+
+  // Add checkbox column only if showCheckboxes is true
+  if (showCheckboxes) {
+    columns.push({
       field: "checkbox",
       headerName: (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -44,7 +48,11 @@ export const RequestColumns = ({
           size="small"
         />
       ),
-    },
+    });
+  }
+
+  // Add other columns
+  columns.push(
     {
       field: "requestNo",
       headerName: "Request No.",
@@ -129,6 +137,8 @@ export const RequestColumns = ({
       minWidth: 150,
       align: "center",
       headerAlign: "center",
-    },
-  ];
+    }
+  );
+
+  return columns;
 };
