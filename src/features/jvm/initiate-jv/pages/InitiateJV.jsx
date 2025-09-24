@@ -169,7 +169,7 @@ export default function InitiateJV() {
   const columns = [
     {
       field: "sNo",
-      headerName: "JV No",
+      headerName: "S No",
       width: 120,
       align: "center",
       headerAlign: "center",

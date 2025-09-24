@@ -291,17 +291,9 @@ export default function JVDetails() {
   const columns = [
     {
       field: "lineNumber",
-      headerName: "Line #",
+      headerName: "S No",
       flex: 0.5,
       minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "sNo",
-      headerName: "JV No",
-      flex: 1,
-      minWidth: 120,
       align: "center",
       headerAlign: "center",
     },

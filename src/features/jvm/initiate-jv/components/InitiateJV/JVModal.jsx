@@ -72,7 +72,7 @@ export default function JVModal({
   const isEditMode = mode === "edit";
 
   const [formData, setFormData] = useState({
-    srNo: "",
+    sNo: "",
     documentType: "",
     documentDate: new Date(),
     businessArea: "",
@@ -100,7 +100,7 @@ export default function JVModal({
       if (isEditMode && editData) {
         // Populate form with edit data
         setFormData({
-          srNo: editData.srNo || "",
+          sNo: editData.sNo || "",
           documentType: editData.documentType || "",
           documentDate: editData.documentDate
             ? new Date(editData.documentDate)
@@ -126,7 +126,7 @@ export default function JVModal({
       } else {
         // Reset form for add mode
         setFormData({
-          srNo: "",
+          sNo: "",
           documentType: "",
           documentDate: new Date(),
           businessArea: "",
@@ -168,7 +168,7 @@ export default function JVModal({
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.srNo.trim()) newErrors.srNo = "Serial Number is required";
+    if (!formData.sNo.trim()) newErrors.sNo = "Serial Number is required";
     if (!formData.documentType)
       newErrors.documentType = "Document Type is required";
     if (!formData.documentDate)
@@ -225,7 +225,7 @@ export default function JVModal({
         // Update existing record
         const BASE_URL =
           "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
-        const id = editData?._id || editData?.id || editData?.srNo;
+        const id = editData?._id || editData?.id || editData?.sNo;
         await axios.put(`${BASE_URL}/${id}`, submitData);
         onSuccess();
       } else {
@@ -279,11 +279,11 @@ export default function JVModal({
                 <TextField
                   fullWidth
                   size="small"
-                  label="Sr.No *"
-                  value={formData.srNo}
-                  onChange={(e) => handleChange("srNo", e.target.value)}
-                  error={!!errors.srNo}
-                  helperText={errors.srNo}
+                  label="S No *"
+                  value={formData.sNo}
+                  onChange={(e) => handleChange("sNo", e.target.value)}
+                  error={!!errors.sNo}
+                  helperText={errors.sNo}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>

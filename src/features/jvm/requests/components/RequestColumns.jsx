@@ -22,26 +22,6 @@ export const RequestColumns = ({
   // Add other columns - JVM Initiate JV structure
   columns.push(
     {
-      field: "sNo",
-      headerName: "JV No",
-      width: 120,
-      resizable: true,
-      renderCell: (params) => (
-        <Typography
-          sx={{
-            color: "#1976d2",
-            textDecoration: "underline",
-            cursor: "pointer",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => router.push(`/jvm/requests/detail/${params.row.id}`)}
-        >
-          {params.value}
-        </Typography>
-      ),
-    },
-    {
       field: "status",
       headerName: "Status",
       width: 120,
@@ -63,7 +43,7 @@ export const RequestColumns = ({
     },
     {
       field: "pId",
-      headerName: "P ID",
+      headerName: "S No",
       width: 100,
       resizable: true,
       renderCell: (params) => `P${String(params.row.id).padStart(4, "0")}`,
