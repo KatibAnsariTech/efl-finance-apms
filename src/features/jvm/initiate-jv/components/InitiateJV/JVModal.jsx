@@ -72,7 +72,7 @@ export default function JVModal({
   const isEditMode = mode === "edit";
 
   const [formData, setFormData] = useState({
-    sNo: "",
+    slNo: "",
     documentType: "",
     documentDate: new Date(),
     businessArea: "",
@@ -100,7 +100,7 @@ export default function JVModal({
       if (isEditMode && editData) {
         // Populate form with edit data
         setFormData({
-          sNo: editData.sNo || "",
+          slNo: editData.slNo || "",
           documentType: editData.documentType || "",
           documentDate: editData.documentDate
             ? new Date(editData.documentDate)
@@ -126,7 +126,7 @@ export default function JVModal({
       } else {
         // Reset form for add mode
         setFormData({
-          sNo: "",
+          slNo: "",
           documentType: "",
           documentDate: new Date(),
           businessArea: "",
@@ -168,7 +168,7 @@ export default function JVModal({
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.sNo.trim()) newErrors.sNo = "Serial Number is required";
+    if (!formData.slNo.trim()) newErrors.slNo = "Serial Number is required";
     if (!formData.documentType)
       newErrors.documentType = "Document Type is required";
     if (!formData.documentDate)
@@ -280,10 +280,10 @@ export default function JVModal({
                   fullWidth
                   size="small"
                   label="S No *"
-                  value={formData.sNo}
-                  onChange={(e) => handleChange("sNo", e.target.value)}
-                  error={!!errors.sNo}
-                  helperText={errors.sNo}
+                  value={formData.slNo}
+                  onChange={(e) => handleChange("slNo", e.target.value)}
+                  error={!!errors.slNo}
+                  helperText={errors.slNo}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>

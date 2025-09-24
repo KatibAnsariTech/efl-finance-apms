@@ -44,120 +44,51 @@ export default function JVStatus() {
     { label: "Rejected", value: "rejected", count: statusCounts.rejected },
   ];
 
-  // Generate mock data for JV Status
-  const generateMockData = (startIndex, count) => {
-    const documentTypes = [
-      "Invoice",
-      "Credit Note",
-      "Journal Entry",
-      "Payment Voucher",
-      "Receipt Voucher",
-    ];
-    const businessAreas = [
-      "Sales",
-      "Finance",
-      "Operations",
-      "Procurement",
-      "Marketing",
-    ];
-    const accountTypes = ["Asset", "Liability", "Expense", "Revenue", "Equity"];
-    const postingKeys = [
-      "40 - Customer Invoice",
-      "50 - Vendor Invoice",
-      "11 - Cash Receipt",
-      "21 - Cash Payment",
-      "31 - Bank Receipt",
-    ];
-    const statuses = ["Pending", "Approved", "Rejected"];
-    const companies = [
-      "ABC Company Ltd",
-      "XYZ Corporation",
-      "DEF Industries",
-      "GHI Suppliers",
-      "JKL Enterprises",
-      "MNO Solutions",
-      "PQR Systems",
-      "STU Technologies",
-    ];
 
-    return Array.from({ length: count }, (_, index) => {
-      const globalIndex = startIndex + index;
-      const docType = documentTypes[globalIndex % documentTypes.length];
-      const businessArea = businessAreas[globalIndex % businessAreas.length];
-      const accountType = accountTypes[globalIndex % accountTypes.length];
-      const postingKey = postingKeys[globalIndex % postingKeys.length];
-      const status = statuses[globalIndex % statuses.length];
-      const company = companies[globalIndex % companies.length];
-      const amount = Math.floor(Math.random() * 200000) + 10000;
-      const date = new Date(2024, 8, 12 - (globalIndex % 30)); // Random dates in September 2024
-
-      return {
-        _id: `jv_${globalIndex + 1}`,
-        slNo: `JV${String(globalIndex + 1).padStart(3, "0")}`,
-        documentType: docType,
-        documentDate: date,
-        postingDate: date,
-        businessArea: businessArea,
-        accountType: accountType,
-        postingKey: postingKey,
-        vendorCustomerGLName: company,
-        vendorCustomerGLNumber: `GL${String(globalIndex + 1).padStart(3, "0")}`,
-        amount: amount,
-        assignment: `Assignment ${globalIndex + 1}`,
-        costCenter: `CC${String(globalIndex + 1).padStart(3, "0")}`,
-        profitCenter: `PC${String(globalIndex + 1).padStart(3, "0")}`,
-        specialGLIndication: `SGI${String(globalIndex + 1).padStart(3, "0")}`,
-        referenceNumber: `REF${String(globalIndex + 1).padStart(3, "0")}`,
-        personalNumber: `PN${String(globalIndex + 1).padStart(3, "0")}`,
-        remarks: `Sample journal voucher entry ${
-          globalIndex + 1
-        } for ${docType.toLowerCase()} processing`,
-        autoReversal: globalIndex % 3 === 0 ? "Y" : "N",
-        status: status,
-        createdAt: date,
-        sno: globalIndex + 1,
-      };
-    });
-  };
 
   const getData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get(
-        `https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers/getAllJV`,
-        {
-          params: {
-            page: page + 1, // API uses 1-based pagination
-            limit: rowsPerPage,
-            status: selectedTab !== "all" ? selectedTab : undefined,
-          },
-        }
-      );
+      const response = await userRequest.get("jvm/getForms", {
+        params: {
+          page: page + 1, // API uses 1-based pagination
+          limit: rowsPerPage,
+          status: selectedTab !== "all" ? selectedTab : undefined,
+        },
+      });
 
       if (response.data.statusCode === 200) {
         const apiData = response.data.data.data;
-        const { total, totalGroups } = response.data.data;
+        const pagination = response.data.data.pagination;
         
         console.log("API Response:", response.data);
         console.log("API Data:", apiData);
-        console.log("First item structure:", apiData[0]);
+        console.log("Pagination:", pagination);
 
-        // Use API data directly
-        const processedData = apiData.map((item) => ({
-          ...item,
+        // Process the API data to match our table structure
+        const processedData = apiData.map((item, index) => ({
+          id: item.groupId || `group-${index}`,
+          requestNo: item.groupId || `G-${item.slNo}`,
+          pId: item.parentId,
+          slNo: item.slNo,
+          groupId: item.groupId,
+          totalAmount: item.totalAmount,
+          count: item.count,
           createdAt: new Date(item.createdAt),
-          updatedAt: new Date(item.updatedAt),
+          status: "Pending", // Default status as requested
+          totalDebit: item.totalAmount / 2, // Split amount between debit and credit
+          totalCredit: item.totalAmount / 2,
         }));
 
         setData(processedData);
-        setTotalCount(total);
+        setTotalCount(pagination.totalCount);
 
-        // Calculate status counts (you might need a separate API call for this)
+        // Calculate status counts - all items are pending by default
         const counts = {
-          all: total,
-          pending: Math.floor(total / 3), // This should come from API
-          approved: Math.floor(total / 3),
-          rejected: Math.floor(total / 3),
+          all: pagination.totalCount,
+          pending: pagination.totalCount, // All items are pending by default
+          approved: 0,
+          rejected: 0,
         };
         setStatusCounts(counts);
       } else {
@@ -252,6 +183,14 @@ export default function JVStatus() {
 
   const columns = [
     {
+      field: "slNo",
+      headerName: "S No",
+      flex: 0.8,
+      minWidth: 80,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
       field: "requestNo",
       headerName: "Request No.",
       flex: 1,
@@ -272,7 +211,6 @@ export default function JVStatus() {
           onClick={() => {
             // Pass the complete data to the detail page
             console.log("Passing data to detail page:", params.row);
-            console.log("Rows in the data:", params.row.rows);
             
             // Store data in localStorage as backup
             localStorage.setItem('jvDetailData', JSON.stringify(params.row));
@@ -310,7 +248,6 @@ export default function JVStatus() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      // renderCell: (params) => getStatusChip(params.value),
     },
     {
       field: "totalDebit",

@@ -102,19 +102,22 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
           if (value !== undefined && value !== null && value !== '') {
             // Map common column names to our field names
             const fieldMap = {
-              // JV No variations - all map to sNo for backend compatibility
-              'JV No': 'sNo',
-              'jvNo': 'sNo',
-              'jvno': 'sNo',
-              'JVNO': 'sNo',
-              'Sr.No': 'sNo',
-              'srNo': 'sNo',
-              'sno': 'sNo',
-              'srno': 'sNo',
-              'SRNO': 'sNo',
-              'Serial Number': 'sNo',
-              'serial number': 'sNo',
-              'SERIAL NUMBER': 'sNo',
+              // JV No variations - all map to slNo for backend compatibility
+              'slNo': 'slNo',
+              'SlNo': 'slNo',
+              'SLNO': 'slNo',
+              'JV No': 'slNo',
+              'jvNo': 'slNo',
+              'jvno': 'slNo',
+              'JVNO': 'slNo',
+              'Sr.No': 'slNo',
+              'srNo': 'slNo',
+              'sno': 'slNo',
+              'srno': 'slNo',
+              'SRNO': 'slNo',
+              'Serial Number': 'slNo',
+              'serial number': 'slNo',
+              'SERIAL NUMBER': 'slNo',
               'Document Type': 'documentType',
               'Document Date': 'documentDate',
               'Business Area': 'businessArea',
@@ -165,7 +168,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         // Ensure required fields have default values
         return {
           ...entry,
-          sNo: entry.sNo || '',
+          slNo: entry.slNo || '',
           documentType: entry.documentType || 'DR',
           documentDate: entry.documentDate || new Date().toISOString().split('T')[0],
           postingDate: entry.postingDate || new Date().toISOString().split('T')[0],

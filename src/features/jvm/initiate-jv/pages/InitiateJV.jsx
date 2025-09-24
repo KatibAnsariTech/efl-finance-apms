@@ -31,6 +31,7 @@ import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { JVModal, UploadJVModal } from "../components/InitiateJV";
+import { InitiateJVColumns } from "../components/InitiateJV/InitiateJVColumns";
 import ConfirmationModal from "src/components/ConfirmationModal";
 
 
@@ -51,7 +52,7 @@ export default function InitiateJV() {
     const entryWithId = {
       ...newEntry,
       _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      sNo: newEntry.sNo || "",
+      slNo: newEntry.slNo || "",
       createdAt: new Date().toISOString(),
     };
     setData((prev) => [...prev, entryWithId]);
@@ -62,7 +63,7 @@ export default function InitiateJV() {
     setData((prev) =>
       prev.map((item) =>
         item._id === updatedEntry._id
-          ? { ...updatedEntry, sNo: item.sNo }
+          ? { ...updatedEntry, slNo: item.slNo }
           : item
       )
     );
@@ -92,35 +93,35 @@ export default function InitiateJV() {
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
 
-  // Validation function to check if rows with same sNo have balanced debit/credit amounts
-  const validateSNoBalance = () => {
-    const sNoGroups = {};
+  // Validation function to check if rows with same slNo have balanced debit/credit amounts
+  const validateSlNoBalance = () => {
+    const slNoGroups = {};
     
-    // Group entries by sNo
+    // Group entries by slNo
     data.forEach(entry => {
-      const sNo = entry.sNo?.toString().trim();
-      if (sNo) {
-        if (!sNoGroups[sNo]) {
-          sNoGroups[sNo] = { debit: 0, credit: 0, entries: [] };
+      const slNo = entry.slNo?.toString().trim();
+      if (slNo) {
+        if (!slNoGroups[slNo]) {
+          slNoGroups[slNo] = { debit: 0, credit: 0, entries: [] };
         }
         
         const amount = parseFloat(entry.amount) || 0;
         if (entry.type === 'Debit') {
-          sNoGroups[sNo].debit += amount;
+          slNoGroups[slNo].debit += amount;
         } else if (entry.type === 'Credit') {
-          sNoGroups[sNo].credit += amount;
+          slNoGroups[slNo].credit += amount;
         }
-        sNoGroups[sNo].entries.push(entry);
+        slNoGroups[slNo].entries.push(entry);
       }
     });
 
-    // Check if any sNo group has unbalanced amounts
+    // Check if any slNo group has unbalanced amounts
     const unbalancedGroups = [];
-    Object.keys(sNoGroups).forEach(sNo => {
-      const group = sNoGroups[sNo];
+    Object.keys(slNoGroups).forEach(slNo => {
+      const group = slNoGroups[slNo];
       if (Math.abs(group.debit - group.credit) > 0.01) { // Allow for small floating point differences
         unbalancedGroups.push({
-          sNo,
+          slNo,
           debit: group.debit,
           credit: group.credit,
           difference: Math.abs(group.debit - group.credit)
@@ -142,11 +143,11 @@ export default function InitiateJV() {
     try {
       setSubmitting(true);
       
-      // Validate sNo balance before submitting
-      const unbalancedGroups = validateSNoBalance();
+      // Validate slNo balance before submitting
+      const unbalancedGroups = validateSlNoBalance();
       if (unbalancedGroups.length > 0) {
         const errorMessage = unbalancedGroups.map(group => 
-          `Serial Number ${group.sNo}: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
+          `Serial Number ${group.slNo}: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
         ).join('\n');
         
         await swal({
@@ -160,25 +161,24 @@ export default function InitiateJV() {
       }
       
       const journalVouchers = data.map((entry) => ({
-        sNo: entry.sNo?.toString(),
+        slNo: entry.slNo?.toString(),
         documentType: entry.documentType,
-        documentDate: entry.documentDate,
+        documentDate: new Date(entry.documentDate).toISOString(),
         businessArea: entry.businessArea,
         accountType: entry.accountType,
         postingKey: entry.postingKey,
-        type: entry.type,
         vendorCustomerGLNumber: entry.vendorCustomerGLNumber,
         amount: parseFloat(entry.amount),
+        type: entry.type,
         assignment: entry.assignment,
         profitCenter: entry.profitCenter,
         specialGLIndication: entry.specialGLIndication,
         referenceNumber: entry.referenceNumber,
         remarks: entry.remarks,
-        postingDate: entry.postingDate,
+        postingDate: new Date(entry.postingDate).toISOString(),
         vendorCustomerGLName: entry.vendorCustomerGLName,
         costCenter: entry.costCenter,
         personalNumber: entry.personalNumber,
-        autoReversal: autoReversal === "Yes" ? "Y" : "N",
       }));
 
       // Call the createRequest API endpoint with array of objects directly
@@ -204,241 +204,6 @@ export default function InitiateJV() {
       setSubmitting(false);
     }
   };
-
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      Draft: { color: "default", label: "Draft" },
-      Submitted: { color: "info", label: "Submitted" },
-      Approved: { color: "success", label: "Approved" },
-      Rejected: { color: "error", label: "Rejected" },
-      Pending: { color: "warning", label: "Pending" },
-    };
-
-    const config = statusConfig[status] || { color: "default", label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
-  };
-
-  const columns = [
-    {
-      field: "sNo",
-      headerName: "S No",
-      width: 120,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-      editable: true,
-      renderCell: (params) => params.row.sNo || params.value || "",
-    },
-    {
-      field: "documentType",
-      headerName: "Document Type",
-      width: 140,
-      resizable: true,
-    },
-    {
-      field: "documentDate",
-      headerName: "Document Date",
-      width: 140,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        // Handle both ISO date strings and YYYY-MM-DD format
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
-    },
-    {
-      field: "postingDate",
-      headerName: "Posting Date",
-      width: 140,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        // Handle both ISO date strings and YYYY-MM-DD format
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
-    },
-    {
-      field: "businessArea",
-      headerName: "Business Area",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "accountType",
-      headerName: "Account Type",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "postingKey",
-      headerName: "Posting Key",
-      width: 160,
-      resizable: true,
-    },
-    {
-      field: "vendorCustomerGLName",
-      headerName: "Vendor/Customer/GL Name",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "vendorCustomerGLNumber",
-      headerName: "Vendor/Customer/GL Number",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "type",
-      headerName: "Type",
-      width: 100,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-      renderCell: (params) => (
-        <Chip
-          label={params.value || ""}
-          color={params.value === "Debit" ? "error" : params.value === "Credit" ? "success" : "default"}
-          size="small"
-          variant="filled"
-        />
-      ),
-    },
-    {
-      field: "amount",
-      headerName: "Amount",
-      width: 120,
-      resizable: true,
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "assignment",
-      headerName: "Assignment",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "costCenter",
-      headerName: "Cost Center",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "profitCenter",
-      headerName: "Profit Center",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "specialGLIndication",
-      headerName: "Special GL Indication",
-      width: 170,
-      resizable: true,
-    },
-    {
-      field: "referenceNumber",
-      headerName: "Reference Number",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "personalNumber",
-      headerName: "Personal Number",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "remarks",
-      headerName: "Remarks",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "autoReversal",
-      headerName: "Auto Reversal",
-      width: 130,
-      resizable: true,
-      renderCell: (params) =>
-        // <Chip
-        //   label={params.value === "Y" ? "Yes" : "No"}
-        //   color={params.value === "Y" ? "success" : "default"}
-        //   size="small"
-        // />
-        params.value === "Y" ? "Yes" : "No",
-    },
-    // {
-    //   field: "status",
-    //   headerName: "Status",
-    //   flex: 1,
-    //   minWidth: 100,
-    //   renderCell: (params) => getStatusChip(params.value),
-    // },
-    {
-      field: "createdAt",
-      headerName: "Created At",
-      width: 140,
-      resizable: true,
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 120,
-      align: "center",
-      headerAlign: "center",
-      resizable: false,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-          }}
-        >
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(params.row);
-            }}
-          >
-            <Iconify icon="eva:edit-fill" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(params.row);
-            }}
-          >
-            <Iconify icon="eva:trash-2-fill" />
-          </IconButton>
-        </Box>
-      ),
-    },
-  ];
 
   const handleEdit = (row) => {
     setEditData(row);
@@ -471,6 +236,9 @@ export default function InitiateJV() {
       }
     }
   };
+
+  // Get columns from separate file
+  const columns = InitiateJVColumns({ handleEdit, handleDelete });
 
   return (
     <>
@@ -612,7 +380,7 @@ export default function InitiateJV() {
                 <DataGrid
                   rows={data}
                   columns={columns}
-                  getRowId={(row) => row._id || row.sNo}
+                  getRowId={(row) => row._id || row.slNo}
                   loading={loading}
                   pagination={false}
                   disableRowSelectionOnClick
@@ -727,7 +495,7 @@ export default function InitiateJV() {
               variant="contained"
               color="primary"
               onClick={handleSubmitRequest}
-              disabled={data.length === 0 || validateSNoBalance().length > 0}
+              disabled={data.length === 0 || validateSlNoBalance().length > 0}
               sx={{
                 px: { xs: 2, sm: 3 },
                 py: { xs: 1.5, sm: 1 },
