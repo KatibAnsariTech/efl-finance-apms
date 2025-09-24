@@ -132,6 +132,13 @@ const navConfig = [
         // roles: ["SUPER_ADMIN"],
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
+      {
+        id: "jvm-requests",
+        title: "Requests",
+        path: "/jvm/requests",
+        icon: <ViewListIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
     ],
   },
   {

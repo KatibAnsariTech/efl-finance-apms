@@ -47,6 +47,12 @@ const JVMMasterPage = lazy(() =>
 const JVMUserManagementPage = lazy(() =>
   import("src/features/jvm/usermanagement/pages/UserManagement")
 );
+const JVMRequestsPage = lazy(() =>
+  import("src/features/jvm/requests/pages/Requests")
+);
+const JVRequestDetailPage = lazy(() =>
+  import("src/features/jvm/requests/pages/JVDetails")
+);
 
 const ImportPaymentPage = lazy(() =>
   import("src/features/import-payment/dashboard/pages/ImportPayment")
@@ -387,6 +393,24 @@ export default function Router() {
             <RoleRoute
               path="/jvm/usermanagement"
               element={<JVMUserManagementPage />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/requests",
+          element: (
+            <RoleRoute
+              path="/jvm/requests"
+              element={<JVMRequestsPage />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/requests/detail/:jvId",
+          element: (
+            <RoleRoute
+              path="/jvm/requests"
+              element={<JVRequestDetailPage />}
             />
           ),
         },
