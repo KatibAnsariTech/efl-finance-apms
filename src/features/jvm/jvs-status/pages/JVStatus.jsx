@@ -182,14 +182,14 @@ export default function JVStatus() {
   };
 
   const columns = [
-    {
-      field: "slNo",
-      headerName: "S No",
-      flex: 0.8,
-      minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-    },
+    // {
+    //   field: "slNo",
+    //   headerName: "S No",
+    //   flex: 0.8,
+    //   minWidth: 80,
+    //   align: "center",
+    //   headerAlign: "center",
+    // },
     {
       field: "requestNo",
       headerName: "Request No.",
