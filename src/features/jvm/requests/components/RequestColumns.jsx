@@ -4,23 +4,40 @@ import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
 
 // Component for other tabs columns
-export const RequestColumns = ({ 
-  isSelectAll, 
-  handleSelectAll, 
-  selectAllLoading, 
-  selectedRows, 
-  handleSelectRow,
-  onRequestClick,
-  showCheckboxes = true
-}) => {
+export const RequestColumns = () => {
   const router = useRouter();
 
   const columns = [];
 
-  // Checkbox column removed - no longer needed for JVM Requests
-
-  // Add other columns - JVM Initiate JV structure
   columns.push(
+    {
+      field: "sNo",
+      headerName: "Request No.",
+      width: 100,
+      resizable: true,
+      renderCell: (params) => (
+        <Typography
+          sx={{
+            color: "#1976d2",
+            textDecoration: "underline",
+            cursor: "pointer",
+            fontWeight: 600,
+            "&:hover": { color: "#1565c0" },
+          }}
+          onClick={() => {
+            // Store data in localStorage as backup
+            localStorage.setItem('jvDetailData', JSON.stringify(params.row));
+            
+            // Navigate to detail page
+            router.push(`/jvm/requests/detail/${params.row.sNo}`, { 
+              state: params.row 
+            });
+          }}
+        >
+          {params.value}
+        </Typography>
+      ),
+    },
     {
       field: "status",
       headerName: "Status",
@@ -35,7 +52,15 @@ export const RequestColumns = ({
             fontWeight: 600,
             "&:hover": { color: "#1565c0" },
           }}
-          onClick={() => onRequestClick ? onRequestClick(params.row) : null}
+          onClick={() => {
+            // Store data in localStorage as backup
+            localStorage.setItem('jvDetailData', JSON.stringify(params.row));
+            
+            // Navigate to detail page
+            router.push(`/jvm/requests/detail/${params.row.sNo}`, { 
+              state: params.row 
+            });
+          }}
         >
           {params.value}
         </Typography>
