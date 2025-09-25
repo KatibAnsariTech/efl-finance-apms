@@ -197,7 +197,7 @@ export default function JVDetails() {
       if (response.data.statusCode === 200) {
         swal("Success", `JV ${action} successfully`, "success");
         setComment("");
-        getData(); // Refresh the data
+        getData(); 
       } else {
         throw new Error(response.data.message || `Failed to ${action} JV`);
       }
