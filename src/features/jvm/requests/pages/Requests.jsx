@@ -35,29 +35,6 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  // Status color mapping
-  const getStatusColor = (status) => {
-    const normalizedStatus = (status || "").toLowerCase();
-    switch (normalizedStatus) {
-      case "pending":
-        return "#f4f5ba";
-      case "declined":
-        return "#e6b2aa";
-      case "approved":
-        return "#baf5c2";
-      case "clarification needed":
-        return "#9be7fa";
-      case "draft":
-        return "#e0e0e0";
-      case "submitted":
-        return "#bbdefb";
-      case "rejected":
-        return "#e6b2aa";
-      default:
-        return "white";
-    }
-  };
-
   const getData = async (pageNum = 1, isLoadMore = false) => {
     try {
       if (isLoadMore) {
@@ -77,73 +54,23 @@ export default function Requests() {
         ? "jvm/getMyAssignedForms" 
         : "jvm/getMyWorkflowForms";
 
-      try {
-        const response = await userRequest.get(apiEndpoint, {
-          params: {
-            page: page,
-            limit: limit,
-          },
-        });
-        apiData = response.data.data || [];
-        totalCount = response.data.pagination?.totalCount || 0;
-        setHasMore(response.data.pagination?.hasNextPage || false);
-      } catch (userRequestError) {
-        console.error("API Error:", userRequestError);
-        // Fallback to mock data if API fails
-        try {
-          const fetchResponse = await fetch(
-            `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
-          );
-          const fetchData = await fetchResponse.json();
-          apiData = fetchData;
-          totalCount = 100;
-        } catch (fallbackError) {
-          console.error("Fallback API Error:", fallbackError);
-          apiData = [];
-          totalCount = 0;
-        }
-      }
+      const response = await userRequest.get(apiEndpoint, {
+        params: {
+          page: page,
+          limit: limit,
+        },
+      });
+      apiData = response.data.data || [];
+      totalCount = response.data.pagination?.totalCount || 0;
+      setHasMore(response.data.pagination?.hasNextPage || false);
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      let transformedData;
-
-      transformedData = apiData.map((item, index) => ({
-        id: item.groupId || item.id || item._id,
-        groupId: item.groupId,
-        parentId: item.parentId || "",
-        sNo: `JV${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(6, "0")}`,
-        documentType: "JV",
-        documentDate: new Date().toISOString().split('T')[0],
-        postingDate: new Date().toISOString().split('T')[0],
-        businessArea: "1000",
-        accountType: "GL",
-        postingKey: "40",
-        vendorCustomerGLName: "Sample Vendor",
-        vendorCustomerGLNumber: "100000",
-        amount: parseFloat(item.totalDebit || item.totalCredit || 0),
-        assignment: "",
-        costCenter: "1000",
-        profitCenter: "1000",
-        specialGLIndication: "",
-        referenceNumber: `REF${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(4, "0")}`,
-        personalNumber: "",
-        remarks: "",
-        autoReversal: "N",
-        status: item.status || "Draft",
-        totalAmount: parseFloat(item.totalDebit || item.totalCredit || 0),
-        totalDebit: parseFloat(item.totalDebit || 0),
-        totalCredit: parseFloat(item.totalCredit || 0),
-        count: item.count || 0,
-        currentStep: item.currentStep || 1,
-        createdAt: item.createdAt || new Date().toISOString(),
-      }));
-
       if (isLoadMore) {
-        setData((prev) => [...prev, ...transformedData]);
+        setData((prev) => [...prev, ...apiData]);
       } else {
-        setData(transformedData);
-        setAllData(transformedData);
+        setData(apiData);
+        setAllData(apiData);
       }
 
       setTotalCount(totalCount);
@@ -159,83 +86,6 @@ export default function Requests() {
     }
   };
 
-  const getAllData = async () => {
-    try {
-      let allApiData;
-
-      // Choose API endpoint based on selected tab
-      const apiEndpoint = selectedTab === "pendingWithMe" 
-        ? "jvm/getMyAssignedForms" 
-        : "jvm/getMyWorkflowForms";
-
-      try {
-        const response = await userRequest.get(apiEndpoint, {
-          params: {
-            page: 1,
-            limit: 1000,
-          },
-        });
-        allApiData = response.data.data || [];
-      } catch (userRequestError) {
-        console.error("API Error in getAllData:", userRequestError);
-        // Fallback to mock data if API fails
-        try {
-          const fetchResponse = await fetch(
-            `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=1&limit=1000`
-          );
-          const fetchData = await fetchResponse.json();
-          allApiData = fetchData;
-        } catch (fallbackError) {
-          console.error("Fallback API Error in getAllData:", fallbackError);
-          allApiData = [];
-        }
-      }
-
-      let transformedData;
-
-      transformedData = allApiData.map((item, index) => ({
-        id: item.groupId || item.id || item._id,
-        groupId: item.groupId,
-        parentId: item.parentId || "",
-        sNo: `JV${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(6, "0")}`,
-        documentType: "JV",
-        documentDate: new Date().toISOString().split('T')[0],
-        postingDate: new Date().toISOString().split('T')[0],
-        businessArea: "1000",
-        accountType: "GL",
-        postingKey: "40",
-        vendorCustomerGLName: "Sample Vendor",
-        vendorCustomerGLNumber: "100000",
-        amount: parseFloat(item.totalDebit || item.totalCredit || 0),
-        assignment: "",
-        costCenter: "1000",
-        profitCenter: "1000",
-        specialGLIndication: "",
-        referenceNumber: `REF${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(4, "0")}`,
-        personalNumber: "",
-        remarks: "",
-        autoReversal: "N",
-        status: item.status || "Draft",
-        totalAmount: parseFloat(item.totalDebit || item.totalCredit || 0),
-        totalDebit: parseFloat(item.totalDebit || 0),
-        totalCredit: parseFloat(item.totalCredit || 0),
-        count: item.count || 0,
-        currentStep: item.currentStep || 1,
-        createdAt: item.createdAt || new Date().toISOString(),
-      }));
-
-      setAllData(transformedData);
-      setData(transformedData);
-      setTotalCount(transformedData.length);
-      setHasMore(false);
-    } catch (err) {
-      console.error("Error in getAllData:", err);
-      setAllData([]);
-      setData([]);
-      setTotalCount(0);
-      setHasMore(false);
-    }
-  };
 
   useEffect(() => {
     setPage(1);
