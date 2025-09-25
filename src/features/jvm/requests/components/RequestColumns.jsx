@@ -4,8 +4,14 @@ import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
 
 // Component for other tabs columns
-export const RequestColumns = () => {
+export const RequestColumns = ({ onRequestClick }) => {
   const router = useRouter();
+
+  const handleStatusClick = (rowData) => {
+    if (onRequestClick) {
+      onRequestClick(rowData);
+    }
+  };
 
   const columns = [
     {
@@ -77,7 +83,7 @@ export const RequestColumns = () => {
       ),
     },
     {
-      field: "totalAmount",
+      field: "totalDebit",
       headerName: "Total Debit",
       flex: 1,
       minWidth: 120,
@@ -86,13 +92,29 @@ export const RequestColumns = () => {
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
     {
-      field: "totalAmount",
+      field: "totalCredit",
       headerName: "Total Credit",
       flex: 1,
       minWidth: 120,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+    {
+      field: "count",
+      headerName: "Count",
+      flex: 1,
+      minWidth: 80,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "currentStep",
+      headerName: "Step",
+      flex: 1,
+      minWidth: 80,
+      align: "center",
+      headerAlign: "center",
     },
   ];
 

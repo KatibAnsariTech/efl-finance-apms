@@ -72,25 +72,36 @@ export default function Requests() {
       let apiData;
       let totalCount;
 
+      // Choose API endpoint based on selected tab
+      const apiEndpoint = selectedTab === "pendingWithMe" 
+        ? "jvm/getMyAssignedForms" 
+        : "jvm/getMyWorkflowForms";
+
       try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: page,
-              limit: limit,
-            },
-          }
-        );
-        apiData = response.data;
-        totalCount = response.headers["x-total-count"] || 100;
+        const response = await userRequest.get(apiEndpoint, {
+          params: {
+            page: page,
+            limit: limit,
+          },
+        });
+        apiData = response.data.data || [];
+        totalCount = response.data.pagination?.totalCount || 0;
+        setHasMore(response.data.pagination?.hasNextPage || false);
       } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
-        );
-        const fetchData = await fetchResponse.json();
-        apiData = fetchData;
-        totalCount = 100;
+        console.error("API Error:", userRequestError);
+        // Fallback to mock data if API fails
+        try {
+          const fetchResponse = await fetch(
+            `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
+          );
+          const fetchData = await fetchResponse.json();
+          apiData = fetchData;
+          totalCount = 100;
+        } catch (fallbackError) {
+          console.error("Fallback API Error:", fallbackError);
+          apiData = [];
+          totalCount = 0;
+        }
       }
 
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -98,26 +109,33 @@ export default function Requests() {
       let transformedData;
 
       transformedData = apiData.map((item, index) => ({
-        id: item.id,
-        sNo: `JV${String(item.sNo || item.id).padStart(6, "0")}`,
-        documentType: item.documentType || "JV",
-        documentDate: item.documentDate || new Date().toISOString().split('T')[0],
-        postingDate: item.postingDate || new Date().toISOString().split('T')[0],
-        businessArea: item.businessArea || "1000",
-        accountType: item.accountType || "GL",
-        postingKey: item.postingKey || "40",
-        vendorCustomerGLName: item.vendorCustomerGLName || "Sample Vendor",
-        vendorCustomerGLNumber: item.vendorCustomerGLNumber || "100000",
-        amount: parseFloat(item.amount || item.transactionAmount || 0),
-        assignment: item.assignment || "",
-        costCenter: item.costCenter || "1000",
-        profitCenter: item.profitCenter || "1000",
-        specialGLIndication: item.specialGLIndication || "",
-        referenceNumber: item.referenceNumber || `REF${String(item.id).padStart(4, "0")}`,
-        personalNumber: item.personalNumber || "",
-        remarks: item.remarks || item.description || "",
-        autoReversal: item.autoReversal || "N",
+        id: item.groupId || item.id || item._id,
+        groupId: item.groupId,
+        parentId: item.parentId || "",
+        sNo: `JV${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(6, "0")}`,
+        documentType: "JV",
+        documentDate: new Date().toISOString().split('T')[0],
+        postingDate: new Date().toISOString().split('T')[0],
+        businessArea: "1000",
+        accountType: "GL",
+        postingKey: "40",
+        vendorCustomerGLName: "Sample Vendor",
+        vendorCustomerGLNumber: "100000",
+        amount: parseFloat(item.totalDebit || item.totalCredit || 0),
+        assignment: "",
+        costCenter: "1000",
+        profitCenter: "1000",
+        specialGLIndication: "",
+        referenceNumber: `REF${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(4, "0")}`,
+        personalNumber: "",
+        remarks: "",
+        autoReversal: "N",
         status: item.status || "Draft",
+        totalAmount: parseFloat(item.totalDebit || item.totalCredit || 0),
+        totalDebit: parseFloat(item.totalDebit || 0),
+        totalCredit: parseFloat(item.totalCredit || 0),
+        count: item.count || 0,
+        currentStep: item.currentStep || 1,
         createdAt: item.createdAt || new Date().toISOString(),
       }));
 
@@ -129,8 +147,8 @@ export default function Requests() {
       }
 
       setTotalCount(totalCount);
-      setHasMore(page * limit < totalCount);
     } catch (err) {
+      console.error("Error in getData:", err);
       setData([]);
       setAllData([]);
       setTotalCount(0);
@@ -143,51 +161,66 @@ export default function Requests() {
 
   const getAllData = async () => {
     try {
-
       let allApiData;
 
+      // Choose API endpoint based on selected tab
+      const apiEndpoint = selectedTab === "pendingWithMe" 
+        ? "jvm/getMyAssignedForms" 
+        : "jvm/getMyWorkflowForms";
+
       try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: 1,
-              limit: 1000,
-            },
-          }
-        );
-        allApiData = response.data;
+        const response = await userRequest.get(apiEndpoint, {
+          params: {
+            page: 1,
+            limit: 1000,
+          },
+        });
+        allApiData = response.data.data || [];
       } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=1&limit=1000`
-        );
-        const fetchData = await fetchResponse.json();
-        allApiData = fetchData;
+        console.error("API Error in getAllData:", userRequestError);
+        // Fallback to mock data if API fails
+        try {
+          const fetchResponse = await fetch(
+            `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=1&limit=1000`
+          );
+          const fetchData = await fetchResponse.json();
+          allApiData = fetchData;
+        } catch (fallbackError) {
+          console.error("Fallback API Error in getAllData:", fallbackError);
+          allApiData = [];
+        }
       }
 
       let transformedData;
 
       transformedData = allApiData.map((item, index) => ({
-        id: item.id,
-        sNo: `JV${String(item.sNo || item.id).padStart(6, "0")}`,
-        documentType: item.documentType || "JV",
-        documentDate: item.documentDate || new Date().toISOString().split('T')[0],
-        postingDate: item.postingDate || new Date().toISOString().split('T')[0],
-        businessArea: item.businessArea || "1000",
-        accountType: item.accountType || "GL",
-        postingKey: item.postingKey || "40",
-        vendorCustomerGLName: item.vendorCustomerGLName || "Sample Vendor",
-        vendorCustomerGLNumber: item.vendorCustomerGLNumber || "100000",
-        amount: parseFloat(item.amount || item.transactionAmount || 0),
-        assignment: item.assignment || "",
-        costCenter: item.costCenter || "1000",
-        profitCenter: item.profitCenter || "1000",
-        specialGLIndication: item.specialGLIndication || "",
-        referenceNumber: item.referenceNumber || `REF${String(item.id).padStart(4, "0")}`,
-        personalNumber: item.personalNumber || "",
-        remarks: item.remarks || item.description || "",
-        autoReversal: item.autoReversal || "N",
+        id: item.groupId || item.id || item._id,
+        groupId: item.groupId,
+        parentId: item.parentId || "",
+        sNo: `JV${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(6, "0")}`,
+        documentType: "JV",
+        documentDate: new Date().toISOString().split('T')[0],
+        postingDate: new Date().toISOString().split('T')[0],
+        businessArea: "1000",
+        accountType: "GL",
+        postingKey: "40",
+        vendorCustomerGLName: "Sample Vendor",
+        vendorCustomerGLNumber: "100000",
+        amount: parseFloat(item.totalDebit || item.totalCredit || 0),
+        assignment: "",
+        costCenter: "1000",
+        profitCenter: "1000",
+        specialGLIndication: "",
+        referenceNumber: `REF${String(item.groupId?.split('-')[2] || item.id || item._id).padStart(4, "0")}`,
+        personalNumber: "",
+        remarks: "",
+        autoReversal: "N",
         status: item.status || "Draft",
+        totalAmount: parseFloat(item.totalDebit || item.totalCredit || 0),
+        totalDebit: parseFloat(item.totalDebit || 0),
+        totalCredit: parseFloat(item.totalCredit || 0),
+        count: item.count || 0,
+        currentStep: item.currentStep || 1,
         createdAt: item.createdAt || new Date().toISOString(),
       }));
 
@@ -196,6 +229,7 @@ export default function Requests() {
       setTotalCount(transformedData.length);
       setHasMore(false);
     } catch (err) {
+      console.error("Error in getAllData:", err);
       setAllData([]);
       setData([]);
       setTotalCount(0);
@@ -273,9 +307,14 @@ export default function Requests() {
     };
   }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
 
+  const handleRequestClick = (rowData) => {
+    // Handle request click - you can add modal or navigation logic here
+    console.log("Request clicked:", rowData);
+  };
 
-
-  const columns = RequestColumns();
+  const columns = RequestColumns({
+    onRequestClick: handleRequestClick,
+  });
 
   return (
     <Container>
