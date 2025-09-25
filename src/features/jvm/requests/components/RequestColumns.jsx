@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Checkbox, CircularProgress } from "@mui/material";
+import { Box } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
 
@@ -7,214 +7,94 @@ import { fDateTime } from "src/utils/format-time";
 export const RequestColumns = () => {
   const router = useRouter();
 
-  const columns = [];
-
-  columns.push(
+  const columns = [
     {
-      field: "sNo",
+      field: "groupId",
       headerName: "Request No.",
-      width: 100,
-      resizable: true,
-      renderCell: (params) => (
-        <Typography
-          sx={{
-            color: "#1976d2",
-            textDecoration: "underline",
-            cursor: "pointer",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => {
-            // Store data in localStorage as backup
-            localStorage.setItem('jvDetailData', JSON.stringify(params.row));
-            
-            // Navigate to detail page
-            router.push(`/jvm/requests/detail/${params.row.sNo}`, { 
-              state: params.row 
-            });
-          }}
-        >
-          {params.value}
-        </Typography>
-      ),
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 120,
-      resizable: true,
-      renderCell: (params) => (
-        <Typography
-          sx={{
-            color: "#1976d2",
-            textDecoration: "underline",
-            cursor: "pointer",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => {
-            // Store data in localStorage as backup
-            localStorage.setItem('jvDetailData', JSON.stringify(params.row));
-            
-            // Navigate to detail page
-            router.push(`/jvm/requests/detail/${params.row.sNo}`, { 
-              state: params.row 
-            });
-          }}
-        >
-          {params.value}
-        </Typography>
-      ),
-    },
-    {
-      field: "pId",
-      headerName: "S No",
-      width: 100,
-      resizable: true,
-      renderCell: (params) => `P${String(params.row.id).padStart(4, "0")}`,
-    },
-    {
-      field: "documentType",
-      headerName: "Document Type",
-      width: 140,
-      resizable: true,
-    },
-    {
-      field: "documentDate",
-      headerName: "Document Date",
-      width: 140,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
-    },
-    {
-      field: "postingDate",
-      headerName: "Posting Date",
-      width: 140,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
-    },
-    {
-      field: "businessArea",
-      headerName: "Business Area",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "accountType",
-      headerName: "Account Type",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "postingKey",
-      headerName: "Posting Key",
-      width: 160,
-      resizable: true,
-    },
-    {
-      field: "vendorCustomerGLName",
-      headerName: "Vendor/Customer/GL Name",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "vendorCustomerGLNumber",
-      headerName: "Vendor/Customer/GL Number",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "amount",
-      headerName: "Amount",
-      width: 120,
-      resizable: true,
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "assignment",
-      headerName: "Assignment",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "costCenter",
-      headerName: "Cost Center",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "profitCenter",
-      headerName: "Profit Center",
-      width: 130,
-      resizable: true,
-    },
-    {
-      field: "specialGLIndication",
-      headerName: "Special GL Indication",
-      width: 170,
-      resizable: true,
-    },
-    {
-      field: "referenceNumber",
-      headerName: "Reference Number",
-      width: 150,
-      resizable: true,
-      minWidth: 120,
-      maxWidth: 300,
-      sortable: false,
-    },
-    {
-      field: "personalNumber",
-      headerName: "Personal Number",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "remarks",
-      headerName: "Remarks",
-      width: 200,
-      resizable: true,
+      flex: 1,
+      minWidth: 160,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
         <Box
           sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            cursor: "pointer",
+            color: "#1976d2",
+            textDecoration: "underline",
+            textDecorationThickness: "2px",
+            textUnderlineOffset: "4px",
+            fontWeight: 600,
+            "&:hover": { color: "#1565c0" },
           }}
-          title={params.value}
+          onClick={() => {
+            localStorage.setItem("jvDetailData", JSON.stringify(params.row));
+            router.push(`/jvm/requests/jv-detail?id=${params.row.groupId}`);
+          }}
         >
           {params.value}
         </Box>
       ),
     },
     {
-      field: "autoReversal",
-      headerName: "Auto Reversal",
-      width: 130,
-      resizable: true,
-      renderCell: (params) => params.value === "Y" ? "Yes" : "No",
+      field: "parentId",
+      headerName: "P.Id",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "createdAt",
-      headerName: "Created At",
-      width: 140,
-      resizable: true,
+      headerName: "Created Date",
+      flex: 1,
+      minWidth: 200,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => fDateTime(params.value),
-    }
-  );
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            cursor: "pointer",
+            color: "#1976d2",
+            textDecoration: "underline",
+            textDecorationThickness: "2px",
+            textUnderlineOffset: "4px",
+            fontWeight: 600,
+            "&:hover": { color: "#1565c0" },
+          }}
+          onClick={() => handleStatusClick(params.row)}
+        >
+          {params.value}
+        </Box>
+      ),
+    },
+    {
+      field: "totalAmount",
+      headerName: "Total Debit",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+    {
+      field: "totalAmount",
+      headerName: "Total Credit",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+  ];
 
   return columns;
 };

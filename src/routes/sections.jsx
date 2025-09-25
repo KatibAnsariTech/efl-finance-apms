@@ -406,7 +406,7 @@ export default function Router() {
           ),
         },
         {
-          path: "/jvm/requests/detail/:jvId",
+          path: "/jvm/requests/jv-detail",
           element: (
             <RoleRoute
               path="/jvm/requests"

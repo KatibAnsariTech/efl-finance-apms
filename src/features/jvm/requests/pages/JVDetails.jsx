@@ -18,11 +18,15 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 
 export default function JVDetails() {
   const router = useRouter();
   const { jvId } = useParams();
+  const [searchParams] = useSearchParams();
+  
+  // Get ID from either URL parameter or query parameter
+  const requestId = jvId || searchParams.get('id');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
@@ -313,7 +317,7 @@ export default function JVDetails() {
   return (
     <>
       <Helmet>
-        <title>JV Details - {jvId}</title>
+        <title>JV Details - {requestId}</title>
       </Helmet>
 
       <Container>
