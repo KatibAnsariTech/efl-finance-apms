@@ -53,18 +53,23 @@ export default function UserManagementView() {
     setOpen(true);
   };
 
+  const handleDelete = async (id) => {
+    // Add delete functionality here if needed
+    console.log("Delete user with ID:", id);
+  };
+
   const getAPIURL = () => {
     switch (selectedTab) {
       case 0:
-        return "/admin/getAllAdmins?type=REQUESTER";
+        return "jvm/getJVMUsersByUserType?userType=REQUESTER";
       case 1:
-        return "/admin/getAllAdmins?type=APPROVER";
+        return "jvm/getJVMUsersByUserType?userType=APPROVER";
       case 2:
         return "/admin/getAllAdmins?type=ADMIN";
       case 3:
         return "/admin/getAllAdmins?type=SUPER_ADMIN";
       default:
-        return "/admin/getAllAdmins?type=REQUESTER";
+        return "jvm/getJVMUsersByUserType?userType=REQUESTER";
     }
   };
 
@@ -91,8 +96,16 @@ export default function UserManagementView() {
 
       // Only update state if request wasn't aborted
       if (!abortController.signal.aborted) {
-        setData(res?.data?.data?.admins || []);
-        setTotalCount(res?.data?.data?.total || 0);
+        // Handle different response structures for JVM vs Admin APIs
+        if (selectedTab === 0 || selectedTab === 1) {
+          // JVM API response structure: data.data.data and data.data.pagination
+          setData(res?.data?.data?.data || []);
+          setTotalCount(res?.data?.data?.pagination?.totalCount || 0);
+        } else {
+          // Admin API response structure
+          setData(res?.data?.data?.admins || []);
+          setTotalCount(res?.data?.data?.total || 0);
+        }
         setLoading(false);
       }
     } catch (err) {
@@ -269,7 +282,7 @@ export default function UserManagementView() {
           <DataGrid
             rows={
               dataFiltered?.map((row, index) => ({
-                id: row._id,
+                id: row._id || row.userRoleId || row.userId || `row-${index}`,
                 sno: page * rowsPerPage + index + 1,
                 ...row,
               })) || []
