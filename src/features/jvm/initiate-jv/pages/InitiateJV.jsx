@@ -1,8 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-
-
+import { useState } from "react";
 import {
   Container,
   Typography,
@@ -10,22 +7,13 @@ import {
   Button,
   Card,
   CardContent,
-  Grid,
   Paper,
   IconButton,
-  Chip,
-  CircularProgress,
   FormControl,
-  FormControlLabel,
-  Switch,
-  Divider,
   Select,
   MenuItem,
-  InputLabel,
-  TextField,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { fDateTime } from "src/utils/format-time";
 import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
@@ -119,7 +107,7 @@ export default function InitiateJV() {
     const unbalancedGroups = [];
     Object.keys(slNoGroups).forEach(slNo => {
       const group = slNoGroups[slNo];
-      if (Math.abs(group.debit - group.credit) > 0.01) { // Allow for small floating point differences
+      if (Math.abs(group.debit - group.credit) > 0.01) {
         unbalancedGroups.push({
           slNo,
           debit: group.debit,
@@ -181,14 +169,11 @@ export default function InitiateJV() {
         personalNumber: entry.personalNumber,
       }));
 
-      // New API structure with autoReversal, document, and items
       const requestData = {
         autoReversal: autoReversal === "Yes",
-        document: "", // Empty string as per your example
+        document: "",
         items: items
       };
-
-      // Call the createRequest API endpoint with new structure
       const response = await userRequest.post(
         "jvm/createRequest",
         requestData
