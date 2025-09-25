@@ -60,17 +60,23 @@ export default function Requests() {
           limit: limit,
         },
       });
-      apiData = response.data.data || [];
-      totalCount = response.data.pagination?.totalCount || 0;
-      setHasMore(response.data.pagination?.hasNextPage || false);
+      apiData = response.data.data.data || [];
+      totalCount = response.data.data.pagination?.totalCount || 0;
+      setHasMore(response.data.data.pagination?.hasNextPage || false);
+
+      // Ensure each row has an id field for DataGrid
+      const dataWithIds = apiData.map((item, index) => ({
+        ...item,
+        id: item.groupId || item.id || index,
+      }));
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (isLoadMore) {
-        setData((prev) => [...prev, ...apiData]);
+        setData((prev) => [...prev, ...dataWithIds]);
       } else {
-        setData(apiData);
-        setAllData(apiData);
+        setData(dataWithIds);
+        setAllData(dataWithIds);
       }
 
       setTotalCount(totalCount);
@@ -159,7 +165,6 @@ export default function Requests() {
 
   const handleRequestClick = (rowData) => {
     // Handle request click - you can add modal or navigation logic here
-    console.log("Request clicked:", rowData);
   };
 
   const columns = RequestColumns({
@@ -244,17 +249,6 @@ export default function Requests() {
             slots={{
               footer: () => null,
             }}
-            getRowClassName={(params) => {
-              const status = params.row.status?.toLowerCase();
-              if (status === "pending") return "row-pending";
-              if (status === "rejected") return "row-rejected";
-              if (status === "approved") return "row-approved";
-              if (status === "clarification needed") return "row-clarification";
-              if (status === "draft") return "row-draft";
-              if (status === "submitted") return "row-submitted";
-              if (status === "declined") return "row-declined";
-              return "";
-            }}
             sx={{
               "& .MuiDataGrid-cell": {
                 "&:focus": { outline: "none" },
@@ -283,27 +277,6 @@ export default function Requests() {
               },
               "& .MuiDataGrid-row:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-              "& .row-pending": {
-                backgroundColor: "#f4f5ba !important",
-              },
-              "& .row-rejected": {
-                backgroundColor: "#e6b2aa !important",
-              },
-              "& .row-approved": {
-                backgroundColor: "#baf5c2 !important",
-              },
-              "& .row-clarification": {
-                backgroundColor: "#9be7fa !important",
-              },
-              "& .row-draft": {
-                backgroundColor: "#e0e0e0 !important",
-              },
-              "& .row-submitted": {
-                backgroundColor: "#bbdefb !important",
-              },
-              "& .row-declined": {
-                backgroundColor: "#e6b2aa !important",
               },
             }}
           />
