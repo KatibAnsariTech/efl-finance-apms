@@ -179,14 +179,28 @@ export default function JVDetails() {
       return;
     }
 
+    if (!requestId) {
+      swal("Error", "No request ID found", "error");
+      return;
+    }
+
     try {
       setActionLoading(true);
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const apiEndpoint = action === "approved" ? "jvm/acceptForm" : "jvm/declineForm";
+      
+      const response = await userRequest.post(apiEndpoint, {
+        id: requestId,
+        comment: comment.trim() || (action === "approved" ? "Approved" : "Declined")
+      });
 
-      swal("Success", `JV ${action} successfully`, "success");
-      setComment("");
-      getData();
+      if (response.data.statusCode === 200) {
+        swal("Success", `JV ${action} successfully`, "success");
+        setComment("");
+        getData(); // Refresh the data
+      } else {
+        throw new Error(response.data.message || `Failed to ${action} JV`);
+      }
     } catch (error) {
       console.error("Error performing action:", error);
       showErrorMessage(error, `Failed to ${action} JV`, swal);
