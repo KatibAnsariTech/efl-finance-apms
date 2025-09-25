@@ -160,8 +160,8 @@ export default function InitiateJV() {
         return;
       }
       
-      const journalVouchers = data.map((entry) => ({
-        slNo: entry.slNo?.toString(),
+      const items = data.map((entry) => ({
+        slNo: parseInt(entry.slNo) || 0,
         documentType: entry.documentType,
         documentDate: new Date(entry.documentDate).toISOString(),
         businessArea: entry.businessArea,
@@ -181,10 +181,17 @@ export default function InitiateJV() {
         personalNumber: entry.personalNumber,
       }));
 
-      // Call the createRequest API endpoint with array of objects directly
+      // New API structure with autoReversal, document, and items
+      const requestData = {
+        autoReversal: autoReversal === "Yes",
+        document: "", // Empty string as per your example
+        items: items
+      };
+
+      // Call the createRequest API endpoint with new structure
       const response = await userRequest.post(
         "jvm/createRequest",
-        journalVouchers
+        requestData
       );
 
       swal(
