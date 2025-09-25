@@ -29,38 +29,6 @@ export default function JVMMaster() {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
   const selectedCategory = menuItems[selectedTab];
 
-  // API URL helpers
-  const getAPIURL = () => {
-    const tabLabel = menuItems[selectedTab];
-    if (tabLabel === "Document Type") return "/admin/getLatestDocumentTypes";
-    if (tabLabel === "Posting Key") return "/admin/getLatestPostingKeys";
-    if (tabLabel === "Hierarchy") return "/admin/getLatestHierarchies";
-    return "/admin/getLatestDocumentTypes";
-  };
-
-  // Fetch latest data for display in toolbar
-  const fetchLatestData = async () => {
-    try {
-      const res = await userRequest.get(getAPIURL(), {
-        params: {
-          page: 1,
-          limit: 1,
-        },
-      });
-      const result = res?.data?.data?.data || [];
-      setLatestData(result);
-    } catch (err) {
-      console.error("Failed to fetch latest data:", err);
-    }
-  };
-
-  useEffect(() => {
-    // Only fetch latest data for hierarchy tab (selectedTab === 2)
-    if (selectedTab === 2) {
-      fetchLatestData();
-    }
-  }, [selectedTab]);
-
   const handleEdit = (row) => {
     setEditData(row);
     setOpen(true);
@@ -106,10 +74,6 @@ export default function JVMMaster() {
   const getData = () => {
     // Trigger table refresh by updating the refresh trigger
     setRefreshTrigger(prev => prev + 1);
-    // Also refresh latest data for toolbar (only for hierarchy tab)
-    if (selectedTab === 2) {
-      fetchLatestData();
-    }
   };
 
   return (
@@ -269,6 +233,7 @@ export default function JVMMaster() {
                   handleEdit={handleEdit}
                   handleDelete={handleDelete}
                   refreshTrigger={refreshTrigger}
+                  onDataUpdate={setLatestData}
                 />
               )}
             </>

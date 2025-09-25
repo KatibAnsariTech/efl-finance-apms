@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { IconButton, Box, Typography, Chip } from "@mui/material";
+import { IconButton, Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
@@ -9,7 +9,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function HierarchyTable({ handleEdit, handleDelete, refreshTrigger }) {
+export default function HierarchyTable({ handleEdit, handleDelete, refreshTrigger, onDataUpdate }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,21 +23,31 @@ export default function HierarchyTable({ handleEdit, handleDelete, refreshTrigge
     setLoading(true);
     try {
       const response = await userRequest.get(
-        `/jvm/getMasters?key=Hierarchy&page=${paginationModel.page + 1}&limit=${
+        `/jvm/getApprovalTypes?page=${paginationModel.page + 1}&limit=${
           paginationModel.pageSize
         }`
       );
       if (response.data.success) {
-        const mappedData = response.data.data.masters.map((item, index) => ({
+        const mappedData = response.data.data.approvalTypes.map((item, index) => ({
           id: item._id,
           sno: paginationModel.page * paginationModel.pageSize + index + 1,
-          requester: item.requester || "-",
-          approver1: item.approver1 || "-",
-          approver2: item.approver2 || "-",
+          requester: item.requesterId?.user?.username || "-",
+          approver1: item.steps?.[0]?.approverId?.user?.username || "-",
+          approver2: item.steps?.[1]?.approverId?.user?.username || "-",
+          requesterEmail: item.requesterId?.user?.email || "-",
+          approver1Email: item.steps?.[0]?.approverId?.user?.email || "-",
+          approver2Email: item.steps?.[1]?.approverId?.user?.email || "-",
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
           ...item,
         }));
         setData(mappedData);
         setRowCount(response.data.data.total);
+        
+        // Pass the latest data to parent component for toolbar display
+        if (onDataUpdate && mappedData.length > 0) {
+          onDataUpdate(mappedData[0]); // Send the first (latest) record
+        }
       }
     } catch (error) {
       console.error("Error fetching Hierarchy data:", error);
@@ -72,18 +82,14 @@ export default function HierarchyTable({ handleEdit, handleDelete, refreshTrigge
     handleDelete(id);
   };
 
-  const renderUserChip = (value) => {
+  const renderUserText = (value) => {
     if (!value || value === "-") {
       return <Typography variant="body2" color="text.secondary">-</Typography>;
     }
     return (
-      <Chip
-        label={value}
-        size="small"
-        color="primary"
-        variant="outlined"
-        sx={{ fontWeight: 500 }}
-      />
+      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+        {value}
+      </Typography>
     );
   };
 
@@ -105,7 +111,7 @@ export default function HierarchyTable({ handleEdit, handleDelete, refreshTrigge
       align: "center",
       headerAlign: "center",
       resizable: true,
-      renderCell: (params) => renderUserChip(params.value),
+      renderCell: (params) => renderUserText(params.value),
     },
     {
       field: "approver1",
@@ -116,7 +122,7 @@ export default function HierarchyTable({ handleEdit, handleDelete, refreshTrigge
       align: "center",
       headerAlign: "center",
       resizable: true,
-      renderCell: (params) => renderUserChip(params.value),
+      renderCell: (params) => renderUserText(params.value),
     },
     {
       field: "approver2",
@@ -127,7 +133,7 @@ export default function HierarchyTable({ handleEdit, handleDelete, refreshTrigge
       align: "center",
       headerAlign: "center",
       resizable: true,
-      renderCell: (params) => renderUserChip(params.value),
+      renderCell: (params) => renderUserText(params.value),
     },
     {
       field: "actions",

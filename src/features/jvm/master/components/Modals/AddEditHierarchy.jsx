@@ -24,16 +24,20 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
 
   React.useEffect(() => {
     if (open) {
-      fetchRequesters();
-      fetchApprovers();
+      fetchUsers();
     }
   }, [open]);
 
   React.useEffect(() => {
     if (hierarchyData) {
-      setValue("requester", hierarchyData.requester || "");
-      setValue("approver1", hierarchyData.approver1 || "");
-      setValue("approver2", hierarchyData.approver2 || "");
+      // Handle new data structure from getApprovalTypes API
+      const requesterUsername = hierarchyData.requester || hierarchyData.requesterId?.user?.username || "";
+      const approver1Username = hierarchyData.approver1 || hierarchyData.steps?.[0]?.approverId?.user?.username || "";
+      const approver2Username = hierarchyData.approver2 || hierarchyData.steps?.[1]?.approverId?.user?.username || "";
+      
+      setValue("requester", requesterUsername);
+      setValue("approver1", approver1Username);
+      setValue("approver2", approver2Username);
     } else {
       reset();
       setSelectedRequester(null);
@@ -44,40 +48,40 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
 
   React.useEffect(() => {
     if (hierarchyData && requesters.length > 0 && approvers.length > 0) {
-      const requesterOption = requesters.find(user => user.username === hierarchyData.requester);
-      const approver1Option = approvers.find(user => user.username === hierarchyData.approver1);
-      const approver2Option = approvers.find(user => user.username === hierarchyData.approver2);
+      // Handle new data structure from getApprovalTypes API
+      const requesterUsername = hierarchyData.requester || hierarchyData.requesterId?.user?.username;
+      const approver1Username = hierarchyData.approver1 || hierarchyData.steps?.[0]?.approverId?.user?.username;
+      const approver2Username = hierarchyData.approver2 || hierarchyData.steps?.[1]?.approverId?.user?.username;
       
-      setSelectedRequester(requesterOption ? { value: requesterOption._id, label: requesterOption.username } : null);
-      setSelectedApprover1(approver1Option ? { value: approver1Option._id, label: approver1Option.username } : null);
-      setSelectedApprover2(approver2Option ? { value: approver2Option._id, label: approver2Option.username } : null);
+      const requesterOption = requesters.find(user => user.username === requesterUsername);
+      const approver1Option = approvers.find(user => user.username === approver1Username);
+      const approver2Option = approvers.find(user => user.username === approver2Username);
+      
+      setSelectedRequester(requesterOption ? { value: requesterOption.userRoleId, label: requesterOption.username } : null);
+      setSelectedApprover1(approver1Option ? { value: approver1Option.userRoleId, label: approver1Option.username } : null);
+      setSelectedApprover2(approver2Option ? { value: approver2Option.userRoleId, label: approver2Option.username } : null);
     }
   }, [hierarchyData, requesters, approvers]);
 
 
-  // Fetch requesters from API
-  const fetchRequesters = async () => {
+  // Fetch all users with a single API call
+  const fetchUsers = async () => {
     try {
-      const response = await userRequest.get("/jvm/getJVMUsersWithEmptyUserType?for=Requester");
-      if (response.data.success) {
-        setRequesters(response.data.data || []);
-      }
-    } catch (error) {
-      console.error("Error fetching requester users:", error);
-      showErrorMessage(error, "Error fetching requester users", swal);
-    }
-  };
+      // Make both API calls in parallel
+      const [requesterResponse, approverResponse] = await Promise.all([
+        userRequest.get("/jvm/getJVMUsersWithEmptyUserType?for=Requester"),
+        userRequest.get("/jvm/getJVMUsersWithEmptyUserType?for=Approver")
+      ]);
 
-  // Fetch approvers from API
-  const fetchApprovers = async () => {
-    try {
-      const response = await userRequest.get("/jvm/getJVMUsersWithEmptyUserType?for=Approver");
-      if (response.data.success) {
-        setApprovers(response.data.data || []);
+      if (requesterResponse.data.success) {
+        setRequesters(requesterResponse.data.data || []);
+      }
+      if (approverResponse.data.success) {
+        setApprovers(approverResponse.data.data || []);
       }
     } catch (error) {
-      console.error("Error fetching approver users:", error);
-      showErrorMessage(error, "Error fetching approver users", swal);
+      console.error("Error fetching users:", error);
+      showErrorMessage(error, "Error fetching users", swal);
     }
   };
 
@@ -103,20 +107,39 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
+      // Validate that all required fields are selected
+      if (!selectedRequester?.value) {
+        swal("Error!", "Please select a requester", "error");
+        setLoading(false);
+        return;
+      }
+      if (!selectedApprover1?.value) {
+        swal("Error!", "Please select approver 1", "error");
+        setLoading(false);
+        return;
+      }
+      if (!selectedApprover2?.value) {
+        swal("Error!", "Please select approver 2", "error");
+        setLoading(false);
+        return;
+      }
+
       // Format data according to your required structure
       const formattedData = {
-        userId: selectedRequester?.value, // Requester user ID
+        requesterId: selectedRequester.value, // Requester user ID
         steps: [
           {
             level: 1,
-            userId: selectedApprover1?.value // First approver user ID
+            approverId: selectedApprover1.value // First approver user ID
           },
           {
             level: 2,
-            userId: selectedApprover2?.value // Second approver user ID
+            approverId: selectedApprover2.value // Second approver user ID
           }
         ]
       };
+
+      console.log("Sending data:", formattedData); // Debug log
 
       if (hierarchyData?._id) {
         await userRequest.put(`/jvm/updateMasters?id=${hierarchyData._id}`, formattedData);
@@ -145,13 +168,13 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
 
   // Create options for requesters dropdown
   const requesterOptions = requesters?.map((user) => ({
-    value: user._id,
+    value: user.userRoleId,
     label: user.username,
   }));
 
   // Create options for approvers dropdown
   const approverOptions = approvers?.map((user) => ({
-    value: user._id,
+    value: user.userRoleId,
     label: user.username,
   }));
 
@@ -206,6 +229,7 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
             getOptionLabel={(option) => option?.label || option || ""}
             value={selectedRequester}
             onChange={(_, newValue) => {
+              console.log("Selected Requester:", newValue); // Debug log
               setSelectedRequester(newValue);
               setValue("requester", newValue?.value || "");
             }}
