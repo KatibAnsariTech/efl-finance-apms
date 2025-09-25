@@ -11,11 +11,11 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { userRequest } from "src/requestMethod";
-import { fDateTime } from "src/utils/format-time";
 import { useRouter } from "src/routes/hooks";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
+import { JVDetailsColumns } from "../components/JVDetailsColumns";
 import RequestStatus from "../components/RequestStatus";
 import { Helmet } from "react-helmet-async";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -195,165 +195,7 @@ export default function JVDetails() {
     }
   };
 
-  const columns = [
-    {
-      field: "lineNumber",
-      headerName: "S No",
-      flex: 0.5,
-      minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "type",
-      headerName: "Type",
-      flex: 0.8,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "documentType",
-      headerName: "Document Type",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "documentDate",
-      headerName: "Document Date",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "businessArea",
-      headerName: "Business Area",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "accountType",
-      headerName: "Account Type",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "postingKey",
-      headerName: "Posting Key",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "vendorCustomerGLNumber",
-      headerName: "GL Number",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "vendorCustomerGLName",
-      headerName: "GL Name",
-      flex: 2,
-      minWidth: 200,
-      align: "left",
-      headerAlign: "center",
-    },
-    {
-      field: "amount",
-      headerName: "Amount",
-      flex: 1.2,
-      minWidth: 130,
-      align: "right",
-      headerAlign: "center",
-      renderCell: (params) => {
-        const amount = params.value;
-        const type = params.row.type;
-        const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
-        
-        if (type === 'Debit') {
-          return formattedAmount;
-        } else {
-          return `(${formattedAmount})`;
-        }
-      },
-    },
-    {
-      field: "assignment",
-      headerName: "Assignment",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "profitCenter",
-      headerName: "Profit Center",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "specialGLIndication",
-      headerName: "Special GL",
-      flex: 1,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "referenceNumber",
-      headerName: "Reference",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "remarks",
-      headerName: "Remarks",
-      flex: 2,
-      minWidth: 200,
-      align: "left",
-      headerAlign: "center",
-    },
-    {
-      field: "postingDate",
-      headerName: "Posting Date",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "costCenter",
-      headerName: "Cost Center",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "personalNumber",
-      headerName: "Personal No.",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-  ];
+  const columns = JVDetailsColumns();
 
   return (
     <>
