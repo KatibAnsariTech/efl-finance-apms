@@ -10,12 +10,14 @@ import { useRouter } from "src/routes/hooks";
 import { Box, Tooltip, Typography, IconButton } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import { Helmet } from "react-helmet-async";
-import { useParams, useLocation } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
+import { userRequest } from "src/requestMethod";
 // import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function JVDetails() {
   const router = useRouter();
-  const { jvId } = useParams();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get('id');
   const location = useLocation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +26,7 @@ export default function JVDetails() {
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
   const [jvInfo, setJvInfo] = useState({});
+  const [groupId, setGroupId] = useState(null);
 
   // Generate mock detailed data for a specific JV
   const generateJVDetailData = (jvId, count = 8) => {
@@ -130,9 +133,30 @@ export default function JVDetails() {
     };
   };
 
+  // Function to fetch data from API
+  const fetchFormByGroupId = async (groupId) => {
+    try {
+      const response = await userRequest.get(`jvm/getFormByGroupId?groupId=${groupId}`);
+      console.log("API Response:", response.data);
+      
+      // Handle the response structure: { statusCode, data: [...], message, success }
+      if (response.data && response.data.success && Array.isArray(response.data.data)) {
+        return response.data.data;
+      } else {
+        throw new Error("Invalid API response format");
+      }
+    } catch (error) {
+      console.error("Error fetching form by group ID:", error);
+      throw error;
+    }
+  };
+
   const getData = async () => {
     setLoading(true);
     try {
+      // Log the id extracted from URL
+      console.log("id from URL params:", id);
+      
       // Check if we have data passed from the previous page
       let passedData = location.state;
       console.log("Location state:", passedData);
@@ -152,7 +176,55 @@ export default function JVDetails() {
         }
       }
       
-      if (passedData && passedData.rows && Array.isArray(passedData.rows) && passedData.rows.length > 0) {
+      // Check if we have a groupId to fetch from API
+      // Use id from URL as groupId if no groupId is provided in passedData
+      const currentGroupId = passedData?.groupId || groupId || id;
+      
+      if (currentGroupId) {
+        console.log("Fetching data for groupId:", currentGroupId);
+        const apiResponse = await fetchFormByGroupId(currentGroupId);
+        
+        // Process the API response data
+        if (apiResponse && Array.isArray(apiResponse)) {
+          const processedData = apiResponse.map((row, index) => ({
+            ...row,
+            id: row._id || `row_${index}`,
+            lineNumber: index + 1,
+            postingDate: row.postingDate ? new Date(row.postingDate) : new Date(),
+            createdAt: row.createdAt ? new Date(row.createdAt) : new Date(),
+            // Map the 'type' field to match our table expectations
+            lineType: row.type === 'Debit' ? 'Debit Entry' : 'Credit Entry',
+          }));
+          
+          // Calculate totals from the API data
+          const totalDebit = processedData
+            .filter(item => item.type === 'Debit')
+            .reduce((sum, item) => sum + (item.amount || 0), 0);
+          const totalCredit = processedData
+            .filter(item => item.type === 'Credit')
+            .reduce((sum, item) => sum + (item.amount || 0), 0);
+          
+          console.log("Processed API data:", processedData);
+          console.log("Total Debit:", totalDebit);
+          console.log("Total Credit:", totalCredit);
+          
+          // Create JV info from API data
+          const jvHeaderInfo = {
+            requestNo: passedData?.requestNo || currentGroupId,
+            status: passedData?.status || processedData[0]?.status || "Active",
+            totalDebit: totalDebit,
+            totalCredit: totalCredit,
+            createdDate: new Date(),
+          };
+
+          setData(processedData);
+          setJvInfo(jvHeaderInfo);
+          setTotalCount(processedData.length);
+          setGroupId(currentGroupId);
+        } else {
+          throw new Error("Invalid API response format");
+        }
+      } else if (passedData && passedData.rows && Array.isArray(passedData.rows) && passedData.rows.length > 0) {
         // Use the passed data from API directly
         const apiRows = passedData.rows;
         console.log("API Rows received:", apiRows);
@@ -183,8 +255,8 @@ export default function JVDetails() {
       } else {
         // Fallback to mock data if no data passed
         console.log("Using fallback mock data - no passedData or rows found");
-        const detailData = generateJVDetailData(jvId, 15);
-        const jvHeaderInfo = generateJVInfo(jvId);
+        const detailData = generateJVDetailData(id, 15);
+        const jvHeaderInfo = generateJVInfo(id);
 
       // Calculate totals
       const totalDebit = detailData.reduce(
@@ -205,16 +277,36 @@ export default function JVDetails() {
       }
     } catch (error) {
       console.error("Error fetching JV detail data:", error);
+      // Fallback to mock data on error
+      const detailData = generateJVDetailData(id, 15);
+      const jvHeaderInfo = generateJVInfo(id);
+
+      // Calculate totals
+      const totalDebit = detailData.reduce(
+        (sum, item) => sum + item.debitAmount,
+        0
+      );
+      const totalCredit = detailData.reduce(
+        (sum, item) => sum + item.creditAmount,
+        0
+      );
+
+      jvHeaderInfo.totalDebit = totalDebit;
+      jvHeaderInfo.totalCredit = totalCredit;
+
+      setData(detailData);
+      setJvInfo(jvHeaderInfo);
+      setTotalCount(detailData.length);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (jvId) {
+    if (id) {
       getData();
     }
-  }, [jvId, page, rowsPerPage]);
+  }, [id, page, rowsPerPage]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
@@ -298,6 +390,14 @@ export default function JVDetails() {
       headerAlign: "center",
     },
     {
+      field: "type",
+      headerName: "Type",
+      flex: 0.8,
+      minWidth: 100,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
       field: "documentType",
       headerName: "Document Type",
       flex: 1,
@@ -363,8 +463,16 @@ export default function JVDetails() {
       headerAlign: "center",
       renderCell: (params) => {
         const amount = params.value;
+        const type = params.row.type;
         const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
-        return amount >= 0 ? formattedAmount : `(${formattedAmount})`;
+        
+        // For Debit entries, show positive amount
+        // For Credit entries, show negative amount (in parentheses)
+        if (type === 'Debit') {
+          return formattedAmount;
+        } else {
+          return `(${formattedAmount})`;
+        }
       },
     },
     {
@@ -431,31 +539,6 @@ export default function JVDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-    },
-    {
-      field: "autoReversal",
-      headerName: "Auto Reversal",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "inline-block",
-            px: 1,
-            py: 0.5,
-            borderRadius: 1,
-            backgroundColor: params.value === "Y" ? "#e8f5e8" : "#f5f5f5",
-            color: params.value === "Y" ? "#2e7d32" : "#666",
-            fontSize: "0.75rem",
-            fontWeight: 600,
-            textTransform: "uppercase",
-          }}
-        >
-          {params.value}
-        </Box>
-      ),
     },
   ];
 

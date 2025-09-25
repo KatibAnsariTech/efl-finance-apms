@@ -415,7 +415,7 @@ export default function Router() {
           ),
         },
         {
-          path: "/jvm/requested-jvs/jv-detail/:jvId",
+          path: "/jvm/requested-jvs/jv-detail",
           element: <JVDetailPage />,
         },
         {

@@ -19,7 +19,7 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/credit-deviation/master-sheet")) return "Master Sheet";
 
   // JVM routes
-  if (path.startsWith("/jvm/requested-jvs/jv-detail/")) return "JV Detail";
+  if (path.startsWith("/jvm/requested-jvs/jv-detail")) return "JV Detail";
   if (path.startsWith("/jvm/requested-jvs")) return "JV Status";
   if (path.startsWith("/jvm/initiate-jv")) return "Initiate Journal Voucher";
   if (path.startsWith("/jvm/auto-reversal")) return "Auto Reversal";

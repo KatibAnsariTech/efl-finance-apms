@@ -215,7 +215,7 @@ export default function JVStatus() {
             // Store data in localStorage as backup
             localStorage.setItem('jvDetailData', JSON.stringify(params.row));
             
-            router.push(`/jvm/requested-jvs/jv-detail/${params.row.requestNo}`, { 
+            router.push(`/jvm/requested-jvs/jv-detail?id=${params.row.requestNo}`, { 
               state: params.row 
             });
           }}
