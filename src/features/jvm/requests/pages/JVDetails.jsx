@@ -32,38 +32,15 @@ export default function JVDetails() {
   const [comment, setComment] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [allData, setAllData] = useState([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-  // Status color mapping
-  const getStatusColor = (status) => {
-    const normalizedStatus = (status || "").toLowerCase();
-    switch (normalizedStatus) {
-      case "pending":
-        return "#f4f5ba";
-      case "declined":
-        return "#e6b2aa";
-      case "approved":
-        return "#baf5c2";
-      case "clarification needed":
-        return "#9be7fa";
-      case "draft":
-        return "#e0e0e0";
-      case "submitted":
-        return "#bbdefb";
-      case "rejected":
-        return "#e6b2aa";
-      default:
-        return "white";
-    }
-  };
 
   const getData = async (pageNum = 1, isLoadMore = false) => {
     try {
@@ -73,75 +50,44 @@ export default function JVDetails() {
         setLoading(true);
       }
 
-      const page = pageNum;
-      const limit = rowsPerPage;
-
-      let apiData;
-      let totalCount;
-
-      try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: page,
-              limit: limit,
-            },
-          }
-        );
-        apiData = response.data;
-        totalCount = response.headers["x-total-count"] || 100;
-      } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
-        );
-        const fetchData = await fetchResponse.json();
-        apiData = fetchData;
-        totalCount = 100;
+      if (!requestId) {
+        setData([]);
+        return;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await userRequest.get(`jvm/getFormByGroupId?groupId=${requestId}`, {
+        params: {
+          page: pageNum,
+          limit: rowsPerPage,
+        },
+      });
+      
+      if (response.data.statusCode === 200) {
+        const items = response.data.data.items || [];
+        const totalItems = response.data.data.items?.length || 0;
+        
+        // Add line numbers and ensure unique IDs
+        const dataWithLineNumbers = items.map((item, index) => ({
+          ...item,
+          id: item._id || item.itemId || index,
+          lineNumber: (pageNum - 1) * rowsPerPage + index + 1,
+        }));
 
-      let transformedData;
-
-      transformedData = apiData.map((item, index) => ({
-        id: item.id,
-        sNo: `JV${String(item.sNo || item.id).padStart(6, "0")}`,
-        documentType: item.documentType || "JV",
-        documentDate:
-          item.documentDate || new Date().toISOString().split("T")[0],
-        postingDate: item.postingDate || new Date().toISOString().split("T")[0],
-        businessArea: item.businessArea || "1000",
-        accountType: item.accountType || "GL",
-        postingKey: item.postingKey || "40",
-        vendorCustomerGLName: item.vendorCustomerGLName || "Sample Vendor",
-        vendorCustomerGLNumber: item.vendorCustomerGLNumber || "100000",
-        amount: parseFloat(item.amount || item.transactionAmount || 0),
-        assignment: item.assignment || "",
-        costCenter: item.costCenter || "1000",
-        profitCenter: item.profitCenter || "1000",
-        specialGLIndication: item.specialGLIndication || "",
-        referenceNumber:
-          item.referenceNumber || `REF${String(item.id).padStart(4, "0")}`,
-        personalNumber: item.personalNumber || "",
-        remarks: item.remarks || item.description || "",
-        autoReversal: item.autoReversal || "N",
-        status: item.status || "Draft",
-        createdAt: item.createdAt || new Date().toISOString(),
-      }));
-
-      if (isLoadMore) {
-        setData((prev) => [...prev, ...transformedData]);
+        if (isLoadMore) {
+          setData((prev) => [...prev, ...dataWithLineNumbers]);
+        } else {
+          setData(dataWithLineNumbers);
+        }
+        
+        setTotalCount(totalItems);
+        setHasMore(pageNum * rowsPerPage < totalItems);
       } else {
-        setData(transformedData);
-        setAllData(transformedData);
+        throw new Error(response.data.message || "Failed to fetch form data");
       }
-
-      setTotalCount(totalCount);
-      setHasMore(page * limit < totalCount);
     } catch (err) {
+      console.error("Error fetching form data:", err);
+      showErrorMessage(err, "Failed to fetch form details", swal);
       setData([]);
-      setAllData([]);
       setTotalCount(0);
       setHasMore(false);
     } finally {
@@ -150,77 +96,15 @@ export default function JVDetails() {
     }
   };
 
-  const getAllData = async () => {
-    try {
-      let allApiData;
-
-      try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: 1,
-              limit: 1000,
-            },
-          }
-        );
-        allApiData = response.data;
-      } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=1&limit=1000`
-        );
-        const fetchData = await fetchResponse.json();
-        allApiData = fetchData;
-      }
-
-      let transformedData;
-
-      transformedData = allApiData.map((item, index) => ({
-        id: item.id,
-        sNo: `JV${String(item.sNo || item.id).padStart(6, "0")}`,
-        documentType: item.documentType || "JV",
-        documentDate:
-          item.documentDate || new Date().toISOString().split("T")[0],
-        postingDate: item.postingDate || new Date().toISOString().split("T")[0],
-        businessArea: item.businessArea || "1000",
-        accountType: item.accountType || "GL",
-        postingKey: item.postingKey || "40",
-        vendorCustomerGLName: item.vendorCustomerGLName || "Sample Vendor",
-        vendorCustomerGLNumber: item.vendorCustomerGLNumber || "100000",
-        amount: parseFloat(item.amount || item.transactionAmount || 0),
-        assignment: item.assignment || "",
-        costCenter: item.costCenter || "1000",
-        profitCenter: item.profitCenter || "1000",
-        specialGLIndication: item.specialGLIndication || "",
-        referenceNumber:
-          item.referenceNumber || `REF${String(item.id).padStart(4, "0")}`,
-        personalNumber: item.personalNumber || "",
-        remarks: item.remarks || item.description || "",
-        autoReversal: item.autoReversal || "N",
-        status: item.status || "Draft",
-        createdAt: item.createdAt || new Date().toISOString(),
-      }));
-
-      setAllData(transformedData);
-      setData(transformedData);
-      setTotalCount(transformedData.length);
-      setHasMore(false);
-    } catch (err) {
-      setAllData([]);
-      setData([]);
-      setTotalCount(0);
-      setHasMore(false);
-    }
-  };
-
   useEffect(() => {
-    setPage(1);
-    setData([]);
-    setAllData([]);
-    setIsLoadingMore(false);
-    setLoading(true);
-    getData(1);
-  }, []);
+    if (requestId) {
+      setPage(1);
+      setData([]);
+      setIsLoadingMore(false);
+      setLoading(true);
+      getData(1);
+    }
+  }, [requestId]);
 
   const handleLoadMore = useCallback(() => {
     if (hasMore && !loadingMore && !loading && !isLoadingMore) {
@@ -278,6 +162,7 @@ export default function JVDetails() {
     };
   }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
 
+
   const handleRequestClick = (rowData) => {
     setSelectedRowData(rowData);
     setOpenModal(true);
@@ -310,9 +195,165 @@ export default function JVDetails() {
     }
   };
 
-  const columns = RequestColumns({
-    onRequestClick: handleRequestClick,
-  });
+  const columns = [
+    {
+      field: "lineNumber",
+      headerName: "S No",
+      flex: 0.5,
+      minWidth: 80,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "type",
+      headerName: "Type",
+      flex: 0.8,
+      minWidth: 100,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "documentType",
+      headerName: "Document Type",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "documentDate",
+      headerName: "Document Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => fDateTime(params.value),
+    },
+    {
+      field: "businessArea",
+      headerName: "Business Area",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "accountType",
+      headerName: "Account Type",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "postingKey",
+      headerName: "Posting Key",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "vendorCustomerGLNumber",
+      headerName: "GL Number",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "vendorCustomerGLName",
+      headerName: "GL Name",
+      flex: 2,
+      minWidth: 200,
+      align: "left",
+      headerAlign: "center",
+    },
+    {
+      field: "amount",
+      headerName: "Amount",
+      flex: 1.2,
+      minWidth: 130,
+      align: "right",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const amount = params.value;
+        const type = params.row.type;
+        const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
+        
+        if (type === 'Debit') {
+          return formattedAmount;
+        } else {
+          return `(${formattedAmount})`;
+        }
+      },
+    },
+    {
+      field: "assignment",
+      headerName: "Assignment",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "profitCenter",
+      headerName: "Profit Center",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "specialGLIndication",
+      headerName: "Special GL",
+      flex: 1,
+      minWidth: 100,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "referenceNumber",
+      headerName: "Reference",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "remarks",
+      headerName: "Remarks",
+      flex: 2,
+      minWidth: 200,
+      align: "left",
+      headerAlign: "center",
+    },
+    {
+      field: "postingDate",
+      headerName: "Posting Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => fDateTime(params.value),
+    },
+    {
+      field: "costCenter",
+      headerName: "Cost Center",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "personalNumber",
+      headerName: "Personal No.",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+    },
+  ];
 
   return (
     <>
@@ -380,18 +421,6 @@ export default function JVDetails() {
               slots={{
                 footer: () => null,
               }}
-              getRowClassName={(params) => {
-                const status = params.row.status?.toLowerCase();
-                if (status === "pending") return "row-pending";
-                if (status === "rejected") return "row-rejected";
-                if (status === "approved") return "row-approved";
-                if (status === "clarification needed")
-                  return "row-clarification";
-                if (status === "draft") return "row-draft";
-                if (status === "submitted") return "row-submitted";
-                if (status === "declined") return "row-declined";
-                return "";
-              }}
               sx={{
                 "& .MuiDataGrid-cell": {
                   "&:focus": { outline: "none" },
@@ -420,27 +449,6 @@ export default function JVDetails() {
                 },
                 "& .MuiDataGrid-row:hover": {
                   backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-                "& .row-pending": {
-                  backgroundColor: "#f4f5ba !important",
-                },
-                "& .row-rejected": {
-                  backgroundColor: "#e6b2aa !important",
-                },
-                "& .row-approved": {
-                  backgroundColor: "#baf5c2 !important",
-                },
-                "& .row-clarification": {
-                  backgroundColor: "#9be7fa !important",
-                },
-                "& .row-draft": {
-                  backgroundColor: "#e0e0e0 !important",
-                },
-                "& .row-submitted": {
-                  backgroundColor: "#bbdefb !important",
-                },
-                "& .row-declined": {
-                  backgroundColor: "#e6b2aa !important",
                 },
               }}
             />
