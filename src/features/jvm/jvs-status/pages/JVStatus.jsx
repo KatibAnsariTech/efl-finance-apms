@@ -59,17 +59,9 @@ export default function JVStatus() {
         const apiData = response.data.data.data;
         const pagination = response.data.data.pagination;
         const processedData = apiData.map((item, index) => ({
-          id: item.groupId || `group-${index}`,
-          requestNo: item.groupId || `G-${item.slNo}`,
-          pId: item.parentId,
-          slNo: item.slNo,
-          groupId: item.groupId,
-          totalAmount: item.totalAmount,
-          count: item.count,
+          ...item,
+          id: item.groupId,
           createdAt: new Date(item.createdAt),
-          status: item.status || "Pending",
-          totalDebit: item.totalAmount / 2,
-          totalCredit: item.totalAmount / 2,
         }));
         setData(processedData);
         setTotalCount(pagination.totalCount);
@@ -119,7 +111,7 @@ export default function JVStatus() {
     //   headerAlign: "center",
     // },
     {
-      field: "requestNo",
+      field: "groupId",
       headerName: "Request No.",
       flex: 1,
       minWidth: 160,
@@ -139,7 +131,7 @@ export default function JVStatus() {
           onClick={() => {
             localStorage.setItem("jvDetailData", JSON.stringify(params.row));
             router.push(
-              `/jvm/requested-jvs/jv-detail?id=${params.row.requestNo}`
+              `/jvm/requested-jvs/jv-detail?id=${params.row.groupId}`
             );
           }}
         >
@@ -148,7 +140,7 @@ export default function JVStatus() {
       ),
     },
     {
-      field: "pId",
+      field: "parentId",
       headerName: "P.Id",
       flex: 1,
       minWidth: 120,
@@ -173,7 +165,7 @@ export default function JVStatus() {
       headerAlign: "center",
     },
     {
-      field: "totalDebit",
+      field: "totalAmount",
       headerName: "Total Debit",
       flex: 1,
       minWidth: 120,
@@ -182,7 +174,7 @@ export default function JVStatus() {
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
     {
-      field: "totalCredit",
+      field: "totalAmount",
       headerName: "Total Credit",
       flex: 1,
       minWidth: 120,
@@ -204,7 +196,7 @@ export default function JVStatus() {
     // Apply search filter if search term exists
     if (search) {
       filteredData = filteredData.filter((item) =>
-        ["requestNo", "pId", "status"].some((field) =>
+        ["groupId", "parentId", "status"].some((field) =>
           item[field]?.toString().toLowerCase().includes(search.toLowerCase())
         )
       );
@@ -254,7 +246,7 @@ export default function JVStatus() {
             <DataGrid
               rows={dataFiltered || []}
               columns={columns}
-              getRowId={(row) => row?.requestNo}
+              getRowId={(row) => row?.groupId}
               loading={loading}
               pagination
               paginationMode="server"
