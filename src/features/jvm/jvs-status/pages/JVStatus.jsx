@@ -34,17 +34,15 @@ export default function JVStatus() {
     all: 0,
     pending: 0,
     approved: 0,
-    rejected: 0,
+    declined: 0,
   });
 
   const menuItems = [
     { label: "All", value: "all", count: statusCounts.all },
-    { label: "Pending", value: "pending", count: statusCounts.pending },
-    { label: "Approved", value: "approved", count: statusCounts.approved },
-    { label: "Rejected", value: "rejected", count: statusCounts.rejected },
+    { label: "Pending", value: "Pending", count: statusCounts.pending },
+    { label: "Approved", value: "Approved", count: statusCounts.approved },
+    { label: "Declined", value: "Declined", count: statusCounts.declined },
   ];
-
-
 
   const getData = async () => {
     setLoading(true);
@@ -60,12 +58,6 @@ export default function JVStatus() {
       if (response.data.statusCode === 200) {
         const apiData = response.data.data.data;
         const pagination = response.data.data.pagination;
-        
-        console.log("API Response:", response.data);
-        console.log("API Data:", apiData);
-        console.log("Pagination:", pagination);
-
-        // Process the API data to match our table structure
         const processedData = apiData.map((item, index) => ({
           id: item.groupId || `group-${index}`,
           requestNo: item.groupId || `G-${item.slNo}`,
@@ -75,20 +67,20 @@ export default function JVStatus() {
           totalAmount: item.totalAmount,
           count: item.count,
           createdAt: new Date(item.createdAt),
-          status: "Pending", // Default status as requested
-          totalDebit: item.totalAmount / 2, // Split amount between debit and credit
+          status: item.status || "Pending",
+          totalDebit: item.totalAmount / 2,
           totalCredit: item.totalAmount / 2,
         }));
-
         setData(processedData);
         setTotalCount(pagination.totalCount);
-
-        // Calculate status counts - all items are pending by default
         const counts = {
           all: pagination.totalCount,
-          pending: pagination.totalCount, // All items are pending by default
-          approved: 0,
-          rejected: 0,
+          pending: processedData.filter((item) => item.status === "Pending")
+            .length,
+          approved: processedData.filter((item) => item.status === "Approved")
+            .length,
+          declined: processedData.filter((item) => item.status === "Declined")
+            .length,
         };
         setStatusCounts(counts);
       } else {
@@ -115,70 +107,6 @@ export default function JVStatus() {
   const handleExport = () => {
     // Export functionality
     console.log("Export clicked");
-  };
-
-  // Custom ColorIndicators component for JV Status
-  const JVColorIndicators = () => {
-    // Custom circle component for displaying each color with label on hover
-    const ColorCircle = ({ color, label }) => (
-      <Tooltip title={label} arrow>
-        <Box
-          sx={{
-            width: "18px",
-            height: "18px",
-            backgroundColor: color,
-            borderRadius: "50%",
-            cursor: "pointer",
-            border: "1px solid rgba(0, 0, 0, 0.2)", // Light black border
-          }}
-        />
-      </Tooltip>
-    );
-
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 1,
-          marginLeft: 2,
-        }}
-      >
-        {/* Status color legend for JV Status */}
-        <ColorCircle color="#e8f5e8" label="Approved" />
-        <ColorCircle color="#f4f5ba" label="Pending" />
-        <ColorCircle color="#ffcdd2" label="Rejected" />
-      </Box>
-    );
-  };
-
-  const getStatusColor = (status) => {
-    const statusColors = {
-      Approved: "#e8f5e8",
-      Rejected: "#ffcdd2",
-      Pending: "#f4f5ba",
-    };
-    return statusColors[status] || "#f5f5f5";
-  };
-
-  const getStatusChip = (status) => {
-    return (
-      <Box
-        sx={{
-          display: "inline-block",
-          px: 1.5,
-          py: 0.5,
-          borderRadius: 1,
-          backgroundColor: getStatusColor(status),
-          color: "#333",
-          fontSize: "0.75rem",
-          fontWeight: 600,
-          textTransform: "uppercase",
-        }}
-      >
-        {status}
-      </Box>
-    );
   };
 
   const columns = [
@@ -209,15 +137,10 @@ export default function JVStatus() {
             "&:hover": { color: "#1565c0" },
           }}
           onClick={() => {
-            // Pass the complete data to the detail page
-            console.log("Passing data to detail page:", params.row);
-            
-            // Store data in localStorage as backup
-            localStorage.setItem('jvDetailData', JSON.stringify(params.row));
-            
-            router.push(`/jvm/requested-jvs/jv-detail?id=${params.row.requestNo}`, { 
-              state: params.row 
-            });
+            localStorage.setItem("jvDetailData", JSON.stringify(params.row));
+            router.push(
+              `/jvm/requested-jvs/jv-detail?id=${params.row.requestNo}`
+            );
           }}
         >
           {params.value}
@@ -256,7 +179,7 @@ export default function JVStatus() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || '0'}`,
+      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
     {
       field: "totalCredit",
@@ -265,8 +188,8 @@ export default function JVStatus() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || '0'}`,
-    }
+      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
   ];
 
   // Apply filtering and sorting to the data
@@ -275,19 +198,13 @@ export default function JVStatus() {
 
     // Apply status tab filter
     if (selectedTab !== "all") {
-      filteredData = filteredData.filter(
-        (item) => item.status?.toLowerCase() === selectedTab.toLowerCase()
-      );
+      filteredData = filteredData.filter((item) => item.status === selectedTab);
     }
 
     // Apply search filter if search term exists
     if (search) {
       filteredData = filteredData.filter((item) =>
-        [
-          "requestNo",
-          "pId",
-          "status",
-        ].some((field) =>
+        ["requestNo", "pId", "status"].some((field) =>
           item[field]?.toString().toLowerCase().includes(search.toLowerCase())
         )
       );
@@ -350,13 +267,6 @@ export default function JVStatus() {
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               autoHeight
-              // getRowClassName={(params) => {
-              //   const status = params.row.status?.toLowerCase();
-              //   if (status === "pending") return "row-pending";
-              //   if (status === "rejected") return "row-rejected";
-              //   if (status === "approved") return "row-approved";
-              //   return "";
-              // }}
               disableRowSelectionOnClick
               sx={{
                 "& .MuiDataGrid-cell": {
@@ -387,15 +297,6 @@ export default function JVStatus() {
                     outline: "none",
                   },
                 },
-                "& .MuiDataGrid-row.row-pending": {
-                  backgroundColor: "#f4f5ba !important",
-                },
-                "& .MuiDataGrid-row.row-rejected": {
-                  backgroundColor: "#ffcdd2 !important",
-                },
-                "& .MuiDataGrid-row.row-approved": {
-                  backgroundColor: "#e8f5e8 !important",
-                },
                 "& .MuiDataGrid-row": {
                   borderBottom: "1px solid #e0e0e0",
                 },
@@ -405,22 +306,6 @@ export default function JVStatus() {
                 },
               }}
             />
-          </Box>
-          <Box
-            sx={{
-              position: "relative",
-              height: "52px", // Match DataGrid footer height
-              marginTop: "-52px", // Overlap with DataGrid footer
-              display: "flex",
-              alignItems: "center",
-              paddingLeft: "16px",
-              zIndex: 0, // Lower z-index so pagination is clickable
-              pointerEvents: "none", // Allow clicks to pass through
-            }}
-          >
-            {/* <Box sx={{ pointerEvents: "auto" }}>
-              <JVColorIndicators />
-            </Box> */}
           </Box>
         </Card>
       </Container>
