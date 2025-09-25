@@ -100,22 +100,6 @@ export const RequestColumns = ({ onRequestClick }) => {
       headerAlign: "center",
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
-    {
-      field: "count",
-      headerName: "Count",
-      flex: 1,
-      minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "currentStep",
-      headerName: "Step",
-      flex: 1,
-      minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-    },
   ];
 
   return columns;
