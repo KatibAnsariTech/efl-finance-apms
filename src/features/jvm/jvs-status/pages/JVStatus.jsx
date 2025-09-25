@@ -14,6 +14,7 @@ import { useRouter } from "src/routes/hooks";
 import { useCounts } from "src/contexts/CountsContext";
 import { Box, Tooltip } from "@mui/material";
 import RequestModal from "src/features/credit-deviation/approvals/components/RequestModal";
+import RequestStatus from "src/features/jvm/requests/components/RequestStatus";
 import { fDateTime } from "src/utils/format-time";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
@@ -36,6 +37,8 @@ export default function JVStatus() {
     approved: 0,
     declined: 0,
   });
+  const [openStatusModal, setOpenStatusModal] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
   const menuItems = [
     { label: "All", value: "all", count: statusCounts.all },
@@ -101,15 +104,17 @@ export default function JVStatus() {
     console.log("Export clicked");
   };
 
+  const handleStatusClick = (rowData) => {
+    setSelectedRowData(rowData);
+    setOpenStatusModal(true);
+  };
+
+  const handleCloseStatusModal = () => {
+    setOpenStatusModal(false);
+    setSelectedRowData(null);
+  };
+
   const columns = [
-    // {
-    //   field: "slNo",
-    //   headerName: "S No",
-    //   flex: 0.8,
-    //   minWidth: 80,
-    //   align: "center",
-    //   headerAlign: "center",
-    // },
     {
       field: "groupId",
       headerName: "Request No.",
@@ -163,6 +168,22 @@ export default function JVStatus() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            cursor: "pointer",
+            color: "#1976d2",
+            textDecoration: "underline",
+            textDecorationThickness: "2px",
+            textUnderlineOffset: "4px",
+            fontWeight: 600,
+            "&:hover": { color: "#1565c0" },
+          }}
+          onClick={() => handleStatusClick(params.row)}
+        >
+          {params.value}
+        </Box>
+      ),
     },
     {
       field: "totalAmount",
@@ -300,6 +321,14 @@ export default function JVStatus() {
             />
           </Box>
         </Card>
+
+        <RequestStatus
+          open={openStatusModal}
+          onClose={handleCloseStatusModal}
+          rowData={selectedRowData}
+          getRequestData={getData}
+          selectedTab="jv-status"
+        />
       </Container>
     </>
   );
