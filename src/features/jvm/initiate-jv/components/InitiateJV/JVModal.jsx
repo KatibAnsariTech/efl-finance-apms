@@ -175,6 +175,8 @@ export default function JVModal({
       newErrors.documentDate = "Document Date is required";
     if (!formData.businessArea.trim())
       newErrors.businessArea = "Business Area is required";
+    else if (!/^[A-Za-z0-9]{4}$/.test(formData.businessArea.trim()))
+      newErrors.businessArea = "Business Area must be exactly 4 alphanumeric characters";
     if (!formData.accountType)
       newErrors.accountType = "Account Type is required";
     if (!formData.postingKey) newErrors.postingKey = "Posting Key is required";
@@ -389,7 +391,7 @@ export default function JVModal({
                   value={formData.businessArea}
                   onChange={(e) => handleChange("businessArea", e.target.value)}
                   error={!!errors.businessArea}
-                  helperText={errors.businessArea}
+                  helperText={errors.businessArea || "Exactly 4 characters required"}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
