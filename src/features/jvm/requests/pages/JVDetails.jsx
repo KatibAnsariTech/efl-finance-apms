@@ -17,6 +17,7 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import { JVDetailsColumns } from "../components/JVDetailsColumns";
 import RequestStatus from "../components/RequestStatus";
+import JVCurrentStatus from "../components/JVCurrentStatus";
 import { Helmet } from "react-helmet-async";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -28,9 +29,12 @@ export default function JVDetails() {
   // Get ID from either URL parameter or query parameter
   const requestId = jvId || searchParams.get('id');
   const [data, setData] = useState([]);
+  const [jvData, setJvData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [assigned, setAssigned] = useState(false);
 
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -42,7 +46,36 @@ export default function JVDetails() {
   const [selectedRowData, setSelectedRowData] = useState(null);
 
 
-  const getData = async (pageNum = 1, isLoadMore = false) => {
+  const getRequestInfo = useCallback(async () => {
+    try {
+      if (!requestId) {
+        setJvData(null);
+        setAssigned(false);
+        return;
+      }
+
+      const response = await userRequest.get(`jvm/getRequestInfoByGroupId?groupId=${requestId}`);
+      
+      if (response.data.statusCode === 200) {
+        const requestData = response.data.data;
+        
+        // Store the full JV data for CurrentStatus component
+        setJvData(requestData);
+        
+        // Set assigned status from the response data
+        setAssigned(requestData.assigned || false);
+      } else {
+        throw new Error(response.data.message || "Failed to fetch request info");
+      }
+    } catch (err) {
+      console.error("Error fetching request info:", err);
+      showErrorMessage(err, "Failed to fetch request details", swal);
+      setJvData(null);
+      setAssigned(false);
+    }
+  }, [requestId]);
+
+  const getFormItems = useCallback(async (pageNum = 1, isLoadMore = false) => {
     try {
       if (isLoadMore) {
         setLoadingMore(true);
@@ -55,7 +88,7 @@ export default function JVDetails() {
         return;
       }
 
-      const response = await userRequest.get(`jvm/getFormByGroupId?groupId=${requestId}`, {
+      const response = await userRequest.get(`jvm/getFormItemsByGroupId?groupId=${requestId}`, {
         params: {
           page: pageNum,
           limit: rowsPerPage,
@@ -64,14 +97,18 @@ export default function JVDetails() {
       
       if (response.data.statusCode === 200) {
         const items = response.data.data.items || [];
-        const totalItems = response.data.data.items?.length || 0;
+        const pagination = response.data.data.pagination || {};
+        const totalItems = pagination.totalItems || 0;
         
         // Add line numbers and ensure unique IDs
-        const dataWithLineNumbers = items.map((item, index) => ({
-          ...item,
-          id: item._id || item.itemId || index,
-          lineNumber: (pageNum - 1) * rowsPerPage + index + 1,
-        }));
+        const dataWithLineNumbers = items.map((item, index) => {
+          const lineNumber = (pageNum - 1) * rowsPerPage + index + 1;
+          return {
+            ...item,
+            id: item._id || item.itemId || `${pageNum}-${index}`,
+            lineNumber: lineNumber,
+          };
+        });
 
         if (isLoadMore) {
           setData((prev) => [...prev, ...dataWithLineNumbers]);
@@ -80,12 +117,12 @@ export default function JVDetails() {
         }
         
         setTotalCount(totalItems);
-        setHasMore(pageNum * rowsPerPage < totalItems);
+        setHasMore(pagination.hasNextPage || false);
       } else {
-        throw new Error(response.data.message || "Failed to fetch form data");
+        throw new Error(response.data.message || "Failed to fetch form items");
       }
     } catch (err) {
-      console.error("Error fetching form data:", err);
+      console.error("Error fetching form items:", err);
       showErrorMessage(err, "Failed to fetch form details", swal);
       setData([]);
       setTotalCount(0);
@@ -94,12 +131,24 @@ export default function JVDetails() {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [requestId, rowsPerPage]);
+
+  const getData = useCallback(async (pageNum = 1, isLoadMore = false) => {
+    // Fetch request info first (only on initial load)
+    if (!isLoadMore && pageNum === 1) {
+      await getRequestInfo();
+    }
+    
+    // Fetch form items
+    await getFormItems(pageNum, isLoadMore);
+  }, [getRequestInfo, getFormItems]);
 
   useEffect(() => {
     if (requestId) {
       setPage(1);
       setData([]);
+      setJvData(null);
+      setAssigned(false);
       setIsLoadingMore(false);
       setLoading(true);
       getData(1);
@@ -115,7 +164,7 @@ export default function JVDetails() {
         setIsLoadingMore(false);
       });
     }
-  }, [hasMore, loadingMore, loading, page, isLoadingMore]);
+  }, [hasMore, loadingMore, loading, page, isLoadingMore, getData]);
 
   useEffect(() => {
     const dataGrid = document.querySelector(".MuiDataGrid-root");
@@ -185,7 +234,12 @@ export default function JVDetails() {
     }
 
     try {
-      setActionLoading(true);
+      // Set the appropriate loading state based on the action
+      if (action === "approved") {
+        setApproveLoading(true);
+      } else {
+        setRejectLoading(true);
+      }
 
       const apiEndpoint = action === "approved" ? "jvm/acceptForm" : "jvm/declineForm";
       
@@ -197,7 +251,8 @@ export default function JVDetails() {
       if (response.data.statusCode === 200) {
         swal("Success", `JV ${action} successfully`, "success");
         setComment("");
-        getData(); 
+        // Only refresh request info, not form items
+        await getRequestInfo();
       } else {
         throw new Error(response.data.message || `Failed to ${action} JV`);
       }
@@ -205,7 +260,12 @@ export default function JVDetails() {
       console.error("Error performing action:", error);
       showErrorMessage(error, `Failed to ${action} JV`, swal);
     } finally {
-      setActionLoading(false);
+      // Reset the appropriate loading state based on the action
+      if (action === "approved") {
+        setApproveLoading(false);
+      } else {
+        setRejectLoading(false);
+      }
     }
   };
 
@@ -274,6 +334,8 @@ export default function JVDetails() {
               onRowsScrollEnd={handleLoadMore}
               columnResizeMode="onResize"
               disableColumnResize={false}
+              disableColumnSort={false}
+              sortModel={[{ field: 'lineNumber', sort: 'asc' }]}
               slots={{
                 footer: () => null,
               }}
@@ -310,60 +372,72 @@ export default function JVDetails() {
             />
           </Box>
 
-          <Box
-            sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
-          >
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
+          {/* Approval History */}
+          {jvData && (
+            <Box sx={{ mt: 3 }}>
+              <JVCurrentStatus 
+                steps={jvData.steps || []} 
+                data={jvData} 
+              />
+            </Box>
+          )}
+
+          {assigned && (
+            <Box
+              sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
             >
-               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                 JV Actions
-               </Typography>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                   JV Actions
+                 </Typography>
 
-              <Stack direction="row" spacing={2}>
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={() => handleApprovalAction("approved")}
-                  disabled={actionLoading}
-                  startIcon={
-                    actionLoading ? <CircularProgress size={20} /> : null
-                  }
-                  sx={{ minWidth: 120 }}
-                >
-                  {actionLoading ? "Processing..." : "Approved"}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => handleApprovalAction("rejected")}
-                  disabled={actionLoading}
-                  startIcon={
-                    actionLoading ? <CircularProgress size={20} /> : null
-                  }
-                  sx={{ minWidth: 120 }}
-                >
-                  {actionLoading ? "Processing..." : "Rejected"}
-                </Button>
+                 <Stack direction="row" spacing={2}>
+                   <Button
+                     variant="contained"
+                     color="success"
+                     onClick={() => handleApprovalAction("approved")}
+                     disabled={approveLoading || rejectLoading}
+                     startIcon={
+                       approveLoading ? <CircularProgress size={20} /> : null
+                     }
+                     sx={{ minWidth: 120 }}
+                   >
+                     {approveLoading ? "Processing..." : "Approved"}
+                   </Button>
+                   <Button
+                     variant="contained"
+                     color="error"
+                     onClick={() => handleApprovalAction("rejected")}
+                     disabled={approveLoading || rejectLoading}
+                     startIcon={
+                       rejectLoading ? <CircularProgress size={20} /> : null
+                     }
+                     sx={{ minWidth: 120 }}
+                   >
+                     {rejectLoading ? "Processing..." : "Rejected"}
+                   </Button>
+                 </Stack>
               </Stack>
-            </Stack>
 
-            <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
-              Leave a comment with your response
-            </Typography>
+              <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                Leave a comment with your response
+              </Typography>
 
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              placeholder="Comment..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              sx={{ mb: 2, backgroundColor: "#fff" }}
-            />
-          </Box>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                placeholder="Comment..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                sx={{ mb: 2, backgroundColor: "#fff" }}
+              />
+            </Box>
+          )}
         </Card>
 
         <RequestStatus

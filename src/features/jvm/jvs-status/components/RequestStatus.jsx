@@ -105,7 +105,7 @@ export default function RequestStatus({
       return (
         <tr style={{ borderBottom: "1px solid #aeaeae" }} key={`step-${idx}`}>
           <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
-            {step.approverId || "-"}
+          {step.approverId?.username || "-"}
           </td>
           <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
             {assignedOn}

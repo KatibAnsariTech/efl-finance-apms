@@ -28,7 +28,7 @@ import { useResponsive } from "src/hooks/use-responsive";
 import { NAV } from "./config/layout";
 import Logo from "../../public/assets/logo-image.png";
 import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
-import navConfig from "./config/navigation";
+import generateNavigationConfig from "./config/navConfig.jsx";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LockIcon from "@mui/icons-material/Lock";
@@ -39,6 +39,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 
 
+// Legacy function - will be replaced by generateNavigationConfig
 const filterNavigationByRole = (config, userRole) => {
   return config
     .filter((item) => {
@@ -122,9 +123,15 @@ const Sidebar = ({
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const userRole = user?.userType || "REQUESTER";
-    const filteredNav = filterNavigationByRole(navConfig, userRole);
-    setNavigationItems(filteredNav);
+    
+    if (user?.accessibleProjects && user?.projectRoles) {
+      // Use new project-based navigation system
+      const filteredNav = generateNavigationConfig(user.accessibleProjects, user.projectRoles);
+      setNavigationItems(filteredNav);
+    } else {
+      // No accessible projects - show empty navigation
+      setNavigationItems([]);
+    }
   }, []);
 
   useEffect(() => {

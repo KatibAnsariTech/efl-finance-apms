@@ -34,7 +34,9 @@ export default function MasterSheetView() {
     "DSO Standards",
   ];
   let menuItems = [];
-  if (user?.userType === "SUPER_ADMIN") {
+  // Check if user has SUPER_ADMIN role in any project
+  const isSuperAdmin = Object.values(user?.projectRoles || {}).includes("SUPER_ADMIN");
+  if (isSuperAdmin) {
     menuItems = allTabs;
   } else {
     menuItems = Array.isArray(user?.mastersheetPermissions)

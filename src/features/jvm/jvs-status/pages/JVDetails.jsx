@@ -10,13 +10,13 @@ import { useRouter } from "src/routes/hooks";
 import { Box, Tooltip, Typography, IconButton } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import { Helmet } from "react-helmet-async";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { userRequest } from "src/requestMethod";
 
 export default function JVDetails() {
   const router = useRouter();
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get('id');
+  const { jvId } = useParams();
+  const id = jvId;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -32,17 +32,22 @@ export default function JVDetails() {
     try {
       if (!id) return;
 
-      const response = await userRequest.get(`jvm/getFormByGroupId?groupId=${id}`);
-      const { items } = response.data.data;
+      const response = await userRequest.get(`jvm/getFormItemsByGroupId?groupId=${id}`);
       
-      const data = items.map((item, index) => ({
-        ...item,
-        id: item._id,
-        lineNumber: index + 1,
-      }));
+      if (response.data.statusCode === 200) {
+        const { items } = response.data.data;
+        
+        const data = items.map((item, index) => ({
+          ...item,
+          id: item._id,
+          lineNumber: index + 1,
+        }));
 
-      setData(data);
-      setTotalCount(data.length);
+        setData(data);
+        setTotalCount(data.length);
+      } else {
+        throw new Error(response.data.message || "Failed to fetch form items");
+      }
     } catch (error) {
       console.error("Error fetching JV detail data:", error);
       setData([]);

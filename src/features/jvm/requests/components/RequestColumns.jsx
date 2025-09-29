@@ -34,7 +34,7 @@ export const RequestColumns = ({ onRequestClick }) => {
           }}
           onClick={() => {
             localStorage.setItem("jvDetailData", JSON.stringify(params.row));
-            router.push(`/jvm/requests/jv-detail?id=${params.row.groupId}`);
+            router.push(`/jvm/requests/detail/${params.row.groupId}`);
           }}
         >
           {params.value}

@@ -20,6 +20,7 @@ import companyLogo from "../../../../public/assets/spacetotech.png";
 import { useForm } from "react-hook-form";
 import { useCounts } from "src/contexts/CountsContext";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
+import { getUser } from "src/utils/userUtils";
 
 export default function LoginView() {
   const {
@@ -65,30 +66,6 @@ export default function LoginView() {
     }
   };
 
-  const getUser = async (token) => {
-    try {
-      const response = await userRequest.get("/admin/getUser", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const user = response?.data?.data;
-
-      if (user?.email && user?.username) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            ...user,
-          })
-        );
-      } else {
-        throw new Error("User data is incomplete");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.errors || "Failed to fetch user data.");
-    }
-  };
 
 
   const handleForgotPassword = () => {

@@ -20,13 +20,12 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import SettingsIcon from "@mui/icons-material/Settings";
 import UndoIcon from "@mui/icons-material/Undo";
 
-const navConfig = [
-  {
+const projectConfig = {
+  CRD: {
     id: "credit-deviation",
     title: "Credit Deviation",
     path: "/credit-deviation",
     icon: <CreditCardIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
       {
@@ -35,7 +34,6 @@ const navConfig = [
         path: "/credit-deviation/request",
         icon: <RequestPageIcon />,
         roles: ["REQUESTER"],
-        // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "request-status",
@@ -43,7 +41,6 @@ const navConfig = [
         path: "/credit-deviation/request-status",
         icon: <TableChartIcon />,
         roles: ["REQUESTER"],
-        // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "approval",
@@ -51,7 +48,6 @@ const navConfig = [
         path: "/credit-deviation/approvals",
         icon: <CheckCircleIcon />,
         roles: ["APPROVER"],
-        // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "master-data",
@@ -59,7 +55,6 @@ const navConfig = [
         path: "/credit-deviation/master",
         icon: <AssignmentIcon />,
         roles: ["SUPER_ADMIN"],
-        // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "user-management",
@@ -67,7 +62,6 @@ const navConfig = [
         path: "/credit-deviation/usermanagement",
         icon: <ManageAccountsIcon />,
         roles: ["SUPER_ADMIN"],
-        // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "master-sheet",
@@ -75,7 +69,6 @@ const navConfig = [
         path: "/credit-deviation/master-sheet",
         icon: <TableChartIcon />,
         roles: ["ADMIN", "SUPER_ADMIN"],
-        // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "h-management",
@@ -83,16 +76,14 @@ const navConfig = [
         path: "/credit-deviation/hierarchy-management",
         icon: <AccountTreeIcon />,
         roles: ["SUPER_ADMIN"],
-        // roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
     ],
   },
-  {
+  JVM: {
     id: "jvm",
     title: "JVM",
     path: "/jvm",
     icon: <BarChartIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
       {
@@ -100,53 +91,50 @@ const navConfig = [
         title: "Initiate JV",
         path: "/jvm/initiate-jv",
         icon: <RequestPageIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["REQUESTER"],
       },
       {
         id: "requested-jvs",
         title: "Requested JV's",
         path: "/jvm/requested-jvs",
         icon: <AssignmentTurnedInIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-      },
-      {
-        id: "auto-reversal",
-        title: "Auto Reversal",
-        path: "/jvm/auto-reversal",
-        icon: <UndoIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-      },
-      {
-        id: "jvm-master",
-        title: "Master Data",
-        path: "/jvm/master",
-        icon: <AssignmentIcon />,
-        // roles: ["ADMIN", "SUPER_ADMIN"],
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-      },
-      {
-        id: "jvm-user-management",
-        title: "User Management",
-        path: "/jvm/usermanagement",
-        icon: <ManageAccountsIcon />,
-        // roles: ["SUPER_ADMIN"],
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["REQUESTER"],
       },
       {
         id: "jvm-requests",
         title: "Requests",
         path: "/jvm/requests",
         icon: <ViewListIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["APPROVER"],
+      },
+      {
+        id: "auto-reversal",
+        title: "Auto Reversal",
+        path: "/jvm/auto-reversal",
+        icon: <UndoIcon />,
+        roles: ["REQUESTER"],
+      },
+      {
+        id: "jvm-master",
+        title: "Master Data",
+        path: "/jvm/master",
+        icon: <AssignmentIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: "jvm-user-management",
+        title: "User Management",
+        path: "/jvm/usermanagement",
+        icon: <ManageAccountsIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
       },
     ],
   },
-  {
+  IP: {
     id: "import-payment",
     title: "Import Payment",
     path: "/import-payment",
     icon: <FileUploadIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
       {
@@ -158,21 +146,13 @@ const navConfig = [
       },
     ],
   },
-  {
+  CD: {
     id: "custom-duty",
     title: "Custom Duty",
     path: "/custom-duty",
     icon: <AccountBalanceIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
-      // {
-      //   id: 'custom-duty-payment',
-      //   title: 'Duty Payment',
-      //   path: '/custom-duty/payment',
-      //   icon: <AccountBalanceIcon />,
-      //   roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"]
-      // },
       {
         id: "custom-duty-raise-request",
         title: "Raise Request",
@@ -210,12 +190,11 @@ const navConfig = [
       },
     ],
   },
-  {
+  PC: {
     id: "petty-cash",
     title: "Petty Cash",
     path: "/petty-cash",
     icon: <AttachMoneyIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
       {
@@ -227,12 +206,36 @@ const navConfig = [
       },
     ],
   },
-  {
+};
+
+export const generateNavigationConfig = (accessibleProjects, userRoles) => {
+  const navItems = [];
+
+  accessibleProjects.forEach((projectType) => {
+    if (projectConfig[projectType]) {
+      const project = projectConfig[projectType];
+      const userType = userRoles[projectType];
+
+      const filteredSubItems = project.subItems.filter((subItem) =>
+        subItem.roles.includes(userType)
+      );
+
+      if (filteredSubItems.length > 0) {
+        navItems.push({
+          ...project,
+          subItems: filteredSubItems,
+          projectType: projectType,
+          userType: userType,
+        });
+      }
+    }
+  });
+
+  navItems.push({
     id: "settings",
     title: "Settings",
     path: "/settings",
     icon: <SettingsIcon />,
-    roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
     hasSubItems: true,
     subItems: [
       {
@@ -257,7 +260,10 @@ const navConfig = [
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
     ],
-  },
-];
+  });
 
-export default navConfig;
+  return navItems;
+};
+
+export { projectConfig };
+export default generateNavigationConfig;

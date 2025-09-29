@@ -75,12 +75,24 @@ export default function SettingsDashboard() {
                       <Typography variant="body2" color="text.secondary" noWrap>
                         {account?.email}
                       </Typography>
-                      <Chip
-                        label={account?.userType || "User"}
-                        size="small"
-                        color="primary"
-                        sx={{ mt: 0.5 }}
-                      />
+                      <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        {account?.accessibleProjects?.map((project, index) => (
+                          <Chip
+                            key={index}
+                            label={`${project}: ${account.projectRoles?.[project] || 'Unknown'}`}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        ))}
+                        {(!account?.accessibleProjects || account.accessibleProjects.length === 0) && (
+                          <Chip
+                            label="No Projects"
+                            size="small"
+                            color="default"
+                          />
+                        )}
+                      </Box>
                     </Box>
                   </Stack>
                   <Divider sx={{ my: 2 }} />

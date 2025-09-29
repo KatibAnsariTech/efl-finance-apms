@@ -6,12 +6,15 @@ import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { getComparator } from "src/utils/utils";
+import { userRequest } from "src/requestMethod";
 import { useRouter } from "src/routes/hooks";
 import { Box, Tooltip, Typography, IconButton } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import { Helmet } from "react-helmet-async";
 import { useParams, useLocation } from "react-router-dom";
 import { AutoReversalForm } from "../components/AutoReversalDetail";
+import swal from "sweetalert";
+import { showErrorMessage } from "src/utils/errorUtils";
 // import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function AutoReversalDetails() {
@@ -26,186 +29,180 @@ export default function AutoReversalDetails() {
   const [search, setSearch] = useState("");
   const [arInfo, setArInfo] = useState({});
 
-  // Generate mock detailed data for a specific Auto Reversal
-  const generateARDetailData = (arId, count = 8) => {
-    // Extract AR number for consistent data
-    const arNumber = arId ? arId.replace("ar_", "AR") : "AR001";
-    const paddedNumber =
-      arNumber.length > 2 ? arNumber : arNumber.padStart(5, "0");
-
-    // Create realistic Auto Reversal entries that balance
-    const entries = [
-      // Debit entries
-      {
-        lineType: "Debit Entry",
-        accountCode: "5001 - Office Equipment",
-        description: "Auto reversal of computer equipment purchase",
-        debitAmount: 50000,
-        creditAmount: 0,
-        reference: "AR-2024-001",
-        costCenter: "IT001",
-        profitCenter: "MAIN",
-        glAccount: "5001",
-        postingDate: new Date(2024, 8, 12),
-      },
-      {
-        lineType: "Debit Entry",
-        accountCode: "4001 - Office Supplies",
-        description: "Auto reversal of stationery purchase",
-        debitAmount: 5000,
-        creditAmount: 0,
-        reference: "AR-2024-002",
-        costCenter: "ADMIN001",
-        profitCenter: "MAIN",
-        glAccount: "4001",
-        postingDate: new Date(2024, 8, 12),
-      },
-      {
-        lineType: "Debit Entry",
-        accountCode: "4002 - Travel Expenses",
-        description: "Auto reversal of travel reimbursement",
-        debitAmount: 15000,
-        creditAmount: 0,
-        reference: "AR-2024-003",
-        costCenter: "SALES001",
-        profitCenter: "MAIN",
-        glAccount: "4002",
-        postingDate: new Date(2024, 8, 12),
-      },
-      {
-        lineType: "Debit Entry",
-        accountCode: "4003 - Training Expenses",
-        description: "Auto reversal of training program",
-        debitAmount: 25000,
-        creditAmount: 0,
-        reference: "AR-2024-004",
-        costCenter: "HR001",
-        profitCenter: "MAIN",
-        glAccount: "4003",
-        postingDate: new Date(2024, 8, 12),
-      },
-      // Credit entries
-      {
-        lineType: "Credit Entry",
-        accountCode: "1002 - Bank Account",
-        description: "Auto reversal payment to bank account",
-        debitAmount: 0,
-        creditAmount: 95000,
-        reference: "AR-2024-005",
-        costCenter: "FIN001",
-        profitCenter: "MAIN",
-        glAccount: "1002",
-        postingDate: new Date(2024, 8, 12),
-      },
-    ];
-
-    return entries.map((entry, index) => ({
-      id: `${arId}_line_${index + 1}`,
-      arNumber: paddedNumber,
-      lineNumber: index + 1,
-      ...entry,
-      createdBy: "System Auto Reversal",
-      createdAt: new Date(2024, 8, 12),
-    }));
-  };
-
-  // Generate AR header information
-  const generateARInfo = (arId) => {
-    // Extract AR number from ID (assuming format like ar_1, ar_2, etc.)
-    const arNumber = arId ? arId.replace("ar_", "AR") : "AR001";
-    const paddedNumber =
-      arNumber.length > 2 ? arNumber : arNumber.padStart(5, "0");
-
-    return {
-      arNumber: paddedNumber,
-      documentType: "Auto Reversal Entry",
-      status: ["Pending", "Approved", "Rejected"][
-        Math.floor(Math.random() * 3)
-      ],
-      businessArea: "Finance",
-      totalDebit: 0, // Will be calculated
-      totalCredit: 0, // Will be calculated
-      createdDate: new Date(2024, 8, 12),
-      createdBy: "System Auto Reversal",
-      description: `Auto reversal entry for ${paddedNumber}`,
-    };
-  };
-
   const getData = async () => {
     setLoading(true);
     try {
+      // Get groupId from passed data or use arId as fallback
+      let groupId = null;
+
       // Check if we have data passed from the previous page
       let passedData = location.state;
-      console.log("Location state:", passedData);
-      
+
       // If location.state is null, try to get data from localStorage
       if (!passedData) {
-        const storedData = localStorage.getItem('arDetailData');
+        const storedData = localStorage.getItem("arDetailData");
         if (storedData) {
           try {
             passedData = JSON.parse(storedData);
-            console.log("Retrieved data from localStorage:", passedData);
             // Clear the stored data after retrieving
-            localStorage.removeItem('arDetailData');
+            localStorage.removeItem("arDetailData");
           } catch (error) {
             console.error("Error parsing stored data:", error);
           }
         }
       }
-      
-      if (passedData && passedData.rows && Array.isArray(passedData.rows) && passedData.rows.length > 0) {
-        // Use the passed data from API directly
-        const apiRows = passedData.rows;
-        console.log("API Rows received:", apiRows);
-        
-        // Process API rows data with minimal transformation
-        const processedData = apiRows.map((row, index) => ({
-          ...row,
-          id: row._id || `row_${index}`,
-          lineNumber: index + 1,
-          postingDate: new Date(row.postingDate || row.createdAt),
-          createdAt: new Date(row.createdAt),
-        }));
-        
-        console.log("Processed data:", processedData);
 
-        // Create AR info from passed data
-        const arHeaderInfo = {
-          requestNo: passedData.requestNo,
-          status: passedData.status,
-          totalDebit: passedData.totalDebit || 0,
-          totalCredit: passedData.totalCredit || 0,
-          createdDate: new Date(passedData.createdAt),
-        };
+      if (passedData && passedData.groupId) {
+        groupId = passedData.groupId;
+      } else if (arId) {
+        // Use arId as groupId if no passed data
+        groupId = arId;
+      }
 
-        setData(processedData);
-        setArInfo(arHeaderInfo);
-        setTotalCount(processedData.length);
+      if (groupId) {
+        // Call the API to get form items by groupId
+        const response = await userRequest.get(`jvm/getFormItemsByGroupId`, {
+          params: {
+            groupId: groupId,
+            page: 1,
+            limit: 10, // Get 10 items
+          },
+        });
+
+        if (response.data.statusCode === 200) {
+          const responseData = response.data.data;
+          const apiData = responseData.items || [];
+          const pagination = responseData.pagination || {};
+
+          // Get main table data from passed data (from AutoReversal table)
+          const mainTableData = passedData || {};
+
+          // Process the API response data
+          const processedData = apiData.map((row, index) => ({
+            ...row,
+            id: row._id || row.itemId || `row_${index}`,
+            lineNumber: index + 1,
+            // Use main table data for these dates
+            postingDate: new Date(
+              mainTableData.postingDate ||
+                mainTableData.createdAt ||
+                row.createdAt
+            ),
+            documentDate: new Date(
+              mainTableData.documentDate ||
+                mainTableData.createdAt ||
+                row.createdAt
+            ),
+            initiatedDate: new Date(mainTableData.createdAt || row.createdAt), // Use createdAt as initiated date
+            createdAt: new Date(row.createdAt),
+          }));
+
+          // Create AR info from main table data (passed from AutoReversal)
+          const arHeaderInfo = {
+            requestNo: mainTableData.requestNo || groupId,
+            status: mainTableData.status || "Unknown",
+            totalDebit: mainTableData.totalDebit || 0,
+            totalCredit: mainTableData.totalCredit || 0,
+            createdDate: new Date(mainTableData.createdAt || new Date()),
+            initiatedDate: new Date(mainTableData.createdAt || new Date()),
+            documentDate: new Date(
+              mainTableData.documentDate ||
+                mainTableData.createdAt ||
+                new Date()
+            ),
+            postingDate: new Date(
+              mainTableData.postingDate || mainTableData.createdAt || new Date()
+            ),
+            startDate: mainTableData.startDate
+              ? new Date(mainTableData.startDate)
+              : null,
+            endDate: mainTableData.endDate
+              ? new Date(mainTableData.endDate)
+              : null,
+            requesterId: mainTableData.requesterId || null,
+            groupId: mainTableData.groupId || groupId,
+            parentId: mainTableData.parentId || null,
+            mainTableId: mainTableData._id || null, // Store the main table's _id
+          };
+
+          setData(processedData);
+          setArInfo(arHeaderInfo);
+          setTotalCount(pagination.totalItems || processedData.length);
+        } else {
+          throw new Error(
+            response.data.message || "Failed to fetch form items"
+          );
+        }
       } else {
-        // Fallback to mock data if no data passed
-        console.log("Using fallback mock data - no passedData or rows found");
-        const detailData = generateARDetailData(arId, 15);
-        const arHeaderInfo = generateARInfo(arId);
+        // If no groupId, try to use passed data directly
+        if (passedData && passedData.groupId) {
+          groupId = passedData.groupId;
+          // Retry with the groupId from passed data
+          const response = await userRequest.get(`jvm/getFormItemsByGroupId`, {
+            params: {
+              groupId: groupId,
+              page: 1,
+              limit: 10,
+            },
+          });
 
-      // Calculate totals
-      const totalDebit = detailData.reduce(
-        (sum, item) => sum + item.debitAmount,
-        0
-      );
-      const totalCredit = detailData.reduce(
-        (sum, item) => sum + item.creditAmount,
-        0
-      );
+          if (response.data.statusCode === 200) {
+            const responseData = response.data.data;
+            const apiData = responseData.items || [];
+            const pagination = responseData.pagination || {};
 
-      arHeaderInfo.totalDebit = totalDebit;
-      arHeaderInfo.totalCredit = totalCredit;
+            const processedData = apiData.map((row, index) => ({
+              ...row,
+              id: row._id || row.itemId || `row_${index}`,
+              lineNumber: index + 1,
+              postingDate: new Date(
+                passedData.postingDate || passedData.createdAt || row.createdAt
+              ),
+              documentDate: new Date(
+                passedData.documentDate || passedData.createdAt || row.createdAt
+              ),
+              initiatedDate: new Date(passedData.createdAt || row.createdAt),
+              createdAt: new Date(row.createdAt),
+            }));
 
-      setData(detailData);
-      setArInfo(arHeaderInfo);
-      setTotalCount(detailData.length);
+            const arHeaderInfo = {
+              requestNo: passedData.requestNo || groupId,
+              status: passedData.status || "Unknown",
+              totalDebit: passedData.totalDebit || 0,
+              totalCredit: passedData.totalCredit || 0,
+              createdDate: new Date(passedData.createdAt || new Date()),
+              initiatedDate: new Date(passedData.createdAt || new Date()),
+              documentDate: new Date(
+                passedData.documentDate || passedData.createdAt || new Date()
+              ),
+              postingDate: new Date(
+                passedData.postingDate || passedData.createdAt || new Date()
+              ),
+              startDate: passedData.startDate
+                ? new Date(passedData.startDate)
+                : null,
+              endDate: passedData.endDate ? new Date(passedData.endDate) : null,
+              requesterId: passedData.requesterId || null,
+              groupId: passedData.groupId || groupId,
+              parentId: passedData.parentId || null,
+              mainTableId: passedData._id || null, // Store the main table's _id
+            };
+
+            setData(processedData);
+            setArInfo(arHeaderInfo);
+            setTotalCount(pagination.totalItems || processedData.length);
+          } else {
+            throw new Error(
+              response.data.message || "Failed to fetch form items"
+            );
+          }
+        } else {
+          throw new Error("No groupId available to fetch form items");
+        }
       }
     } catch (error) {
-      console.error("Error fetching AR detail data:", error);
+      console.error("Error fetching form items:", error);
+      showErrorMessage(error, "Failed to fetch form items", swal);
     } finally {
       setLoading(false);
     }
@@ -223,89 +220,72 @@ export default function AutoReversalDetails() {
     }
   };
 
-  const handleFormSubmit = (formData) => {
-    console.log("Form submitted with data:", formData);
-    // Add your submit logic here
-  };
+  const handleFormSubmit = async (formData) => {
+    try {
+      setLoading(true);
 
-  const getStatusColor = (status) => {
-    const statusColors = {
-      Approved: "#e8f5e8",
-      Rejected: "#ffcdd2",
-      Pending: "#f4f5ba",
-    };
-    return statusColors[status] || "#f5f5f5";
-  };
+      // Get the reversal ID from the main table data (arInfo)
+      const reversalId = arInfo.mainTableId || arId;
 
-  const getStatusChip = (status) => {
-    return (
-      <Box
-        sx={{
-          display: "inline-block",
-          px: 1.5,
-          py: 0.5,
-          borderRadius: 1,
-          backgroundColor: getStatusColor(status),
-          color: "#333",
-          fontSize: "0.75rem",
-          fontWeight: 600,
-          textTransform: "uppercase",
-        }}
-      >
-        {status}
-      </Box>
-    );
-  };
+      if (!reversalId) {
+        throw new Error("No reversal ID available for submission");
+      }
 
-  // Custom ColorIndicators component for AR Detail
-  const ARDetailColorIndicators = () => {
-    const ColorCircle = ({ color, label }) => (
-      <Tooltip title={label} arrow>
-        <Box
-          sx={{
-            width: "18px",
-            height: "18px",
-            backgroundColor: color,
-            borderRadius: "50%",
-            cursor: "pointer",
-            border: "1px solid rgba(0, 0, 0, 0.2)",
-          }}
-        />
-      </Tooltip>
-    );
+      // Prepare the submission data
+      const submissionData = {
+        reversalRemarks:
+          formData.reversalRemarks || "Reversal processed successfully",
+        reversalDate:
+          formData.reversalDate || new Date().getFullYear().toString(),
+        fiscalYear: formData.fiscalYear || new Date().getFullYear().toString(),
+      };
 
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 1,
-          marginLeft: 2,
-        }}
-      >
-        <ColorCircle color="#e8f5e8" label="Debit Entry" />
-        <ColorCircle color="#fff3e0" label="Credit Entry" />
-        <ColorCircle color="#f4f5ba" label="Adjustment" />
-      </Box>
-    );
+      // Call the submitReversal API
+      const response = await userRequest.post(
+        `jvm/submitReversal/${reversalId}`,
+        submissionData
+      );
+
+      if (response.data.statusCode === 200) {
+        swal({
+          title: "Success",
+          text: "Reversal submitted successfully!",
+          icon: "success",
+          buttons: true,
+        }).then(() => {
+          // Refresh the data after successful submission
+          router.push("/jvm/auto-reversal");
+          // getData();
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to submit reversal");
+      }
+    } catch (error) {
+      console.error("Error submitting reversal:", error);
+      showErrorMessage(error, "Failed to submit reversal", swal);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
     {
       field: "lineNumber",
-      headerName: "Line #",
+      headerName: "#",
       flex: 0.5,
       minWidth: 80,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
-      field: "sNo",
-      headerName: "AR No",
+      field: "itemId",
+      headerName: "Request No",
       flex: 1,
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || params.row._id || "-",
     },
     {
       field: "documentType",
@@ -314,6 +294,16 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "initiatedDate",
+      headerName: "Initiated Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
     },
     {
       field: "documentDate",
@@ -322,7 +312,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
     },
     {
       field: "businessArea",
@@ -331,6 +321,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "accountType",
@@ -339,6 +330,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "postingKey",
@@ -347,6 +339,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "vendorCustomerGLNumber",
@@ -355,6 +348,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "vendorCustomerGLName",
@@ -363,6 +357,7 @@ export default function AutoReversalDetails() {
       minWidth: 200,
       align: "left",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "amount",
@@ -373,6 +368,7 @@ export default function AutoReversalDetails() {
       headerAlign: "center",
       renderCell: (params) => {
         const amount = params.value;
+        if (amount === null || amount === undefined) return "-";
         const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
         return amount >= 0 ? formattedAmount : `(${formattedAmount})`;
       },
@@ -384,6 +380,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "profitCenter",
@@ -392,6 +389,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "specialGLIndication",
@@ -400,6 +398,7 @@ export default function AutoReversalDetails() {
       minWidth: 100,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "referenceNumber",
@@ -408,6 +407,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "remarks",
@@ -416,6 +416,7 @@ export default function AutoReversalDetails() {
       minWidth: 200,
       align: "left",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "postingDate",
@@ -424,7 +425,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
     },
     {
       field: "costCenter",
@@ -433,6 +434,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "personalNumber",
@@ -441,6 +443,7 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "autoReversal",
@@ -449,23 +452,26 @@ export default function AutoReversalDetails() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "inline-block",
-            px: 1,
-            py: 0.5,
-            borderRadius: 1,
-            backgroundColor: params.value === "Y" ? "#e8f5e8" : "#f5f5f5",
-            color: params.value === "Y" ? "#2e7d32" : "#666",
-            fontSize: "0.75rem",
-            fontWeight: 600,
-            textTransform: "uppercase",
-          }}
-        >
-          {params.value}
-        </Box>
-      ),
+      renderCell: (params) => {
+        if (!params.value) return "-";
+        return (
+          <Box
+            sx={{
+              display: "inline-block",
+              px: 1,
+              py: 0.5,
+              borderRadius: 1,
+              backgroundColor: params.value === "Y" ? "#e8f5e8" : "#f5f5f5",
+              color: params.value === "Y" ? "#2e7d32" : "#666",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+            }}
+          >
+            {params.value}
+          </Box>
+        );
+      },
     },
   ];
 
@@ -518,7 +524,16 @@ export default function AutoReversalDetails() {
 
       <Container>
         {/* Auto-Reversal Form */}
-        <AutoReversalForm onSubmit={handleFormSubmit} />
+        <AutoReversalForm
+          onSubmit={handleFormSubmit}
+          initialData={{
+            initiatedDate: arInfo.initiatedDate,
+            documentDate: arInfo.documentDate,
+            postingDate: arInfo.postingDate,
+            fiscalYear:
+              arInfo.fiscalYear || new Date().getFullYear().toString(),
+          }}
+        />
 
         <Card sx={{ mt: 2, p: 2 }}>
           <Box
@@ -532,7 +547,7 @@ export default function AutoReversalDetails() {
             <FormTableToolbar
               search={search}
               onFilterChange={handleFilterChange}
-              placeholder="Search by AR No, document type, GL account, remarks, reference..."
+              placeholder="Search"
             />
           </Box>
 
@@ -591,22 +606,6 @@ export default function AutoReversalDetails() {
                 },
               }}
             />
-          </Box>
-          <Box
-            sx={{
-              position: "relative",
-              height: "52px",
-              marginTop: "-52px",
-              display: "flex",
-              alignItems: "center",
-              paddingLeft: "16px",
-              zIndex: 0,
-              pointerEvents: "none",
-            }}
-          >
-            <Box sx={{ pointerEvents: "auto" }}>
-              {/* <ARDetailColorIndicators /> */}
-            </Box>
           </Box>
         </Card>
       </Container>

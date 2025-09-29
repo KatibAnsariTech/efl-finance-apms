@@ -12,6 +12,7 @@ import {
   FormControl,
   Select,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import Iconify from "src/components/iconify/iconify";
@@ -369,18 +370,17 @@ export default function InitiateJV() {
                   maxHeight: "70vh",
                 }}
               >
-                <DataGrid
-                  rows={data}
-                  columns={columns}
-                  getRowId={(row) => row._id || row.slNo}
-                  loading={loading}
-                  pagination={false}
-                  disableRowSelectionOnClick
-                  disableRowClick
-                  columnResize
-                  disableColumnResize={false}
-                  hideFooter
-                  autoHeight={false}
+                 <DataGrid
+                   rows={data}
+                   columns={columns}
+                   getRowId={(row) => row._id || row.slNo}
+                   loading={loading}
+                   pagination={false}
+                   disableRowSelectionOnClick
+                   disableRowClick
+                   columnResize
+                   disableColumnResize={false}
+                   autoHeight={false}
                   columnResizeMode="onResize"
                   editMode="cell"
                   processRowUpdate={(updatedRow, originalRow) => {
@@ -389,6 +389,15 @@ export default function InitiateJV() {
                   }}
                   onProcessRowUpdateError={(error) => {
                     console.error("Error updating row:", error);
+                  }}
+                  slots={{
+                    footer: () => (
+                      <Box sx={{ py: 2, pl: 2, pr: 1, display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontSize: '0.875rem', fontWeight: 700 }}>
+                          Total Records: {data.length}
+                        </Typography>
+                      </Box>
+                    )
                   }}
                   sx={{
                     height: "100%",
@@ -487,7 +496,7 @@ export default function InitiateJV() {
               variant="contained"
               color="primary"
               onClick={handleSubmitRequest}
-              disabled={data.length === 0 || validateSlNoBalance().length > 0}
+              disabled={data.length === 0 || validateSlNoBalance().length > 0 || submitting}
               sx={{
                 px: { xs: 2, sm: 3 },
                 py: { xs: 1.5, sm: 1 },
@@ -497,7 +506,14 @@ export default function InitiateJV() {
                 minWidth: { xs: "auto", sm: "240px" },
               }}
             >
-              Submit Request
+              {submitting ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={16} color="inherit" />
+                  Submitting...
+                </Box>
+              ) : (
+                'Submit Request'
+              )}
             </Button>
           </Box>
         )}

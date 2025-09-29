@@ -18,8 +18,9 @@ const ApprovalForm = ({
   buttonLoading,
 }) => {
   const user = useAccount();
-  const isRequester = user?.userType === "REQUESTER";
-  const isApprover = user?.userType === "APPROVER";
+  // Check if user has REQUESTER or APPROVER role in any project
+  const isRequester = Object.values(user?.projectRoles || {}).includes("REQUESTER");
+  const isApprover = Object.values(user?.projectRoles || {}).includes("APPROVER");
   const { setError, getValues, clearErrors } = useFormContext();
 
   const handleActionClick = (actionType) => {

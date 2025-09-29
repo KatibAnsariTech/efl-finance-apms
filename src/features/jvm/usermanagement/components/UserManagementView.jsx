@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useRef } from "react";
+import React, { lazy, Suspense } from "react";
 import { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import { DataGrid } from "@mui/x-data-grid";
@@ -25,7 +25,8 @@ const AddAdmin = lazy(() => import("./Modals/AddAdmin"));
 const AddSuperAdmin = lazy(() => import("./Modals/AddSuperAdmin"));
 const AddApprover = lazy(() => import("./Modals/AddApprover"));
 
-const menuItems = ["Requester", "Approver", "Admin", "Super Admin"];
+// const menuItems = ["Requester", "Approver", "Admin", "Super Admin"];
+const menuItems = ["Requester", "Approver"];
 
 export default function UserManagementView() {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -40,9 +41,6 @@ export default function UserManagementView() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [editData, setEditData] = useState(null);
   const selectedCategory = menuItems[selectedTab];
-
-  // Ref to store the current AbortController
-  const abortControllerRef = useRef(null);
 
   const handleEdit = (row, event) => {
     if (event) {
@@ -75,15 +73,6 @@ export default function UserManagementView() {
 
   const getData = async () => {
     try {
-      // Cancel any previous request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      // Create new AbortController for this request
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
-
       setLoading(true);
       const res = await userRequest.get(getAPIURL(), {
         params: {
@@ -91,29 +80,22 @@ export default function UserManagementView() {
           limit: rowsPerPage,
           search: debouncedSearch,
         },
-        signal: abortController.signal,
       });
 
-      // Only update state if request wasn't aborted
-      if (!abortController.signal.aborted) {
-        // Handle different response structures for JVM vs Admin APIs
-        if (selectedTab === 0 || selectedTab === 1) {
-          // JVM API response structure: data.data.data and data.data.pagination
-          setData(res?.data?.data?.data || []);
-          setTotalCount(res?.data?.data?.pagination?.totalCount || 0);
-        } else {
-          // Admin API response structure
-          setData(res?.data?.data?.admins || []);
-          setTotalCount(res?.data?.data?.total || 0);
-        }
-        setLoading(false);
+      // Handle different response structures for JVM vs Admin APIs
+      if (selectedTab === 0 || selectedTab === 1) {
+        // JVM API response structure: data.data.data and data.data.pagination
+        setData(res?.data?.data?.data || []);
+        setTotalCount(res?.data?.data?.pagination?.totalCount || 0);
+      } else {
+        // Admin API response structure
+        setData(res?.data?.data?.admins || []);
+        setTotalCount(res?.data?.data?.total || 0);
       }
+      setLoading(false);
     } catch (err) {
-      // Don't update state if request was aborted
-      if (err.name !== "AbortError") {
-        console.log("err:", err);
-        setLoading(false);
-      }
+      console.log("err:", err);
+      setLoading(false);
     }
   };
 
@@ -136,15 +118,6 @@ export default function UserManagementView() {
     getData();
     setSearch("");
   }, [selectedTab]);
-
-  // Cleanup effect to cancel any pending requests when component unmounts
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
 
   const sortableColumns = ["username", "email"];
 
@@ -339,7 +312,8 @@ export default function UserManagementView() {
                     return params.value;
                   },
                 })),
-              {
+              // Only show actions column for Admin and Super Admin tabs (selectedTab 2 and 3)
+              ...(selectedTab >= 2 ? [{
                 field: "action",
                 headerName: "Actions",
                 width: 120,
@@ -384,7 +358,7 @@ export default function UserManagementView() {
                     </Tooltip>
                   </Box>
                 ),
-              },
+              }] : []),
             ]}
             getRowId={(row) => row?.id}
             loading={loading}

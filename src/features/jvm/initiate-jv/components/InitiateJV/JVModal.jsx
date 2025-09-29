@@ -182,25 +182,57 @@ export default function JVModal({
     if (!formData.vendorCustomerGLNumber.trim())
       newErrors.vendorCustomerGLNumber =
         "Vendor/Customer/GL Number is required";
+    
+    // Amount validation - number with 2 decimal places
     if (!formData.amount || formData.amount <= 0)
       newErrors.amount = "Amount is required and must be greater than 0";
+    else if (!/^\d+(\.\d{1,2})?$/.test(formData.amount.toString()))
+      newErrors.amount = "Amount must be a number with maximum 2 decimal places";
+    
+    // Assignment validation - mandatory 25 characters
     if (!formData.assignment.trim())
       newErrors.assignment = "Assignment is required";
+    else if (formData.assignment.trim().length !== 25)
+      newErrors.assignment = "Assignment must be exactly 25 characters";
+    
+    // Remarks validation - 50 characters maximum
+    if (!formData.remarks.trim()) 
+      newErrors.remarks = "Remarks is required";
+    else if (formData.remarks.trim().length > 50)
+      newErrors.remarks = "Remarks must not exceed 50 characters";
+    
+    // Cost Center validation - 10 characters (numbers only)
+    if (!formData.costCenter.trim())
+      newErrors.costCenter = "Cost Center is required";
+    else if (!/^\d{1,10}$/.test(formData.costCenter.trim()))
+      newErrors.costCenter = "Cost Center must be 1-10 digits only";
+    
+    // Profit Center validation - 6 characters (numbers only)
     if (!formData.profitCenter.trim())
       newErrors.profitCenter = "Profit Center is required";
+    else if (!/^\d{6}$/.test(formData.profitCenter.trim()))
+      newErrors.profitCenter = "Profit Center must be exactly 6 digits";
+    
+    // Special GL Indication validation - single character
     if (!formData.specialGLIndication.trim())
       newErrors.specialGLIndication = "Special GL Indication is required";
+    else if (formData.specialGLIndication.trim().length !== 1)
+      newErrors.specialGLIndication = "Special GL Indication must be exactly 1 character";
+    
+    // Personal Number validation - 7 digits only
+    if (!formData.personalNumber.trim())
+      newErrors.personalNumber = "Personal Number is required";
+    else if (!/^\d{7}$/.test(formData.personalNumber.trim()))
+      newErrors.personalNumber = "Personal Number must be exactly 7 digits";
+    
+    // Reference Number - free field (no validation needed)
     if (!formData.referenceNumber.trim())
       newErrors.referenceNumber = "Reference Number is required";
-    if (!formData.remarks.trim()) newErrors.remarks = "Remarks is required";
+    
     if (!formData.postingDate)
       newErrors.postingDate = "Posting Date is required";
     if (!formData.vendorCustomerGLName.trim())
       newErrors.vendorCustomerGLName = "Vendor/Customer/GL Name is required";
-    if (!formData.costCenter.trim())
-      newErrors.costCenter = "Cost Center is required";
-    if (!formData.personalNumber.trim())
-      newErrors.personalNumber = "Personal Number is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -475,10 +507,11 @@ export default function JVModal({
                   size="small"
                   label="Amount *"
                   type="number"
+                  inputProps={{ step: "0.01", min: "0" }}
                   value={formData.amount}
                   onChange={(e) => handleChange("amount", e.target.value)}
                   error={!!errors.amount}
-                  helperText={errors.amount}
+                  helperText={errors.amount || "Amount with 2 decimal places"}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -488,8 +521,9 @@ export default function JVModal({
                   label="Assignment *"
                   value={formData.assignment}
                   onChange={(e) => handleChange("assignment", e.target.value)}
+                  inputProps={{ maxLength: 25 }}
                   error={!!errors.assignment}
-                  helperText={errors.assignment}
+                  helperText={errors.assignment || "Exactly 25 characters required"}
                 />
               </Grid>
 
@@ -501,8 +535,9 @@ export default function JVModal({
                   label="Cost Center *"
                   value={formData.costCenter}
                   onChange={(e) => handleChange("costCenter", e.target.value)}
+                  inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
                   error={!!errors.costCenter}
-                  helperText={errors.costCenter}
+                  helperText={errors.costCenter || "1-10 digits only"}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -512,8 +547,9 @@ export default function JVModal({
                   label="Profit Center *"
                   value={formData.profitCenter}
                   onChange={(e) => handleChange("profitCenter", e.target.value)}
+                  inputProps={{ maxLength: 6, pattern: "[0-9]*" }}
                   error={!!errors.profitCenter}
-                  helperText={errors.profitCenter}
+                  helperText={errors.profitCenter || "Exactly 6 digits required"}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -525,8 +561,9 @@ export default function JVModal({
                   onChange={(e) =>
                     handleChange("specialGLIndication", e.target.value)
                   }
+                  inputProps={{ maxLength: 1 }}
                   error={!!errors.specialGLIndication}
-                  helperText={errors.specialGLIndication}
+                  helperText={errors.specialGLIndication || "Single character only"}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -553,8 +590,9 @@ export default function JVModal({
                   onChange={(e) =>
                     handleChange("personalNumber", e.target.value)
                   }
+                  inputProps={{ maxLength: 7, pattern: "[0-9]*" }}
                   error={!!errors.personalNumber}
-                  helperText={errors.personalNumber}
+                  helperText={errors.personalNumber || "Exactly 7 digits required"}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={6}>
@@ -566,8 +604,9 @@ export default function JVModal({
                   rows={2}
                   value={formData.remarks}
                   onChange={(e) => handleChange("remarks", e.target.value)}
+                  inputProps={{ maxLength: 50 }}
                   error={!!errors.remarks}
-                  helperText={errors.remarks}
+                  helperText={errors.remarks || `${formData.remarks.length}/50 characters`}
                 />
               </Grid>
               {!isEditMode && (

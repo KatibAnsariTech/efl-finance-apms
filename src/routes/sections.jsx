@@ -4,7 +4,8 @@ import { ToastContainer } from "react-toastify";
 import { Outlet, Navigate, useRoutes } from "react-router-dom";
 
 import Layout from "src/layouts";
-import navConfig from "src/layouts/config/navigation";
+import navConfig from "src/layouts/config/navConfig.jsx";
+import { hasAccessToPath, getFirstAccessiblePath } from "src/layouts/config/accessControl";
 
 // Lazy load all feature components
 const IndexPage = lazy(() => import("src/features/app/pages/App"));
@@ -153,37 +154,45 @@ const FormDetailsViewForm = lazy(() =>
 export default function Router() {
   const isLoggedIn = localStorage.getItem("accessToken");
   const user = JSON.parse(localStorage.getItem("user"));
-  const isSAdmin = user?.userType === "SUPER_ADMIN";
+  
+  // Check if user has SUPER_ADMIN role in any project
+  const isSAdmin = user?.userRoles?.some(role => role.userType === "SUPER_ADMIN") || 
+                   Object.values(user?.projectRoles || {}).includes("SUPER_ADMIN");
 
   const AdminRoute = ({ children }) => {
     return isSAdmin ? children : <Navigate to="/" replace />;
   };
 
-  // Helper to get allowed roles for a path from navConfig
+  // Helper to get allowed roles for a path from navConfig (legacy)
   const getAllowedRoles = (path) => {
-    const item = navConfig.find((nav) => nav.path === path);
-    return item?.roles || [];
+    // This would need to be updated to work with the new project structure
+    // For now, return empty array to allow access (will be filtered by navigation)
+    return [];
   };
 
-  // Wrapper for role-based route protection
-  const RoleRoute = ({ path, element }) => {
+  // Protected route wrapper that checks URL access
+  const ProtectedRoute = ({ path, element }) => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const userRole = user?.userType || "REQUESTER";
-    const allowedRoles = getAllowedRoles(path);
-    if (allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
+    
+    if (!user) {
+      return <Navigate to="/login" replace />;
+    }
+    
+    if (hasAccessToPath(path, user)) {
       return element;
     }
+    
+    // Show 404 page if user doesn't have access
     return <Page404 />;
   };
 
+
   const RoleBasedRedirect = () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const userRole = user?.userType || "REQUESTER";
-    const firstAvailablePage = navConfig.find((nav) =>
-      nav.roles.includes(userRole)
-    );
-    const redirectPath =
-      firstAvailablePage?.path || "/credit-deviation/request";
+    
+    // Get the first accessible path for the user
+    const redirectPath = getFirstAccessiblePath(user);
+    
     return <Navigate to={redirectPath} replace />;
   };
 
@@ -205,28 +214,28 @@ export default function Router() {
 
         {
           path: "/jvm",
-          element: <RoleRoute path="/jvm" element={<JVMPage />} />,
+          element: <ProtectedRoute path="/jvm" element={<JVMPage />} />,
         },
         {
           path: "/import-payment",
           element: (
-            <RoleRoute path="/import-payment" element={<ImportPaymentPage />} />
+            <ProtectedRoute path="/import-payment" element={<ImportPaymentPage />} />
           ),
         },
         {
           path: "/custom-duty",
           element: (
-            <RoleRoute path="/custom-duty" element={<CustomDutyPage />} />
+            <ProtectedRoute path="/custom-duty" element={<CustomDutyPage />} />
           ),
         },
         {
           path: "/petty-cash",
-          element: <RoleRoute path="/petty-cash" element={<PettyCashPage />} />,
+          element: <ProtectedRoute path="/petty-cash" element={<PettyCashPage />} />,
         },
         {
           path: "/credit-deviation",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation"
               element={<CreditDeviationPage />}
             />
@@ -235,7 +244,7 @@ export default function Router() {
         {
           path: "/credit-deviation/dashboard",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/dashboard"
               element={<CreditDeviationDashboard />}
             />
@@ -244,13 +253,13 @@ export default function Router() {
         {
           path: "/jvm/dashboard",
           element: (
-            <RoleRoute path="/jvm/dashboard" element={<JVMDashboard />} />
+            <ProtectedRoute path="/jvm/dashboard" element={<JVMDashboard />} />
           ),
         },
         {
           path: "/import-payment/dashboard",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/import-payment/dashboard"
               element={<ImportPaymentDashboard />}
             />
@@ -259,7 +268,7 @@ export default function Router() {
         {
           path: "/custom-duty/dashboard",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/custom-duty/dashboard"
               element={<CustomDutyDashboard />}
             />
@@ -268,7 +277,7 @@ export default function Router() {
         {
           path: "/petty-cash/dashboard",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/petty-cash/dashboard"
               element={<PettyCashDashboard />}
             />
@@ -278,7 +287,7 @@ export default function Router() {
         {
           path: "/credit-deviation/request",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/request"
               element={<RequestPage />}
             />
@@ -287,7 +296,7 @@ export default function Router() {
         {
           path: "/credit-deviation/request-status",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/request-status"
               element={<RequestStatusPage />}
             />
@@ -296,7 +305,7 @@ export default function Router() {
         {
           path: "/credit-deviation/approvals",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/approvals"
               element={<ApprovalsPage />}
             />
@@ -305,7 +314,7 @@ export default function Router() {
         {
           path: "/credit-deviation/master",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/master"
               element={<MasterPage />}
             />
@@ -314,7 +323,7 @@ export default function Router() {
         {
           path: "/credit-deviation/usermanagement",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/usermanagement"
               element={<UserManagementPage />}
             />
@@ -323,7 +332,7 @@ export default function Router() {
         {
           path: "/credit-deviation/master-sheet",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/master-sheet"
               element={<MasterSheetPage />}
             />
@@ -332,7 +341,7 @@ export default function Router() {
         {
           path: "/credit-deviation/hierarchy-management",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/hierarchy-management"
               element={<HierarchyManagementPage />}
             />
@@ -341,7 +350,7 @@ export default function Router() {
         {
           path: "credit-deviation/approvals/view/:id",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/approvals"
               element={<FormDetailsPage />}
             />
@@ -350,7 +359,7 @@ export default function Router() {
         {
           path: "credit-deviation/request-status/view/:id",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/credit-deviation/request-status"
               element={<FormDetailsViewForm />}
             />
@@ -360,19 +369,19 @@ export default function Router() {
         {
           path: "/jvm/initiate-jv",
           element: (
-            <RoleRoute path="/jvm/initiate-jv" element={<InitiateJVPage />} />
+            <ProtectedRoute path="/jvm/initiate-jv" element={<InitiateJVPage />} />
           ),
         },
         {
           path: "/jvm/requested-jvs",
           element: (
-            <RoleRoute path="/jvm/requested-jvs" element={<JVStatusPage />} />
+            <ProtectedRoute path="/jvm/requested-jvs" element={<JVStatusPage />} />
           ),
         },
         {
           path: "/jvm/auto-reversal",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/jvm/auto-reversal"
               element={<AutoReversalPage />}
             />
@@ -381,7 +390,7 @@ export default function Router() {
         {
           path: "/jvm/master",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/jvm/master"
               element={<JVMMasterPage />}
             />
@@ -390,7 +399,7 @@ export default function Router() {
         {
           path: "/jvm/usermanagement",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/jvm/usermanagement"
               element={<JVMUserManagementPage />}
             />
@@ -399,24 +408,29 @@ export default function Router() {
         {
           path: "/jvm/requests",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/jvm/requests"
               element={<JVMRequestsPage />}
             />
           ),
         },
         {
-          path: "/jvm/requests/jv-detail",
+          path: "/jvm/requests/detail/:jvId",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/jvm/requests"
               element={<JVRequestDetailPage />}
             />
           ),
         },
         {
-          path: "/jvm/requested-jvs/jv-detail",
-          element: <JVDetailPage />,
+          path: "/jvm/requested-jvs/detail/:jvId",
+          element: (
+            <ProtectedRoute
+              path="/jvm/requested-jvs"
+              element={<JVDetailPage />}
+            />
+          ),
         },
         {
           path: "/jvm/auto-reversal/ar-detail/:arId",
@@ -426,7 +440,7 @@ export default function Router() {
         {
           path: "/import-payment/upload",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/import-payment/upload"
               element={<ImportPaymentUploadPage />}
             />
@@ -436,7 +450,7 @@ export default function Router() {
         {
           path: "/custom-duty/raise-request",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/custom-duty/raise-request"
               element={<RaiseRequest />}
             />
@@ -445,7 +459,7 @@ export default function Router() {
         {
           path: "/custom-duty/my-requests",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/custom-duty/my-requests"
               element={<MyRequests />}
             />
@@ -454,13 +468,13 @@ export default function Router() {
         {
           path: "/custom-duty/requests",
           element: (
-            <RoleRoute path="/custom-duty/requests" element={<Requests />} />
+            <ProtectedRoute path="/custom-duty/requests" element={<Requests />} />
           ),
         },
         {
           path: "/custom-duty/raise-to-bank",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/custom-duty/raise-to-bank"
               element={<RaiseToBank />}
             />
@@ -469,7 +483,7 @@ export default function Router() {
         {
           path: "/custom-duty/raise-to-bank/submit-detail/:id",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/custom-duty/raise-to-bank/submit-detail/:id"
               element={<SubmitDetail />}
             />
@@ -478,7 +492,7 @@ export default function Router() {
         {
           path: "/custom-duty/master",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/custom-duty/master"
               element={<CustomDutyMaster />}
             />
@@ -488,7 +502,7 @@ export default function Router() {
         {
           path: "/petty-cash/request",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/petty-cash/request"
               element={<PettyCashRequestPage />}
             />
@@ -497,18 +511,18 @@ export default function Router() {
         // Settings pages
         {
           path: "/settings",
-          element: <RoleRoute path="/settings" element={<SettingsPage />} />,
+          element: <ProtectedRoute path="/settings" element={<SettingsPage />} />,
         },
         {
           path: "/settings/profile",
           element: (
-            <RoleRoute path="/settings/profile" element={<ProfilePage />} />
+            <ProtectedRoute path="/settings/profile" element={<ProfilePage />} />
           ),
         },
         {
           path: "/settings/change-password",
           element: (
-            <RoleRoute
+            <ProtectedRoute
               path="/settings/change-password"
               element={<ChangePasswordPage />}
             />
@@ -517,7 +531,7 @@ export default function Router() {
         {
           path: "/settings/add-user",
           element: (
-            <RoleRoute path="/settings/add-user" element={<AddUserPage />} />
+            <ProtectedRoute path="/settings/add-user" element={<AddUserPage />} />
           ),
         },
       ],

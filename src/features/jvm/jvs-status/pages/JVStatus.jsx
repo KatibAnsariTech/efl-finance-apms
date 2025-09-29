@@ -135,7 +135,7 @@ export default function JVStatus() {
           onClick={() => {
             localStorage.setItem("jvDetailData", JSON.stringify(params.row));
             router.push(
-              `/jvm/requested-jvs/jv-detail?id=${params.row.groupId}`
+              `/jvm/requested-jvs/detail/${params.row.groupId}`
             );
           }}
         >
@@ -185,7 +185,7 @@ export default function JVStatus() {
       ),
     },
     {
-      field: "totalAmount",
+      field: "totalDebit",
       headerName: "Total Debit",
       flex: 1,
       minWidth: 120,
@@ -194,7 +194,7 @@ export default function JVStatus() {
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
     {
-      field: "totalAmount",
+      field: "totalCredit",
       headerName: "Total Credit",
       flex: 1,
       minWidth: 120,

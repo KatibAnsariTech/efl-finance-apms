@@ -121,7 +121,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Initiated Date"
-                  value={new Date("2025-09-19")}
+                  value={initialData.initiatedDate || new Date()}
                   readOnly
                   slotProps={{
                     textField: {
@@ -171,7 +171,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Document Date"
-                  value={new Date("2025-09-01")}
+                  value={initialData.documentDate || new Date()}
                   readOnly
                   slotProps={{
                     textField: {
@@ -189,7 +189,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Posting Date"
-                  value={new Date("2025-09-01")}
+                  value={initialData.postingDate || new Date()}
                   readOnly
                   slotProps={{
                     textField: {

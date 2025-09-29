@@ -41,8 +41,10 @@ export default function RequestStatus({
         return;
       }
 
-      const response = await userRequest.get(`jvm/getSteps?groupId=${rowData.groupId}`);
-      
+      const response = await userRequest.get(
+        `jvm/getSteps?groupId=${rowData.groupId}`
+      );
+
       if (response.data.statusCode === 200) {
         setData(response.data.data);
       } else {
@@ -91,26 +93,51 @@ export default function RequestStatus({
   // Map steps array from the new API response structure
   const renderSteps = (data) => {
     if (!data || !Array.isArray(data.steps)) {
-      return <tr><td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>No steps data available</td></tr>;
+      return (
+        <tr>
+          <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
+            No steps data available
+          </td>
+        </tr>
+      );
     }
 
     return data.steps.map((step, idx) => {
       const displayStatus = step.status || "-";
       const displayComment = step.comment || "-";
       const assignedOn = step.created ? fDateTime(step.created) : "-";
-      const actionedOn = step.updatedAt && displayStatus !== "Pending" 
-        ? fDateTime(step.updatedAt) 
-        : "-";
+      const actionedOn =
+        step.updatedAt && displayStatus !== "Pending"
+          ? fDateTime(step.updatedAt)
+          : "-";
 
       return (
         <tr style={{ borderBottom: "1px solid #aeaeae" }} key={`step-${idx}`}>
-          <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
-            {step.approverId || "-"}
+          <td
+            style={{
+              padding: "6px",
+              textAlign: "center",
+              fontSize: "0.875rem",
+            }}
+          >
+            {step.approverId?.username || "-"}
           </td>
-          <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
+          <td
+            style={{
+              padding: "6px",
+              textAlign: "center",
+              fontSize: "0.875rem",
+            }}
+          >
             {assignedOn}
           </td>
-          <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
+          <td
+            style={{
+              padding: "6px",
+              textAlign: "center",
+              fontSize: "0.875rem",
+            }}
+          >
             {actionedOn}
           </td>
           <td
@@ -161,7 +188,9 @@ export default function RequestStatus({
                 mb: 2,
               }}
             >
-              <Typography variant="h5">Request No. #{rowData?.groupId}</Typography>
+              <Typography variant="h5">
+                Request No. #{rowData?.groupId}
+              </Typography>
             </Box>
             <Divider sx={{ borderStyle: "solid" }} />
             {loading ? (
@@ -179,7 +208,11 @@ export default function RequestStatus({
               <>
                 <table
                   className="status-table"
-                  style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "0.875rem",
+                  }}
                 >
                   <thead>
                     <tr style={{ backgroundColor: "#003a95", color: "#fff" }}>
@@ -188,7 +221,7 @@ export default function RequestStatus({
                           borderBottom: "1px solid #ddd",
                           padding: "6px",
                           fontSize: "0.875rem",
-                          fontWeight: "600"
+                          fontWeight: "600",
                         }}
                       >
                         Assigned To
@@ -198,7 +231,7 @@ export default function RequestStatus({
                           borderBottom: "1px solid #ddd",
                           padding: "6px",
                           fontSize: "0.875rem",
-                          fontWeight: "600"
+                          fontWeight: "600",
                         }}
                       >
                         Assigned On
@@ -208,7 +241,7 @@ export default function RequestStatus({
                           borderBottom: "1px solid #ddd",
                           padding: "6px",
                           fontSize: "0.875rem",
-                          fontWeight: "600"
+                          fontWeight: "600",
                         }}
                       >
                         Actioned On
@@ -218,7 +251,7 @@ export default function RequestStatus({
                           borderBottom: "1px solid #ddd",
                           padding: "6px",
                           fontSize: "0.875rem",
-                          fontWeight: "600"
+                          fontWeight: "600",
                         }}
                       >
                         Status
@@ -228,7 +261,7 @@ export default function RequestStatus({
                           borderBottom: "1px solid #ddd",
                           padding: "6px",
                           fontSize: "0.875rem",
-                          fontWeight: "600"
+                          fontWeight: "600",
                         }}
                       >
                         Comment

@@ -5,14 +5,12 @@ import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
-import { applyFilter, getComparator } from "src/utils/utils";
-import { publicRequest, userRequest } from "src/requestMethod";
+import { getComparator } from "src/utils/utils";
+import { userRequest } from "src/requestMethod";
 import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
-import { action } from "src/theme/palette";
-import { format } from "date-fns";
 import { useRouter } from "src/routes/hooks";
-import { Box, Tooltip } from "@mui/material";
-import RequestModal from "src/features/credit-deviation/approvals/components/RequestModal";
+import { useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
@@ -20,6 +18,7 @@ import { Helmet } from "react-helmet-async";
 
 export default function AutoReversal() {
   const router = useRouter();
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -28,56 +27,77 @@ export default function AutoReversal() {
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
   const [selectedTab, setSelectedTab] = useState("all");
-  const [approvalCount, setApprovalCount] = useState(0);
   const [statusCounts, setStatusCounts] = useState({
     all: 0,
     active: 0,
     delayed: 0,
-    accepted: 0,
+    completed: 0,
   });
 
   const menuItems = [
     { label: "All", value: "all", count: statusCounts.all },
     { label: "Active", value: "active", count: statusCounts.active },
     { label: "Delayed", value: "delayed", count: statusCounts.delayed },
-    { label: "Accepted", value: "accepted", count: statusCounts.accepted },
+    { label: "Completed", value: "completed", count: statusCounts.completed },
   ];
 
 
   const getData = async () => {
     setLoading(true);
     try {
+      const params = {
+        page: page + 1, // API uses 1-based pagination
+        limit: rowsPerPage,
+      };
+      
+      // Only add filter parameter if selectedTab is not 'all'
+      if (selectedTab !== 'all') {
+        params.filter = selectedTab;
+      }
+
       const response = await userRequest.get(
-        `https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers/getAllJV`,
-        {
-          params: {
-            page: page + 1, // API uses 1-based pagination
-            limit: rowsPerPage,
-            status: selectedTab !== "all" ? selectedTab : undefined,
-          },
-        }
+        `jvm/getReversals`,
+        { params }
       );
 
       if (response.data.statusCode === 200) {
-        const apiData = response.data.data.data;
-        const { total, totalGroups } = response.data.data;
+        const apiData = response.data.data; // Data is directly in response.data.data array
         const processedData = apiData.map((item) => ({
           ...item,
+          requestNo: item.groupId, // Map groupId to requestNo for display
+          pId: item.parentId, // Map parentId to pId for display
           createdAt: new Date(item.createdAt),
           updatedAt: new Date(item.updatedAt),
+          documentDate: new Date(item.documentDate),
+          postingDate: new Date(item.postingDate),
+          startDate: new Date(item.startDate),
+          endDate: new Date(item.endDate),
+          totalDebit: item.totalDebit || 0, // Add totalDebit field
+          totalCredit: item.totalCredit || 0, // Add totalCredit field
+          // Preserve original fields for detail page
+          groupId: item.groupId, // Keep original groupId
+          parentId: item.parentId, // Keep original parentId
+          requesterId: item.requesterId, // Keep original requesterId
+          status: item.status, // Keep original status
         }));
 
         setData(processedData);
-        setTotalCount(total);
+        setTotalCount(apiData.length); // Use array length since no pagination info provided
 
-        // Calculate status counts (you might need a separate API call for this)
-        const counts = {
-          all: total,
-          active: Math.floor(total / 3), // This should come from API
-          delayed: Math.floor(total / 3),
-          accepted: Math.floor(total / 3),
-        };
-        setStatusCounts(counts);
+        // Update status counts based on current filter
+        if (selectedTab === 'all') {
+          // For 'all' tab, update the all count
+          setStatusCounts(prevCounts => ({
+            ...prevCounts,
+            all: apiData.length
+          }));
+        } else {
+          // For specific status tabs, update that specific count
+          setStatusCounts(prevCounts => ({
+            ...prevCounts,
+            [selectedTab]: apiData.length
+          }));
+        }
       } else {
         throw new Error(response.data.message || "Failed to fetch data");
       }
@@ -99,74 +119,6 @@ export default function AutoReversal() {
     }
   };
 
-  const handleExport = () => {
-    // Export functionality
-    console.log("Export clicked");
-  };
-
-  // Custom ColorIndicators component for Auto Reversal Status
-  const AutoReversalColorIndicators = () => {
-    // Custom circle component for displaying each color with label on hover
-    const ColorCircle = ({ color, label }) => (
-      <Tooltip title={label} arrow>
-        <Box
-          sx={{
-            width: "18px",
-            height: "18px",
-            backgroundColor: color,
-            borderRadius: "50%",
-            cursor: "pointer",
-            border: "1px solid rgba(0, 0, 0, 0.2)", // Light black border
-          }}
-        />
-      </Tooltip>
-    );
-
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 1,
-          marginLeft: 2,
-        }}
-      >
-        {/* Status color legend for Auto Reversal Status */}
-        <ColorCircle color="#e8f5e8" label="Delayed" />
-        <ColorCircle color="#f4f5ba" label="Active" />
-        <ColorCircle color="#ffcdd2" label="Accepted" />
-      </Box>
-    );
-  };
-
-  const getStatusColor = (status) => {
-    const statusColors = {
-      Delayed: "#e8f5e8",
-      Accepted: "#ffcdd2",
-      Active: "#f4f5ba",
-    };
-    return statusColors[status] || "#f5f5f5";
-  };
-
-  const getStatusChip = (status) => {
-    return (
-      <Box
-        sx={{
-          display: "inline-block",
-          px: 1.5,
-          py: 0.5,
-          borderRadius: 1,
-          backgroundColor: getStatusColor(status),
-          color: "#333",
-          fontSize: "0.75rem",
-          fontWeight: 600,
-          textTransform: "uppercase",
-        }}
-      >
-        {status}
-      </Box>
-    );
-  };
 
   const columns = [
     {
@@ -189,18 +141,17 @@ export default function AutoReversal() {
           }}
           onClick={() => {
             // Pass the complete data to the detail page
-            console.log("Passing data to detail page:", params.row);
-            console.log("Rows in the data:", params.row.rows);
             
             // Store data in localStorage as backup
             localStorage.setItem('arDetailData', JSON.stringify(params.row));
             
-            router.push(`/jvm/auto-reversal/ar-detail/${params.row.requestNo}`, { 
+            // Use navigate with state to pass data
+            navigate(`/jvm/auto-reversal/ar-detail/${params.row.requestNo}`, { 
               state: params.row 
             });
           }}
         >
-          {params.value}
+          {params.value || "-"}
         </Box>
       ),
     },
@@ -211,15 +162,25 @@ export default function AutoReversal() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => params.value || "-",
     },
     {
-      field: "createdAt",
-      headerName: "Created Date",
+      field: "documentDate",
+      headerName: "Document Date",
       flex: 1,
-      minWidth: 200,
+      minWidth: 180,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => params.value ? fDateTime(params.value) : "-",
+    },
+    {
+      field: "postingDate",
+      headerName: "Posting Date",
+      flex: 1,
+      minWidth: 180,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value ? fDateTime(params.value) : "-",
     },
     {
       field: "startDate",
@@ -246,7 +207,7 @@ export default function AutoReversal() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      // renderCell: (params) => getStatusChip(params.value),
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "totalDebit",
@@ -255,7 +216,7 @@ export default function AutoReversal() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || '0'}`,
+      renderCell: (params) => params.value ? `₹${params.value?.toLocaleString()}` : "-",
     },
     {
       field: "totalCredit",
@@ -264,20 +225,13 @@ export default function AutoReversal() {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || '0'}`,
+      renderCell: (params) => params.value ? `₹${params.value?.toLocaleString()}` : "-",
     }
   ];
 
   // Apply filtering and sorting to the data
   const dataFiltered = (() => {
     let filteredData = [...data];
-
-    // Apply status tab filter
-    if (selectedTab !== "all") {
-      filteredData = filteredData.filter(
-        (item) => item.status?.toLowerCase() === selectedTab.toLowerCase()
-      );
-    }
 
     // Apply search filter if search term exists
     if (search) {
@@ -286,6 +240,8 @@ export default function AutoReversal() {
           "requestNo",
           "pId",
           "status",
+          "totalDebit",
+          "totalCredit",
         ].some((field) =>
           item[field]?.toString().toLowerCase().includes(search.toLowerCase())
         )
@@ -315,7 +271,6 @@ export default function AutoReversal() {
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
           menuItems={menuItems}
-          approvalCount={approvalCount}
         />
         <Card sx={{ mt: 2, p: 2 }}>
           <div
@@ -356,13 +311,6 @@ export default function AutoReversal() {
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               autoHeight
-              // getRowClassName={(params) => {
-              //   const status = params.row.status?.toLowerCase();
-              //   if (status === "active") return "row-active";
-              //   if (status === "accepted") return "row-accepted";
-              //   if (status === "delayed") return "row-delayed";
-              //   return "";
-              // }}
               disableRowSelectionOnClick
               sx={{
                 "& .MuiDataGrid-cell": {
@@ -393,15 +341,6 @@ export default function AutoReversal() {
                     outline: "none",
                   },
                 },
-                "& .MuiDataGrid-row.row-active": {
-                  backgroundColor: "#f4f5ba !important",
-                },
-                "& .MuiDataGrid-row.row-accepted": {
-                  backgroundColor: "#ffcdd2 !important",
-                },
-                "& .MuiDataGrid-row.row-delayed": {
-                  backgroundColor: "#e8f5e8 !important",
-                },
                 "& .MuiDataGrid-row": {
                   borderBottom: "1px solid #e0e0e0",
                 },
@@ -411,22 +350,6 @@ export default function AutoReversal() {
                 },
               }}
             />
-          </Box>
-          <Box
-            sx={{
-              position: "relative",
-              height: "52px", // Match DataGrid footer height
-              marginTop: "-52px", // Overlap with DataGrid footer
-              display: "flex",
-              alignItems: "center",
-              paddingLeft: "16px",
-              zIndex: 0, // Lower z-index so pagination is clickable
-              pointerEvents: "none", // Allow clicks to pass through
-            }}
-          >
-            {/* <Box sx={{ pointerEvents: "auto" }}>
-              <AutoReversalColorIndicators />
-            </Box> */}
           </Box>
         </Card>
       </Container>
