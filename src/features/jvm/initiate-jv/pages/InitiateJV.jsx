@@ -13,6 +13,7 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  TextField,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import Iconify from "src/components/iconify/iconify";
@@ -32,6 +33,7 @@ export default function InitiateJV() {
   const [editData, setEditData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [autoReversal, setAutoReversal] = useState("No");
+  const [reversalReason, setReversalReason] = useState("");
   const [showInfoText, setShowInfoText] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -172,6 +174,7 @@ export default function InitiateJV() {
 
       const requestData = {
         autoReversal: autoReversal === "Yes",
+        reversalReason: autoReversal === "Yes" ? reversalReason : "",
         document: "",
         items: items
       };
@@ -458,37 +461,75 @@ export default function InitiateJV() {
                 justifyContent: { xs: "center", sm: "flex-start" },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                    whiteSpace: "nowrap",
-                    fontWeight: 500,
-                  }}
-                >
-                  Auto-reversal this transaction:
-                </Typography>
-                <FormControl
-                  sx={{
-                    minWidth: 80,
-                    "& .MuiOutlinedInput-root": {
-                      height: "40px",
-                    },
-                  }}
-                >
-                  <Select
-                    value={autoReversal}
-                    onChange={(e) => setAutoReversal(e.target.value)}
-                    displayEmpty
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography
+                    variant="body2"
                     sx={{
                       fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                      whiteSpace: "nowrap",
+                      fontWeight: 500,
                     }}
                   >
-                    <MenuItem value="Yes">Yes</MenuItem>
-                    <MenuItem value="No">No</MenuItem>
-                  </Select>
-                </FormControl>
+                    Auto-reversal this transaction:
+                  </Typography>
+                  <FormControl
+                    sx={{
+                      minWidth: 80,
+                      "& .MuiOutlinedInput-root": {
+                        height: "40px",
+                      },
+                    }}
+                  >
+                    <Select
+                      value={autoReversal}
+                      onChange={(e) => setAutoReversal(e.target.value)}
+                      displayEmpty
+                      sx={{
+                        fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                      }}
+                    >
+                      <MenuItem value="Yes">Yes</MenuItem>
+                      <MenuItem value="No">No</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+                
+                {autoReversal === "Yes" && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 300 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                        whiteSpace: "nowrap",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Reversal Reason:
+                    </Typography>
+                    <FormControl
+                      sx={{
+                        minWidth: 120,
+                        "& .MuiOutlinedInput-root": {
+                          height: "40px",
+                        },
+                      }}
+                    >
+                      <Select
+                        value={reversalReason}
+                        onChange={(e) => setReversalReason(e.target.value)}
+                        displayEmpty
+                        sx={{
+                          fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                        }}
+                      >
+                        <MenuItem value="">Select Reason</MenuItem>
+                        <MenuItem value="01">01</MenuItem>
+                        <MenuItem value="02">02</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
               </Box>
             </Box>
 

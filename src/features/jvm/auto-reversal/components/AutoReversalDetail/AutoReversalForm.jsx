@@ -245,16 +245,25 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <TextField
+                <FormControl
                   fullWidth
                   size="small"
-                  label="Reversal Reason"
-                  value={formData.reversalReason}
-                  onChange={(e) =>
-                    handleFormChange("reversalReason", e.target.value)
-                  }
-                  placeholder="Enter reversal reason"
-                />
+                  disabled
+                >
+                  <InputLabel>Reversal Reason</InputLabel>
+                  <Select
+                    value={initialData.reversalReason || formData.reversalReason || ""}
+                    label="Reversal Reason"
+                    sx={{
+                      "& .MuiInputBase-input": {
+                        backgroundColor: "#f5f5f5",
+                      },
+                    }}
+                  >
+                    <MenuItem value="01">01</MenuItem>
+                    <MenuItem value="02">02</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
