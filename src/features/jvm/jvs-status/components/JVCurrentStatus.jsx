@@ -3,6 +3,10 @@ import React from "react";
 import { fDateTime } from "src/utils/format-time";
 
 function JVCurrentStatus({ steps = [], data }) {
+
+  console.log(data);
+  console.log(steps);
+
   return (
     <Paper
       elevation={0}

@@ -18,6 +18,7 @@ import { fDateTime } from "src/utils/format-time";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
+import { JVStatusColumns } from "../components/JVStatusColumns";
 
 export default function JVStatus() {
   const router = useRouter();
@@ -113,96 +114,8 @@ export default function JVStatus() {
     setSelectedRowData(null);
   };
 
-  const columns = [
-    {
-      field: "groupId",
-      headerName: "Request No.",
-      flex: 1,
-      minWidth: 160,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            cursor: "pointer",
-            color: "#1976d2",
-            textDecoration: "underline",
-            textDecorationThickness: "2px",
-            textUnderlineOffset: "4px",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => {
-            localStorage.setItem("jvDetailData", JSON.stringify(params.row));
-            router.push(
-              `/jvm/requested-jvs/detail/${params.row.groupId}`
-            );
-          }}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "parentId",
-      headerName: "P.Id",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "createdAt",
-      headerName: "Created Date",
-      flex: 1,
-      minWidth: 200,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            cursor: "pointer",
-            color: "#1976d2",
-            textDecoration: "underline",
-            textDecorationThickness: "2px",
-            textUnderlineOffset: "4px",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => handleStatusClick(params.row)}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "totalDebit",
-      headerName: "Total Debit",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "totalCredit",
-      headerName: "Total Credit",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-  ];
+  // Get columns from separate file
+  const columns = JVStatusColumns({ handleStatusClick, router });
 
   // Apply filtering and sorting to the data
   const dataFiltered = (() => {

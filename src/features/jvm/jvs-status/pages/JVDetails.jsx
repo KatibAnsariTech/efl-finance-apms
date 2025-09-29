@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Card from "@mui/material/Card";
 import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
@@ -12,6 +12,10 @@ import { fDateTime } from "src/utils/format-time";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
 import { userRequest } from "src/requestMethod";
+import { JVDetailsColumns } from "../components/JVDetailsColumns";
+import JVCurrentStatus from "../components/JVCurrentStatus";
+import swal from "sweetalert";
+import { showErrorMessage } from "src/utils/errorUtils";
 
 export default function JVDetails() {
   const router = useRouter();
@@ -23,20 +27,20 @@ export default function JVDetails() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
-  const [jvInfo, setJvInfo] = useState({});
+  const [jvData, setJvData] = useState(null);
 
-
-
-  const getData = async () => {
+  const getData = useCallback(async () => {
     setLoading(true);
     try {
       if (!id) return;
 
-      const response = await userRequest.get(`jvm/getFormItemsByGroupId?groupId=${id}`);
-      
+      const response = await userRequest.get(
+        `jvm/getFormItemsByGroupId?groupId=${id}`
+      );
+
       if (response.data.statusCode === 200) {
         const { items } = response.data.data;
-        
+
         const data = items.map((item, index) => ({
           ...item,
           id: item._id,
@@ -54,13 +58,41 @@ export default function JVDetails() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+  const getRequestInfo = useCallback(async () => {
+    try {
+      if (!id) {
+        setJvData(null);
+        return;
+      }
+
+      const response = await userRequest.get(
+        `jvm/getRequestInfoByGroupId?groupId=${id}`
+      );
+
+      if (response.data.statusCode === 200) {
+        const requestData = response.data.data;
+
+        // Store the full JV data for CurrentStatus component
+        setJvData(requestData);
+      } else {
+        throw new Error(
+          response.data.message || "Failed to fetch request info"
+        );
+      }
+    } catch (err) {
+      console.error("Error fetching request info:", err);
+      showErrorMessage(err, "Failed to fetch request details", swal);
+      setJvData(null);
+    }
+  }, [id]);
 
   useEffect(() => {
     if (id) {
       getData();
+      getRequestInfo();
     }
-  }, [id, page, rowsPerPage]);
+  }, [id, page, rowsPerPage, getData, getRequestInfo]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
@@ -101,166 +133,8 @@ export default function JVDetails() {
     );
   };
 
-
-  const columns = [
-    {
-      field: "lineNumber",
-      headerName: "S No",
-      flex: 0.5,
-      minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "type",
-      headerName: "Type",
-      flex: 0.8,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "documentType",
-      headerName: "Document Type",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "documentDate",
-      headerName: "Document Date",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "businessArea",
-      headerName: "Business Area",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "accountType",
-      headerName: "Account Type",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "postingKey",
-      headerName: "Posting Key",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "vendorCustomerGLNumber",
-      headerName: "GL Number",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "vendorCustomerGLName",
-      headerName: "GL Name",
-      flex: 2,
-      minWidth: 200,
-      align: "left",
-      headerAlign: "center",
-    },
-    {
-      field: "amount",
-      headerName: "Amount",
-      flex: 1.2,
-      minWidth: 130,
-      align: "right",
-      headerAlign: "center",
-      renderCell: (params) => {
-        const amount = params.value;
-        const type = params.row.type;
-        const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
-        
-        if (type === 'Debit') {
-          return formattedAmount;
-        } else {
-          return `(${formattedAmount})`;
-        }
-      },
-    },
-    {
-      field: "assignment",
-      headerName: "Assignment",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "profitCenter",
-      headerName: "Profit Center",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "specialGLIndication",
-      headerName: "Special GL",
-      flex: 1,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "referenceNumber",
-      headerName: "Reference",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "remarks",
-      headerName: "Remarks",
-      flex: 2,
-      minWidth: 200,
-      align: "left",
-      headerAlign: "center",
-    },
-    {
-      field: "postingDate",
-      headerName: "Posting Date",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "costCenter",
-      headerName: "Cost Center",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "personalNumber",
-      headerName: "Personal No.",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-  ];
+  // Get columns from separate file
+  const columns = JVDetailsColumns();
 
   const dataFiltered = (() => {
     let filteredData = [...data];
@@ -427,6 +301,12 @@ export default function JVDetails() {
               }}
             />
           </Box>
+          {/* Approval History */}
+          {jvData && (
+            <Box sx={{ mt: 3 }}>
+              <JVCurrentStatus steps={jvData.steps || []} data={jvData} />
+            </Box>
+          )}
         </Card>
       </Container>
     </>
