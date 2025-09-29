@@ -120,7 +120,9 @@ export default function RequestStatus({
               fontSize: "0.875rem",
             }}
           >
-            {step.approverId?.username || "-"}
+            {step.approverId
+              ? `${step.approverId.username} (${step.approverId.email})`
+              : "-"}
           </td>
           <td
             style={{

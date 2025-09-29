@@ -3,10 +3,6 @@ import React from "react";
 import { fDateTime } from "src/utils/format-time";
 
 function JVCurrentStatus({ steps = [], data }) {
-
-  console.log(data);
-  console.log(steps);
-
   return (
     <Paper
       elevation={0}
@@ -52,8 +48,13 @@ function JVCurrentStatus({ steps = [], data }) {
                 <Typography fontWeight="bold" color="text.primary">
                   Raised By
                 </Typography>
-                <Typography>{data?.requesterId?.username}</Typography>
-                {data?.formId?.requesterRemark &&<Typography>with comment:</Typography>}
+                <Typography>
+                  {data?.requesterId?.username} &nbsp; (
+                  {data?.requesterId?.email})
+                </Typography>
+                {data?.formId?.requesterRemark && (
+                  <Typography>with comment:</Typography>
+                )}
               </Stack>
               <Box
                 sx={{
@@ -112,8 +113,8 @@ function JVCurrentStatus({ steps = [], data }) {
                   )}
                   {step.approverId?.username && (
                     <Typography>
-                      {step?.approverId?.username}
-                       ({step?.approverId?.email})
+                      {step?.approverId?.username}&nbsp; (
+                      {step?.approverId?.email})
                     </Typography>
                   )}
                   {step.comment && <Typography>with comment:</Typography>}

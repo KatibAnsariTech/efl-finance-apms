@@ -108,8 +108,8 @@ function JVCurrentStatus({ steps = [], data }) {
                   )}
                   {step.approverId?.username && (
                     <Typography>
-                      {step?.approverId?.username}
-                       ({step?.approverId?.email})
+                      {step?.approverId?.username }
+                      ({step?.approverId?.email})
                     </Typography>
                   )}
                   {step.comment && <Typography>with comment:</Typography>}
