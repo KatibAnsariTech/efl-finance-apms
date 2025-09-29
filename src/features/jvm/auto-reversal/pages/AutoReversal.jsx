@@ -123,7 +123,7 @@ export default function AutoReversal() {
   const handleDelete = async (row) => {
     const result = await swal({
       title: "Are you sure?",
-      text: "You will not be able to recover this auto reversal request!",
+      text: "Once deleted, you will not be able to recover this auto reversal request!",
       icon: "warning",
       buttons: true,
       dangerMode: true,
@@ -134,14 +134,14 @@ export default function AutoReversal() {
         // TODO: Replace with actual delete API call
         // await userRequest.delete(`jvm/auto-reversal/${row.requestNo}`);
         
-        // For now, just show success message
-        swal("Deleted!", "Auto reversal request has been deleted.", "success");
+        // Show success message
+        swal("Deleted!", "Auto reversal request has been deleted successfully.", "success");
         
         // Refresh the data
         getData();
       } catch (error) {
         console.error("Delete error:", error);
-        showErrorMessage(error, "Failed to delete auto reversal request", swal);
+        swal("Error!", "Failed to delete auto reversal request. Please try again.", "error");
       }
     }
   };

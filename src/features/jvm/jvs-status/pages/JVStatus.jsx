@@ -117,7 +117,7 @@ export default function JVStatus() {
   const handleDelete = async (row) => {
     const result = await swal({
       title: "Are you sure?",
-      text: "You will not be able to recover this journal voucher request!",
+      text: "Once deleted, you will not be able to recover this journal voucher request!",
       icon: "warning",
       buttons: true,
       dangerMode: true,
@@ -128,14 +128,14 @@ export default function JVStatus() {
         // TODO: Replace with actual delete API call
         // await userRequest.delete(`jvm/deleteRequest/${row.groupId}`);
         
-        // For now, just show success message
-        swal("Deleted!", "Journal voucher request has been deleted.", "success");
+        // Show success message
+        swal("Deleted!", "Journal voucher request has been deleted successfully.", "success");
         
         // Refresh the data
         getData();
       } catch (error) {
         console.error("Delete error:", error);
-        showErrorMessage(error, "Failed to delete journal voucher request", swal);
+        swal("Error!", "Failed to delete journal voucher request. Please try again.", "error");
       }
     }
   };
