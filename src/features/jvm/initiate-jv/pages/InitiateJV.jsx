@@ -84,7 +84,36 @@ export default function InitiateJV() {
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
 
-  // Validation function to check if rows with same slNo have balanced debit/credit amounts
+
+  const validateSlNoEntryLimit = () => {
+    const slNoGroups = {};
+    
+    // Group entries by slNo
+    data.forEach(entry => {
+      const slNo = entry.slNo?.toString().trim();
+      if (slNo) {
+        if (!slNoGroups[slNo]) {
+          slNoGroups[slNo] = [];
+        }
+        slNoGroups[slNo].push(entry);
+      }
+    });
+
+    const exceededGroups = [];
+    Object.keys(slNoGroups).forEach(slNo => {
+      const group = slNoGroups[slNo];
+      if (group.length > 950) {
+        exceededGroups.push({
+          slNo,
+          count: group.length,
+          limit: 950
+        });
+      }
+    });
+
+    return exceededGroups;
+  };
+
   const validateSlNoBalance = () => {
     const slNoGroups = {};
     
@@ -106,7 +135,6 @@ export default function InitiateJV() {
       }
     });
 
-    // Check if any slNo group has unbalanced amounts
     const unbalancedGroups = [];
     Object.keys(slNoGroups).forEach(slNo => {
       const group = slNoGroups[slNo];
@@ -133,6 +161,23 @@ export default function InitiateJV() {
   const handleSubmitRequest = async () => {
     try {
       setSubmitting(true);
+      
+      // Validate slNo entry limit before submitting
+      const exceededGroups = validateSlNoEntryLimit();
+      if (exceededGroups.length > 0) {
+        const errorMessage = exceededGroups.map(group => 
+          `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
+        ).join('\n');
+        
+        await swal({
+          title: "Validation Error",
+          text: `The following serial numbers exceed the maximum entry limit:\n\n${errorMessage}\n\nPlease ensure that each serial number has no more than 950 entries.`,
+          icon: "error",
+          button: "OK"
+        });
+        setSubmitting(false);
+        return;
+      }
       
       // Validate slNo balance before submitting
       const unbalancedGroups = validateSlNoBalance();
@@ -568,6 +613,7 @@ export default function InitiateJV() {
           onSuccess={handleModalSuccess}
           editData={editData}
           mode={modalMode}
+          existingData={data}
         />
 
         <UploadJVModal

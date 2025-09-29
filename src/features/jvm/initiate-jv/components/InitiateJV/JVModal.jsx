@@ -71,6 +71,7 @@ export default function JVModal({
   onSuccess,
   editData,
   mode = "add",
+  existingData = [],
 }) {
   const isEditMode = mode === "edit";
 
@@ -83,6 +84,11 @@ export default function JVModal({
     setValue,
   } = useForm({
     resolver: yupResolver(jvEntrySchema),
+    context: {
+      existingData,
+      isEditMode,
+      currentEntryId: editData?._id || null,
+    },
     defaultValues: {
       slNo: "",
       documentType: "",
@@ -236,8 +242,10 @@ export default function JVModal({
                       fullWidth
                       size="small"
                       label="S No *"
+                      type="number"
+                      inputProps={{ min: 1, max: 950 }}
                       error={!!error}
-                      helperText={error?.message}
+                      helperText={error?.message || "Max 950 entries per serial number"}
                     />
                   )}
                 />

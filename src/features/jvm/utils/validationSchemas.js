@@ -2,7 +2,25 @@ import * as yup from "yup";
 
 // JV Entry validation schema
 export const jvEntrySchema = yup.object().shape({
-  slNo: yup.string().required("Serial Number is required"),
+  slNo: yup
+    .string()
+    .required("Serial Number is required")
+    .test("max-entries", "Serial number can contain up to 950 entries only", function(value) {
+      if (!value) return true;
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 1) return false;
+      
+      // Get existing data from context
+      const { existingData = [], isEditMode = false, currentEntryId = null } = this.options.context || {};
+      
+      // Count existing entries with the same serial number
+      const existingEntries = existingData.filter(entry => 
+        entry.slNo === value && 
+        (isEditMode ? entry._id !== currentEntryId : true)
+      );
+      
+      return existingEntries.length < 950;
+    }),
   documentType: yup.string().required("Document Type is required"),
   documentDate: yup.date().required("Document Date is required"),
   businessArea: yup
@@ -56,7 +74,25 @@ export const jvEntrySchema = yup.object().shape({
 
 // Auto Reversal validation schema
 export const autoReversalSchema = yup.object().shape({
-  slNo: yup.string().required("Serial Number is required"),
+  slNo: yup
+    .string()
+    .required("Serial Number is required")
+    .test("max-entries", "Serial number can contain up to 950 entries only", function(value) {
+      if (!value) return true;
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 1) return false;
+      
+      // Get existing data from context
+      const { existingData = [], isEditMode = false, currentEntryId = null } = this.options.context || {};
+      
+      // Count existing entries with the same serial number
+      const existingEntries = existingData.filter(entry => 
+        entry.slNo === value && 
+        (isEditMode ? entry._id !== currentEntryId : true)
+      );
+      
+      return existingEntries.length < 950;
+    }),
   documentType: yup.string().required("Document Type is required"),
   documentDate: yup.date().required("Document Date is required"),
   businessArea: yup
