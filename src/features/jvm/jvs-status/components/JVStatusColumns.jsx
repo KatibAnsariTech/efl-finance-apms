@@ -1,10 +1,12 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
+import Iconify from "src/components/iconify/iconify";
 
 export const JVStatusColumns = ({ 
   handleStatusClick,
-  router 
+  router,
+  handleDelete
 }) => {
   const columns = [
     {
@@ -94,6 +96,37 @@ export const JVStatusColumns = ({
       align: "center",
       headerAlign: "center",
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 0.5,
+      minWidth: 100,
+      align: "center",
+      headerAlign: "center",
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <Tooltip title="Delete">
+            <IconButton
+              size="small"
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(params.row);
+              }}
+              sx={{
+                "&:hover": {
+                  backgroundColor: "rgba(244, 67, 54, 0.08)",
+                },
+              }}
+            >
+              <Iconify icon="solar:trash-bin-trash-bold" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
     },
   ];
 

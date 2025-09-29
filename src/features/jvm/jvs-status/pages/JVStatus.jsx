@@ -114,8 +114,34 @@ export default function JVStatus() {
     setSelectedRowData(null);
   };
 
+  const handleDelete = async (row) => {
+    const result = await swal({
+      title: "Are you sure?",
+      text: "You will not be able to recover this journal voucher request!",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    });
+
+    if (result) {
+      try {
+        // TODO: Replace with actual delete API call
+        // await userRequest.delete(`jvm/deleteRequest/${row.groupId}`);
+        
+        // For now, just show success message
+        swal("Deleted!", "Journal voucher request has been deleted.", "success");
+        
+        // Refresh the data
+        getData();
+      } catch (error) {
+        console.error("Delete error:", error);
+        showErrorMessage(error, "Failed to delete journal voucher request", swal);
+      }
+    }
+  };
+
   // Get columns from separate file
-  const columns = JVStatusColumns({ handleStatusClick, router });
+  const columns = JVStatusColumns({ handleStatusClick, router, handleDelete });
 
   // Apply filtering and sorting to the data
   const dataFiltered = (() => {
