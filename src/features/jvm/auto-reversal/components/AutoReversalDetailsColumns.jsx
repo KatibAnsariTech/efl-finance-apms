@@ -1,0 +1,214 @@
+import React from "react";
+import { Box } from "@mui/material";
+import { fDateTime } from "src/utils/format-time";
+
+export const AutoReversalDetailsColumns = () => {
+  const columns = [
+    {
+      field: "lineNumber",
+      headerName: "#",
+      flex: 0.5,
+      minWidth: 80,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "itemId",
+      headerName: "Request No",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || params.row._id || "-",
+    },
+    {
+      field: "documentType",
+      headerName: "Document Type",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "initiatedDate",
+      headerName: "Initiated Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
+    },
+    {
+      field: "documentDate",
+      headerName: "Document Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
+    },
+    {
+      field: "businessArea",
+      headerName: "Business Area",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "accountType",
+      headerName: "Account Type",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "postingKey",
+      headerName: "Posting Key",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "vendorCustomerGLNumber",
+      headerName: "GL Number",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "vendorCustomerGLName",
+      headerName: "GL Name",
+      flex: 2,
+      minWidth: 200,
+      align: "left",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "amount",
+      headerName: "Amount",
+      flex: 1.2,
+      minWidth: 130,
+      align: "right",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const amount = params.value;
+        if (amount === null || amount === undefined) return "-";
+        const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
+        return amount >= 0 ? formattedAmount : `(${formattedAmount})`;
+      },
+    },
+    {
+      field: "assignment",
+      headerName: "Assignment",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "profitCenter",
+      headerName: "Profit Center",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "specialGLIndication",
+      headerName: "Special GL",
+      flex: 1,
+      minWidth: 100,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "referenceNumber",
+      headerName: "Reference",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "remarks",
+      headerName: "Remarks",
+      flex: 2,
+      minWidth: 200,
+      align: "left",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "postingDate",
+      headerName: "Posting Date",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
+    },
+    {
+      field: "costCenter",
+      headerName: "Cost Center",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "personalNumber",
+      headerName: "Personal No.",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "autoReversal",
+      headerName: "Auto Reversal",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        if (!params.value) return "-";
+        return (
+          <Box
+            sx={{
+              display: "inline-block",
+              px: 1,
+              py: 0.5,
+              borderRadius: 1,
+              backgroundColor: params.value === "Y" ? "#e8f5e8" : "#f5f5f5",
+              color: params.value === "Y" ? "#2e7d32" : "#666",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+            }}
+          >
+            {params.value}
+          </Box>
+        );
+      },
+    },
+  ];
+
+  return columns;
+};
