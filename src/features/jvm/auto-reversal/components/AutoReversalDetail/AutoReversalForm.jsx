@@ -254,29 +254,40 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                   <Select
                     value={initialData.reversalReason || formData.reversalReason || ""}
                     label="Reversal Reason"
+                    disabled
                     sx={{
                       "& .MuiInputBase-input": {
                         backgroundColor: "#f5f5f5",
                       },
                     }}
                   >
-                    <MenuItem value="01">01</MenuItem>
-                    <MenuItem value="02">02</MenuItem>
+                    <MenuItem value="01">01 - Existing Posting</MenuItem>
+                    <MenuItem value="02">02 - New Posting Date</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Reversal Posting Date"
-                  value={formData.reversalPostingDate}
+                  value={
+                    initialData.reversalReason === "01" 
+                      ? (initialData.postingDate ? new Date(initialData.postingDate) : new Date())
+                      : formData.reversalPostingDate
+                  }
                   onChange={(newValue) =>
                     handleFormChange("reversalPostingDate", newValue)
                   }
+                  disabled={initialData.reversalReason === "01"}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       size: "small",
                       placeholder: "Select date",
+                      sx: initialData.reversalReason === "01" ? {
+                        "& .MuiInputBase-input": {
+                          backgroundColor: "#f5f5f5",
+                        },
+                      } : {},
                     },
                   }}
                 />

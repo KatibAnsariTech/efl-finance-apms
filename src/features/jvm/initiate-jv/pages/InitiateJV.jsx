@@ -524,8 +524,8 @@ export default function InitiateJV() {
                         }}
                       >
                         <MenuItem value="">Select Reason</MenuItem>
-                        <MenuItem value="01">01</MenuItem>
-                        <MenuItem value="02">02</MenuItem>
+                        <MenuItem value="01">01 - Existing Posting</MenuItem>
+                        <MenuItem value="02">02 - New Posting Date</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>
