@@ -131,17 +131,12 @@ export default function AutoReversal() {
 
     if (result) {
       try {
-        // TODO: Replace with actual delete API call
-        // await userRequest.delete(`jvm/auto-reversal/${row.requestNo}`);
-        
-        // Show success message
+        await userRequest.delete(`jvm/deleteReversal/${row._id}`);
         swal("Deleted!", "Auto reversal request has been deleted successfully.", "success");
-        
-        // Refresh the data
         getData();
       } catch (error) {
         console.error("Delete error:", error);
-        swal("Error!", "Failed to delete auto reversal request. Please try again.", "error");
+        showErrorMessage(error, "Failed to delete auto reversal request. Please try again.", swal);
       }
     }
   };
