@@ -107,10 +107,10 @@ export const JVStatusColumns = ({
       sortable: false,
       filterable: false,
       renderCell: (params) => {
-        const canDelete = params.row.status === "Pending" && params.row.currentStep === 1;
+        const canDelete = params.row.canDelete;
         return (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <Tooltip title={canDelete ? "Delete" : "Only pending requests in the first step can be deleted"}>
+            <Tooltip title={canDelete ? "Delete" : "This request cannot be deleted"}>
               <span>
                 <IconButton
                   size="small"

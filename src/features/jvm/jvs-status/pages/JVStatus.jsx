@@ -115,9 +115,9 @@ export default function JVStatus() {
   };
 
   const handleDelete = async (row) => {
-    // Only allow deletion if status is pending AND currentStep is 1 (first step, no action taken)
-    if (row.status !== "Pending" || row.currentStep !== 1) {
-      swal("Cannot Delete", "Only pending requests in the first step can be deleted.", "warning");
+    // Only allow deletion if canDelete is true
+    if (!row.canDelete) {
+      swal("Cannot Delete", "This request cannot be deleted.", "warning");
       return;
     }
 
