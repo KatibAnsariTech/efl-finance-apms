@@ -31,7 +31,7 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
         value: data.documentType,
       };
       if (documentTypeData?._id) {
-        await userRequest.put(`/jvm/updateMasters?id=${documentTypeData._id}`, formattedData);
+        await userRequest.put(`/jvm/updateMaster/${documentTypeData._id}`, formattedData);
         getData();
         swal("Updated!", "Document Type data updated successfully!", "success");
       } else {

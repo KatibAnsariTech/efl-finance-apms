@@ -11,33 +11,33 @@ import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getData }) {
+function AddEditAccountType({ handleClose, open, editData: accountTypeData, getData }) {
   const [loading, setLoading] = React.useState(false);
   const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
-    if (postingKeyData) {
-      setValue("postingKey", postingKeyData.postingKey);
+    if (accountTypeData) {
+      setValue("accountType", accountTypeData.accountType);
     } else {
       reset();
     }
-  }, [postingKeyData, setValue, reset]);
+  }, [accountTypeData, setValue, reset]);
 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
       const formattedData = {
-        key: "PostingKey",
-        value: data.postingKey,
+        key: "AccountType",
+        value: data.accountType,
       };
-      if (postingKeyData?._id) {
-        await userRequest.put(`/jvm/updateMaster/${postingKeyData._id}`, formattedData);
+      if (accountTypeData?._id) {
+        await userRequest.put(`/jvm/updateMaster/${accountTypeData._id}`, formattedData);
         getData();
-        swal("Updated!", "Posting Key data updated successfully!", "success");
+        swal("Updated!", "Account Type data updated successfully!", "success");
       } else {
         await userRequest.post("/jvm/createMasters", formattedData);
         getData();
-        swal("Success!", "Posting Key data saved successfully!", "success");
+        swal("Success!", "Account Type data saved successfully!", "success");
       }
 
       reset();
@@ -72,7 +72,7 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
           }}
         >
           <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
-            {postingKeyData ? "Edit Posting Key" : "Add Posting Key"}
+            {accountTypeData ? "Edit Account Type" : "Add Account Type"}
           </span>
           <RxCross2
             onClick={handleClose}
@@ -97,13 +97,13 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
           onSubmit={handleSubmit(handleSaveData)}
         >
           <TextField
-            id="postingKey"
-            label="Posting Key"
-            {...register("postingKey", { required: true })}
+            id="accountType"
+            label="Account Type"
+            {...register("accountType", { required: true })}
             fullWidth
             required
             disabled={loading}
-            placeholder="e.g., 40, 50, 60"
+            // placeholder="e.g., Asset, Liability, Equity"
           />
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
@@ -113,7 +113,7 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
             disabled={loading}
             startIcon={loading && <CircularProgress size={20} color="inherit" />}
           >
-            {loading ? (postingKeyData ? "Updating..." : "Saving...") : (postingKeyData ? "Update" : "Save")}
+            {loading ? (accountTypeData ? "Updating..." : "Saving...") : (accountTypeData ? "Update" : "Save")}
           </Button>
         </Box>
       </Box>
@@ -121,4 +121,4 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
   );
 }
 
-export default AddEditPostingKey;
+export default AddEditAccountType;

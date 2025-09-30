@@ -6,8 +6,10 @@ import MasterTabs from "../components/MasterTabs";
 import AddEditDocumentType from "../components/Modals/AddEditDocumentType";
 import AddEditPostingKey from "../components/Modals/AddEditPostingKey";
 import AddEditHierarchy from "../components/Modals/AddEditHierarchy";
+import AddEditAccountType from "../components/Modals/AddEditAccountType";
+import AddEditSpecialGL from "../components/Modals/AddEditSpecialGL";
 import { Box } from "@mui/material";
-import { DocumentTypeTable, PostingKeyTable, HierarchyTable } from "../components/tables";
+import { DocumentTypeTable, PostingKeyTable, HierarchyTable, AccountTypeTable, SpecialGLTable } from "../components/tables";
 import JVMLogTable from "../components/JVMLogTable";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
@@ -16,7 +18,9 @@ import { fDate, fTime } from "src/utils/format-time";
 const menuItems = [
   "Document Type",
   "Posting Key",
-  "Hierarchy"
+  "Hierarchy",
+  "Account Type",
+  "Special GL Indication"
 ];
 
 export default function JVMMaster() {
@@ -56,8 +60,7 @@ export default function JVMMaster() {
 
       if (result) {
         console.log(`Deleting ${selectedCategory} with ID:`, id);
-        // Add actual delete API call here
-        // await userRequest.delete(`/admin/deleteMaster/${id}`);
+        await userRequest.delete(`/jvm/deleteMaster/${id}`);
         
         // Show success message
         swal("Deleted!", `${selectedCategory} has been deleted successfully.`, "success");
@@ -206,6 +209,28 @@ export default function JVMMaster() {
           </Suspense>
         )}
 
+        {open && selectedTab === 3 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditAccountType
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
+        {open && selectedTab === 4 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditSpecialGL
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
         <Box sx={{ width: "100%" }}>
           {showLogTable && selectedTab === 2 ? (
             <JVMLogTable
@@ -234,6 +259,20 @@ export default function JVMMaster() {
                   handleDelete={handleDelete}
                   refreshTrigger={refreshTrigger}
                   onDataUpdate={setLatestData}
+                />
+              )}
+              {selectedTab === 3 && (
+                <AccountTypeTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+              {selectedTab === 4 && (
+                <SpecialGLTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
                 />
               )}
             </>
