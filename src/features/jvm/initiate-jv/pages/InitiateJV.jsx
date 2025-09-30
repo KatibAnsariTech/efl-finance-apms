@@ -26,7 +26,7 @@ export default function InitiateJV() {
     
     // Setters
     setAutoReversal,
-    setReversalReason,
+    setReversalRemarks,
     
     // Handlers
     handleModalSuccess,
