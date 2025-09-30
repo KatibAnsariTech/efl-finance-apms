@@ -146,7 +146,7 @@ const projectConfig = {
       },
     ],
   },
-  CD: {
+  CUSTOM: {
     id: "custom-duty",
     title: "Custom Duty",
     path: "/custom-duty",
