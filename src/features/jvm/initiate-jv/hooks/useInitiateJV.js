@@ -20,6 +20,7 @@ export const useInitiateJV = () => {
   const [showInfoText, setShowInfoText] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState("");
 
   const addJVEntry = (newEntry) => {
     const entryWithId = {
@@ -57,8 +58,9 @@ export const useInitiateJV = () => {
     setModalOpen(false);
   };
 
-  const handleUploadSuccess = (uploadedEntries) => {
+  const handleUploadSuccess = (uploadedEntries, fileUrl) => {
     uploadedEntries.forEach((entry) => addJVEntry(entry));
+    setUploadedFileUrl(fileUrl);
     setUploadModalOpen(false);
     swal("Success!", "Journal vouchers uploaded successfully!", "success");
   };
@@ -164,9 +166,10 @@ export const useInitiateJV = () => {
       const requestData = {
         autoReversal: autoReversal === "Yes",
         reversalReason: autoReversal === "Yes" ? reversalReason : "",
-        document: "",
+        document: uploadedFileUrl,
         items: items,
       };
+      
       const response = await userRequest.post("jvm/createRequest", requestData);
 
       swal(
@@ -177,6 +180,7 @@ export const useInitiateJV = () => {
 
       // Reset form
       setData([]);
+      setUploadedFileUrl("");
       setAutoReversal("No");
       setConfirmModalOpen(false);
     } catch (error) {

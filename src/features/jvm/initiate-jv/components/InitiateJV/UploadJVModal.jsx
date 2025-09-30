@@ -60,7 +60,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
   };
   const triggerFileInput = () => inputRef.current.click();
 
-  // Upload logic - extract data from Excel file
+
   const handleUpload = async () => {
     if (!selectedFile) return;
 
@@ -70,37 +70,51 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
     setUploadSuccess(false);
 
     try {
+      setUploadProgress(10);
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      
+      const uploadResponse = await userRequest.post('/util/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 90) / progressEvent.total);
+          setUploadProgress(10 + percentCompleted);
+        },
+      });
+
+      if (!uploadResponse.data.success) {
+        throw new Error(uploadResponse.data.msg || 'File upload failed');
+      }
+
+      const fileUrl = uploadResponse.data.data;
+      setUploadProgress(95);
+
       let jsonData;
       
       if (selectedFile.name.toLowerCase().endsWith('.csv')) {
-        // Handle CSV file
         const text = await selectedFile.text();
         const lines = text.split('\n');
         jsonData = lines.map(line => line.split(','));
       } else {
-        // Handle Excel file
         const arrayBuffer = await selectedFile.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
         
-        // Get the first worksheet
         const worksheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[worksheetName];
         
-        // Convert to JSON
         jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       }
       
-      // Skip header row and process data
       const headers = jsonData[0];
       const dataRows = jsonData.slice(1);
       
-      // Map the data to our JV structure
       const extractedData = dataRows.map((row, index) => {
         const entry = {};
         headers.forEach((header, colIndex) => {
           const value = row[colIndex];
           if (value !== undefined && value !== null && value !== '') {
-            // Map common column names to our field names
             const fieldMap = {
               // JV No variations - all map to slNo for backend compatibility
               'slNo': 'slNo',
@@ -192,15 +206,24 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
       setUploadSuccess(true);
       setSelectedFile(null);
 
-      swal("Upload Successful!", `Successfully extracted ${extractedData.length} journal voucher entries from the file.`, "success");
+      swal("Upload Successful!", `Successfully uploaded file and extracted ${extractedData.length} journal voucher entries.`, "success");
 
-      if (onSuccess) onSuccess(extractedData);
+      if (onSuccess) onSuccess(extractedData, fileUrl);
     } catch (err) {
-      console.error("Error processing Excel file:", err);
-      setUploadError("Error processing Excel file. Please ensure the file format is correct.");
+      console.error("Error uploading/processing file:", err);
+      
+      // Determine if it's an upload error or processing error
+      const isUploadError = err.message?.includes('upload') || err.response?.status >= 400;
+      const errorMessage = isUploadError 
+        ? "Error uploading file. Please try again." 
+        : "Error processing Excel file. Please ensure the file format is correct.";
+      
+      setUploadError(errorMessage);
       showErrorMessage(
         err,
-        "Error processing Excel file. Please check the file format and try again.",
+        isUploadError 
+          ? "Failed to upload file. Please check your connection and try again."
+          : "Error processing Excel file. Please check the file format and try again.",
         swal
       );
     } finally {
