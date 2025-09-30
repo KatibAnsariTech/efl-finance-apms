@@ -3,8 +3,8 @@ import { Box, Button, Typography, FormControl, Select, MenuItem, CircularProgres
 const Footer = ({
   autoReversal,
   setAutoReversal,
-  reversalReason,
-  setReversalReason,
+  reversalRemarks,
+  setReversalRemarks,
   onSubmitRequest,
   submitting,
 }) => {
@@ -98,8 +98,8 @@ const Footer = ({
                 }}
               >
                 <Select
-                  value={reversalReason}
-                  onChange={(e) => setReversalReason(e.target.value)}
+                  value={reversalRemarks}
+                  onChange={(e) => setReversalRemarks(e.target.value)}
                   displayEmpty
                   sx={{
                     fontSize: { xs: "0.8rem", sm: "0.875rem" },

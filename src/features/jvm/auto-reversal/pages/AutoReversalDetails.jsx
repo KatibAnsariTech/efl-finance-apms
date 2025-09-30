@@ -327,7 +327,7 @@ export default function AutoReversalDetails() {
             postingDate: arInfo.postingDate,
             fiscalYear:
               arInfo.fiscalYear || new Date().getFullYear().toString(),
-            reversalReason: arInfo.reversalReason || "",
+            reversalRemarks: arInfo.reversalRemarks || "",
           }}
         />
 

@@ -19,7 +19,7 @@ export default function InitiateJV() {
     editData,
     uploadModalOpen,
     autoReversal,
-    reversalReason,
+    reversalRemarks,
     showInfoText,
     confirmModalOpen,
     submitting,
@@ -90,8 +90,8 @@ export default function InitiateJV() {
           <Footer
             autoReversal={autoReversal}
             setAutoReversal={setAutoReversal}
-            reversalReason={reversalReason}
-            setReversalReason={setReversalReason}
+            reversalRemarks={reversalRemarks}
+            setReversalRemarks={setReversalRemarks}
             onSubmitRequest={handleSubmitRequest}
             submitting={submitting}
           />

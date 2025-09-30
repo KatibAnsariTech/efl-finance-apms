@@ -22,7 +22,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
   // Form state for editable fields
   const [formData, setFormData] = useState({
     fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
-    reversalReason: initialData.reversalReason || "",
+    reversalRemarks: initialData.reversalRemarks || "",
     reversalPostingDate: initialData.reversalPostingDate || null,
   });
 
@@ -250,10 +250,10 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                   size="small"
                   disabled
                 >
-                  <InputLabel>Reversal Reason</InputLabel>
+                  <InputLabel>Reversal Remarks</InputLabel>
                   <Select
-                    value={initialData.reversalReason || formData.reversalReason || ""}
-                    label="Reversal Reason"
+                    value={initialData.reversalRemarks || formData.reversalRemarks || ""}
+                    label="Reversal Remarks"
                     disabled
                     sx={{
                       "& .MuiInputBase-input": {
@@ -270,20 +270,20 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 <DatePicker
                   label="Reversal Posting Date"
                   value={
-                    initialData.reversalReason === "01" 
+                    initialData.reversalRemarks === "01" 
                       ? (initialData.postingDate ? new Date(initialData.postingDate) : new Date())
                       : formData.reversalPostingDate
                   }
                   onChange={(newValue) =>
                     handleFormChange("reversalPostingDate", newValue)
                   }
-                  disabled={initialData.reversalReason === "01"}
+                  disabled={initialData.reversalRemarks === "01"}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       size: "small",
                       placeholder: "Select date",
-                      sx: initialData.reversalReason === "01" ? {
+                      sx: initialData.reversalRemarks === "01" ? {
                         "& .MuiInputBase-input": {
                           backgroundColor: "#f5f5f5",
                         },

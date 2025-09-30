@@ -16,7 +16,7 @@ export const useInitiateJV = () => {
   const [editData, setEditData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [autoReversal, setAutoReversal] = useState("No");
-  const [reversalReason, setReversalReason] = useState("");
+  const [reversalRemarks, setReversalRemarks] = useState("");
   const [showInfoText, setShowInfoText] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -165,7 +165,7 @@ export const useInitiateJV = () => {
 
       const requestData = {
         autoReversal: autoReversal === "Yes",
-        reversalReason: autoReversal === "Yes" ? reversalReason : "",
+        reversalRemarks: autoReversal === "Yes" ? reversalRemarks : "",
         document: uploadedFileUrl,
         items: items,
       };
@@ -254,14 +254,14 @@ export const useInitiateJV = () => {
     editData,
     uploadModalOpen,
     autoReversal,
-    reversalReason,
+    reversalRemarks,
     showInfoText,
     confirmModalOpen,
     submitting,
     
     // Setters
     setAutoReversal,
-    setReversalReason,
+    setReversalRemarks,
     
     // Handlers
     handleModalSuccess,
