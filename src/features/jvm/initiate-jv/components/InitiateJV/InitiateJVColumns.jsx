@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Chip, IconButton } from "@mui/material";
 import Iconify from "src/components/iconify/iconify";
-import { fDateTime } from "src/utils/format-time";
+import { fDateTime, fDateDisplay } from "src/utils/format-time";
 
 export const InitiateJVColumns = ({ 
   handleEdit, 
@@ -29,28 +29,14 @@ export const InitiateJVColumns = ({
       headerName: "Document Date",
       width: 140,
       resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        // Handle both ISO date strings and YYYY-MM-DD format
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
+      renderCell: (params) => fDateDisplay(params.value),
     },
     {
       field: "postingDate",
       headerName: "Posting Date",
       width: 140,
       resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        // Handle both ISO date strings and YYYY-MM-DD format
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleDateString("en-GB");
-      },
+      renderCell: (params) => fDateDisplay(params.value),
     },
     {
       field: "businessArea",
