@@ -99,6 +99,7 @@ export default function JVModal({
   const [documentTypes, setDocumentTypes] = useState([]);
   const [accountTypes, setAccountTypes] = useState([]);
   const [postingKeys, setPostingKeys] = useState([]);
+  const [postingKeyMasters, setPostingKeyMasters] = useState([]);
   const [specialGLIndications, setSpecialGLIndications] = useState([]);
   const [masterDataLoading, setMasterDataLoading] = useState(false);
 
@@ -176,7 +177,17 @@ export default function JVModal({
             setAccountTypes(accountTypesRes.data.data.masters.map(item => item.value));
           }
           if (postingKeysRes.data.success) {
-            setPostingKeys(postingKeysRes.data.data.masters.map(item => item.value));
+            const masters = postingKeysRes.data.data.masters || [];
+            setPostingKeyMasters(masters);
+            // Initialize filtered posting keys based on current account type if present
+            const currentAcctType = watch("accountType");
+            const filtered = masters.filter((m) => {
+              const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+              if (!other0) return false;
+              if (typeof other0 === "object") return other0.value === currentAcctType;
+              return other0 === currentAcctType;
+            }).map((m) => m.value);
+            setPostingKeys(filtered.length ? filtered : masters.map((m) => m.value));
           }
           if (specialGLRes.data.success) {
             setSpecialGLIndications(specialGLRes.data.data.masters.map(item => item.value));
@@ -192,6 +203,27 @@ export default function JVModal({
 
     fetchMasterData();
   }, [open]);
+
+  // Filter posting keys whenever account type changes
+  useEffect(() => {
+    const subscription = watch((values, { name }) => {
+      if (name === "accountType") {
+        const selected = values.accountType;
+        if (!selected) {
+          setPostingKeys(postingKeyMasters.map((m) => m.value));
+          return;
+        }
+        const filtered = postingKeyMasters.filter((m) => {
+          const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+          if (!other0) return false;
+          if (typeof other0 === "object") return other0.value === selected;
+          return other0 === selected;
+        }).map((m) => m.value);
+        setPostingKeys(filtered);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, postingKeyMasters]);
 
   const onSubmit = (data) => {
     setLoading(true);

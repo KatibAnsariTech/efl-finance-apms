@@ -13,7 +13,7 @@ import { showErrorMessage } from "src/utils/errorUtils";
 
 function AddEditDocumentType({ handleClose, open, editData: documentTypeData, getData }) {
   const [loading, setLoading] = React.useState(false);
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
   React.useEffect(() => {
     if (documentTypeData) {
@@ -26,9 +26,16 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
+      const docType = (data.documentType || "").trim().toUpperCase();
+      if (docType.length !== 2) {
+        swal("Error!", "Document Type must be exactly 2 characters.", "error");
+        setLoading(false);
+        return;
+      }
+
       const formattedData = {
         key: "DocumentType",
-        value: data.documentType,
+        value: docType,
       };
       if (documentTypeData?._id) {
         await userRequest.put(`/jvm/updateMaster/${documentTypeData._id}`, formattedData);
@@ -99,11 +106,15 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
           <TextField
             id="documentType"
             label="Document Type"
-            {...register("documentType", { required: true })}
+            {...register("documentType", { required: "Required", minLength: { value: 2, message: "Must be 2 characters" }, maxLength: { value: 2, message: "Must be 2 characters" } })}
             fullWidth
             required
             disabled={loading}
             placeholder="e.g., DR, CR, AB"
+            inputProps={{ maxLength: 2, style: { textTransform: 'uppercase' } }}
+            onChange={(e) => setValue('documentType', e.target.value.toUpperCase(), { shouldValidate: true })}
+            error={!!errors.documentType}
+            helperText={errors.documentType?.message}
           />
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
