@@ -23,10 +23,14 @@ export default function InitiateJV() {
     showInfoText,
     confirmModalOpen,
     submitting,
+    page,
+    rowsPerPage,
     
     // Setters
     setAutoReversal,
     setReversalRemarks,
+    setPage,
+    setRowsPerPage,
     
     // Handlers
     handleModalSuccess,
@@ -80,6 +84,10 @@ export default function InitiateJV() {
                 columns={columns}
                 loading={loading}
                 onUpdateEntry={updateJVEntry}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
               />
             )}
           </CardContent>

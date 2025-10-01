@@ -21,6 +21,10 @@ export const useInitiateJV = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadedFileUrl, setUploadedFileUrl] = useState("");
+  
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const addJVEntry = (newEntry) => {
     const entryWithId = {
@@ -258,10 +262,14 @@ export const useInitiateJV = () => {
     showInfoText,
     confirmModalOpen,
     submitting,
+    page,
+    rowsPerPage,
     
     // Setters
     setAutoReversal,
     setReversalRemarks,
+    setPage,
+    setRowsPerPage,
     
     // Handlers
     handleModalSuccess,

@@ -5,7 +5,11 @@ const DataGridComponent = ({
   data, 
   columns, 
   loading, 
-  onUpdateEntry 
+  onUpdateEntry,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange
 }) => {
   return (
     <Box
@@ -21,7 +25,16 @@ const DataGridComponent = ({
         columns={columns}
         getRowId={(row) => row._id || row.slNo}
         loading={loading}
-        pagination={false}
+        pagination
+        paginationMode="client"
+        rowCount={data.length}
+        paginationModel={{ page: page, pageSize: rowsPerPage }}
+        onPaginationModelChange={(newModel) => {
+          onPageChange(newModel.page);
+          onRowsPerPageChange(newModel.pageSize);
+        }}
+        pageSizeOptions={[5, 10, 25, 50]}
+        hideFooter={false}
         disableRowSelectionOnClick
         disableRowClick
         columnResize
@@ -35,26 +48,6 @@ const DataGridComponent = ({
         }}
         onProcessRowUpdateError={(error) => {
           console.error("Error updating row:", error);
-        }}
-        slots={{
-          footer: () => (
-            <Box
-              sx={{
-                py: 2,
-                pl: 2,
-                pr: 1,
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{ fontSize: "0.875rem", fontWeight: 700 }}
-              >
-                Total Records: {data.length}
-              </Typography>
-            </Box>
-          ),
         }}
         sx={{
           height: "100%",
@@ -85,6 +78,13 @@ const DataGridComponent = ({
           },
           "& .MuiDataGrid-row:hover": {
             backgroundColor: "rgba(0, 0, 0, 0.04)",
+          },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "1px solid #e0e0e0",
+            backgroundColor: "#fafafa",
+          },
+          "& .MuiTablePagination-root": {
+            color: "#637381",
           },
         }}
       />
