@@ -91,12 +91,12 @@ export default function AutoReversalDetails() {
       }
 
       const response = await userRequest.get(
-        `jvm/getRequestInfoByGroupId?groupId=${groupId}`
+        `jvm/getReversalByGroupId?groupId=${groupId}`
       );
 
-      if (response.data.statusCode === 200) {
+      if (response.data.statusCode === 200 || response.data.success) {
         const requestData = response.data.data;
-        setArInfo(requestData);
+        setArInfo(requestData || {});
       } else {
         throw new Error(
           response.data.message || "Failed to fetch request info"
@@ -146,13 +146,13 @@ export default function AutoReversalDetails() {
       );
 
       if (response.data.statusCode === 200) {
+        // Refresh details and list after successful submission
+        await Promise.all([getRequestInfo(), getData()]);
         swal({
           title: "Success",
           text: "Reversal submitted successfully!",
           icon: "success",
           buttons: true,
-        }).then(() => {
-          router.push("/jvm/auto-reversal");
         });
       } else {
         throw new Error(response.data.message || "Failed to submit reversal");
@@ -176,14 +176,15 @@ export default function AutoReversalDetails() {
       <Container>
         <AutoReversalForm
           onSubmit={handleFormSubmit}
+          canSubmit={(arInfo?.status || "") === "Pending"}
           initialData={{
-            initiatedDate: new Date(arInfo.createdAt),
-            documentDate: new Date(arInfo.documentDate),
-            postingDate: new Date(arInfo.postingDate),
+            initiatedDate: arInfo.initiatedDate ? new Date(arInfo.initiatedDate) : (arInfo.createdAt ? new Date(arInfo.createdAt) : undefined),
+            documentDate: arInfo.documentDate ? new Date(arInfo.documentDate) : undefined,
+            postingDate: arInfo.postingDate ? new Date(arInfo.postingDate) : undefined,
             reversalPostingDate:
               arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2
-                ? new Date(arInfo.reversalPostingDate)
-                : new Date(arInfo.postingDate),
+                ? (arInfo.reversalPostingDate ? new Date(arInfo.reversalPostingDate) : undefined)
+                : (arInfo.postingDate ? new Date(arInfo.postingDate) : undefined),
             fiscalYear: new Date().getFullYear().toString(),
             reversalRemarks: arInfo.reversalRemarks || "",
             isReversalRemarks02:

@@ -17,7 +17,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useRouter } from "src/routes/hooks";
 import { useForm, Controller } from "react-hook-form";
 
-export default function AutoReversalForm({ onSubmit, initialData = {} }) {
+export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit = true }) {
   const router = useRouter();
 
   const {
@@ -300,24 +300,26 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
             xs={12}
             sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}
           >
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleSubmit(onSubmit)}
-              sx={{
-                backgroundColor: "#1976d2",
-                "&:hover": {
-                  backgroundColor: "#1565c0",
-                },
-                px: 10,
-                py: 2.5,
-                fontSize: "0.875rem",
-                fontWeight: "bold",
-                height: "32px",
-              }}
-            >
-              Submit
-            </Button>
+            {canSubmit && (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleSubmit(onSubmit)}
+                sx={{
+                  backgroundColor: "#1976d2",
+                  "&:hover": {
+                    backgroundColor: "#1565c0",
+                  },
+                  px: 10,
+                  py: 2.5,
+                  fontSize: "0.875rem",
+                  fontWeight: "bold",
+                  height: "32px",
+                }}
+              >
+                Submit
+              </Button>
+            )}
           </Grid>
         </Grid>
       </LocalizationProvider>
