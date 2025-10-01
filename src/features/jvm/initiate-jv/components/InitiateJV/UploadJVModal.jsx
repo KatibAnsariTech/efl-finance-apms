@@ -13,6 +13,11 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [dragActive, setDragActive] = useState(false);
+  // Masters for validation
+  const [docTypes, setDocTypes] = useState([]);
+  const [accountTypes, setAccountTypes] = useState([]);
+  const [postingKeyMasters, setPostingKeyMasters] = useState([]);
+  const [specialGLMasters, setSpecialGLMasters] = useState([]);
 
   const inputRef = useRef();
 
@@ -26,6 +31,38 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
       setUploading(false);
       setDragActive(false);
     }
+  }, [open]);
+
+  // Fetch master data for validation when modal opens
+  useEffect(() => {
+    const fetchMasters = async () => {
+      if (!open) return;
+      try {
+        const [dtRes, atRes, pkRes, sgRes] = await Promise.all([
+          userRequest.get("/jvm/getMasters?key=DocumentType&page=1&limit=1000"),
+          userRequest.get("/jvm/getMasters?key=AccountType&page=1&limit=1000"),
+          userRequest.get("/jvm/getMasters?key=PostingKey&page=1&limit=1000"),
+          userRequest.get("/jvm/getMasters?key=SpecialGLIndication&page=1&limit=1000"),
+        ]);
+
+        if (dtRes?.data?.success) {
+          setDocTypes((dtRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim().toUpperCase()));
+        }
+        if (atRes?.data?.success) {
+          setAccountTypes((atRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim()));
+        }
+        if (pkRes?.data?.success) {
+          setPostingKeyMasters(pkRes.data.data?.masters || []);
+        }
+        if (sgRes?.data?.success) {
+          setSpecialGLMasters(sgRes.data.data?.masters || []);
+        }
+      } catch (err) {
+        console.error("Error fetching masters for validation:", err);
+        showErrorMessage(err, "Failed to load master data for validation", swal);
+      }
+    };
+    fetchMasters();
   }, [open]);
 
   // File selection
@@ -60,7 +97,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
   };
   const triggerFileInput = () => inputRef.current.click();
 
-  // Upload logic - extract data from Excel file
+
   const handleUpload = async () => {
     if (!selectedFile) return;
 
@@ -70,37 +107,32 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
     setUploadSuccess(false);
 
     try {
+      setUploadProgress(10);
+      // 1) Parse file locally first
       let jsonData;
       
       if (selectedFile.name.toLowerCase().endsWith('.csv')) {
-        // Handle CSV file
         const text = await selectedFile.text();
         const lines = text.split('\n');
         jsonData = lines.map(line => line.split(','));
       } else {
-        // Handle Excel file
         const arrayBuffer = await selectedFile.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
         
-        // Get the first worksheet
         const worksheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[worksheetName];
         
-        // Convert to JSON
         jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       }
       
-      // Skip header row and process data
       const headers = jsonData[0];
       const dataRows = jsonData.slice(1);
       
-      // Map the data to our JV structure
       const extractedData = dataRows.map((row, index) => {
         const entry = {};
         headers.forEach((header, colIndex) => {
           const value = row[colIndex];
           if (value !== undefined && value !== null && value !== '') {
-            // Map common column names to our field names
             const fieldMap = {
               // JV No variations - all map to slNo for backend compatibility
               'slNo': 'slNo',
@@ -188,19 +220,121 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         };
       }).filter(entry => entry.amount > 0); // Filter out entries with zero amount
 
+      setUploadProgress(50);
+
+      // 2) Validate against master data and relationships
+      const errors = [];
+      const normalize = (v) => (v ?? "").toString().trim();
+      const normalizeUpper = (v) => normalize(v).toUpperCase();
+
+      // Build quick lookup for PK/SG allowed by accountType (by label/value)
+      const pkAllowedByAcct = postingKeyMasters.reduce((acc, m) => {
+        const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+        const acct = other0 ? (typeof other0 === "object" ? normalize(other0.value) : normalize(other0)) : "";
+        if (!acct) return acc;
+        acc[acct] = acc[acct] || new Set();
+        acc[acct].add(normalize(m.value));
+        return acc;
+      }, {});
+      const sgAllowedByAcct = specialGLMasters.reduce((acc, m) => {
+        const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+        const acct = other0 ? (typeof other0 === "object" ? normalize(other0.value) : normalize(other0)) : "";
+        if (!acct) return acc;
+        acc[acct] = acc[acct] || new Set();
+        acc[acct].add(normalize(m.value));
+        return acc;
+      }, {});
+
+      const pkAll = new Set(postingKeyMasters.map((m) => normalize(m.value)));
+      const sgAll = new Set(specialGLMasters.map((m) => normalize(m.value)));
+      const dtAll = new Set(docTypes);
+      const atAll = new Set(accountTypes.map((v) => normalize(v)));
+
+      extractedData.forEach((row, idx) => {
+        const line = idx + 2; // considering headers at line 1
+        const dt = normalizeUpper(row.documentType);
+        const at = normalize(row.accountType);
+        const pk = normalize(row.postingKey);
+        const sg = normalize(row.specialGLIndication);
+
+        if (!dtAll.has(dt)) {
+          errors.push(`Row ${line}: Invalid Document Type '${row.documentType}'`);
+        }
+        if (!atAll.has(at)) {
+          errors.push(`Row ${line}: Invalid Account Type '${row.accountType}'`);
+        }
+        if (!pkAll.has(pk)) {
+          errors.push(`Row ${line}: Invalid Posting Key '${row.postingKey}'`);
+        }
+        if (!sgAll.has(sg)) {
+          errors.push(`Row ${line}: Invalid Special GL Indication '${row.specialGLIndication}'`);
+        }
+        // Relationship checks only if Account Type is valid
+        if (atAll.has(at)) {
+          const allowedPK = pkAllowedByAcct[at];
+          if (allowedPK && !allowedPK.has(pk)) {
+            errors.push(`Row ${line}: Posting Key '${row.postingKey}' not allowed for Account Type '${row.accountType}'`);
+          }
+          const allowedSG = sgAllowedByAcct[at];
+          if (allowedSG && !allowedSG.has(sg)) {
+            errors.push(`Row ${line}: Special GL '${row.specialGLIndication}' not allowed for Account Type '${row.accountType}'`);
+          }
+        }
+      });
+
+      if (errors.length > 0) {
+        const maxShow = 15;
+        const msg = errors.slice(0, maxShow).join("\n") + (errors.length > maxShow ? `\n...and ${errors.length - maxShow} more.` : "");
+        setUploadError("Validation failed. See details.");
+        swal({ title: "Validation Errors", text: msg, icon: "error" });
+        setUploading(false);
+        return;
+      }
+
+      setUploadProgress(70);
+
+      // 3) Only now upload file to server
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      
+      const uploadResponse = await userRequest.post('/util/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 30) / progressEvent.total);
+          setUploadProgress(70 + percentCompleted);
+        },
+      });
+
+      if (!uploadResponse.data.success) {
+        throw new Error(uploadResponse.data.msg || 'File upload failed');
+      }
+
+      const fileUrl = uploadResponse.data.data;
+
       setUploadProgress(100);
       setUploadSuccess(true);
       setSelectedFile(null);
 
-      swal("Upload Successful!", `Successfully extracted ${extractedData.length} journal voucher entries from the file.`, "success");
+      swal("Upload Successful!", `Successfully uploaded file and extracted ${extractedData.length} journal voucher entries.`, "success");
 
-      if (onSuccess) onSuccess(extractedData);
+      if (onSuccess) onSuccess(extractedData, fileUrl);
     } catch (err) {
-      console.error("Error processing Excel file:", err);
-      setUploadError("Error processing Excel file. Please ensure the file format is correct.");
+      console.error("Error uploading/processing file:", err);
+      
+      // Determine if it's an upload error or processing error
+      const isUploadError = err.message?.includes('upload') || err.response?.status >= 400;
+      const errorMessage = isUploadError 
+        ? "Error uploading file. Please try again." 
+        : "Error processing Excel file. Please ensure the file format is correct.";
+      
+      setUploadError(errorMessage);
       showErrorMessage(
         err,
-        "Error processing Excel file. Please check the file format and try again.",
+        isUploadError 
+          ? "Failed to upload file. Please check your connection and try again."
+          : "Error processing Excel file. Please check the file format and try again.",
         swal
       );
     } finally {

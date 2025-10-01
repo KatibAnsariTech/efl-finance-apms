@@ -142,7 +142,7 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
       console.log("Sending data:", formattedData); // Debug log
 
       if (hierarchyData?._id) {
-        await userRequest.put(`/jvm/updateMasters?id=${hierarchyData._id}`, formattedData);
+        await userRequest.put(`/jvm/updateMaster/${hierarchyData._id}`, formattedData);
         getData();
         swal("Updated!", "Hierarchy data updated successfully!", "success");
       } else {

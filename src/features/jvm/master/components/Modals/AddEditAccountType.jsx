@@ -11,40 +11,33 @@ import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditDocumentType({ handleClose, open, editData: documentTypeData, getData }) {
+function AddEditAccountType({ handleClose, open, editData: accountTypeData, getData }) {
   const [loading, setLoading] = React.useState(false);
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
-    if (documentTypeData) {
-      setValue("documentType", documentTypeData.documentType);
+    if (accountTypeData) {
+      setValue("accountType", accountTypeData.accountType);
     } else {
       reset();
     }
-  }, [documentTypeData, setValue, reset]);
+  }, [accountTypeData, setValue, reset]);
 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
-      const docType = (data.documentType || "").trim().toUpperCase();
-      if (docType.length !== 2) {
-        swal("Error!", "Document Type must be exactly 2 characters.", "error");
-        setLoading(false);
-        return;
-      }
-
       const formattedData = {
-        key: "DocumentType",
-        value: docType,
+        key: "AccountType",
+        value: data.accountType,
       };
-      if (documentTypeData?._id) {
-        await userRequest.put(`/jvm/updateMaster/${documentTypeData._id}`, formattedData);
+      if (accountTypeData?._id) {
+        await userRequest.put(`/jvm/updateMaster/${accountTypeData._id}`, formattedData);
         getData();
-        swal("Updated!", "Document Type data updated successfully!", "success");
+        swal("Updated!", "Account Type data updated successfully!", "success");
       } else {
         await userRequest.post("/jvm/createMasters", formattedData);
         getData();
-        swal("Success!", "Document Type data saved successfully!", "success");
+        swal("Success!", "Account Type data saved successfully!", "success");
       }
 
       reset();
@@ -79,7 +72,7 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
           }}
         >
           <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
-            {documentTypeData ? "Edit Document Type" : "Add Document Type"}
+            {accountTypeData ? "Edit Account Type" : "Add Account Type"}
           </span>
           <RxCross2
             onClick={handleClose}
@@ -104,17 +97,13 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
           onSubmit={handleSubmit(handleSaveData)}
         >
           <TextField
-            id="documentType"
-            label="Document Type"
-            {...register("documentType", { required: "Required", minLength: { value: 2, message: "Must be 2 characters" }, maxLength: { value: 2, message: "Must be 2 characters" } })}
+            id="accountType"
+            label="Account Type"
+            {...register("accountType", { required: true })}
             fullWidth
             required
             disabled={loading}
-            placeholder="e.g., DR, CR, AB"
-            inputProps={{ maxLength: 2, style: { textTransform: 'uppercase' } }}
-            onChange={(e) => setValue('documentType', e.target.value.toUpperCase(), { shouldValidate: true })}
-            error={!!errors.documentType}
-            helperText={errors.documentType?.message}
+            // placeholder="e.g., Asset, Liability, Equity"
           />
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
@@ -124,7 +113,7 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
             disabled={loading}
             startIcon={loading && <CircularProgress size={20} color="inherit" />}
           >
-            {loading ? (documentTypeData ? "Updating..." : "Saving...") : (documentTypeData ? "Update" : "Save")}
+            {loading ? (accountTypeData ? "Updating..." : "Saving...") : (accountTypeData ? "Update" : "Save")}
           </Button>
         </Box>
       </Box>
@@ -132,4 +121,4 @@ function AddEditDocumentType({ handleClose, open, editData: documentTypeData, ge
   );
 }
 
-export default AddEditDocumentType;
+export default AddEditAccountType;

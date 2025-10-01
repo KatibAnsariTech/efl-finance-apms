@@ -23,11 +23,11 @@ import { RxCross2 } from "react-icons/rx";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import axios from "axios";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import Iconify from "src/components/iconify/iconify";
 import { jvEntrySchema } from "../../../utils/validationSchemas";
+import { userRequest } from "src/requestMethod";
 
 const style = {
   position: "absolute",
@@ -43,25 +43,7 @@ const style = {
   overflow: "auto",
 };
 
-const documentTypes = [
-  "Invoice",
-  "Credit Note",
-  "Debit Note",
-  "Journal Entry",
-  "Payment Voucher",
-  "Receipt Voucher",
-];
-
-const accountTypes = ["Asset", "Liability", "Equity", "Revenue", "Expense"];
-
-const postingKeys = [
-  "40 - Customer Invoice",
-  "50 - Vendor Invoice",
-  "11 - Cash Receipt",
-  "21 - Cash Payment",
-  "31 - Bank Receipt",
-  "41 - Bank Payment",
-];
+// Master data will be fetched from API
 
 const typeOptions = ["Debit", "Credit"];
 
@@ -112,6 +94,15 @@ export default function JVModal({
   });
 
   const [loading, setLoading] = useState(false);
+  
+  // Master data state
+  const [documentTypes, setDocumentTypes] = useState([]);
+  const [accountTypes, setAccountTypes] = useState([]);
+  const [postingKeys, setPostingKeys] = useState([]);
+  const [postingKeyMasters, setPostingKeyMasters] = useState([]);
+  const [specialGLIndications, setSpecialGLIndications] = useState([]);
+  const [specialGLMasters, setSpecialGLMasters] = useState([]);
+  const [masterDataLoading, setMasterDataLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -167,41 +158,123 @@ export default function JVModal({
     }
   }, [open, editData, isEditMode, reset]);
 
-  const onSubmit = async (data) => {
-    try {
-      setLoading(true);
 
-      const submitData = {
-        ...data,
-        documentDate: data.documentDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
-        postingDate: data.postingDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
-        amount: parseFloat(data.amount),
-      };
+  useEffect(() => {
+    const fetchMasterData = async () => {
+      if (open) {
+        setMasterDataLoading(true);
+        try {
+          const [documentTypesRes, accountTypesRes, postingKeysRes, specialGLRes] = await Promise.all([
+            userRequest.get("/jvm/getMasters?key=DocumentType"),
+            userRequest.get("/jvm/getMasters?key=AccountType"),
+            userRequest.get("/jvm/getMasters?key=PostingKey"),
+            userRequest.get("/jvm/getMasters?key=SpecialGLIndication")
+          ]);
 
-      if (isEditMode) {
-        // Update existing record
-        const BASE_URL =
-          "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
-        const id = editData?._id || editData?.id || editData?.sNo;
-        await axios.put(`${BASE_URL}/${id}`, submitData);
-        onSuccess();
-      } else {
-        // Create new record
-        onSuccess(submitData);
+          if (documentTypesRes.data.success) {
+            setDocumentTypes(documentTypesRes.data.data.masters.map(item => item.value));
+          }
+          if (accountTypesRes.data.success) {
+            setAccountTypes(accountTypesRes.data.data.masters.map(item => item.value));
+          }
+          if (postingKeysRes.data.success) {
+            const masters = postingKeysRes.data.data.masters || [];
+            setPostingKeyMasters(masters);
+            // Initialize filtered posting keys based on current account type if present
+            const currentAcctType = watch("accountType");
+            const filtered = masters.filter((m) => {
+              const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+              if (!other0) return false;
+              if (typeof other0 === "object") return other0.value === currentAcctType;
+              return other0 === currentAcctType;
+            }).map((m) => m.value);
+            setPostingKeys(filtered.length ? filtered : masters.map((m) => m.value));
+          }
+          if (specialGLRes.data.success) {
+            const masters = specialGLRes.data.data.masters || [];
+            setSpecialGLMasters(masters);
+            const currentAcctType = watch("accountType");
+            const filtered = masters.filter((m) => {
+              const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+              if (!other0) return false;
+              if (typeof other0 === "object") return other0.value === currentAcctType;
+              return other0 === currentAcctType;
+            }).map((m) => m.value);
+            setSpecialGLIndications(filtered.length ? filtered : masters.map((m) => m.value));
+          }
+        } catch (error) {
+          console.error("Error fetching master data:", error);
+          showErrorMessage(error, "Error loading master data", swal);
+        } finally {
+          setMasterDataLoading(false);
+        }
       }
-    } catch (error) {
-      console.error(
-        `Error ${isEditMode ? "updating" : "creating"} journal voucher:`,
-        error
-      );
-      showErrorMessage(
-        error,
-        `Failed to ${isEditMode ? "update" : "create"} journal voucher`,
-        swal
-      );
-    } finally {
-      setLoading(false);
+    };
+
+    fetchMasterData();
+  }, [open]);
+
+  // Filter Special GL whenever account type changes
+  useEffect(() => {
+    const subscription = watch((values, { name }) => {
+      if (name === "accountType") {
+        const selected = values.accountType;
+        if (!selected) {
+          setSpecialGLIndications(specialGLMasters.map((m) => m.value));
+          return;
+        }
+        const filtered = specialGLMasters.filter((m) => {
+          const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+          if (!other0) return false;
+          if (typeof other0 === "object") return other0.value === selected;
+          return other0 === selected;
+        }).map((m) => m.value);
+        setSpecialGLIndications(filtered);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, specialGLMasters]);
+
+  // Filter posting keys whenever account type changes
+  useEffect(() => {
+    const subscription = watch((values, { name }) => {
+      if (name === "accountType") {
+        const selected = values.accountType;
+        if (!selected) {
+          setPostingKeys(postingKeyMasters.map((m) => m.value));
+          return;
+        }
+        const filtered = postingKeyMasters.filter((m) => {
+          const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+          if (!other0) return false;
+          if (typeof other0 === "object") return other0.value === selected;
+          return other0 === selected;
+        }).map((m) => m.value);
+        setPostingKeys(filtered);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, postingKeyMasters]);
+
+  const onSubmit = (data) => {
+    setLoading(true);
+
+    const submitData = {
+      ...data,
+      documentDate: data.documentDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+      postingDate: data.postingDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+      amount: parseFloat(data.amount),
+    };
+
+    if (isEditMode) {
+      // Update existing record in local state
+      onSuccess(submitData, 'edit');
+    } else {
+      // Create new record in local state
+      onSuccess(submitData, 'create');
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -264,12 +337,20 @@ export default function JVModal({
                       <Select
                         {...field}
                         label="Document Type *"
+                        disabled={masterDataLoading}
                       >
-                        {documentTypes.map((type) => (
-                          <MenuItem key={type} value={type}>
-                            {type}
+                        {masterDataLoading ? (
+                          <MenuItem disabled>
+                            <CircularProgress size={20} />
+                            Loading...
                           </MenuItem>
-                        ))}
+                        ) : (
+                          documentTypes.map((type) => (
+                            <MenuItem key={type} value={type}>
+                              {type}
+                            </MenuItem>
+                          ))
+                        )}
                       </Select>
                     </FormControl>
                   )}
@@ -347,12 +428,20 @@ export default function JVModal({
                       <Select
                         {...field}
                         label="Account Type *"
+                        disabled={masterDataLoading}
                       >
-                        {accountTypes.map((type) => (
-                          <MenuItem key={type} value={type}>
-                            {type}
+                        {masterDataLoading ? (
+                          <MenuItem disabled>
+                            <CircularProgress size={20} />
+                            Loading...
                           </MenuItem>
-                        ))}
+                        ) : (
+                          accountTypes.map((type) => (
+                            <MenuItem key={type} value={type}>
+                              {type}
+                            </MenuItem>
+                          ))
+                        )}
                       </Select>
                     </FormControl>
                   )}
@@ -368,12 +457,20 @@ export default function JVModal({
                       <Select
                         {...field}
                         label="Posting Key *"
+                        disabled={masterDataLoading}
                       >
-                        {postingKeys.map((key) => (
-                          <MenuItem key={key} value={key}>
-                            {key}
+                        {masterDataLoading ? (
+                          <MenuItem disabled>
+                            <CircularProgress size={20} />
+                            Loading...
                           </MenuItem>
-                        ))}
+                        ) : (
+                          postingKeys.map((key) => (
+                            <MenuItem key={key} value={key}>
+                              {key}
+                            </MenuItem>
+                          ))
+                        )}
                       </Select>
                     </FormControl>
                   )}
@@ -510,15 +607,31 @@ export default function JVModal({
                   name="specialGLIndication"
                   control={control}
                   render={({ field, fieldState: { error } }) => (
-                    <TextField
-                      {...field}
+                    <FormControl
                       fullWidth
-                      size="small"
-                      label="Special GL Indication *"
-                      inputProps={{ maxLength: 1 }}
                       error={!!error}
-                      helperText={error?.message || "Single character only"}
-                    />
+                      size="small"
+                    >
+                      <InputLabel>Special GL Indication *</InputLabel>
+                      <Select
+                        {...field}
+                        label="Special GL Indication *"
+                        disabled={masterDataLoading}
+                      >
+                        {masterDataLoading ? (
+                          <MenuItem disabled>
+                            <CircularProgress size={20} />
+                            Loading...
+                          </MenuItem>
+                        ) : (
+                          specialGLIndications.map((indication) => (
+                            <MenuItem key={indication} value={indication}>
+                              {indication}
+                            </MenuItem>
+                          ))
+                        )}
+                      </Select>
+                    </FormControl>
                   )}
                 />
               </Grid>

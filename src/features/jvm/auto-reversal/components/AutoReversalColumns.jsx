@@ -30,7 +30,7 @@ export const AutoReversalColumns = ({ navigate, handleDelete }) => {
             localStorage.setItem('arDetailData', JSON.stringify(params.row));
             
             // Use navigate with state to pass data
-            navigate(`/jvm/auto-reversal/ar-detail/${params.row.requestNo}`, { 
+            navigate(`/jvm/auto-reversal/ar-detail/${params.row._id}`, { 
               state: params.row 
             });
           }}
@@ -102,27 +102,43 @@ export const AutoReversalColumns = ({ navigate, handleDelete }) => {
       headerAlign: "center",
       sortable: false,
       filterable: false,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              color="error"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(params.row);
-              }}
-              sx={{
-                "&:hover": {
-                  backgroundColor: "rgba(244, 67, 54, 0.08)",
-                },
-              }}
-            >
-              <Iconify icon="solar:trash-bin-trash-bold" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
+      renderCell: (params) => {
+        const isCompleted = (params.row?.status || "").toLowerCase() === "completed";
+        if (isCompleted) {
+          return (
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <Tooltip title="Completed items cannot be deleted">
+                <span>
+                  <IconButton size="small" color="error" disabled>
+                    <Iconify icon="solar:trash-bin-trash-bold" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          );
+        }
+        return (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                color="error"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(params.row);
+                }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "rgba(244, 67, 54, 0.08)",
+                  },
+                }}
+              >
+                <Iconify icon="solar:trash-bin-trash-bold" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
+      },
     }
   ];
 

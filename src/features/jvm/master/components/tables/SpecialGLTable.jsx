@@ -9,7 +9,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigger }) {
+export default function SpecialGLTable({ handleEdit, handleDelete, refreshTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
     setLoading(true);
     try {
       const response = await userRequest.get(
-        `/jvm/getMasters?key=PostingKey&page=${paginationModel.page + 1}&limit=${
+        `/jvm/getMasters?key=SpecialGLIndication&page=${paginationModel.page + 1}&limit=${
           paginationModel.pageSize
         }`
       );
@@ -35,7 +35,7 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
           return {
             id: item._id,
             sno: paginationModel.page * paginationModel.pageSize + index + 1,
-            postingKey: item.value || "-",
+            specialGLIndication: item.value || "-",
             accountType: accountTypeLabel,
             accountTypeId,
             ...item,
@@ -45,8 +45,8 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
         setRowCount(response.data.data.total);
       }
     } catch (error) {
-      console.error("Error fetching Posting Key data:", error);
-      showErrorMessage(error, "Error fetching Posting Key data", swal);
+      console.error("Error fetching Special GL Indication data:", error);
+      showErrorMessage(error, "Error fetching Special GL Indication data", swal);
     } finally {
       setLoading(false);
     }
@@ -87,8 +87,8 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
       headerAlign: "center",
     },
     {
-      field: "postingKey",
-      headerName: "Posting Key",
+      field: "specialGLIndication",
+      headerName: "Special GL Indication",
       minWidth: 200,
       flex: 1,
       sortable: true,
@@ -111,7 +111,7 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
       headerAlign: "center",
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value || (Array.isArray(params.row?.other) ? (params.row.other[0] || "-") : "-")}
+          {params.value || (Array.isArray(params.row?.other) ? (params.row.other[0]?.value || params.row.other[0] || "-") : "-")}
         </Typography>
       ),
     },

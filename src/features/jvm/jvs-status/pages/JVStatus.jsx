@@ -115,6 +115,12 @@ export default function JVStatus() {
   };
 
   const handleDelete = async (row) => {
+    // Only allow deletion if canDelete is true
+    if (!row.canDelete) {
+      swal("Cannot Delete", "This request cannot be deleted.", "warning");
+      return;
+    }
+
     const result = await swal({
       title: "Are you sure?",
       text: "Once deleted, you will not be able to recover this journal voucher request!",
@@ -125,17 +131,12 @@ export default function JVStatus() {
 
     if (result) {
       try {
-        // TODO: Replace with actual delete API call
-        // await userRequest.delete(`jvm/deleteRequest/${row.groupId}`);
-        
-        // Show success message
+        await userRequest.delete(`jvm/deleteRequest/${row.groupId}`);
         swal("Deleted!", "Journal voucher request has been deleted successfully.", "success");
-        
-        // Refresh the data
         getData();
       } catch (error) {
         console.error("Delete error:", error);
-        swal("Error!", "Failed to delete journal voucher request. Please try again.", "error");
+        showErrorMessage(error, "Failed to delete journal voucher request. Please try again.", swal);
       }
     }
   };

@@ -9,7 +9,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigger }) {
+export default function AccountTypeTable({ handleEdit, handleDelete, refreshTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,30 +23,23 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
     setLoading(true);
     try {
       const response = await userRequest.get(
-        `/jvm/getMasters?key=PostingKey&page=${paginationModel.page + 1}&limit=${
+        `/jvm/getMasters?key=AccountType&page=${paginationModel.page + 1}&limit=${
           paginationModel.pageSize
         }`
       );
       if (response.data.success) {
-        const mappedData = response.data.data.masters.map((item, index) => {
-          const otherItem = Array.isArray(item.other) ? item.other[0] : undefined;
-          const accountTypeLabel = otherItem && typeof otherItem === "object" ? (otherItem.value || "-") : (otherItem || "-");
-          const accountTypeId = otherItem && typeof otherItem === "object" ? otherItem._id : (typeof otherItem === "string" ? otherItem : undefined);
-          return {
-            id: item._id,
-            sno: paginationModel.page * paginationModel.pageSize + index + 1,
-            postingKey: item.value || "-",
-            accountType: accountTypeLabel,
-            accountTypeId,
-            ...item,
-          };
-        });
+        const mappedData = response.data.data.masters.map((item, index) => ({
+          id: item._id,
+          sno: paginationModel.page * paginationModel.pageSize + index + 1,
+          accountType: item.value || "-",
+          ...item,
+        }));
         setData(mappedData);
         setRowCount(response.data.data.total);
       }
     } catch (error) {
-      console.error("Error fetching Posting Key data:", error);
-      showErrorMessage(error, "Error fetching Posting Key data", swal);
+      console.error("Error fetching Account Type data:", error);
+      showErrorMessage(error, "Error fetching Account Type data", swal);
     } finally {
       setLoading(false);
     }
@@ -87,8 +80,8 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
       headerAlign: "center",
     },
     {
-      field: "postingKey",
-      headerName: "Posting Key",
+      field: "accountType",
+      headerName: "Account Type",
       minWidth: 200,
       flex: 1,
       sortable: true,
@@ -98,20 +91,6 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {params.value || "-"}
-        </Typography>
-      ),
-    },
-    {
-      field: "accountType",
-      headerName: "Account Type",
-      minWidth: 200,
-      flex: 1,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value || (Array.isArray(params.row?.other) ? (params.row.other[0] || "-") : "-")}
         </Typography>
       ),
     },

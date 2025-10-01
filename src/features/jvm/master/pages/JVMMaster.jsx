@@ -6,8 +6,10 @@ import MasterTabs from "../components/MasterTabs";
 import AddEditDocumentType from "../components/Modals/AddEditDocumentType";
 import AddEditPostingKey from "../components/Modals/AddEditPostingKey";
 import AddEditHierarchy from "../components/Modals/AddEditHierarchy";
+import AddEditAccountType from "../components/Modals/AddEditAccountType";
+import AddEditSpecialGL from "../components/Modals/AddEditSpecialGL";
 import { Box } from "@mui/material";
-import { DocumentTypeTable, PostingKeyTable, HierarchyTable } from "../components/tables";
+import { DocumentTypeTable, PostingKeyTable, HierarchyTable, AccountTypeTable, SpecialGLTable } from "../components/tables";
 import JVMLogTable from "../components/JVMLogTable";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
@@ -15,7 +17,9 @@ import { fDate, fTime } from "src/utils/format-time";
 
 const menuItems = [
   "Document Type",
+  "Account Type",
   "Posting Key",
+  "Special GL Indication",
   "Hierarchy"
 ];
 
@@ -56,8 +60,7 @@ export default function JVMMaster() {
 
       if (result) {
         console.log(`Deleting ${selectedCategory} with ID:`, id);
-        // Add actual delete API call here
-        // await userRequest.delete(`/admin/deleteMaster/${id}`);
+        await userRequest.delete(`/jvm/deleteMaster/${id}`);
         
         // Show success message
         swal("Deleted!", `${selectedCategory} has been deleted successfully.`, "success");
@@ -93,7 +96,7 @@ export default function JVMMaster() {
           }}
         >
           {/* Toolbar left: Latest Updated info and Log toggle - Only for Hierarchy tab */}
-          {selectedTab === 2 ? (
+          {selectedTab === 4 ? (
             <Box
               sx={{
                 display: "flex",
@@ -186,7 +189,7 @@ export default function JVMMaster() {
 
         {open && selectedTab === 1 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditPostingKey
+            <AddEditAccountType
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -196,6 +199,28 @@ export default function JVMMaster() {
         )}
 
         {open && selectedTab === 2 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditPostingKey
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
+        {open && selectedTab === 3 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditSpecialGL
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
+        {open && selectedTab === 4 && (
           <Suspense fallback={<CircularIndeterminate />}>
             <AddEditHierarchy
               handleClose={handleClose}
@@ -207,7 +232,7 @@ export default function JVMMaster() {
         )}
 
         <Box sx={{ width: "100%" }}>
-          {showLogTable && selectedTab === 2 ? (
+          {showLogTable && selectedTab === 4 ? (
             <JVMLogTable
               selectedTab={selectedTab}
               menuItems={menuItems}
@@ -222,13 +247,27 @@ export default function JVMMaster() {
                 />
               )}
               {selectedTab === 1 && (
-                <PostingKeyTable 
+                <AccountTypeTable 
                   handleEdit={handleEdit}
                   handleDelete={handleDelete}
                   refreshTrigger={refreshTrigger}
                 />
               )}
               {selectedTab === 2 && (
+                <PostingKeyTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+              {selectedTab === 3 && (
+                <SpecialGLTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+              {selectedTab === 4 && (
                 <HierarchyTable 
                   handleEdit={handleEdit}
                   handleDelete={handleDelete}

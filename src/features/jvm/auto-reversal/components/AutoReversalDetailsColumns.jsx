@@ -180,34 +180,6 @@ export const AutoReversalDetailsColumns = () => {
       headerAlign: "center",
       renderCell: (params) => params.value || "-",
     },
-    {
-      field: "autoReversal",
-      headerName: "Auto Reversal",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => {
-        if (!params.value) return "-";
-        return (
-          <Box
-            sx={{
-              display: "inline-block",
-              px: 1,
-              py: 0.5,
-              borderRadius: 1,
-              backgroundColor: params.value === "Y" ? "#e8f5e8" : "#f5f5f5",
-              color: params.value === "Y" ? "#2e7d32" : "#666",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              textTransform: "uppercase",
-            }}
-          >
-            {params.value}
-          </Box>
-        );
-      },
-    },
   ];
 
   return columns;

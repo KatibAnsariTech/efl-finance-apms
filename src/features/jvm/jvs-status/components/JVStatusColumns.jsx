@@ -106,27 +106,38 @@ export const JVStatusColumns = ({
       headerAlign: "center",
       sortable: false,
       filterable: false,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              color="error"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(params.row);
-              }}
-              sx={{
-                "&:hover": {
-                  backgroundColor: "rgba(244, 67, 54, 0.08)",
-                },
-              }}
-            >
-              <Iconify icon="solar:trash-bin-trash-bold" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
+      renderCell: (params) => {
+        const canDelete = params.row.canDelete;
+        return (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Tooltip title={canDelete ? "Delete" : "This request cannot be deleted"}>
+              <span>
+                <IconButton
+                  size="small"
+                  color="error"
+                  disabled={!canDelete}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (canDelete) {
+                      handleDelete(params.row);
+                    }
+                  }}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: canDelete ? "rgba(244, 67, 54, 0.08)" : "transparent",
+                    },
+                    "&.Mui-disabled": {
+                      color: "rgba(0, 0, 0, 0.26)",
+                    },
+                  }}
+                >
+                  <Iconify icon="solar:trash-bin-trash-bold" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        );
+      },
     },
   ];
 

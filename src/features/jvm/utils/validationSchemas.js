@@ -142,7 +142,7 @@ export const autoReversalSchema = yup.object().shape({
     .string()
     .required("Personal Number is required")
     .matches(/^\d{7}$/, "Personal Number must be exactly 7 digits"),
-  reversalReason: yup.string().required("Reversal Reason is required"),
+  reversalRemarks: yup.string().required("Reversal Remarks is required"),
   reversalPostingDate: yup.date().required("Reversal Posting Date is required"),
 });
 
@@ -150,9 +150,9 @@ export const autoReversalSchema = yup.object().shape({
 export const initiateJVSchema = yup.object().shape({
   requestType: yup.string().required("Request Type is required"),
   autoReversal: yup.string().required("Auto-reversal selection is required"),
-  reversalReason: yup.string().when("autoReversal", {
+  reversalRemarks: yup.string().when("autoReversal", {
     is: "Yes",
-    then: (schema) => schema.required("Reversal Reason is required when Auto-reversal is Yes"),
+    then: (schema) => schema.required("Reversal Remarks is required when Auto-reversal is Yes"),
     otherwise: (schema) => schema.optional(),
   }),
   postingDate: yup.date().required("Posting Date is required"),

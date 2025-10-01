@@ -4,21 +4,21 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
-import { Autocomplete } from "@mui/material";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import { Autocomplete } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getData }) {
+function AddEditSpecialGL({ handleClose, open, editData: specialGLData, getData }) {
   const [loading, setLoading] = React.useState(false);
   const { register, handleSubmit, reset, setValue } = useForm();
   const [accountTypes, setAccountTypes] = React.useState([]);
   const [selectedAccountType, setSelectedAccountType] = React.useState(null);
 
-  // Fetch Account Types from master data
+  // Fetch Account Types master list
   const fetchAccountTypes = async () => {
     try {
       const res = await userRequest.get(`/jvm/getMasters?key=AccountType&page=1&limit=1000`);
@@ -39,12 +39,12 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
   }, [open]);
 
   React.useEffect(() => {
-    if (postingKeyData) {
-      setValue("postingKey", postingKeyData.postingKey);
-      // other may be array of ids or array of objects {_id, value}
+    if (specialGLData) {
+      setValue("specialGLIndication", specialGLData.specialGLIndication);
+      // Initialize account type from other[0] which can be id or object
       let savedId = "";
-      if (Array.isArray(postingKeyData.other) && postingKeyData.other[0]) {
-        const first = postingKeyData.other[0];
+      if (Array.isArray(specialGLData.other) && specialGLData.other[0]) {
+        const first = specialGLData.other[0];
         savedId = typeof first === "object" ? (first._id || "") : first;
       }
       setValue("accountTypeId", savedId);
@@ -57,25 +57,32 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
       setSelectedAccountType(null);
       setValue("accountTypeId", "");
     }
-  }, [postingKeyData, setValue, reset, accountTypes]);
+  }, [specialGLData, setValue, reset, accountTypes]);
 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
+      const glVal = (data.specialGLIndication || "").trim().toUpperCase();
+      if (glVal.length !== 1) {
+        swal("Error!", "Special GL Indication must be exactly 1 character.", "error");
+        setLoading(false);
+        return;
+      }
+
       const formattedData = {
-        key: "PostingKey",
-        value: data.postingKey,
-        // Use `other` to store selected Account Type id
+        key: "SpecialGLIndication",
+        value: glVal,
+        // Save selected Account Type id in other
         other: data.accountTypeId ? [data.accountTypeId] : [],
       };
-      if (postingKeyData?._id) {
-        await userRequest.put(`/jvm/updateMaster/${postingKeyData._id}`, formattedData);
+      if (specialGLData?._id) {
+        await userRequest.put(`/jvm/updateMaster/${specialGLData._id}`, formattedData);
         getData();
-        swal("Updated!", "Posting Key data updated successfully!", "success");
+        swal("Updated!", "Special GL Indication data updated successfully!", "success");
       } else {
         await userRequest.post("/jvm/createMasters", formattedData);
         getData();
-        swal("Success!", "Posting Key data saved successfully!", "success");
+        swal("Success!", "Special GL Indication data saved successfully!", "success");
       }
 
       reset();
@@ -110,7 +117,7 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
           }}
         >
           <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
-            {postingKeyData ? "Edit Posting Key" : "Add Posting Key"}
+            {specialGLData ? "Edit Special GL Indication" : "Add Special GL Indication"}
           </span>
           <RxCross2
             onClick={handleClose}
@@ -135,13 +142,15 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
           onSubmit={handleSubmit(handleSaveData)}
         >
           <TextField
-            id="postingKey"
-            label="Posting Key"
-            {...register("postingKey", { required: true })}
+            id="specialGLIndication"
+            label="Special GL Indication"
+            {...register("specialGLIndication", { required: "Required", minLength: { value: 1, message: "Must be 1 character" }, maxLength: { value: 1, message: "Must be 1 character" } })}
             fullWidth
             required
             disabled={loading}
-            placeholder="e.g., 40, 50, 60"
+            // placeholder="e.g., Special Account, GL Account"
+            inputProps={{ maxLength: 1, style: { textTransform: 'uppercase' } }}
+            onChange={(e) => setValue('specialGLIndication', e.target.value.toUpperCase(), { shouldValidate: true })}
           />
           {/* Hidden field to store selected Account Type id */}
           <input type="hidden" {...register("accountTypeId")} />
@@ -173,7 +182,7 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
             disabled={loading}
             startIcon={loading && <CircularProgress size={20} color="inherit" />}
           >
-            {loading ? (postingKeyData ? "Updating..." : "Saving...") : (postingKeyData ? "Update" : "Save")}
+            {loading ? (specialGLData ? "Updating..." : "Saving...") : (specialGLData ? "Update" : "Save")}
           </Button>
         </Box>
       </Box>
@@ -181,4 +190,4 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
   );
 }
 
-export default AddEditPostingKey;
+export default AddEditSpecialGL;

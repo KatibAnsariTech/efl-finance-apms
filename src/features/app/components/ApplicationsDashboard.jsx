@@ -52,7 +52,7 @@ const applications = [
     pendingCount: 20,
     color: "#7B1FA2",
     route: "/custom-duty",
-    projectType: "CD",
+    projectType: "CUSTOM",
   },
   {
     id: "vendor-onboarding",
