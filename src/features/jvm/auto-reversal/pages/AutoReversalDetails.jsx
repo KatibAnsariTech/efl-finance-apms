@@ -8,7 +8,7 @@ import { userRequest } from "src/requestMethod";
 import { useRouter } from "src/routes/hooks";
 import { Box } from "@mui/material";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { AutoReversalForm } from "../components/AutoReversalDetail";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
@@ -17,6 +17,7 @@ import { AutoReversalDetailsColumns } from "../components/AutoReversalDetailsCol
 export default function AutoReversalDetails() {
   const router = useRouter();
   const { arId } = useParams();
+  const location = useLocation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -25,6 +26,11 @@ export default function AutoReversalDetails() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [arInfo, setArInfo] = useState({});
+  
+
+  const rowData = location.state || {};
+  const reversalId = rowData._id; 
+  const groupId = rowData.groupId; 
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -37,13 +43,13 @@ export default function AutoReversalDetails() {
   const getData = useCallback(async () => {
     setLoading(true);
     try {
-      if (!arId) {
+      if (!groupId) {
         throw new Error("No groupId available to fetch form items");
       }
 
       const response = await userRequest.get(`jvm/getFormItemsByGroupId`, {
         params: {
-          groupId: arId,
+          groupId: groupId,
           page: page + 1,
           limit: rowsPerPage,
           search: debouncedSearch || undefined,
@@ -76,16 +82,16 @@ export default function AutoReversalDetails() {
     } finally {
       setLoading(false);
     }
-  }, [arId, debouncedSearch, page, rowsPerPage]);
+  }, [groupId, debouncedSearch, page, rowsPerPage]);
 
   const getRequestInfo = useCallback(async () => {
     try {
-      if (!arId) {
+      if (!groupId) {
         return;
       }
 
       const response = await userRequest.get(
-        `jvm/getRequestInfoByGroupId?groupId=${arId}`
+        `jvm/getRequestInfoByGroupId?groupId=${groupId}`
       );
 
       if (response.data.statusCode === 200) {
@@ -100,19 +106,19 @@ export default function AutoReversalDetails() {
       console.error("Error fetching request info:", err);
       showErrorMessage(err, "Failed to fetch request details", swal);
     }
-  }, [arId]);
+  }, [groupId]);
 
   useEffect(() => {
-    if (arId) {
+    if (groupId) {
       getRequestInfo();
     }
-  }, [arId]);
+  }, [groupId, getRequestInfo]);
 
   useEffect(() => {
-    if (arId) {
+    if (groupId) {
       getData();
     }
-  }, [arId, getData]);
+  }, [groupId, getData]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
@@ -121,19 +127,17 @@ export default function AutoReversalDetails() {
     }
   };
 
-  const handleFormSubmit = async (formData) => {
+  const handleFormSubmit = async (data) => {
     try {
       setLoading(true);
-
-      const reversalId = arInfo._id || arId;
 
       if (!reversalId) {
         throw new Error("No reversal ID available for submission");
       }
 
       const submissionData = {
-        reversalDate: formData.reversalDate,
-        fiscalYear: formData.fiscalYear,
+        reversalDate: data.reversalDate,
+        fiscalYear: data.fiscalYear,
       };
 
       const response = await userRequest.post(

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   Typography,
@@ -15,30 +15,22 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useRouter } from "src/routes/hooks";
+import { useForm, Controller } from "react-hook-form";
 
 export default function AutoReversalForm({ onSubmit, initialData = {} }) {
   const router = useRouter();
 
-  // Form state for editable fields
-  const [formData, setFormData] = useState({
-    fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
-    reversalRemarks: initialData.reversalRemarks || "",
-    reversalPostingDate: initialData.reversalPostingDate || null,
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
+      reversalRemarks: initialData.reversalRemarks || "",
+      reversalDate: initialData.reversalPostingDate || null,
+    },
   });
-
-  const handleFormChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = () => {
-    console.log("Form submitted with data:", formData);
-    if (onSubmit) {
-      onSubmit(formData);
-    }
-  };
 
   const handleBack = () => {
     router.push("/jvm/auto-reversal");
@@ -227,21 +219,24 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Fiscal Year *"
-                  type="number"
-                  value={formData.fiscalYear}
-                  onChange={(e) =>
-                    handleFormChange("fiscalYear", e.target.value)
-                  }
-                  placeholder={new Date().getFullYear().toString()}
-                  inputProps={{
-                    min: 2000,
-                    max: 2100,
-                    step: 1,
-                  }}
+                <Controller
+                  name="fiscalYear"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      size="small"
+                      label="Fiscal Year *"
+                      type="number"
+                      placeholder={new Date().getFullYear().toString()}
+                      inputProps={{
+                        min: 2000,
+                        max: 2100,
+                        step: 1,
+                      }}
+                    />
+                  )}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -252,7 +247,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 >
                   <InputLabel>Reversal Remarks</InputLabel>
                   <Select
-                    value={initialData.reversalRemarks || formData.reversalRemarks || ""}
+                    value={initialData.reversalRemarks || ""}
                     label="Reversal Remarks"
                     disabled
                     sx={{
@@ -267,29 +262,33 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <DatePicker
-                  label="Reversal Posting Date"
-                  value={
-                    initialData.reversalRemarks === "01" 
-                      ? (initialData.postingDate ? new Date(initialData.postingDate) : new Date())
-                      : formData.reversalPostingDate
-                  }
-                  onChange={(newValue) =>
-                    handleFormChange("reversalPostingDate", newValue)
-                  }
-                  disabled={initialData.reversalRemarks === "01"}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      size: "small",
-                      placeholder: "Select date",
-                      sx: initialData.reversalRemarks === "01" ? {
-                        "& .MuiInputBase-input": {
-                          backgroundColor: "#f5f5f5",
+                <Controller
+                  name="reversalDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      {...field}
+                      label="Reversal Posting Date"
+                      value={
+                        initialData.reversalRemarks === "01" 
+                          ? (initialData.postingDate ? new Date(initialData.postingDate) : new Date())
+                          : field.value
+                      }
+                      disabled={initialData.reversalRemarks === "01"}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: "small",
+                          placeholder: "Select date",
+                          sx: initialData.reversalRemarks === "01" ? {
+                            "& .MuiInputBase-input": {
+                              backgroundColor: "#f5f5f5",
+                            },
+                          } : {},
                         },
-                      } : {},
-                    },
-                  }}
+                      }}
+                    />
+                  )}
                 />
               </Grid>
             </Grid>
@@ -304,7 +303,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {} }) {
             <Button
               variant="contained"
               size="small"
-              onClick={handleSubmit}
+              onClick={handleSubmit(onSubmit)}
               sx={{
                 backgroundColor: "#1976d2",
                 "&:hover": {

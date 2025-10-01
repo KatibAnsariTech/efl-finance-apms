@@ -30,7 +30,7 @@ export const AutoReversalColumns = ({ navigate, handleDelete }) => {
             localStorage.setItem('arDetailData', JSON.stringify(params.row));
             
             // Use navigate with state to pass data
-            navigate(`/jvm/auto-reversal/ar-detail/${params.row.requestNo}`, { 
+            navigate(`/jvm/auto-reversal/ar-detail/${params.row._id}`, { 
               state: params.row 
             });
           }}
