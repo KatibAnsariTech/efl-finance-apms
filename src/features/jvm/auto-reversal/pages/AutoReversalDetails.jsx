@@ -1,9 +1,8 @@
-  import React, { useCallback } from "react";
+import React, { useCallback } from "react";
 import { useState, useEffect, useMemo } from "react";
 import Card from "@mui/material/Card";
 import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
-import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { userRequest } from "src/requestMethod";
 import { useRouter } from "src/routes/hooks";
@@ -14,7 +13,6 @@ import { AutoReversalForm } from "../components/AutoReversalDetail";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { AutoReversalDetailsColumns } from "../components/AutoReversalDetailsColumns";
-// import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function AutoReversalDetails() {
   const router = useRouter();
@@ -94,28 +92,7 @@ export default function AutoReversalDetails() {
 
       if (response.data.statusCode === 200) {
         const requestData = response.data.data;
-        
-        const arHeaderInfo = {
-          requestNo: requestData.groupId || arId,
-          status: requestData.status || "Unknown",
-          totalDebit: 0,
-          totalCredit: 0,
-          createdDate: new Date(requestData.createdAt || new Date()),
-          initiatedDate: new Date(requestData.createdAt || new Date()),
-          documentDate: new Date(requestData.documentDate || requestData.createdAt || new Date()),
-          postingDate: new Date(requestData.postingDate || requestData.createdAt || new Date()),
-          startDate: null,
-          endDate: null,
-          requesterId: requestData.requesterId || null,
-          groupId: requestData.groupId || arId,
-          parentId: requestData.parentId || null,
-          mainTableId: requestData._id || null,
-          autoReversal: requestData.autoReversal || "N",
-          steps: requestData.steps || [],
-          currentStep: requestData.currentStep || 0,
-        };
-
-        setArInfo(arHeaderInfo);
+        setArInfo(requestData);
       } else {
         throw new Error(
           response.data.message || "Failed to fetch request info"
@@ -150,7 +127,7 @@ export default function AutoReversalDetails() {
     try {
       setLoading(true);
 
-      const reversalId = arInfo.mainTableId || arId;
+      const reversalId = arInfo._id || arId;
 
       if (!reversalId) {
         throw new Error("No reversal ID available for submission");
@@ -199,12 +176,15 @@ export default function AutoReversalDetails() {
         <AutoReversalForm
           onSubmit={handleFormSubmit}
           initialData={{
-            initiatedDate: arInfo.initiatedDate,
-            documentDate: arInfo.documentDate,
-            postingDate: arInfo.postingDate,
-            fiscalYear:
-              arInfo.fiscalYear || new Date().getFullYear().toString(),
+            initiatedDate: arInfo.createdAt ? new Date(arInfo.createdAt) : new Date(),
+            documentDate: arInfo.documentDate ? new Date(arInfo.documentDate) : new Date(),
+            postingDate: arInfo.postingDate ? new Date(arInfo.postingDate) : new Date(),
+            reversalPostingDate: (arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2) 
+              ? (arInfo.reversalPostingDate ? new Date(arInfo.reversalPostingDate) : new Date())
+              : (arInfo.postingDate ? new Date(arInfo.postingDate) : new Date()),
+            fiscalYear: new Date().getFullYear().toString(),
             reversalRemarks: arInfo.reversalRemarks || "",
+            isReversalRemarks02: (arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2),
           }}
         />
 
