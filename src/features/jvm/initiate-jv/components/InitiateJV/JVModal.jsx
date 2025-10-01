@@ -101,6 +101,7 @@ export default function JVModal({
   const [postingKeys, setPostingKeys] = useState([]);
   const [postingKeyMasters, setPostingKeyMasters] = useState([]);
   const [specialGLIndications, setSpecialGLIndications] = useState([]);
+  const [specialGLMasters, setSpecialGLMasters] = useState([]);
   const [masterDataLoading, setMasterDataLoading] = useState(false);
 
   useEffect(() => {
@@ -190,7 +191,16 @@ export default function JVModal({
             setPostingKeys(filtered.length ? filtered : masters.map((m) => m.value));
           }
           if (specialGLRes.data.success) {
-            setSpecialGLIndications(specialGLRes.data.data.masters.map(item => item.value));
+            const masters = specialGLRes.data.data.masters || [];
+            setSpecialGLMasters(masters);
+            const currentAcctType = watch("accountType");
+            const filtered = masters.filter((m) => {
+              const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+              if (!other0) return false;
+              if (typeof other0 === "object") return other0.value === currentAcctType;
+              return other0 === currentAcctType;
+            }).map((m) => m.value);
+            setSpecialGLIndications(filtered.length ? filtered : masters.map((m) => m.value));
           }
         } catch (error) {
           console.error("Error fetching master data:", error);
@@ -203,6 +213,27 @@ export default function JVModal({
 
     fetchMasterData();
   }, [open]);
+
+  // Filter Special GL whenever account type changes
+  useEffect(() => {
+    const subscription = watch((values, { name }) => {
+      if (name === "accountType") {
+        const selected = values.accountType;
+        if (!selected) {
+          setSpecialGLIndications(specialGLMasters.map((m) => m.value));
+          return;
+        }
+        const filtered = specialGLMasters.filter((m) => {
+          const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+          if (!other0) return false;
+          if (typeof other0 === "object") return other0.value === selected;
+          return other0 === selected;
+        }).map((m) => m.value);
+        setSpecialGLIndications(filtered);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, specialGLMasters]);
 
   // Filter posting keys whenever account type changes
   useEffect(() => {
