@@ -58,7 +58,7 @@ export default function AutoReversalDetails() {
         const processedData = apiData.map((row, index) => ({
           ...row,
           id: row._id || row.itemId || `row_${index}`,
-          lineNumber: (page * rowsPerPage) + index + 1,
+          lineNumber: page * rowsPerPage + index + 1,
           postingDate: new Date(row.postingDate),
           documentDate: new Date(row.documentDate),
           initiatedDate: new Date(row.createdAt),
@@ -68,9 +68,7 @@ export default function AutoReversalDetails() {
         setData(processedData);
         setTotalCount(pagination.totalItems || 0);
       } else {
-        throw new Error(
-          response.data.message || "Failed to fetch form items"
-        );
+        throw new Error(response.data.message || "Failed to fetch form items");
       }
     } catch (error) {
       console.error("Error fetching form items:", error);
@@ -134,9 +132,8 @@ export default function AutoReversalDetails() {
       }
 
       const submissionData = {
-        reversalDate:
-          formData.reversalDate || new Date().getFullYear().toString(),
-        fiscalYear: formData.fiscalYear || new Date().getFullYear().toString(),
+        reversalDate: formData.reversalDate,
+        fiscalYear: formData.fiscalYear,
       };
 
       const response = await userRequest.post(
@@ -176,15 +173,17 @@ export default function AutoReversalDetails() {
         <AutoReversalForm
           onSubmit={handleFormSubmit}
           initialData={{
-            initiatedDate: arInfo.createdAt ? new Date(arInfo.createdAt) : new Date(),
-            documentDate: arInfo.documentDate ? new Date(arInfo.documentDate) : new Date(),
-            postingDate: arInfo.postingDate ? new Date(arInfo.postingDate) : new Date(),
-            reversalPostingDate: (arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2) 
-              ? (arInfo.reversalPostingDate ? new Date(arInfo.reversalPostingDate) : new Date())
-              : (arInfo.postingDate ? new Date(arInfo.postingDate) : new Date()),
+            initiatedDate: new Date(arInfo.createdAt),
+            documentDate: new Date(arInfo.documentDate),
+            postingDate: new Date(arInfo.postingDate),
+            reversalPostingDate:
+              arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2
+                ? new Date(arInfo.reversalPostingDate)
+                : new Date(arInfo.postingDate),
             fiscalYear: new Date().getFullYear().toString(),
             reversalRemarks: arInfo.reversalRemarks || "",
-            isReversalRemarks02: (arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2),
+            isReversalRemarks02:
+              arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2,
           }}
         />
 
