@@ -17,10 +17,10 @@ import { fDate, fTime } from "src/utils/format-time";
 
 const menuItems = [
   "Document Type",
-  "Posting Key",
-  "Hierarchy",
   "Account Type",
-  "Special GL Indication"
+  "Posting Key",
+  "Special GL Indication",
+  "Hierarchy"
 ];
 
 export default function JVMMaster() {
@@ -96,7 +96,7 @@ export default function JVMMaster() {
           }}
         >
           {/* Toolbar left: Latest Updated info and Log toggle - Only for Hierarchy tab */}
-          {selectedTab === 2 ? (
+          {selectedTab === 4 ? (
             <Box
               sx={{
                 display: "flex",
@@ -189,7 +189,7 @@ export default function JVMMaster() {
 
         {open && selectedTab === 1 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditPostingKey
+            <AddEditAccountType
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -200,7 +200,7 @@ export default function JVMMaster() {
 
         {open && selectedTab === 2 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditHierarchy
+            <AddEditPostingKey
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -211,7 +211,7 @@ export default function JVMMaster() {
 
         {open && selectedTab === 3 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditAccountType
+            <AddEditSpecialGL
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -222,7 +222,7 @@ export default function JVMMaster() {
 
         {open && selectedTab === 4 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditSpecialGL
+            <AddEditHierarchy
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -232,7 +232,7 @@ export default function JVMMaster() {
         )}
 
         <Box sx={{ width: "100%" }}>
-          {showLogTable && selectedTab === 2 ? (
+          {showLogTable && selectedTab === 4 ? (
             <JVMLogTable
               selectedTab={selectedTab}
               menuItems={menuItems}
@@ -247,32 +247,32 @@ export default function JVMMaster() {
                 />
               )}
               {selectedTab === 1 && (
-                <PostingKeyTable 
-                  handleEdit={handleEdit}
-                  handleDelete={handleDelete}
-                  refreshTrigger={refreshTrigger}
-                />
-              )}
-              {selectedTab === 2 && (
-                <HierarchyTable 
-                  handleEdit={handleEdit}
-                  handleDelete={handleDelete}
-                  refreshTrigger={refreshTrigger}
-                  onDataUpdate={setLatestData}
-                />
-              )}
-              {selectedTab === 3 && (
                 <AccountTypeTable 
                   handleEdit={handleEdit}
                   handleDelete={handleDelete}
                   refreshTrigger={refreshTrigger}
                 />
               )}
-              {selectedTab === 4 && (
+              {selectedTab === 2 && (
+                <PostingKeyTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+              {selectedTab === 3 && (
                 <SpecialGLTable 
                   handleEdit={handleEdit}
                   handleDelete={handleDelete}
                   refreshTrigger={refreshTrigger}
+                />
+              )}
+              {selectedTab === 4 && (
+                <HierarchyTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
+                  onDataUpdate={setLatestData}
                 />
               )}
             </>

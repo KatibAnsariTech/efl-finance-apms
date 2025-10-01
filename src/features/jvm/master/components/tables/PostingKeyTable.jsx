@@ -28,12 +28,19 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
         }`
       );
       if (response.data.success) {
-        const mappedData = response.data.data.masters.map((item, index) => ({
-          id: item._id,
-          sno: paginationModel.page * paginationModel.pageSize + index + 1,
-          postingKey: item.value || "-",
-          ...item,
-        }));
+        const mappedData = response.data.data.masters.map((item, index) => {
+          const otherItem = Array.isArray(item.other) ? item.other[0] : undefined;
+          const accountTypeLabel = otherItem && typeof otherItem === "object" ? (otherItem.value || "-") : (otherItem || "-");
+          const accountTypeId = otherItem && typeof otherItem === "object" ? otherItem._id : (typeof otherItem === "string" ? otherItem : undefined);
+          return {
+            id: item._id,
+            sno: paginationModel.page * paginationModel.pageSize + index + 1,
+            postingKey: item.value || "-",
+            accountType: accountTypeLabel,
+            accountTypeId,
+            ...item,
+          };
+        });
         setData(mappedData);
         setRowCount(response.data.data.total);
       }
@@ -91,6 +98,20 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "accountType",
+      headerName: "Account Type",
+      minWidth: 200,
+      flex: 1,
+      sortable: false,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || (Array.isArray(params.row?.other) ? (params.row.other[0] || "-") : "-")}
         </Typography>
       ),
     },
