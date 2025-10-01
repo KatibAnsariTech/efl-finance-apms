@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -24,13 +24,24 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     defaultValues: {
       fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
       reversalRemarks: initialData.reversalRemarks || "",
-      reversalDate: initialData.reversalPostingDate || null,
+      reversalDate: initialData.reversalDate || null,
     },
   });
+
+  useEffect(() => {
+    reset({
+      fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
+      reversalRemarks: initialData.reversalRemarks || "",
+      reversalDate: initialData.reversalDate
+        ? new Date(initialData.reversalDate)
+        : null,
+    });
+  }, [initialData, reset]);
 
   const handleBack = () => {
     router.push("/jvm/auto-reversal");
@@ -113,7 +124,11 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Initiated Date"
-                  value={initialData.initiatedDate || new Date()}
+                  value={
+                    initialData.initiatedDate
+                      ? new Date(initialData.initiatedDate)
+                      : new Date()
+                  }
                   readOnly
                   slotProps={{
                     textField: {
@@ -163,7 +178,11 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Document Date"
-                  value={initialData.documentDate || new Date()}
+                  value={
+                    initialData.documentDate
+                      ? new Date(initialData.documentDate)
+                      : new Date()
+                  }
                   readOnly
                   slotProps={{
                     textField: {
@@ -181,7 +200,11 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
               <Grid item xs={12} sm={6} md={3}>
                 <DatePicker
                   label="Posting Date"
-                  value={initialData.postingDate || new Date()}
+                  value={
+                    initialData.postingDate
+                      ? new Date(initialData.postingDate)
+                      : new Date()
+                  }
                   readOnly
                   slotProps={{
                     textField: {
@@ -270,23 +293,31 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
                       {...field}
                       label="Reversal Posting Date"
                       value={
-                        initialData.reversalRemarks === "01" 
-                          ? (initialData.postingDate ? new Date(initialData.postingDate) : new Date())
-                          : field.value
+                        // If a reversalDate is present in initialData, show it (this should be a Date)
+                        initialData.reversalDate
+                          ? new Date(initialData.reversalDate)
+                          : (initialData.reversalRemarks === "01"
+                              ? (initialData.postingDate ? new Date(initialData.postingDate) : new Date())
+                              : field.value)
                       }
-                      disabled={initialData.reversalRemarks === "01"}
+                      // Disable editing when reversalRemarks indicates existing posting (01)
+                      // or when a reversalDate has already been set (server-provided)
+                      disabled={
+                        initialData.reversalRemarks === "01" || Boolean(initialData.reversalDate)
+                      }
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           size: "small",
                           placeholder: "Select date",
-                          sx: initialData.reversalRemarks === "01" ? {
+                          sx: (initialData.reversalRemarks === "01" || Boolean(initialData.reversalDate)) ? {
                             "& .MuiInputBase-input": {
                               backgroundColor: "#f5f5f5",
                             },
                           } : {},
                         },
                       }}
+                      onChange={(date) => field.onChange(date)}
                     />
                   )}
                 />

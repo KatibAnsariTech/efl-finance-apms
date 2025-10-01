@@ -172,7 +172,6 @@ export default function AutoReversalDetails() {
       <Helmet>
         <title>Auto Reversal Detail</title>
       </Helmet>
-
       <Container>
         <AutoReversalForm
           onSubmit={handleFormSubmit}
@@ -181,9 +180,9 @@ export default function AutoReversalDetails() {
             initiatedDate: arInfo.initiatedDate ? new Date(arInfo.initiatedDate) : (arInfo.createdAt ? new Date(arInfo.createdAt) : undefined),
             documentDate: arInfo.documentDate ? new Date(arInfo.documentDate) : undefined,
             postingDate: arInfo.postingDate ? new Date(arInfo.postingDate) : undefined,
-            reversalPostingDate:
+            reversalDate:
               arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2
-                ? (arInfo.reversalPostingDate ? new Date(arInfo.reversalPostingDate) : undefined)
+                ? (arInfo.reversalDate ? new Date(arInfo.reversalDate) : undefined)
                 : (arInfo.postingDate ? new Date(arInfo.postingDate) : undefined),
             fiscalYear: new Date().getFullYear().toString(),
             reversalRemarks: arInfo.reversalRemarks || "",
