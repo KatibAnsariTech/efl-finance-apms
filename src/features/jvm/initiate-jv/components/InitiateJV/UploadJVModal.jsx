@@ -293,7 +293,6 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         return;
       }
 
-      // Use centralized validation logic
       const validationResults = validateAllJVEntries(extractedData);
 
       if (!validationResults.isValid) {
