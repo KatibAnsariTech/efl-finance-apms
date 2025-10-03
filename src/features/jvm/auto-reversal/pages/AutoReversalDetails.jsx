@@ -200,11 +200,11 @@ export default function AutoReversalDetails() {
               mb: 2,
             }}
           >
-            <FormTableToolbar
+            {/* <FormTableToolbar
               search={search}
               onFilterChange={handleFilterChange}
               placeholder="Search"
-            />
+            /> */}
           </Box>
 
           <Box sx={{ width: "100%" }}>
