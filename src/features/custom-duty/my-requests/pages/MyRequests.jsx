@@ -39,6 +39,7 @@ export default function MyRequests() {
   const [endDate, setEndDate] = useState();
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [formsData, setFormsData] = useState([]); // Removed any mock data initialization
 
   // Status color mapping
   const getStatusColor = (status) => {
@@ -237,153 +238,74 @@ export default function MyRequests() {
     {
       field: "requestNo",
       headerName: "Request No.",
-      flex: 1,
-      minWidth: 160,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            cursor: "pointer",
-            color: "#1976d2",
-            textDecoration: "underline",
-            textDecorationThickness: "2px",
-            textUnderlineOffset: "4px",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => {
-            setSelectedRowData(params.row);
-            setOpenModal(true);
-          }}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "requestedDate",
-      headerName: "Requested Date",
-      flex: 1,
-      minWidth: 200,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "boeNumber",
-      headerName: "BOE Number",
-      flex: 1,
-      minWidth: 150,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "challanNo",
-      headerName: "Challan No.",
-      flex: 1,
-      minWidth: 140,
-      align: "center",
-      headerAlign: "center",
+      width: 200,
     },
     {
       field: "typeOfTransaction",
-      headerName: "Type of Transaction",
-      flex: 1,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-      //   renderCell: (params) => (
-      //     <Chip
-      //       label={params.value}
-      //       color={params.value === "Debit" ? "error" : "success"}
-      //       size="small"
-      //       variant="outlined"
-      //     />
-      //   ),
+      headerName: "Transaction Type",
+      width: 150,
     },
     {
       field: "transactionDate",
       headerName: "Transaction Date",
-      width: 200,
-      resizable: true,
+      width: 150,
       renderCell: (params) => {
-        if (!params.value) return "";
         const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleString("en-GB", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              fractionalSecondDigits: 3,
-            });
+        return date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "2-digit",
+        });
       },
     },
     {
       field: "transactionAmount",
-      headerName: "Transaction Amount",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+      headerName: "Amount",
+      width: 120,
+      renderCell: (params) => `₹${params.value.toLocaleString()}`,
     },
     {
       field: "status",
       headerName: "Status",
-      flex: 1,
-      minWidth: 130,
-      align: "center",
-      headerAlign: "center",
-      //   renderCell: (params) => getStatusChip(params.value),
+      width: 120,
     },
     {
       field: "company",
       headerName: "Company",
-      flex: 1,
-      minWidth: 130,
-      align: "center",
-      headerAlign: "center",
-      renderCell: () => "EFL",
+      width: 150,
+      renderCell: (params) => {
+        const company = params.value;
+        return company ? company.name : "N/A"; // Assuming company is an object with a `name` field
+      },
     },
     {
-      field: "description",
-      headerName: "Description",
-      flex: 1,
-      minWidth: 130,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-      resizable: true,
+      field: "createdAt",
+      headerName: "Created At",
+      width: 150,
+      renderCell: (params) => {
+        const date = new Date(params.value);
+        return date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "2-digit",
+        });
+      },
     },
   ];
+
+  useEffect(() => {
+    const fetchFormsData = async () => {
+      try {
+        const response = await userRequest.get("/custom/getForms?action=all");
+        setFormsData(response.data.data); // Assuming the data is nested under data.data
+      } catch (error) {
+        console.error("Failed to fetch forms data:", error);
+        showErrorMessage(error, "Failed to fetch forms data", swal);
+      }
+    };
+
+    fetchFormsData();
+  }, []);
 
   return (
     <>
@@ -451,16 +373,13 @@ export default function MyRequests() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={
-                dataFiltered?.map((row, index) => ({
-                  ...row,
-                  id: row._id || row.requestNo || `row-${index}`,
-                  backgroundColor: getStatusColor(row.status),
-                })) || []
-              }
+              rows={formsData.forms || []} // Use the forms array from the API response
               columns={columns}
-              getRowId={(row) => row?.id}
-              loading={loading}
+              getRowId={(row) => row._id}
+              autoHeight
+              disableSelectionOnClick
+              pageSize={10}
+              rowsPerPageOptions={[10]}
               pagination
               paginationMode="server"
               rowCount={totalCount}
@@ -470,7 +389,6 @@ export default function MyRequests() {
                 setRowsPerPage(newModel.pageSize);
               }}
               pageSizeOptions={[5, 10, 25, 50]}
-              autoHeight
               getRowClassName={(params) => {
                 const status = params.row.status?.toLowerCase();
                 if (status === "pending") return "row-pending";
