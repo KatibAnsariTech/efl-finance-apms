@@ -126,7 +126,6 @@ export default function Requests() {
         finalRequestNo: item.finalRequestNo, // Use finalRequestNo from API
       }));
 
-      console.log("Transformed Data:", transformedData);
       
       if (isLoadMore) {
         setData((prev) => [...prev, ...transformedData]);

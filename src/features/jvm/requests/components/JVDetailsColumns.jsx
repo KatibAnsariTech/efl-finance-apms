@@ -3,14 +3,14 @@ import { fDateTime } from "src/utils/format-time";
 
 export const JVDetailsColumns = () => {
   const columns = [
-    {
-      field: "lineNumber",
-      headerName: "S No",
-      flex: 0.5,
-      minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-    },
+    // {
+    //   field: "lineNumber",
+    //   headerName: "S No",
+    //   flex: 0.5,
+    //   minWidth: 80,
+    //   align: "center",
+    //   headerAlign: "center",
+    // },
     {
       field: "type",
       headerName: "Type",
