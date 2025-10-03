@@ -123,7 +123,7 @@ export default function Requests() {
         steps: item.steps,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
-        finalRequestNo: item.finalRequestNo || item.requestNo, // Use requestNo as fallback
+        finalRequestNo: item.finalRequestNo, // Use finalRequestNo from API
       }));
 
       console.log("Transformed Data:", transformedData);
@@ -183,7 +183,7 @@ export default function Requests() {
         steps: item.steps,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
-        finalRequestNo: item.finalRequestNo || item.requestNo, // Use requestNo as fallback
+        finalRequestNo: item.finalRequestNo, // Use finalRequestNo from API
       }));
 
       setAllData(transformedData);
