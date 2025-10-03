@@ -100,6 +100,15 @@ export const RequestColumns = ({ onRequestClick }) => {
       headerAlign: "center",
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
+    {
+      field: "autoReversal",
+      headerName: "Auto Reversal",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `₹${params.value === true ? Yes : No}`,
+    },
   ];
 
   return columns;

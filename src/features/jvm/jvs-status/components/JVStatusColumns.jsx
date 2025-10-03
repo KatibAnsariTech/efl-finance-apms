@@ -3,10 +3,10 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import Iconify from "src/components/iconify/iconify";
 
-export const JVStatusColumns = ({ 
+export const JVStatusColumns = ({
   handleStatusClick,
   router,
-  handleDelete
+  handleDelete,
 }) => {
   const columns = [
     {
@@ -29,9 +29,7 @@ export const JVStatusColumns = ({
           }}
           onClick={() => {
             localStorage.setItem("jvDetailData", JSON.stringify(params.row));
-            router.push(
-              `/jvm/requested-jvs/detail/${params.row.groupId}`
-            );
+            router.push(`/jvm/requested-jvs/detail/${params.row.groupId}`);
           }}
         >
           {params.value}
@@ -98,6 +96,15 @@ export const JVStatusColumns = ({
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
     {
+      field: "autoReversal",
+      headerName: "Auto Reversal",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `₹${params.value === true ? Yes : No}`,
+    },
+    {
       field: "actions",
       headerName: "Actions",
       flex: 0.5,
@@ -109,8 +116,16 @@ export const JVStatusColumns = ({
       renderCell: (params) => {
         const canDelete = params.row.canDelete;
         return (
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <Tooltip title={canDelete ? "Delete" : "This request cannot be deleted"}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Tooltip
+              title={canDelete ? "Delete" : "This request cannot be deleted"}
+            >
               <span>
                 <IconButton
                   size="small"
@@ -124,7 +139,9 @@ export const JVStatusColumns = ({
                   }}
                   sx={{
                     "&:hover": {
-                      backgroundColor: canDelete ? "rgba(244, 67, 54, 0.08)" : "transparent",
+                      backgroundColor: canDelete
+                        ? "rgba(244, 67, 54, 0.08)"
+                        : "transparent",
                     },
                     "&.Mui-disabled": {
                       color: "rgba(0, 0, 0, 0.26)",
