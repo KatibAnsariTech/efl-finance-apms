@@ -49,8 +49,7 @@ function JVCurrentStatus({ steps = [], data }) {
                   Raised By
                 </Typography>
                 <Typography>
-                  {data?.requesterId?.username} &nbsp; (
-                  {data?.requesterId?.email})
+                  {data?.requesterId?.username}({data?.requesterId?.email})
                 </Typography>
                 {data?.formId?.requesterRemark && (
                   <Typography>with comment:</Typography>
@@ -113,8 +112,7 @@ function JVCurrentStatus({ steps = [], data }) {
                   )}
                   {step.approverId?.username && (
                     <Typography>
-                      {step?.approverId?.username}&nbsp; (
-                      {step?.approverId?.email})
+                      {step?.approverId?.username}({step?.approverId?.email})
                     </Typography>
                   )}
                   {step.comment && <Typography>with comment:</Typography>}
