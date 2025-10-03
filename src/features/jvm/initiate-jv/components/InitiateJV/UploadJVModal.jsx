@@ -5,6 +5,7 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import { getErrorMessage, showErrorMessage } from "src/utils/errorUtils";
 import * as XLSX from 'xlsx';
+import { validateAllJVEntries } from "../../utils/validationUtils"; // Import validation utility
 
 export default function UploadJVModal({ open, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -288,6 +289,53 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         const msg = errors.slice(0, maxShow).join("\n") + (errors.length > maxShow ? `\n...and ${errors.length - maxShow} more.` : "");
         setUploadError("Validation failed. See details.");
         swal({ title: "Validation Errors", text: msg, icon: "error" });
+        setUploading(false);
+        return;
+      }
+
+      // Use centralized validation logic
+      const validationResults = validateAllJVEntries(extractedData);
+
+      if (!validationResults.isValid) {
+        const errorMessages = validationResults.errors.map((error) => {
+          if (error.type === "entryLimit") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
+              )
+              .join("\n");
+          } else if (error.type === "balance") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${
+                    group.slNo
+                  }: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
+              )
+              .join("\n");
+          } else if (error.type === "dateConsistency") {
+            return error.details
+              .map((group) => {
+                let message = `Serial Number ${group.slNo}:`;
+                if (group.inconsistentDocumentDate) {
+                  message += `\n  - Document Date inconsistency`;
+                }
+                if (group.inconsistentPostingDate) {
+                  message += `\n  - Posting Date inconsistency`;
+                }
+                return message;
+              })
+              .join("\n\n");
+          }
+        });
+
+        swal({
+          title: "Validation Errors",
+          text: errorMessages.join("\n\n"),
+          icon: "error",
+          button: "OK",
+        });
         setUploading(false);
         return;
       }
