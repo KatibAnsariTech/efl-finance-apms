@@ -107,7 +107,7 @@ export const RequestColumns = ({ onRequestClick }) => {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => `₹${params.value === true ? Yes : No}`,
+      renderCell: (params) => `${params.value === true ? "Yes" : "No"}`,
     },
   ];
 
