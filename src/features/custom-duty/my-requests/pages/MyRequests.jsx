@@ -373,7 +373,7 @@ export default function MyRequests() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={formsData.forms || []} // Use the forms array from the API response
+              rows={formsData.forms || []} 
               columns={columns}
               getRowId={(row) => row._id}
               autoHeight

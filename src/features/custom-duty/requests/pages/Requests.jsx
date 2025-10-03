@@ -90,43 +90,30 @@ export default function Requests() {
       const page = pageNum;
       const limit = rowsPerPage;
 
-      let apiData;
-      let totalCount;
+      const apiEndpoint =
+        selectedTab === "pendingWithMe"
+          ? "/custom/getRequestsForApprover"
+          : "/custom/getPendingRequestForms";
 
-      try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: page,
-              limit: limit,
-            },
-          }
-        );
-        apiData = response.data;
-        totalCount = response.headers["x-total-count"] || 100;
-      } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
-        );
-        const fetchData = await fetchResponse.json();
-        apiData = fetchData;
-        totalCount = 100;
-      }
+      const response = await userRequest.get(apiEndpoint, {
+        params: {
+          page: page,
+          limit: limit,
+        },
+      });
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const apiData = response.data.data;
+      const totalCount = response.data.pagination?.totalCount || 0;
 
-      let transformedData;
-
-      transformedData = apiData.map((item, index) => ({
+      const transformedData = apiData.map((item) => ({
         id: item.id,
-        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
+        requestNo: item.requestNo,
+        requestedDate: item.requestedDate,
+        boeNumber: item.boeNumber,
+        challanNumber: item.challanNumber,
         transactionType: item.transactionType,
-        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-        transactionAmount: parseFloat(item.transactionAmount),
+        transactionDate: item.transactionDate,
+        transactionAmount: item.transactionAmount,
         status: item.status,
         company: item.company,
         description: item.description,
@@ -136,14 +123,12 @@ export default function Requests() {
         setData((prev) => [...prev, ...transformedData]);
       } else {
         setData(transformedData);
-        setAllData(transformedData);
       }
 
       setTotalCount(totalCount);
       setHasMore(page * limit < totalCount);
     } catch (err) {
       setData([]);
-      setAllData([]);
       setTotalCount(0);
       setHasMore(false);
     } finally {
