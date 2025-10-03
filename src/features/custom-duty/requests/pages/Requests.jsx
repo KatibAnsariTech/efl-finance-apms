@@ -102,22 +102,22 @@ export default function Requests() {
         },
       });
 
-      const apiData = response.data.data.requests || response.data.data;
-      const totalCount = response.data.data.totalRequests || 0;
+      const apiData = response.data.data.forms || response.data.data.requests || response.data.data;
+      const totalCount = response.data.data.totalForms || response.data.data.totalRequests || 0;
 
       const transformedData = apiData.map((item) => ({
         id: item._id,
         _id: item._id,
         requestNo: item.requestNo,
         requestedDate: item.requestedDate || item.createdAt, // Use createdAt if requestedDate is not available
-        documentNo: item.documentNo || "docu", // Provide default value
-        challanNo: item.challanNo || "N/A", // Provide default value
-        transactionType: item.transactionType || "N/A", // Provide default value
-        transactionDate: item.transactionDate || item.createdAt, // Use createdAt if transactionDate is not available
-        transactionAmount: item.transactionAmount || 0, // Provide default value
+        documentNo: item.documentNo, // Use actual API field
+        challanNo: item.challanNo, // Use actual API field
+        transactionType: item.typeOfTransaction, // Map to correct API field name
+        transactionDate: item.transactionDate, // Use actual API field
+        transactionAmount: item.transactionAmount, // Use actual API field
         status: item.status,
         company: item.company,
-        desc: item.desc || "N/A", // Provide default value
+        desc: item.description || "N/A", // Use description field from API
         currentStep: item.currentStep,
         assignedTo: item.assignedTo,
         steps: item.steps,
@@ -126,6 +126,8 @@ export default function Requests() {
         finalRequestNo: item.finalRequestNo || item.requestNo, // Use requestNo as fallback
       }));
 
+      console.log("Transformed Data:", transformedData);
+      
       if (isLoadMore) {
         setData((prev) => [...prev, ...transformedData]);
       } else {
@@ -160,22 +162,22 @@ export default function Requests() {
         },
       });
 
-      const apiData = response.data.data.requests || response.data.data;
-      const totalCount = response.data.data.totalRequests || 0;
+      const apiData = response.data.data.forms || response.data.data.requests || response.data.data;
+      const totalCount = response.data.data.totalForms || response.data.data.totalRequests || 0;
 
       const transformedData = apiData.map((item) => ({
         id: item._id,
         _id: item._id,
         requestNo: item.requestNo,
         requestedDate: item.requestedDate || item.createdAt, // Use createdAt if requestedDate is not available
-        documentNo: item.documentNo || "docu", // Provide default value
-        challanNo: item.challanNo || "N/A", // Provide default value
-        transactionType: item.transactionType || "N/A", // Provide default value
-        transactionDate: item.transactionDate || item.createdAt, // Use createdAt if transactionDate is not available
-        transactionAmount: item.transactionAmount || 0, // Provide default value
+        documentNo: item.documentNo, // Use actual API field
+        challanNo: item.challanNo, // Use actual API field
+        transactionType: item.typeOfTransaction, // Map to correct API field name
+        transactionDate: item.transactionDate, // Use actual API field
+        transactionAmount: item.transactionAmount, // Use actual API field
         status: item.status,
         company: item.company,
-        desc: item.desc || "N/A", // Provide default value
+        desc: item.description || "N/A", // Use description field from API
         currentStep: item.currentStep,
         assignedTo: item.assignedTo,
         steps: item.steps,
