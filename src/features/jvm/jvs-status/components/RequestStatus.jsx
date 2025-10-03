@@ -92,83 +92,180 @@ export default function RequestStatus({
 
   // Map steps array from the new API response structure
   const renderSteps = (data) => {
-    if (!data || !Array.isArray(data.steps)) {
-      return (
-        <tr>
-          <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
-            No steps data available
-          </td>
-        </tr>
-      );
+    // Add requester step if formId is present
+    const requesterStep = data?.requesterId
+      ? {
+          username:
+            ` ${data?.requesterId?.username} (${data?.requesterId?.email}) ` ||
+            ` ${data?.requesterId?.name} (${data?.requesterId?.email}) ` ||
+            "-",
+          status: "Raised",
+          comment: "-",
+          created: data?.steps[0].createdAt,
+          updatedAt: data?.steps[0].createdAt,
+        }
+      : null;
+
+    let stepsArr = [];
+    if (Array.isArray(data?.steps)) {
+      stepsArr = data.steps.map((step, idx) => {
+        const displayName = step.approverId?.username || "-";
+        const displayEmail = step.approverId?.email || "-";
+        const displayStatus = step.status || "-";
+        const displayComment = step.comment || "-";
+        return {
+          key: `step-${idx}`,
+          assignedTo: `${displayName} (${displayEmail})`,
+          assignedOn: step.created ? fDateTime(step.created) : "N/A",
+          actionedOn:
+            step.updatedAt && displayStatus !== "Pending"
+              ? fDateTime(step.updatedAt)
+              : "N/A",
+          status: displayStatus,
+          comment: displayComment,
+        };
+      });
     }
+    // Compose final steps array
+    const allSteps = [
+      requesterStep && {
+        key: "requester",
+        assignedTo: requesterStep.username,
+        assignedOn: requesterStep.created
+          ? fDateTime(requesterStep.created)
+          : "N/A",
+        actionedOn: requesterStep.updatedAt
+          ? fDateTime(requesterStep.updatedAt)
+          : "N/A",
+        status: requesterStep.status,
+        comment: requesterStep.comment,
+      },
+      ...stepsArr,
+    ].filter(Boolean);
 
-    return data.steps.map((step, idx) => {
-      const displayStatus = step.status || "-";
-      const displayComment = step.comment || "-";
-      const assignedOn = step.created ? fDateTime(step.created) : "-";
-      const actionedOn =
-        step.updatedAt && displayStatus !== "Pending"
-          ? fDateTime(step.updatedAt)
-          : "-";
-
-      return (
-        <tr style={{ borderBottom: "1px solid #aeaeae" }} key={`step-${idx}`}>
-          <td
-            style={{
-              padding: "6px",
-              textAlign: "center",
-              fontSize: "0.875rem",
-            }}
-          >
-            {step.approverId
-              ? `${step.approverId.username} (${step.approverId.email})`
-              : "-"}
+    if (allSteps.length > 0) {
+      return allSteps.map((step, idx) => (
+        <tr style={{ borderBottom: "1px solid #aeaeae" }} key={step.key || idx}>
+          <td style={{ padding: "8px", textAlign: "center" }}>
+            {step.assignedTo}
+          </td>
+          <td style={{ padding: "8px", textAlign: "center" }}>
+            {step.assignedOn}
+          </td>
+          <td style={{ padding: "8px", textAlign: "center" }}>
+            {step.actionedOn}
           </td>
           <td
             style={{
-              padding: "6px",
+              padding: "8px",
               textAlign: "center",
-              fontSize: "0.875rem",
+              ...getStatusStyle(step.status),
             }}
           >
-            {assignedOn}
+            {formatStatus(step.status)}
           </td>
           <td
             style={{
-              padding: "6px",
-              textAlign: "center",
-              fontSize: "0.875rem",
-            }}
-          >
-            {actionedOn}
-          </td>
-          <td
-            style={{
-              padding: "6px",
-              textAlign: "center",
-              fontSize: "0.875rem",
-              ...getStatusStyle(displayStatus),
-            }}
-          >
-            {formatStatus(displayStatus)}
-          </td>
-          <td
-            style={{
-              padding: "6px",
+              padding: "8px",
               textAlign: "center",
               maxWidth: "30dvw",
               overflow: "hidden",
               whiteSpace: "nowrap",
               textOverflow: "ellipsis",
-              fontSize: "0.875rem",
             }}
-            title={displayComment}
+            title={step.comment}
           >
-            {displayComment}
+            {step.comment}
           </td>
         </tr>
-      );
-    });
+      ));
+    }
+    // fallback to old logic if steps is not present
+    return Object.keys(data)
+      .filter((key) => key.startsWith("step") && data[key]?.length > 0)
+      .sort(
+        (a, b) =>
+          parseInt(a.replace("step", ""), 10) -
+          parseInt(b.replace("step", ""), 10)
+      )
+      .map((stepKey) => {
+        const stepDataArray = data[stepKey];
+
+        const firstApproved = stepDataArray.find(
+          (item) => item.status === "Approved"
+        );
+        const firstDeclined = stepDataArray.find(
+          (item) => item.status === "Declined"
+        );
+        const firstPending = stepDataArray.find(
+          (item) => item.status === "Pending"
+        );
+
+        const allPendingEmails = stepDataArray
+          .filter((item) => item.status === "Pending")
+          .map((item) => <div key={item.email}>{item.email}</div>);
+
+        const displayStatus = firstApproved
+          ? firstApproved.status
+          : firstDeclined
+          ? firstDeclined.status
+          : "Pending";
+
+        const displayEmail = firstApproved
+          ? firstApproved.email
+          : firstDeclined
+          ? firstDeclined.email
+          : allPendingEmails;
+
+        const displayComment =
+          firstApproved?.comment || firstDeclined?.comment || "N/A";
+
+        return (
+          <tr style={{ borderBottom: "1px solid #aeaeae" }} key={stepKey}>
+            <td style={{ padding: "8px", textAlign: "center" }}>
+              {displayEmail}
+            </td>
+            <td style={{ padding: "8px", textAlign: "center" }}>
+              {firstApproved?.createdAt ||
+              firstDeclined?.createdAt ||
+              firstPending?.createdAt
+                ? fDate(
+                    firstApproved?.createdAt ||
+                      firstDeclined?.createdAt ||
+                      firstPending?.createdAt
+                  )
+                : "N/A"}
+            </td>
+            <td style={{ padding: "8px", textAlign: "center" }}>
+              {displayStatus === "Pending"
+                ? "N/A"
+                : fDate(firstApproved?.updatedAt || firstDeclined?.updatedAt)}
+            </td>
+            <td
+              style={{
+                padding: "8px",
+                textAlign: "center",
+                ...getStatusStyle(displayStatus),
+              }}
+            >
+              {formatStatus(displayStatus)}
+            </td>
+            <td
+              style={{
+                padding: "8px",
+                textAlign: "center",
+                maxWidth: "30dvw",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              }}
+              title={displayComment}
+            >
+              {displayComment}
+            </td>
+          </tr>
+        );
+      });
   };
 
   return (
