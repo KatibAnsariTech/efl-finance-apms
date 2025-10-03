@@ -151,12 +151,9 @@ export default function RaiseRequest() {
         icegateAckNo: entry.icegateAckNo,
       }));
 
-      const requestBody = {
-        customDutyEntries,
-      };
 
       // Call the custom duty API endpoint
-      const response = await userRequest.post(`/custom/createRequest`, requestBody);
+      const response = await userRequest.post(`/custom/createRequest`, customDutyEntries);
 
       swal(
         "Success!",
