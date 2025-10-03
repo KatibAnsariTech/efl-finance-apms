@@ -38,27 +38,36 @@ export default function RaiseRequest() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isAfter3PM, setIsAfter3PM] = useState(false);
+  const [companies, setCompanies] = useState([]);
 
   const checkTimeRestriction = useCallback(() => {
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentTime = currentHour * 60 + currentMinute;
-    
+
     // Restriction starts at 2:59:59 PM (14:59) and ends at 11:59:59 PM (23:59)
     const restrictionStartTime = 14 * 60 + 59; // 2:59 PM = 899 minutes
-    const restrictionEndTime = 23 * 60 + 59;   // 11:59 PM = 1439 minutes
-    
-    return currentTime >= restrictionStartTime && currentTime <= restrictionEndTime;
+    const restrictionEndTime = 23 * 60 + 59; // 11:59 PM = 1439 minutes
+
+    return (
+      currentTime >= restrictionStartTime && currentTime <= restrictionEndTime
+    );
   }, []);
 
-  const companies = [
-    { id: 1, name: "EFL" },
-    { id: 2, name: "Eureka Forbes" },
-    { id: 3, name: "Eureka Industries" },
-  ];
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await userRequest.get("/custom/getCompanies");
+        setCompanies(response.data.data.companies); // Corrected to access data.data.companies
+      } catch (error) {
+        console.error("Failed to fetch companies:", error);
+        showErrorMessage(error, "Failed to fetch companies", swal);
+      }
+    };
 
-  const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
+    fetchCompanies();
+  }, []);
 
   useEffect(() => {
     setIsAfter3PM(checkTimeRestriction());
@@ -93,11 +102,19 @@ export default function RaiseRequest() {
   };
 
   const handleSubmitRequest = async () => {
-    if (isAfter3PM) {
+    // if (isAfter3PM) {
+    //   swal(
+    //     "Time Restriction",
+    //     "Cannot generate requests after 3:00 PM. Please try again tomorrow.",
+    //     "warning"
+    //   );
+    //   return;
+    // }
+    if (!selectedCompany) {
       swal(
-        "Time Restriction",
-        "Cannot generate requests after 3:00 PM. Please try again tomorrow.",
-        "warning"
+        "Company Selection Required",
+        "Please select a company before submitting the request.",
+        "error"
       );
       return;
     }
@@ -123,14 +140,14 @@ export default function RaiseRequest() {
     try {
       setSubmitting(true);
       const customDutyEntries = data.map((entry) => ({
-        srNo: entry.srNo?.toString(),
+        typeOfTransaction: entry.typeOfTransaction,
+        transactionDate: entry.transactionDate,
+        transactionAmount: parseFloat(entry.transactionAmount),
+        company: selectedCompany.name,
         challanNo: entry.challanNo,
         documentNo: entry.documentNo,
-        transactionDate: entry.transactionDate,
         referenceId: entry.referenceId,
         description: entry.description,
-        typeOfTransaction: entry.typeOfTransaction,
-        transactionAmount: parseFloat(entry.transactionAmount),
         icegateAckNo: entry.icegateAckNo,
       }));
 
@@ -139,10 +156,7 @@ export default function RaiseRequest() {
       };
 
       // Call the custom duty API endpoint
-      const response = await userRequest.post(
-        `${BASE_URL}/createCustomDuty`,
-        requestBody
-      );
+      const response = await userRequest.post(`/custom/createRequest`, requestBody);
 
       swal(
         "Success!",
@@ -371,17 +385,26 @@ export default function RaiseRequest() {
               variant="text"
               size="small"
               onClick={() => {
-                if (isAfter3PM) {
+                if (!selectedCompany) {
                   swal(
-                    "Time Restriction",
-                    "Cannot upload files after 3:00 PM. Please try again tomorrow.",
+                    "Company Selection Required",
+                    "Please select a company before uploading files.",
                     "warning"
                   );
                   return;
                 }
+                // if (isAfter3PM) {
+                //   swal(
+                //     "Time Restriction",
+                //     "Cannot upload files after 3:00 PM. Please try again tomorrow.",
+                //     "warning"
+                //   );
+                //   return;
+                // }
                 setUploadModalOpen(true);
               }}
-              disabled={isAfter3PM}
+              // disabled={!selectedCompany || isAfter3PM}
+              disabled={!selectedCompany}
               sx={{
                 fontSize: "0.875rem",
                 color: isAfter3PM ? "red" : "primary.main",
@@ -525,7 +548,7 @@ export default function RaiseRequest() {
               variant="contained"
               color="primary"
               onClick={handleSubmitRequest}
-              disabled={data.length === 0 || isAfter3PM || submitting}
+              // disabled={data.length === 0 || isAfter3PM || submitting}
               sx={{
                 px: { xs: 2, sm: 3 },
                 py: { xs: 1.5, sm: 1 },
