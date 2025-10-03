@@ -39,7 +39,6 @@ export default function MyRequests() {
   const [endDate, setEndDate] = useState();
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
-  const [formsData, setFormsData] = useState([]); // Removed any mock data initialization
 
   // Status color mapping
   const getStatusColor = (status) => {
@@ -91,90 +90,41 @@ export default function MyRequests() {
   const getData = async () => {
     try {
       setLoading(true);
-      // Generate dummy data for demonstration
-      const generateDummyData = (startId, count) => {
-        const statuses = ["Pending", "Approved", "Rejected"];
-        const descriptions = [
-          "Duty Payment",
-          "Custom Duty Payment",
-          "Import Duty",
-          "Export Duty Refund",
-          "Additional Duty",
-          "Countervailing Duty",
-          "Anti-dumping Duty",
-          "Safeguard Duty",
-        ];
-        const transactionTypes = ["Debit", "Credit"];
+      
+      // Build query parameters for pagination
+      const queryParams = new URLSearchParams({
+        page: (page + 1).toString(), // API expects 1-based page numbers
+        limit: rowsPerPage.toString(),
+        action: 'all'
+      });
 
-        return Array.from({ length: count }, (_, index) => {
-          const id = startId + index;
-          const status = statuses[Math.floor(Math.random() * statuses.length)];
-          const description =
-            descriptions[Math.floor(Math.random() * descriptions.length)];
-          const typeOfTransaction =
-            transactionTypes[
-              Math.floor(Math.random() * transactionTypes.length)
-            ];
-          const amount = Math.floor(Math.random() * 500000) + 50000;
+      // Add search parameter if provided
+      if (debouncedSearch) {
+        queryParams.append('search', debouncedSearch);
+      }
 
-          return {
-            id: id.toString(),
-            _id: id.toString(),
-            requestNo: `CDR-2024-${String(id).padStart(3, "0")}`,
-            requestedDate: new Date(
-              2024,
-              0,
-              15 + Math.floor(Math.random() * 30),
-              Math.floor(Math.random() * 24),
-              Math.floor(Math.random() * 60)
-            ).toISOString(),
-            boeNumber: `BOE-2024-${String(id).padStart(3, "0")}`,
-            srNo: id.toString(),
-            challanNo: `2056627${String(67 + id).padStart(3, "0")}`,
-            transactionDate: new Date(
-              2024,
-              0,
-              15 + Math.floor(Math.random() * 30),
-              Math.floor(Math.random() * 24),
-              Math.floor(Math.random() * 60)
-            ).toISOString(),
-            referenceId: `007000BEINDEL41457${String(50 + id).padStart(
-              3,
-              "0"
-            )}`,
-            description,
-            typeOfTransaction,
-            transactionAmount: amount,
-            icegateAckNo: `IG1082920250645${String(509 + id).padStart(3, "0")}`,
-            status,
-            createdAt: new Date(
-              2024,
-              0,
-              15 + Math.floor(Math.random() * 30),
-              Math.floor(Math.random() * 24),
-              Math.floor(Math.random() * 60)
-            ).toISOString(),
-          };
-        });
-      };
+      // Add other filter parameters if provided
+      if (region) queryParams.append('region', region);
+      if (status) queryParams.append('status', status);
+      if (refund) queryParams.append('refund', refund);
+      if (startDate) queryParams.append('startDate', startDate);
+      if (endDate) queryParams.append('endDate', endDate);
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Generate 50 total records for pagination demo
-      const allData = generateDummyData(1, 50);
-      const totalRecords = allData.length;
-      setTotalCount(totalRecords);
-
-      // Get paginated data
-      const startIndex = page * rowsPerPage;
-      const endIndex = startIndex + rowsPerPage;
-      const paginatedData = allData.slice(startIndex, endIndex);
-
-      setData(paginatedData);
+      const response = await userRequest.get(`/custom/getForms?${queryParams.toString()}`);
+      
+      if (response.data && response.data.data) {
+        const { forms, totalForms, page: currentPage, limit } = response.data.data;
+        
+        setData(forms || []);
+        setTotalCount(totalForms || 0);
+      } else {
+        setData([]);
+        setTotalCount(0);
+      }
     } catch (error) {
       console.error("Error fetching requests:", error);
       setData([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -275,7 +225,7 @@ export default function MyRequests() {
       width: 150,
       renderCell: (params) => {
         const company = params.value;
-        return company ? company.name : "N/A"; // Assuming company is an object with a `name` field
+        return company || "N/A";
       },
     },
     {
@@ -293,19 +243,6 @@ export default function MyRequests() {
     },
   ];
 
-  useEffect(() => {
-    const fetchFormsData = async () => {
-      try {
-        const response = await userRequest.get("/custom/getForms?action=all");
-        setFormsData(response.data.data); // Assuming the data is nested under data.data
-      } catch (error) {
-        console.error("Failed to fetch forms data:", error);
-        showErrorMessage(error, "Failed to fetch forms data", swal);
-      }
-    };
-
-    fetchFormsData();
-  }, []);
 
   return (
     <>
@@ -373,13 +310,12 @@ export default function MyRequests() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={formsData.forms || []} 
+              rows={data || []} 
               columns={columns}
               getRowId={(row) => row._id}
               autoHeight
               disableSelectionOnClick
-              pageSize={10}
-              rowsPerPageOptions={[10]}
+              loading={loading}
               pagination
               paginationMode="server"
               rowCount={totalCount}
