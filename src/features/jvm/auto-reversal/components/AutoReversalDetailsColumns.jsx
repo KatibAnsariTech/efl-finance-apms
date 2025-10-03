@@ -4,20 +4,20 @@ import { fDateTime } from "src/utils/format-time";
 
 export const AutoReversalDetailsColumns = () => {
   const columns = [
-    {
-      field: "lineNumber",
-      headerName: "#",
-      flex: 0.5,
-      minWidth: 80,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => params.value || "-",
-    },
+    // {
+    //   field: "lineNumber",
+    //   headerName: "#",
+    //   flex: 0.5,
+    //   minWidth: 80,
+    //   align: "center",
+    //   headerAlign: "center",
+    //   renderCell: (params) => params.value || "-",
+    // },
     {
       field: "itemId",
       headerName: "Request No",
       flex: 1,
-      minWidth: 120,
+      minWidth: 160,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => params.value || params.row._id || "-",
