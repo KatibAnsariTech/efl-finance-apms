@@ -24,7 +24,7 @@ export default function JVMDashboard() {
 
   const getData = async () => {
     try {
-      const response = await userRequest.get('/admin/getFormStatistics');
+      const response = await userRequest.get('/jvm/getFormStatistics');
       setCardData(response.data?.data);
     } catch (error) {
       console.log('error:', error);
@@ -39,7 +39,7 @@ export default function JVMDashboard() {
   const getChartData = async () => {
     try {
       setLoading(true);
-      const response = await userRequest.get('/admin/getFormBarChartData', {
+      const response = await userRequest.get('/jvm/getFormBarChartData', {
         params: { period: filter },
       });
       setChartData(response.data?.data?.reverse());
@@ -58,7 +58,7 @@ export default function JVMDashboard() {
   const getPieChartData = async () => {
     try {
       setPieLoading(true);
-      const response = await userRequest.get('/admin/getRegionPieChartData', {
+      const response = await userRequest.get('/jvm/getAutoReversalPieChart', {
         params: { period: pieFilter },
       });
       setPieChartData(response.data?.data);
@@ -237,7 +237,7 @@ export default function JVMDashboard() {
         </Grid>
 
         {/* Analytics Components Section */}
-        <Grid container spacing={3} sx={{ mt: 2 }}>
+        {/* <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsConversionRates
               title="JVM Processing Rates"
@@ -280,13 +280,13 @@ export default function JVMDashboard() {
               }}
             />
           </Grid>
-        </Grid>
+        </Grid> */}
 
-        <Grid container spacing={3} >
+        {/* <Grid container spacing={3} >
           <Grid xs={12}>
             <ReportTable style={{ height: '100%' }}/>
           </Grid>
-        </Grid>
+        </Grid> */}
       </Container>
     </>
   );
