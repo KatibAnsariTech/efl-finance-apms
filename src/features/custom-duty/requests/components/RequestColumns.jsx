@@ -81,14 +81,14 @@ export const RequestColumns = ({
       renderCell: (params) => fDateTime(params.value),
     },
     {
-      field: "boeNumber",
-      headerName: "BOE number",
+      field: "documentNo",
+      headerName: "Document No",
       flex: 1,
       minWidth: 120,
     },
     {
-      field: "challanNumber",
-      headerName: "Challan number",
+      field: "challanNo",
+      headerName: "Challan No",
       flex: 1,
       minWidth: 140,
     },
@@ -125,7 +125,7 @@ export const RequestColumns = ({
       minWidth: 100,
     },
     {
-      field: "description",
+      field: "desc",
       headerName: "Description",
       flex: 1,
       minWidth: 150,

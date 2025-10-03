@@ -92,8 +92,8 @@ export default function Requests() {
 
       const apiEndpoint =
         selectedTab === "pendingWithMe"
-          ? "/custom/getRequestsForApprover"
-          : "/custom/getPendingRequestForms";
+          ? "/custom/getPendingRequestForms"
+          : "/custom/getRequestsForApprover";
 
       const response = await userRequest.get(apiEndpoint, {
         params: {
@@ -102,21 +102,28 @@ export default function Requests() {
         },
       });
 
-      const apiData = response.data.data;
-      const totalCount = response.data.pagination?.totalCount || 0;
+      const apiData = response.data.data.requests || response.data.data;
+      const totalCount = response.data.data.totalRequests || 0;
 
       const transformedData = apiData.map((item) => ({
-        id: item.id,
+        id: item._id,
+        _id: item._id,
         requestNo: item.requestNo,
-        requestedDate: item.requestedDate,
-        boeNumber: item.boeNumber,
-        challanNumber: item.challanNumber,
-        transactionType: item.transactionType,
-        transactionDate: item.transactionDate,
-        transactionAmount: item.transactionAmount,
+        requestedDate: item.requestedDate || item.createdAt, // Use createdAt if requestedDate is not available
+        documentNo: item.documentNo || "docu", // Provide default value
+        challanNo: item.challanNo || "N/A", // Provide default value
+        transactionType: item.transactionType || "N/A", // Provide default value
+        transactionDate: item.transactionDate || item.createdAt, // Use createdAt if transactionDate is not available
+        transactionAmount: item.transactionAmount || 0, // Provide default value
         status: item.status,
         company: item.company,
-        description: item.description,
+        desc: item.desc || "N/A", // Provide default value
+        currentStep: item.currentStep,
+        assignedTo: item.assignedTo,
+        steps: item.steps,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        finalRequestNo: item.finalRequestNo || item.requestNo, // Use requestNo as fallback
       }));
 
       if (isLoadMore) {
@@ -141,47 +148,45 @@ export default function Requests() {
     try {
       setSelectAllLoading(true);
 
-      let allApiData;
+      const apiEndpoint =
+        selectedTab === "pendingWithMe"
+          ? "/custom/getPendingRequestForms"
+          : "/custom/getRequestsForApprover";
 
-      try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: 1,
-              limit: 1000,
-            },
-          }
-        );
-        allApiData = response.data;
-      } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=1&limit=1000`
-        );
-        const fetchData = await fetchResponse.json();
-        allApiData = fetchData;
-      }
+      const response = await userRequest.get(apiEndpoint, {
+        params: {
+          page: 1,
+          limit: 1000, // Get all data for select all functionality
+        },
+      });
 
-      let transformedData;
+      const apiData = response.data.data.requests || response.data.data;
+      const totalCount = response.data.data.totalRequests || 0;
 
-      transformedData = allApiData.map((item, index) => ({
-        id: item.id,
-        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
-        transactionType: item.transactionType,
-        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-        transactionAmount: parseFloat(item.transactionAmount),
+      const transformedData = apiData.map((item) => ({
+        id: item._id,
+        _id: item._id,
+        requestNo: item.requestNo,
+        requestedDate: item.requestedDate || item.createdAt, // Use createdAt if requestedDate is not available
+        documentNo: item.documentNo || "docu", // Provide default value
+        challanNo: item.challanNo || "N/A", // Provide default value
+        transactionType: item.transactionType || "N/A", // Provide default value
+        transactionDate: item.transactionDate || item.createdAt, // Use createdAt if transactionDate is not available
+        transactionAmount: item.transactionAmount || 0, // Provide default value
         status: item.status,
         company: item.company,
-        description: item.description,
-        finalRequestNo: `FREQ${String(item.requestNo).padStart(6, "0")}`,
+        desc: item.desc || "N/A", // Provide default value
+        currentStep: item.currentStep,
+        assignedTo: item.assignedTo,
+        steps: item.steps,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        finalRequestNo: item.finalRequestNo || item.requestNo, // Use requestNo as fallback
       }));
 
       setAllData(transformedData);
       setData(transformedData);
-      setTotalCount(transformedData.length);
+      setTotalCount(totalCount);
       setHasMore(false);
 
       if (shouldSelectAll) {
@@ -189,6 +194,7 @@ export default function Requests() {
         setIsSelectAll(true);
       }
     } catch (err) {
+      console.error("Error fetching all data:", err);
       setAllData([]);
       setData([]);
       setTotalCount(0);
