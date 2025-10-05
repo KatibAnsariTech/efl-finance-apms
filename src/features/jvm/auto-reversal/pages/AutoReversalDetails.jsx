@@ -13,6 +13,7 @@ import { AutoReversalForm } from "../components/AutoReversalDetail";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { AutoReversalDetailsColumns } from "../components/AutoReversalDetailsColumns";
+import ColorIndicators from "../components/ColorIndicators";
 
 export default function AutoReversalDetails() {
   const router = useRouter();
@@ -222,6 +223,12 @@ export default function AutoReversalDetails() {
                 setRowsPerPage(newModel.pageSize);
               }}
               pageSizeOptions={[5, 10, 25, 50]}
+              getRowClassName={(params) => {
+                const status = params.row.status?.toLowerCase();
+                if (status === "active") return "row-active";
+                if (status === "completed") return "row-completed";
+                return "";
+              }}
               autoHeight
               disableRowSelectionOnClick
               sx={{
@@ -260,8 +267,30 @@ export default function AutoReversalDetails() {
                   backgroundColor: (theme) => theme.palette.action.hover,
                   opacity: 0.8,
                 },
+                "& .row-active": {
+                  backgroundColor: "#bbdefb !important",
+                },
+                "& .row-completed": {
+                  backgroundColor: "#baf5c2 !important",
+                },
               }}
             />
+          </Box>
+          <Box
+            sx={{
+              position: "relative",
+              height: "52px", // Match DataGrid footer height
+              marginTop: "-52px", // Overlap with DataGrid footer
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "16px",
+              zIndex: 0, // Lower z-index so pagination is clickable
+              pointerEvents: "none", // Allow clicks to pass through
+            }}
+          >
+            <Box sx={{ pointerEvents: "auto" }}>
+              <ColorIndicators />
+            </Box>
           </Box>
         </Card>
       </Container>
