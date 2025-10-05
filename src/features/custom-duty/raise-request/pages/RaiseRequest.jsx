@@ -59,7 +59,7 @@ export default function RaiseRequest() {
     const fetchCompanies = async () => {
       try {
         const response = await userRequest.get("/custom/getCompanies");
-        setCompanies(response.data.data.companies); // Corrected to access data.data.companies
+        setCompanies(response.data.data.companies); 
       } catch (error) {
         console.error("Failed to fetch companies:", error);
         showErrorMessage(error, "Failed to fetch companies", swal);
@@ -77,26 +77,13 @@ export default function RaiseRequest() {
     return () => clearInterval(interval);
   }, [checkTimeRestriction]);
 
-  // Add new custom duty entry to local state
-  const addCustomDutyEntry = (newEntry) => {
-    const entryWithId = {
-      ...newEntry,
-      _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      srNo: newEntry.srNo || "",
-      createdAt: new Date().toISOString(),
-    };
-    setData((prev) => [...prev, entryWithId]);
-  };
-
   const handleUploadSuccess = (uploadedEntries) => {
-    // Add _id to each uploaded entry and replace existing data
-    const entriesWithId = uploadedEntries.map((entry, index) => ({
+    // Add unique IDs to each entry for DataGrid
+    const entriesWithIds = uploadedEntries.map((entry, index) => ({
       ...entry,
-      _id: `uploaded_${Date.now()}_${index}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`,
+      id: `entry_${Date.now()}_${index}`,
     }));
-    setData(entriesWithId);
+    setData(entriesWithIds);
     setUploadModalOpen(false);
     swal("Success!", "Custom duty entries uploaded successfully!", "success");
   };
@@ -171,18 +158,7 @@ export default function RaiseRequest() {
     }
   };
 
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      Draft: { color: "default", label: "Draft" },
-      Submitted: { color: "info", label: "Submitted" },
-      Approved: { color: "success", label: "Approved" },
-      Rejected: { color: "error", label: "Rejected" },
-      Pending: { color: "warning", label: "Pending" },
-    };
 
-    const config = statusConfig[status] || { color: "default", label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
-  };
 
   const columns = [
     {
@@ -256,14 +232,6 @@ export default function RaiseRequest() {
       headerName: "Type of Transaction",
       width: 180,
       resizable: true,
-      // renderCell: (params) => (
-      //   <Chip
-      //     label={params.value}
-      //     color={params.value === "Debit" ? "error" : "success"}
-      //     size="small"
-      //     variant="outlined"
-      //   />
-      // ),
     },
     {
       field: "transactionAmount",
@@ -390,18 +358,17 @@ export default function RaiseRequest() {
                   );
                   return;
                 }
-                // if (isAfter3PM) {
-                //   swal(
-                //     "Time Restriction",
-                //     "Cannot upload files after 3:00 PM. Please try again tomorrow.",
-                //     "warning"
-                //   );
-                //   return;
-                // }
+                if (isAfter3PM) {
+                  swal(
+                    "Time Restriction",
+                    "Cannot upload files after 3:00 PM. Please try again tomorrow.",
+                    "warning"
+                  );
+                  return;
+                }
                 setUploadModalOpen(true);
               }}
-              // disabled={!selectedCompany || isAfter3PM}
-              disabled={!selectedCompany}
+              disabled={!selectedCompany || isAfter3PM}
               sx={{
                 fontSize: "0.875rem",
                 color: isAfter3PM ? "red" : "primary.main",
@@ -468,16 +435,21 @@ export default function RaiseRequest() {
                 <DataGrid
                   rows={data}
                   columns={columns}
-                  getRowId={(row) =>
-                    row._id || row.srNo || `row-${Math.random()}`
-                  }
+                  getRowId={(row) => row.id}
                   loading={submitting}
-                  pagination={false}
+                  pagination
+                  paginationMode="client"
+                  initialState={{
+                    pagination: {
+                      paginationModel: { pageSize: 10 },
+                    },
+                  }}
+                  pageSizeOptions={[5, 10, 25, 50]}
+                  hideFooter={false}
                   disableRowSelectionOnClick
                   disableRowClick
                   columnResize
                   disableColumnResize={false}
-                  hideFooter
                   autoHeight={false}
                   columnResizeMode="onResize"
                   editMode="cell"
@@ -545,7 +517,7 @@ export default function RaiseRequest() {
               variant="contained"
               color="primary"
               onClick={handleSubmitRequest}
-              // disabled={data.length === 0 || isAfter3PM || submitting}
+              disabled={data.length === 0 || isAfter3PM || submitting}
               sx={{
                 px: { xs: 2, sm: 3 },
                 py: { xs: 1.5, sm: 1 },
