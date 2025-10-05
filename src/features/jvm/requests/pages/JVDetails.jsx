@@ -18,6 +18,7 @@ import { RequestColumns } from "../components/RequestColumns";
 import { JVDetailsColumns } from "../components/JVDetailsColumns";
 import RequestStatus from "../components/RequestStatus";
 import JVCurrentStatus from "../components/JVCurrentStatus";
+import ColorIndicators from "../components/ColorIndicators";
 import { Helmet } from "react-helmet-async";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -238,6 +239,16 @@ export default function JVDetails() {
                 handleRowsPerPageChange(newModel.pageSize);
               }}
               pageSizeOptions={[5, 10, 25, 50]}
+              getRowClassName={(params) => {
+                const status = params.row.status?.toLowerCase();
+                if (status === "pending") return "row-pending";
+                if (status === "rejected") return "row-rejected";
+                if (status === "approved") return "row-approved";
+                if (status === "declined") return "row-declined";
+                if (status === "draft") return "row-draft";
+                if (status === "submitted") return "row-submitted";
+                return "";
+              }}
               columnResizeMode="onResize"
               disableColumnResize={false}
               disableColumnSort={false}
@@ -271,8 +282,42 @@ export default function JVDetails() {
                 "& .MuiDataGrid-row:hover": {
                   backgroundColor: "rgba(0, 0, 0, 0.04)",
                 },
+                "& .row-pending": {
+                  backgroundColor: "#f4f5ba !important",
+                },
+                "& .row-rejected": {
+                  backgroundColor: "#e6b2aa !important",
+                },
+                "& .row-approved": {
+                  backgroundColor: "#baf5c2 !important",
+                },
+                "& .row-declined": {
+                  backgroundColor: "#e6b2aa !important",
+                },
+                "& .row-draft": {
+                  backgroundColor: "#e0e0e0 !important",
+                },
+                "& .row-submitted": {
+                  backgroundColor: "#bbdefb !important",
+                },
               }}
             />
+          </Box>
+          <Box
+            sx={{
+              position: "relative",
+              height: "52px", // Match DataGrid footer height
+              marginTop: "-52px", // Overlap with DataGrid footer
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "16px",
+              zIndex: 0, // Lower z-index so pagination is clickable
+              pointerEvents: "none", // Allow clicks to pass through
+            }}
+          >
+            <Box sx={{ pointerEvents: "auto" }}>
+              <ColorIndicators />
+            </Box>
           </Box>
 
           {/* Approval History */}
