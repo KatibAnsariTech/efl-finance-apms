@@ -42,12 +42,9 @@ export default function Requests() {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [selectAllLoading, setSelectAllLoading] = useState(false);
   const [allData, setAllData] = useState([]);
   const [isSelectAll, setIsSelectAll] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
@@ -79,13 +76,9 @@ export default function Requests() {
     }
   };
 
-  const getData = async (pageNum = 1, isLoadMore = false) => {
+  const getData = async (pageNum = 1) => {
     try {
-      if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
 
       const page = pageNum;
       const limit = rowsPerPage;
@@ -126,22 +119,13 @@ export default function Requests() {
         finalRequestNo: item.finalRequestNo, // Use finalRequestNo from API
       }));
 
-      
-      if (isLoadMore) {
-        setData((prev) => [...prev, ...transformedData]);
-      } else {
-        setData(transformedData);
-      }
-
+      setData(transformedData);
       setTotalCount(totalCount);
-      setHasMore(page * limit < totalCount);
     } catch (err) {
       setData([]);
       setTotalCount(0);
-      setHasMore(false);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
@@ -188,7 +172,6 @@ export default function Requests() {
       setAllData(transformedData);
       setData(transformedData);
       setTotalCount(totalCount);
-      setHasMore(false);
 
       if (shouldSelectAll) {
         setSelectedRows(transformedData.map((item) => item.id));
@@ -199,19 +182,17 @@ export default function Requests() {
       setAllData([]);
       setData([]);
       setTotalCount(0);
-      setHasMore(false);
     } finally {
       setSelectAllLoading(false);
     }
   };
 
   useEffect(() => {
-    setPage(1);
+    setPage(0);
     setData([]);
     setAllData([]);
     setSelectedRows([]);
     setIsSelectAll(false);
-    setIsLoadingMore(false);
     setLoading(true);
     getData(1);
   }, [selectedTab]);
@@ -231,61 +212,16 @@ export default function Requests() {
     }
   };
 
-  const handleLoadMore = useCallback(() => {
-    if (hasMore && !loadingMore && !loading && !isLoadingMore) {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      setPage(nextPage);
-      getData(nextPage, true).finally(() => {
-        setIsLoadingMore(false);
-      });
-    }
-  }, [hasMore, loadingMore, loading, page, isLoadingMore]);
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    getData(newPage + 1); // API uses 1-based pagination
+  };
 
-  useEffect(() => {
-    const dataGrid = document.querySelector(".MuiDataGrid-root");
-    if (!dataGrid) return;
-
-    const scrollableElement = dataGrid.querySelector(
-      ".MuiDataGrid-virtualScroller"
-    );
-    if (!scrollableElement) return;
-
-    let isScrolling = false;
-    let scrollTimeout;
-
-    const handleScroll = () => {
-      if (isScrolling) return;
-
-      isScrolling = true;
-      clearTimeout(scrollTimeout);
-
-      scrollTimeout = setTimeout(() => {
-        const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
-
-        if (
-          isNearBottom &&
-          hasMore &&
-          !loadingMore &&
-          !loading &&
-          !isLoadingMore
-        ) {
-          handleLoadMore();
-        }
-
-        isScrolling = false;
-      }, 100);
-    };
-
-    scrollableElement.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
-    return () => {
-      scrollableElement.removeEventListener("scroll", handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
+  const handleRowsPerPageChange = (newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
+    getData(1);
+  };
 
   const handleSelectRow = (rowId) => {
     setSelectedRows((prev) => {
@@ -375,58 +311,22 @@ export default function Requests() {
           sx={{
             width: "100%",
             height: 300,
-            position: "relative",
           }}
         >
-          {(loading || loadingMore) && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                zIndex: 10,
-                height: "100%",
-                width: "100%",
-              }}
-            >
-              <CircularProgress size={50} thickness={4} />
-              <Typography
-                variant="h6"
-                sx={{
-                  mt: 2,
-                  color: "text.secondary",
-                  fontWeight: 500,
-                  textAlign: "center",
-                }}
-              >
-                {loading
-                  ? "Loading data..."
-                  : loadingMore
-                  ? "Loading more data..."
-                  : "Loading..."}
-              </Typography>
-            </Box>
-          )}
-
           <DataGrid
             rows={data}
             columns={columns}
-            loading={false}
+            loading={loading}
             disableRowSelectionOnClick
-            hideFooterSelectedRowCount
-            pagination={false}
-            hideFooterPagination
-            onRowsScrollEnd={handleLoadMore}
-            slots={{
-              footer: () => null,
+            pagination
+            paginationMode="server"
+            rowCount={totalCount}
+            paginationModel={{ page: page, pageSize: rowsPerPage }}
+            onPaginationModelChange={(newModel) => {
+              handlePageChange(newModel.page);
+              handleRowsPerPageChange(newModel.pageSize);
             }}
+            pageSizeOptions={[5, 10, 25, 50]}
             getRowClassName={(params) => {
               const status = params.row.status?.toLowerCase();
               if (status === "pending") return "row-pending";

@@ -36,12 +36,9 @@ export default function JVDetails() {
   const [rejectLoading, setRejectLoading] = useState(false);
   const [assigned, setAssigned] = useState(false);
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
@@ -75,13 +72,9 @@ export default function JVDetails() {
     }
   }, [requestId]);
 
-  const getFormItems = useCallback(async (pageNum = 1, isLoadMore = false) => {
+  const getFormItems = useCallback(async (pageNum = 1) => {
     try {
-      if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
 
       if (!requestId) {
         setData([]);
@@ -110,14 +103,8 @@ export default function JVDetails() {
           };
         });
 
-        if (isLoadMore) {
-          setData((prev) => [...prev, ...dataWithLineNumbers]);
-        } else {
-          setData(dataWithLineNumbers);
-        }
-        
+        setData(dataWithLineNumbers);
         setTotalCount(totalItems);
-        setHasMore(pagination.hasNextPage || false);
       } else {
         throw new Error(response.data.message || "Failed to fetch form items");
       }
@@ -126,90 +113,42 @@ export default function JVDetails() {
       showErrorMessage(err, "Failed to fetch form details", swal);
       setData([]);
       setTotalCount(0);
-      setHasMore(false);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   }, [requestId, rowsPerPage]);
 
-  const getData = useCallback(async (pageNum = 1, isLoadMore = false) => {
+  const getData = useCallback(async (pageNum = 1) => {
     // Fetch request info first (only on initial load)
-    if (!isLoadMore && pageNum === 1) {
+    if (pageNum === 1) {
       await getRequestInfo();
     }
     
     // Fetch form items
-    await getFormItems(pageNum, isLoadMore);
+    await getFormItems(pageNum);
   }, [getRequestInfo, getFormItems]);
 
   useEffect(() => {
     if (requestId) {
-      setPage(1);
+      setPage(0);
       setData([]);
       setJvData(null);
       setAssigned(false);
-      setIsLoadingMore(false);
       setLoading(true);
       getData(1);
     }
   }, [requestId]);
 
-  const handleLoadMore = useCallback(() => {
-    if (hasMore && !loadingMore && !loading && !isLoadingMore) {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      setPage(nextPage);
-      getData(nextPage, true).finally(() => {
-        setIsLoadingMore(false);
-      });
-    }
-  }, [hasMore, loadingMore, loading, page, isLoadingMore, getData]);
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    getData(newPage + 1); // API uses 1-based pagination
+  };
 
-  useEffect(() => {
-    const dataGrid = document.querySelector(".MuiDataGrid-root");
-    if (!dataGrid) return;
-
-    const scrollableElement = dataGrid.querySelector(
-      ".MuiDataGrid-virtualScroller"
-    );
-    if (!scrollableElement) return;
-
-    let isScrolling = false;
-    let scrollTimeout;
-
-    const handleScroll = () => {
-      if (isScrolling) return;
-
-      isScrolling = true;
-      clearTimeout(scrollTimeout);
-
-      scrollTimeout = setTimeout(() => {
-        const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
-
-        if (
-          isNearBottom &&
-          hasMore &&
-          !loadingMore &&
-          !loading &&
-          !isLoadingMore
-        ) {
-          handleLoadMore();
-        }
-
-        isScrolling = false;
-      }, 100);
-    };
-
-    scrollableElement.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
-    return () => {
-      scrollableElement.removeEventListener("scroll", handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
+  const handleRowsPerPageChange = (newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
+    getData(1);
+  };
 
 
   const handleRequestClick = (rowData) => {
@@ -283,62 +222,26 @@ export default function JVDetails() {
             sx={{
               width: "100%",
               height: 300,
-              position: "relative",
             }}
           >
-            {(loading || loadingMore) && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
-                  zIndex: 10,
-                  height: "100%",
-                  width: "100%",
-                }}
-              >
-                <CircularProgress size={50} thickness={4} />
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mt: 2,
-                    color: "text.secondary",
-                    fontWeight: 500,
-                    textAlign: "center",
-                  }}
-                >
-                  {loading
-                    ? "Loading data..."
-                    : loadingMore
-                    ? "Loading more data..."
-                    : "Loading..."}
-                </Typography>
-              </Box>
-            )}
-
             <DataGrid
               rows={data}
               columns={columns}
-              loading={false}
+              loading={loading}
               disableRowSelectionOnClick
-              hideFooterSelectedRowCount
-              pagination={false}
-              hideFooterPagination
-              onRowsScrollEnd={handleLoadMore}
+              pagination
+              paginationMode="server"
+              rowCount={totalCount}
+              paginationModel={{ page: page, pageSize: rowsPerPage }}
+              onPaginationModelChange={(newModel) => {
+                handlePageChange(newModel.page);
+                handleRowsPerPageChange(newModel.pageSize);
+              }}
+              pageSizeOptions={[5, 10, 25, 50]}
               columnResizeMode="onResize"
               disableColumnResize={false}
               disableColumnSort={false}
               sortModel={[{ field: 'lineNumber', sort: 'asc' }]}
-              slots={{
-                footer: () => null,
-              }}
               sx={{
                 "& .MuiDataGrid-cell": {
                   "&:focus": { outline: "none" },

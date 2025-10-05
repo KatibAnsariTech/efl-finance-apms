@@ -24,19 +24,12 @@ export default function SubmitDetail() {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-  const getData = async (pageNum = 1, isLoadMore = false) => {
+  const getData = async (pageNum = 1) => {
     try {
-      if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
 
       const page = pageNum;
       const limit = rowsPerPage;
@@ -65,8 +58,6 @@ export default function SubmitDetail() {
         totalCount = 100;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
       const transformedData = apiData.map((item, index) => ({
         id: item.id,
         requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
@@ -81,21 +72,13 @@ export default function SubmitDetail() {
         description: item.description,
       }));
 
-      if (isLoadMore) {
-        setData((prev) => [...prev, ...transformedData]);
-      } else {
-        setData(transformedData);
-      }
-
+      setData(transformedData);
       setTotalCount(totalCount);
-      setHasMore(page * limit < totalCount);
     } catch (err) {
       setData([]);
       setTotalCount(0);
-      setHasMore(false);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
@@ -117,60 +100,23 @@ export default function SubmitDetail() {
   };
 
   useEffect(() => {
-    setPage(1);
+    setPage(0);
     setData([]);
     setLoading(true);
     getSubmitRequestData();
     getData(1);
   }, [id]);
 
-  const handleLoadMore = useCallback(() => {
-    if (hasMore && !loadingMore && !loading && !isLoadingMore) {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      setPage(nextPage);
-      getData(nextPage, true).finally(() => {
-        setIsLoadingMore(false);
-      });
-    }
-  }, [hasMore, loadingMore, loading, page, isLoadingMore]);
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    getData(newPage + 1); // API uses 1-based pagination
+  };
 
-  useEffect(() => {
-    const dataGrid = document.querySelector(".MuiDataGrid-root");
-    if (!dataGrid) return;
-
-    const scrollableElement = dataGrid.querySelector(
-      ".MuiDataGrid-virtualScroller"
-    );
-    if (!scrollableElement) return;
-
-    let isScrolling = false;
-    let scrollTimeout;
-
-    const handleScroll = () => {
-      if (isScrolling) return;
-      
-      isScrolling = true;
-      clearTimeout(scrollTimeout);
-      
-      scrollTimeout = setTimeout(() => {
-        const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
-
-        if (isNearBottom && hasMore && !loadingMore && !loading && !isLoadingMore) {
-          handleLoadMore();
-        }
-        
-        isScrolling = false;
-      }, 100);
-    };
-
-    scrollableElement.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      scrollableElement.removeEventListener("scroll", handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
+  const handleRowsPerPageChange = (newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
+    getData(1);
+  };
 
   const handleRequestClick = (rowData) => {
     setSelectedRowData(rowData);
@@ -193,54 +139,22 @@ export default function SubmitDetail() {
           sx={{
             width: "100%",
             height: "calc(100vh - 160px)",
-            position: "relative",
           }}
         >
-          {(loading || loadingMore) && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                zIndex: 10,
-                height: "100%",
-                width: "100%",
-              }}
-            >
-              <CircularProgress size={50} thickness={4} />
-              <Typography
-                variant="h6"
-                sx={{
-                  mt: 2,
-                  color: "text.secondary",
-                  fontWeight: 500,
-                  textAlign: "center",
-                }}
-              >
-                {loading ? "Loading data..." : loadingMore ? "Loading more data..." : "Loading..."}
-              </Typography>
-            </Box>
-          )}
-          
           <DataGrid
             rows={data}
             columns={columns}
-            loading={false}
+            loading={loading}
             disableRowSelectionOnClick
-            hideFooterSelectedRowCount
-            pagination={false}
-            hideFooterPagination
-            onRowsScrollEnd={handleLoadMore}
-            slots={{
-              footer: () => null,
+            pagination
+            paginationMode="server"
+            rowCount={totalCount}
+            paginationModel={{ page: page, pageSize: rowsPerPage }}
+            onPaginationModelChange={(newModel) => {
+              handlePageChange(newModel.page);
+              handleRowsPerPageChange(newModel.pageSize);
             }}
+            pageSizeOptions={[5, 10, 25, 50]}
             sx={{
               "& .MuiDataGrid-cell": {
                 "&:focus": { outline: "none" },
