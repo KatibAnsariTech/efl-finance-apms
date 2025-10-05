@@ -3,7 +3,7 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 import Iconify from "src/components/iconify/iconify";
 
-export const JVStatusColumns = ({
+export const RequestedJVColumns = ({
   handleStatusClick,
   router,
   handleDelete,

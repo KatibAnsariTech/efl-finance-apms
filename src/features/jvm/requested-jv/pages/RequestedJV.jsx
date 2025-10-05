@@ -18,9 +18,9 @@ import { fDateTime } from "src/utils/format-time";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
-import { JVStatusColumns } from "../components/JVStatusColumns";
+import { RequestedJVColumns } from "../components/RequestedJVColumns";
 
-export default function JVStatus() {
+export default function RequestedJV() {
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +142,7 @@ export default function JVStatus() {
   };
 
   // Get columns from separate file
-  const columns = JVStatusColumns({ handleStatusClick, router, handleDelete });
+  const columns = RequestedJVColumns({ handleStatusClick, router, handleDelete });
 
   // Apply filtering and sorting to the data
   const dataFiltered = (() => {
@@ -177,7 +177,7 @@ export default function JVStatus() {
   return (
     <>
       <Helmet>
-        <title>JV's Status</title>
+        <title>Requested JV's</title>
       </Helmet>
 
       <Container>

@@ -27,14 +27,14 @@ const JVMPage = lazy(() => import("src/features/jvm/dashboard/pages/JVM"));
 const JVMDashboard = lazy(() =>
   import("src/features/jvm/dashboard/components/JVMDashboard")
 );
-const JVStatusPage = lazy(() =>
-  import("src/features/jvm/jvs-status/pages/JVStatus")
+const RequestedJVPage = lazy(() =>
+  import("src/features/jvm/requested-jv/pages/RequestedJV")
 );
 const InitiateJVPage = lazy(() =>
   import("src/features/jvm/initiate-jv/pages/InitiateJV")
 );
 const JVDetailPage = lazy(() =>
-  import("src/features/jvm/jvs-status/pages/JVDetails")
+  import("src/features/jvm/requested-jv/pages/JVDetails")
 );
 const AutoReversalPage = lazy(() =>
   import("src/features/jvm/auto-reversal/pages/AutoReversal")
@@ -375,7 +375,7 @@ export default function Router() {
         {
           path: "/jvm/requested-jvs",
           element: (
-            <ProtectedRoute path="/jvm/requested-jvs" element={<JVStatusPage />} />
+            <ProtectedRoute path="/jvm/requested-jvs" element={<RequestedJVPage />} />
           ),
         },
         {
