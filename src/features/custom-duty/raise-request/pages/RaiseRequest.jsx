@@ -277,8 +277,8 @@ export default function RaiseRequest() {
                   backgroundColor: "transparent",
                 },
                 "&.Mui-disabled": {
-                  color: "red",
-                  opacity: 0.8,
+                  color: isAfter3PM ? "red" : "rgba(0, 0, 0, 0.26)",
+                  opacity: isAfter3PM ? 0.8 : 0.6,
                 },
               }}
             >
