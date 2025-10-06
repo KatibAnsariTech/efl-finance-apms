@@ -8,23 +8,12 @@ import {
   Button,
   Card,
   CardContent,
-  Grid,
   Paper,
   IconButton,
-  Chip,
-  CircularProgress,
-  FormControl,
-  FormControlLabel,
-  Switch,
-  Divider,
-  Select,
-  MenuItem,
-  InputLabel,
   TextField,
   Autocomplete,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { fDateTime } from "src/utils/format-time";
 import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
@@ -53,6 +42,14 @@ export default function RaiseRequest() {
 
     return (
       currentTime >= restrictionStartTime && currentTime <= restrictionEndTime
+    );
+  }, []);
+
+  const showTimeRestrictionAlert = useCallback((action) => {
+    swal(
+      "Time Restriction",
+      `Cannot ${action} after 3:00 PM. Please try again tomorrow.`,
+      "warning"
     );
   }, []);
 
@@ -91,11 +88,7 @@ export default function RaiseRequest() {
 
   const handleSubmitRequest = async () => {
     if (isAfter3PM) {
-      swal(
-        "Time Restriction",
-        "Cannot generate requests after 3:00 PM. Please try again tomorrow.",
-        "warning"
-      );
+      showTimeRestrictionAlert("generate requests");
       return;
     }
     if (!selectedCompany) {
@@ -271,11 +264,7 @@ export default function RaiseRequest() {
                   return;
                 }
                 if (isAfter3PM) {
-                  swal(
-                    "Time Restriction",
-                    "Cannot upload files after 3:00 PM. Please try again tomorrow.",
-                    "warning"
-                  );
+                  showTimeRestrictionAlert("upload files");
                   return;
                 }
                 setUploadModalOpen(true);
