@@ -91,6 +91,9 @@ const SubmitDetail = lazy(() =>
 const CustomDutyMaster = lazy(() =>
   import("src/features/custom-duty/master/pages/CustomDutyMaster")
 );
+const CustomDutyUserManagement = lazy(() =>
+  import("src/features/custom-duty/user-management/pages/CustomDutyUserManagement")
+);
 
 const PettyCashPage = lazy(() =>
   import("src/features/petty-cash/dashboard/pages/PettyCash")
@@ -495,6 +498,15 @@ export default function Router() {
             <ProtectedRoute
               path="/custom-duty/master"
               element={<CustomDutyMaster />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/user-management",
+          element: (
+            <ProtectedRoute
+              path="/custom-duty/user-management"
+              element={<CustomDutyUserManagement />}
             />
           ),
         },

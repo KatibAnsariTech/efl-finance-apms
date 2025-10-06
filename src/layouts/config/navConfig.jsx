@@ -188,6 +188,13 @@ const projectConfig = {
         icon: <SettingsIcon />,
         roles: [ "ADMIN", "SUPER_ADMIN"],
       },
+      {
+        id: "custom-duty-user-management",
+        title: "User Management",
+        path: "/custom-duty/user-management",
+        icon: <ManageAccountsIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
+      },
     ],
   },
   PC: {
