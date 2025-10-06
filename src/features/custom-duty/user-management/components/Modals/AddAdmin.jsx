@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
@@ -35,13 +36,12 @@ function AddAdmin({ handleClose, open, editData, getData }) {
   const [unassignedUsers, setUnassignedUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [openCompanySelect, setOpenCompanySelect] = useState(false);
 
   useEffect(() => {
     if (editData) {
-      setValue("username", editData.username);
-      setValue("email", editData.email);
       setValue(
         "customDutyPermissions",
         Array.isArray(editData.customDutyPermissions)
@@ -54,7 +54,15 @@ function AddAdmin({ handleClose, open, editData, getData }) {
           : []
       );
       setValue("companies", editData.companyIds || []);
-      setSelectedUser(null);
+      const currentUser = {
+        userRoleId: editData.userRoleId,
+        username: editData.username,
+        email: editData.email,
+      };
+      setSelectedUser(currentUser);
+      setValue("username", editData.username);
+      setValue("email", editData.email);
+      fetchCompanies();
     } else {
       reset();
       setSelectedPermissions([]);
@@ -96,6 +104,7 @@ function AddAdmin({ handleClose, open, editData, getData }) {
 
   const handleSaveData = async (data) => {
     try {
+      setSaveLoading(true);
       if (editData?.userRoleId) {
         const updateData = {
           userRoleId: editData.userRoleId,
@@ -130,6 +139,8 @@ function AddAdmin({ handleClose, open, editData, getData }) {
     } catch (error) {
       console.error("Error saving data:", error);
       showErrorMessage(error, "Error saving data. Please try again later.", swal);
+    } finally {
+      setSaveLoading(false);
     }
   };
 
@@ -179,48 +190,27 @@ function AddAdmin({ handleClose, open, editData, getData }) {
           }}
           onSubmit={handleSubmit(handleSaveData)}
         >
-          {!editData && (
-            <Autocomplete
-              options={unassignedUsers}
-              getOptionLabel={(option) => `${option.username} (${option.email})`}
-              value={selectedUser}
-              onChange={(event, newValue) => {
-                setSelectedUser(newValue);
-                if (newValue) {
-                  setValue("username", newValue.username);
-                  setValue("email", newValue.email);
-                }
-              }}
-              loading={loading}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Select User"
-                  required
-                />
-              )}
-            />
-          )}
-          
-          {editData && (
-            <>
+          <Autocomplete
+            options={editData ? [selectedUser].filter(Boolean) : unassignedUsers}
+            getOptionLabel={(option) => `${option.username} (${option.email})`}
+            value={selectedUser}
+            onChange={(event, newValue) => {
+              setSelectedUser(newValue);
+              if (newValue) {
+                setValue("username", newValue.username);
+                setValue("email", newValue.email);
+              }
+            }}
+            loading={loading}
+            disabled={!!editData}
+            renderInput={(params) => (
               <TextField
-                id="username"
-                label="Username"
-                {...register("username", { required: true })}
-                fullWidth
+                {...params}
+                label="Select User"
                 required
               />
-              <TextField
-                id="email"
-                label="Email"
-                type="email"
-                {...register("email", { required: true })}
-                fullWidth
-                required
-              />
-            </>
-          )}
+            )}
+          />
           <FormControl fullWidth>
             <InputLabel id="permissions-label">Custom Duty Permissions</InputLabel>
             <Select
@@ -307,8 +297,10 @@ function AddAdmin({ handleClose, open, editData, getData }) {
             variant="contained"
             color="primary"
             type="submit"
+            disabled={saveLoading}
+            startIcon={saveLoading ? <CircularProgress size={20} color="inherit" /> : null}
           >
-            {editData ? "Update" : "Save"}
+            {saveLoading ? "Processing..." : (editData ? "Update" : "Save")}
           </Button>
         </Box>
       </Box>
