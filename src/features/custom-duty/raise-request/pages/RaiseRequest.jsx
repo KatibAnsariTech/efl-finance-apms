@@ -124,7 +124,7 @@ export default function RaiseRequest() {
         typeOfTransaction: entry.typeOfTransaction,
         transactionDate: entry.transactionDate,
         transactionAmount: parseFloat(entry.transactionAmount),
-        company: selectedCompany._id,
+        companyId: selectedCompany._id,
         challanNo: entry.challanNo,
         documentNo: entry.documentNo,
         referenceId: entry.referenceId,

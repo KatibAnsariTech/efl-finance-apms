@@ -37,7 +37,8 @@ export default function Requests() {
   const [loading, setLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState([]);
   const [comment, setComment] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -53,35 +54,15 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  // Status color mapping
-  const getStatusColor = (status) => {
-    const normalizedStatus = (status || "").toLowerCase();
-    switch (normalizedStatus) {
-      case "pending":
-        return "#f4f5ba";
-      case "declined":
-        return "#e6b2aa";
-      case "approved":
-        return "#baf5c2";
-      case "clarification needed":
-        return "#9be7fa";
-      case "draft":
-        return "#e0e0e0";
-      case "submitted":
-        return "#bbdefb";
-      case "rejected":
-        return "#e6b2aa";
-      default:
-        return "white";
-    }
-  };
-
-  const getData = async (pageNum = 1) => {
+  const getData = async (pageNum = 1, shouldSelectAll = false) => {
     try {
       setLoading(true);
+      if (shouldSelectAll) {
+        setSelectAllLoading(true);
+      }
 
       const page = pageNum;
-      const limit = rowsPerPage;
+      const limit = shouldSelectAll ? 10000 : rowsPerPage;
 
       const apiEndpoint =
         selectedTab === "pendingWithMe"
@@ -95,97 +76,42 @@ export default function Requests() {
         },
       });
 
-      const apiData = response.data.data.forms || response.data.data.requests || response.data.data;
-      const totalCount = response.data.data.totalForms || response.data.data.totalRequests || 0;
+      const apiData =
+        response.data.data.forms ||
+        response.data.data.requests ||
+        response.data.data;
+      const totalCount =
+        response.data.data.totalForms || response.data.data.totalRequests || 0;
 
       const transformedData = apiData.map((item) => ({
+        ...item,
         id: item._id,
-        _id: item._id,
-        requestNo: item.requestNo,
-        requestedDate: item.requestedDate || item.createdAt, // Use createdAt if requestedDate is not available
-        documentNo: item.documentNo, // Use actual API field
-        challanNo: item.challanNo, // Use actual API field
-        transactionType: item.typeOfTransaction, // Map to correct API field name
-        transactionDate: item.transactionDate, // Use actual API field
-        transactionAmount: item.transactionAmount, // Use actual API field
-        status: item.status,
-        company: item.company,
-        desc: item.description || "N/A", // Use description field from API
-        currentStep: item.currentStep,
-        assignedTo: item.assignedTo,
-        steps: item.steps,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-        finalRequestNo: item.finalRequestNo, // Use finalRequestNo from API
+        requestedDate: item.requestedDate || item.createdAt,
       }));
 
-      setData(transformedData);
-      setTotalCount(totalCount);
-    } catch (err) {
-      setData([]);
-      setTotalCount(0);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getAllData = async (shouldSelectAll = false) => {
-    try {
-      setSelectAllLoading(true);
-
-      const apiEndpoint =
-        selectedTab === "pendingWithMe"
-          ? "/custom/getPendingRequestForms"
-          : "/custom/getRequestsForApprover";
-
-      const response = await userRequest.get(apiEndpoint, {
-        params: {
-          page: 1,
-          limit: 1000, // Get all data for select all functionality
-        },
-      });
-
-      const apiData = response.data.data.forms || response.data.data.requests || response.data.data;
-      const totalCount = response.data.data.totalForms || response.data.data.totalRequests || 0;
-
-      const transformedData = apiData.map((item) => ({
-        id: item._id,
-        _id: item._id,
-        requestNo: item.requestNo,
-        requestedDate: item.requestedDate || item.createdAt, // Use createdAt if requestedDate is not available
-        documentNo: item.documentNo, // Use actual API field
-        challanNo: item.challanNo, // Use actual API field
-        transactionType: item.typeOfTransaction, // Map to correct API field name
-        transactionDate: item.transactionDate, // Use actual API field
-        transactionAmount: item.transactionAmount, // Use actual API field
-        status: item.status,
-        company: item.company,
-        desc: item.description || "N/A", // Use description field from API
-        currentStep: item.currentStep,
-        assignedTo: item.assignedTo,
-        steps: item.steps,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-        finalRequestNo: item.finalRequestNo, // Use finalRequestNo from API
-      }));
-
-      setAllData(transformedData);
       setData(transformedData);
       setTotalCount(totalCount);
 
       if (shouldSelectAll) {
+        setAllData(transformedData);
         setSelectedRows(transformedData.map((item) => item.id));
         setIsSelectAll(true);
       }
     } catch (err) {
-      console.error("Error fetching all data:", err);
-      setAllData([]);
+      console.error("Error fetching data:", err);
       setData([]);
       setTotalCount(0);
+      if (shouldSelectAll) {
+        setAllData([]);
+      }
     } finally {
-      setSelectAllLoading(false);
+      setLoading(false);
+      if (shouldSelectAll) {
+        setSelectAllLoading(false);
+      }
     }
   };
+
 
   useEffect(() => {
     setPage(0);
@@ -205,7 +131,7 @@ export default function Requests() {
 
   const handleSelectAll = async (event) => {
     if (event.target.checked) {
-      await getAllData(true);
+      await getData(1, true);
     } else {
       setSelectedRows([]);
       setIsSelectAll(false);
@@ -214,7 +140,7 @@ export default function Requests() {
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
-    getData(newPage + 1); // API uses 1-based pagination
+    getData(newPage + 1);
   };
 
   const handleRowsPerPageChange = (newRowsPerPage) => {
@@ -251,9 +177,22 @@ export default function Requests() {
     }
 
     try {
-      setActionLoading(true);
+      if (action === "approved") {
+        setApproveLoading(true);
+      } else if (action === "rejected") {
+        setRejectLoading(true);
+      }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const payload = {
+        formIds: selectedRows,
+        comment: comment.trim() || "Good!!",
+      };
+
+      if (action === "rejected") {
+        await userRequest.post("/custom/declineForm", payload);
+      } else if (action === "approved") {
+        await userRequest.post("/custom/acceptForm", payload);
+      }
 
       swal("Success", `Requests ${action} successfully`, "success");
       setSelectedRows([]);
@@ -263,7 +202,11 @@ export default function Requests() {
       console.error("Error performing action:", error);
       showErrorMessage(error, `Failed to ${action} requests`, swal);
     } finally {
-      setActionLoading(false);
+      if (action === "approved") {
+        setApproveLoading(false);
+      } else if (action === "rejected") {
+        setRejectLoading(false);
+      }
     }
   };
 
@@ -307,12 +250,7 @@ export default function Requests() {
       </Box>
 
       <Card sx={{ mt: 2, p: 2 }}>
-        <Box
-          sx={{
-            width: "100%",
-            height: 300,
-          }}
-        >
+        <Box sx={{ height: 400, width: "100%" }}>
           <DataGrid
             rows={data}
             columns={columns}
@@ -327,83 +265,83 @@ export default function Requests() {
               handleRowsPerPageChange(newModel.pageSize);
             }}
             pageSizeOptions={[5, 10, 25, 50]}
-            getRowClassName={(params) => {
-              const status = params.row.status?.toLowerCase();
-              if (status === "pending") return "row-pending";
-              if (status === "rejected") return "row-rejected";
-              if (status === "approved") return "row-approved";
-              if (status === "clarification needed") return "row-clarification";
-              if (status === "draft") return "row-draft";
-              if (status === "submitted") return "row-submitted";
-              if (status === "declined") return "row-declined";
-              return "";
-            }}
-            sx={{
-              "& .MuiDataGrid-cell": {
-                "&:focus": { outline: "none" },
-                "&:focus-visible": { outline: "none" },
-              },
-              "& .MuiDataGrid-cell[data-field='checkbox']": {
-                justifyContent: "center",
-                display: "flex",
-                alignItems: "center",
-                padding: "8px 0",
-              },
-              "& .MuiDataGrid-cell[data-field='requestNo']": {
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-start",
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f5f6f8",
-                fontWeight: "bold",
-                color: "#637381",
-              },
-              "& .MuiDataGrid-columnHeader[data-field='checkbox']": {
-                justifyContent: "center",
-                display: "flex",
-                alignItems: "center",
-                padding: "8px 0",
-              },
-              "& .MuiDataGrid-columnHeader[data-field='requestNo']": {
-                justifyContent: "flex-start",
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiDataGrid-columnHeaderTitle": {
-                width: "100%",
-                textAlign: "center",
-              },
-              "& .MuiDataGrid-row": {
-                "&:focus": { outline: "none" },
-                "&:focus-visible": { outline: "none" },
-              },
-              "& .MuiDataGrid-row:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-              "& .row-pending": {
-                backgroundColor: "#f4f5ba !important",
-              },
-              "& .row-rejected": {
-                backgroundColor: "#e6b2aa !important",
-              },
-              "& .row-approved": {
-                backgroundColor: "#baf5c2 !important",
-              },
-              "& .row-clarification": {
-                backgroundColor: "#9be7fa !important",
-              },
-              "& .row-draft": {
-                backgroundColor: "#e0e0e0 !important",
-              },
-              "& .row-submitted": {
-                backgroundColor: "#bbdefb !important",
-              },
-              "& .row-declined": {
-                backgroundColor: "#e6b2aa !important",
-              },
-            }}
-          />
+          getRowClassName={(params) => {
+            const status = params.row.status?.toLowerCase();
+            if (status === "pending") return "row-pending";
+            if (status === "rejected") return "row-rejected";
+            if (status === "approved") return "row-approved";
+            if (status === "clarification needed") return "row-clarification";
+            if (status === "draft") return "row-draft";
+            if (status === "submitted") return "row-submitted";
+            if (status === "declined") return "row-declined";
+            return "";
+          }}
+          sx={{
+            "& .MuiDataGrid-cell": {
+              "&:focus": { outline: "none" },
+              "&:focus-visible": { outline: "none" },
+            },
+            "& .MuiDataGrid-cell[data-field='checkbox']": {
+              justifyContent: "center",
+              display: "flex",
+              alignItems: "center",
+              padding: "8px 0",
+            },
+            "& .MuiDataGrid-cell[data-field='requestNo']": {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f5f6f8",
+              fontWeight: "bold",
+              color: "#637381",
+            },
+            "& .MuiDataGrid-columnHeader[data-field='checkbox']": {
+              justifyContent: "center",
+              display: "flex",
+              alignItems: "center",
+              padding: "8px 0",
+            },
+            "& .MuiDataGrid-columnHeader[data-field='requestNo']": {
+              justifyContent: "flex-start",
+              display: "flex",
+              alignItems: "center",
+            },
+            "& .MuiDataGrid-columnHeaderTitle": {
+              width: "100%",
+              textAlign: "center",
+            },
+            "& .MuiDataGrid-row": {
+              "&:focus": { outline: "none" },
+              "&:focus-visible": { outline: "none" },
+            },
+            "& .MuiDataGrid-row:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.04)",
+            },
+            "& .row-pending": {
+              backgroundColor: "#f4f5ba !important",
+            },
+            "& .row-rejected": {
+              backgroundColor: "#e6b2aa !important",
+            },
+            "& .row-approved": {
+              backgroundColor: "#baf5c2 !important",
+            },
+            "& .row-clarification": {
+              backgroundColor: "#9be7fa !important",
+            },
+            "& .row-draft": {
+              backgroundColor: "#e0e0e0 !important",
+            },
+            "& .row-submitted": {
+              backgroundColor: "#bbdefb !important",
+            },
+            "& .row-declined": {
+              backgroundColor: "#e6b2aa !important",
+            },
+          }}
+        />
         </Box>
 
         {selectedRows.length > 0 && selectedTab !== "submitted" && (
@@ -425,25 +363,25 @@ export default function Requests() {
                   variant="contained"
                   color="success"
                   onClick={() => handleApprovalAction("approved")}
-                  disabled={actionLoading}
+                  disabled={approveLoading || rejectLoading}
                   startIcon={
-                    actionLoading ? <CircularProgress size={20} /> : null
+                    approveLoading ? <CircularProgress size={20} /> : null
                   }
                   sx={{ minWidth: 120 }}
                 >
-                  {actionLoading ? "Processing..." : "Approved"}
+                  {approveLoading ? "Processing..." : "Approved"}
                 </Button>
                 <Button
                   variant="contained"
                   color="error"
                   onClick={() => handleApprovalAction("rejected")}
-                  disabled={actionLoading}
+                  disabled={approveLoading || rejectLoading}
                   startIcon={
-                    actionLoading ? <CircularProgress size={20} /> : null
+                    rejectLoading ? <CircularProgress size={20} /> : null
                   }
                   sx={{ minWidth: 120 }}
                 >
-                  {actionLoading ? "Processing..." : "Rejected"}
+                  {rejectLoading ? "Processing..." : "Rejected"}
                 </Button>
               </Stack>
             </Stack>

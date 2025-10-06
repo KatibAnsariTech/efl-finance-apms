@@ -64,6 +64,7 @@ export const RequestColumns = ({
             color: "#1976d2",
             textDecoration: "underline",
             cursor: "pointer",
+            fontSize: "0.87rem",
             fontWeight: 600,
             "&:hover": { color: "#1565c0" },
           }}
@@ -78,7 +79,10 @@ export const RequestColumns = ({
       headerName: "Requested Date",
       flex: 1,
       minWidth: 180,
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => {
+        const dateValue = params.value || params.row.createdAt;
+        return dateValue ? fDateTime(dateValue) : "-";
+      },
     },
     {
       field: "documentNo",
@@ -93,7 +97,7 @@ export const RequestColumns = ({
       minWidth: 140,
     },
     {
-      field: "transactionType",
+      field: "typeOfTransaction",
       headerName: "Type of transaction",
       flex: 1,
       minWidth: 150,
@@ -125,10 +129,11 @@ export const RequestColumns = ({
       minWidth: 100,
     },
     {
-      field: "desc",
+      field: "description",
       headerName: "Description",
       flex: 1,
       minWidth: 150,
+      renderCell: (params) => params.value || "-",
     },
     {
       field: "finalRequestNo",
