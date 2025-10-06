@@ -195,6 +195,13 @@ const projectConfig = {
         icon: <ManageAccountsIcon />,
         roles: ["ADMIN", "SUPER_ADMIN"],
       },
+      {
+        id: "custom-duty-hierarchy-management",
+        title: "Hierarchy Management",
+        path: "/custom-duty/hierarchy-management",
+        icon: <AccountTreeIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
+      },
     ],
   },
   PC: {

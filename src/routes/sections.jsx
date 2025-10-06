@@ -94,6 +94,9 @@ const CustomDutyMaster = lazy(() =>
 const CustomDutyUserManagement = lazy(() =>
   import("src/features/custom-duty/user-management/pages/CustomDutyUserManagement")
 );
+const CustomDutyHierarchyManagement = lazy(() =>
+  import("src/features/custom-duty/hierarchy-management/pages/HierarchyManagement")
+);
 
 const PettyCashPage = lazy(() =>
   import("src/features/petty-cash/dashboard/pages/PettyCash")
@@ -507,6 +510,15 @@ export default function Router() {
             <ProtectedRoute
               path="/custom-duty/user-management"
               element={<CustomDutyUserManagement />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/hierarchy-management",
+          element: (
+            <ProtectedRoute
+              path="/custom-duty/hierarchy-management"
+              element={<CustomDutyHierarchyManagement />}
             />
           ),
         },
