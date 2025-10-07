@@ -177,7 +177,7 @@ const projectConfig = {
       {
         id: "custom-duty-raise-to-bank",
         title: "Raise to Bank",
-        path: "/custom-duty/raise-to-bank", 
+        path: "/custom-duty/raise-to-bank",
         icon: <AccountBalanceWalletIcon />,
         roles: ["REQUESTER"],
       },
@@ -186,7 +186,7 @@ const projectConfig = {
         title: "Master Data",
         path: "/custom-duty/master",
         icon: <SettingsIcon />,
-        roles: [ "ADMIN", "SUPER_ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "custom-duty-user-management",
@@ -245,37 +245,76 @@ export const generateNavigationConfig = (accessibleProjects, userRoles) => {
     }
   });
 
-  navItems.push({
-    id: "settings",
-    title: "Settings",
-    path: "/settings",
-    icon: <SettingsIcon />,
-    hasSubItems: true,
-    subItems: [
-      {
-        id: "profile",
-        title: "My Profile",
-        path: "/settings/profile",
-        icon: <PersonIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-      },
-      {
-        id: "change-password",
-        title: "Change Password",
-        path: "/settings/change-password",
-        icon: <LockIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-      },
-      {
-        id: "add-user",
-        title: "Add User",
-        path: "/settings/add-user",
-        icon: <LockIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
-      },
-    ],
-  });
+  // navItems.push({
+  //   id: "settings",
+  //   title: "Settings",
+  //   path: "/settings",
+  //   icon: <SettingsIcon />,
+  //   hasSubItems: true,
+  //   subItems: [
+  //     {
+  //       id: "profile",
+  //       title: "My Profile",
+  //       path: "/settings/profile",
+  //       icon: <PersonIcon />,
+  //       roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+  //     },
+  //     {
+  //       id: "change-password",
+  //       title: "Change Password",
+  //       path: "/settings/change-password",
+  //       icon: <LockIcon />,
+  //       roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+  //     },
+  //     {
+  //       id: "add-user",
+  //       title: "Add User",
+  //       path: "/settings/add-user",
+  //       icon: <LockIcon />,
+  //       roles: ["SUPER_ADMIN"],
+  //     },
+  //   ],
+  // });
 
+  // Get all unique user roles across all projects
+  
+  const allUserRoles = [...new Set(Object.values(userRoles))];
+  const settingsSubItems = [
+    {
+      id: "profile",
+      title: "My Profile",
+      path: "/settings/profile",
+      icon: <PersonIcon />,
+      roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+    },
+    {
+      id: "change-password",
+      title: "Change Password",
+      path: "/settings/change-password",
+      icon: <LockIcon />,
+      roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+    },
+    {
+      id: "add-user",
+      title: "Add User",
+      path: "/settings/add-user",
+      icon: <LockIcon />,
+      roles: ["SUPER_ADMIN"],
+    },
+  ].filter((subItem) =>
+    subItem.roles.some((role) => allUserRoles.includes(role))
+  );
+
+  if (settingsSubItems.length > 0) {
+    navItems.push({
+      id: "settings",
+      title: "Settings",
+      path: "/settings",
+      icon: <SettingsIcon />,
+      hasSubItems: true,
+      subItems: settingsSubItems,
+    });
+  }
   return navItems;
 };
 
