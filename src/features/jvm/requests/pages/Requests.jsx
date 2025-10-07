@@ -17,9 +17,12 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
 import ColorIndicators from "../components/ColorIndicators";
+import JVMRequestTabs from "../components/JVMRequestTabs";
+import { useJVM } from "src/contexts/JVMContext";
 
 export default function Requests() {
   const router = useRouter();
+  const { jvmRequestCounts } = useJVM();
   const [selectedTab, setSelectedTab] = useState("pendingWithMe");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -116,22 +119,12 @@ export default function Requests() {
 
   return (
     <Container>
-      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{
-            "& .MuiTabs-indicator": { backgroundColor: "#1877F2" },
-            "& .MuiTab-root": { fontWeight: "bold" },
-          }}
-        >
-          {menuItems.map((item) => (
-            <Tab key={item.value} label={item.label} value={item.value} />
-          ))}
-        </Tabs>
-      </Box>
+      <JVMRequestTabs
+        selectedTab={selectedTab}
+        setSelectedTab={handleTabChange}
+        menuItems={menuItems}
+        jvmRequestCounts={jvmRequestCounts}
+      />
 
       <Card sx={{ mt: 2, p: 2 }}>
         <Box

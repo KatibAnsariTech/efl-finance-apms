@@ -7,7 +7,6 @@ import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { getComparator } from "src/utils/utils";
 import { userRequest } from "src/requestMethod";
-import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
 import { useRouter } from "src/routes/hooks";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
@@ -16,11 +15,14 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
 import { AutoReversalColumns } from "../components/AutoReversalColumns";
+import AutoReversalTabs from "../components/AutoReversalTabs";
 import ColorIndicators from "../components/ColorIndicators";
+import { useJVM } from "src/contexts/JVMContext";
 
 export default function AutoReversal() {
   const router = useRouter();
   const navigate = useNavigate();
+  const { autoReversalCounts } = useJVM();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -181,10 +183,11 @@ export default function AutoReversal() {
       </Helmet>
 
       <Container>
-        <FormRequestTabs
+        <AutoReversalTabs
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
           menuItems={menuItems}
+          autoReversalCounts={autoReversalCounts}
         />
         <Card sx={{ mt: 2, p: 2 }}>
           <div
