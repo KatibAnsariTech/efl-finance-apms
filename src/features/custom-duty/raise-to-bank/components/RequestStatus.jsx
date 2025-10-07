@@ -35,60 +35,31 @@ export default function RequestStatus({
   const getData = async () => {
     setLoading(true);
     try {
-      // For demo purposes, using dummy data
-      // In production, uncomment the API call below
-      // const res = await userRequest.get(
-      //   `/admin/getFormSteps?id=${rowData?._id}`
-      // );
-      // setData(res?.data?.data);
+      const res = await userRequest.get(
+        `/custom/getFormSteps?formId=${rowData?._id}`
+      );
       
-      // Dummy data for demonstration
-      const dummyData = {
-        formId: {
-          requesterRemark: "Custom duty payment request for import goods",
-          createdAt: "2024-01-15T10:30:00Z",
-          updatedAt: "2024-01-15T10:30:00Z"
-        },
-        requesterId: {
-          username: "john.doe"
-        },
-        steps: [
-          {
-            approverId: {
-              username: "shweta.more"
-            },
-            position: "Finance Manager",
-            status: "Pending",
-            comment: "kjjjjjjjjjjjjjjjj",
-            created: "2024-01-15T11:00:00Z",
-            updatedAt: null
-          },
-          {
-            approverId: {
-              username: "rajesh.kumar"
-            },
-            position: "Senior Finance Manager",
-            status: "Pending",
-            comment: "Awaiting approval",
-            created: "2024-01-15T12:00:00Z",
-            updatedAt: null
-          },
-          {
-            approverId: {
-              username: "priya.sharma"
-            },
-            position: "Finance Director",
-            status: "Pending",
-            comment: "Final approval required",
-            created: "2024-01-15T13:00:00Z",
-            updatedAt: null
-          }
-        ]
-      };
-      
-      setData(dummyData);
+      if (res?.data?.statusCode === 200 && res?.data?.data) {
+        const apiData = res.data.data;
+        const mappedData = {
+          requester: apiData.requester,
+          steps: apiData.steps.map(step => ({
+            approverId: step.approverId,
+            position: step.position,
+            status: step.status,
+            comment: step.comment,
+            created: step.created,
+            createdAt: step.createdAt,
+            updatedAt: step.updatedAt
+          }))
+        };
+        setData(mappedData);
+      } else {
+        setData(null);
+      }
     } catch (err) {
-      console.log("err:", err);
+      console.error("Error fetching form steps:", err);
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -126,16 +97,14 @@ export default function RequestStatus({
     }
   };
 
-  // Map steps array if present, and add requester step at the top
   const renderSteps = (data) => {
-    // Add requester step if formId is present
-    const requesterStep = data?.formId
+    const requesterStep = data?.requester
       ? {
-          username: data?.requesterId?.username || "-",
+          username: `${data?.requester?.username} (${data?.requester?.email})`,
           status: "Raised",
-          comment: data?.formId.requesterRemark || "-",
-          created: data?.formId.createdAt,
-          updatedAt: data?.formId.updatedAt,
+          comment: "Request submitted",
+          created: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
       : null;
 
@@ -333,7 +302,7 @@ export default function RequestStatus({
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  height: "200px",
+                  height: "100px",
                 }}
               >
                 <CircularProgress />
