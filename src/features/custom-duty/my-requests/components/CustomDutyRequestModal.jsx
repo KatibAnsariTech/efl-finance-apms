@@ -49,15 +49,23 @@ export default function RequestStatus({
         const apiData = response.data.data;
         const mappedData = {
           requester: apiData.requester,
-          steps: apiData.steps.map(step => ({
-            approverId: step.approverId,
-            position: step.position,
-            status: step.status,
-            comment: step.comment,
-            created: step.created,
-            createdAt: step.createdAt,
-            updatedAt: step.updatedAt
-          }))
+          steps: apiData.steps.map(step => {
+            const firstApproval = step.approvals[0];
+            const allApprovers = step.approvals.map(approval => approval.approverId);
+            const allStatuses = step.approvals.map(approval => approval.status);
+            const allComments = step.approvals.map(approval => approval.comment).filter(Boolean);
+            
+            return {
+              approverId: allApprovers,
+              position: step.position,
+              status: allStatuses.includes('Approved') ? 'Approved' : 
+                     allStatuses.includes('Declined') ? 'Declined' : 'Pending',
+              comment: allComments.join(', ') || '',
+              created: firstApproval?.created || step.createdAt,
+              createdAt: step.createdAt,
+              updatedAt: step.updatedAt
+            };
+          })
         };
         setData(mappedData);
       } else {
@@ -117,13 +125,15 @@ export default function RequestStatus({
     let stepsArr = [];
     if (Array.isArray(data?.steps)) {
       stepsArr = data.steps.map((step, idx) => {
-        const displayName = step.approverId?.username || "-";
-        const displayEmail = step.approverId?.email || "-";
+        const approvers = step.approverId;
+        const displayNames = approvers.map(approver => 
+          `${approver?.username || "-"} (${approver?.email || "-"})`
+        ).join('\n');
         const displayStatus = step.status || "-";
         const displayComment = step.comment || "-";
         return {
           key: `step-${idx}`,
-          assignedTo: `${displayName} (${displayEmail})`,
+          assignedTo: displayNames,
           assignedOn: step.created ? fDateTime(step.created) : "N/A",
           actionedOn:
             step.updatedAt && displayStatus !== "Pending"
@@ -154,7 +164,7 @@ export default function RequestStatus({
     if (allSteps.length > 0) {
       return allSteps.map((step, idx) => (
         <tr style={{ borderBottom: "1px solid #aeaeae" }} key={step.key || idx}>
-          <td style={{ padding: "8px", textAlign: "center" }}>
+          <td style={{ padding: "8px", textAlign: "center", whiteSpace: "pre-line" }}>
             {step.assignedTo}
           </td>
           <td style={{ padding: "8px", textAlign: "center" }}>
@@ -188,92 +198,7 @@ export default function RequestStatus({
         </tr>
       ));
     }
-    // fallback to old logic if steps is not present
-    return Object.keys(data)
-      .filter((key) => key.startsWith("step") && data[key]?.length > 0)
-      .sort(
-        (a, b) =>
-          parseInt(a.replace("step", ""), 10) -
-          parseInt(b.replace("step", ""), 10)
-      )
-      .map((stepKey) => {
-        const stepDataArray = data[stepKey];
-
-        const firstApproved = stepDataArray.find(
-          (item) => item.status === "Approved"
-        );
-        const firstDeclined = stepDataArray.find(
-          (item) => item.status === "Declined"
-        );
-        const firstPending = stepDataArray.find(
-          (item) => item.status === "Pending"
-        );
-
-        const allPendingEmails = stepDataArray
-          .filter((item) => item.status === "Pending")
-          .map((item) => <div key={item.email}>{item.email}</div>);
-
-        const displayStatus = firstApproved
-          ? firstApproved.status
-          : firstDeclined
-          ? firstDeclined.status
-          : "Pending";
-
-        const displayEmail = firstApproved
-          ? firstApproved.email
-          : firstDeclined
-          ? firstDeclined.email
-          : allPendingEmails;
-
-        const displayComment =
-          firstApproved?.comment || firstDeclined?.comment || "N/A";
-
-        return (
-          <tr style={{ borderBottom: "1px solid #aeaeae" }} key={stepKey}>
-            <td style={{ padding: "8px", textAlign: "center" }}>
-              {displayEmail}
-            </td>
-            <td style={{ padding: "8px", textAlign: "center" }}>
-              {firstApproved?.createdAt ||
-              firstDeclined?.createdAt ||
-              firstPending?.createdAt
-                ? fDate(
-                    firstApproved?.createdAt ||
-                      firstDeclined?.createdAt ||
-                      firstPending?.createdAt
-                  )
-                : "N/A"}
-            </td>
-            <td style={{ padding: "8px", textAlign: "center" }}>
-              {displayStatus === "Pending"
-                ? "N/A"
-                : fDate(firstApproved?.updatedAt || firstDeclined?.updatedAt)}
-            </td>
-            <td
-              style={{
-                padding: "8px",
-                textAlign: "center",
-                ...getStatusStyle(displayStatus),
-              }}
-            >
-              {formatStatus(displayStatus)}
-            </td>
-            <td
-              style={{
-                padding: "8px",
-                textAlign: "center",
-                maxWidth: "30dvw",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }}
-              title={displayComment}
-            >
-              {displayComment}
-            </td>
-          </tr>
-        );
-      });
+    return [];
   };
 
   return (
