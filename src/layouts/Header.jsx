@@ -108,7 +108,7 @@ export default function Header({ onOpenNav, collapsed }) {
         spacing={1}
       >
         {/* Applications Button - only show on dashboard */}
-        {location.pathname === "/" && (
+        {/* {location.pathname === "/" && (
           <Button
             variant="contained"
             startIcon={<BiSolidPieChartAlt size={18} />}
@@ -131,7 +131,7 @@ export default function Header({ onOpenNav, collapsed }) {
           >
             Applications
           </Button>
-        )}
+        )} */}
         
         {/* <LanguagePopover /> */}
         {/* <NotificationsPopover

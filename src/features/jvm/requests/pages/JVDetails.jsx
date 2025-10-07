@@ -19,6 +19,7 @@ import { JVDetailsColumns } from "../components/JVDetailsColumns";
 import RequestStatus from "../components/RequestStatus";
 import JVCurrentStatus from "../components/JVCurrentStatus";
 import ColorIndicators from "../components/ColorIndicators";
+import CloseButton from "src/routes/components/CloseButton";
 import { Helmet } from "react-helmet-async";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -42,6 +43,10 @@ export default function JVDetails() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
+
+  const handleBack = () => {
+    router.push("/jvm/requests");
+  };
 
 
   const getRequestInfo = useCallback(async () => {
@@ -219,6 +224,19 @@ export default function JVDetails() {
 
       <Container>
         <Card sx={{ mt: 2, p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <CloseButton
+              tooltip="Back to JV Requests"
+              onClick={handleBack}
+            />
+          </Box>
           <Box
             sx={{
               width: "100%",
