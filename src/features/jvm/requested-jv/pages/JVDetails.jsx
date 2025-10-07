@@ -29,36 +29,37 @@ export default function JVDetails() {
   const [search, setSearch] = useState("");
   const [jvData, setJvData] = useState(null);
 
-  const getData = useCallback(async () => {
+  const getData = useCallback(async (pageNum = 1, limit = rowsPerPage) => {
     setLoading(true);
     try {
       if (!id) return;
 
       const response = await userRequest.get(
-        `jvm/getFormItemsByGroupId?groupId=${id}`
+        `jvm/getFormItemsByGroupId?groupId=${id}&page=${pageNum}&limit=${limit}`
       );
 
       if (response.data.statusCode === 200) {
-        const { items } = response.data.data;
+        const { items, pagination } = response.data.data;
 
         const data = items.map((item, index) => ({
           ...item,
           id: item._id,
-          lineNumber: index + 1,
+          lineNumber: (pageNum - 1) * limit + index + 1,
         }));
 
         setData(data);
-        setTotalCount(data.length);
+        setTotalCount(pagination.totalItems);
       } else {
         throw new Error(response.data.message || "Failed to fetch form items");
       }
     } catch (error) {
       console.error("Error fetching JV detail data:", error);
       setData([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, rowsPerPage]);
   const getRequestInfo = useCallback(async () => {
     try {
       if (!id) {
@@ -89,16 +90,22 @@ export default function JVDetails() {
 
   useEffect(() => {
     if (id) {
-      getData();
       getRequestInfo();
     }
-  }, [id, page, rowsPerPage, getData, getRequestInfo]);
+  }, [id, getRequestInfo]);
+
+  useEffect(() => {
+    if (id) {
+      getData(page + 1, rowsPerPage);
+    }
+  }, [id, page, rowsPerPage, getData]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
       setSearch(value);
     }
   };
+
 
   const handleBack = () => {
     router.push("/jvm/requested-jvs");
@@ -252,8 +259,8 @@ export default function JVDetails() {
               getRowId={(row) => row?.id}
               loading={loading}
               pagination
-              paginationMode="client"
-              rowCount={dataFiltered.length}
+              paginationMode="server"
+              rowCount={totalCount}
               paginationModel={{ page: page, pageSize: rowsPerPage }}
               onPaginationModelChange={(newModel) => {
                 setPage(newModel.page);

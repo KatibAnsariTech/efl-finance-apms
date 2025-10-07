@@ -6,7 +6,7 @@ function JVMRequestTabs({ selectedTab, setSelectedTab, menuItems, jvmRequestCoun
     <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
       <Tabs
         value={selectedTab}
-        onChange={(e, newValue) => setSelectedTab(newValue)}
+        onChange={setSelectedTab}
         variant="scrollable"
         scrollButtons="auto"
         sx={{
