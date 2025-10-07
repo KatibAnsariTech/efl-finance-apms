@@ -38,11 +38,26 @@ export default function RaiseToBank() {
         }
       );
 
-      const apiData = response.data?.data || response.data || [];
-      const totalCount = response.data?.totalCount || response.data?.total || apiData.length;
+      if (response.data?.statusCode === 200 && response.data?.data) {
+        const { raisedToBankRecords, pagination } = response.data.data;
+        
+        const mappedData = raisedToBankRecords.map((record) => ({
+          _id: record._id,
+          FinalReqNo: record.FinalReqNo,
+          itemIds: record.itemIds,
+          totalItems: record.totalItems,
+          requestor: record.requestor,
+          finalApproverId: record.finalApproverId,
+          createdAt: record.createdAt,
+          updatedAt: record.updatedAt,
+        }));
 
-      setData(apiData);
-      setTotalCount(totalCount);
+        setData(mappedData);
+        setTotalCount(pagination?.total || mappedData.length);
+      } else {
+        setData([]);
+        setTotalCount(0);
+      }
     } catch (err) {
       console.error('Error fetching raised to bank records:', err);
       setData([]);
@@ -84,6 +99,7 @@ export default function RaiseToBank() {
           <DataGrid
             rows={data}
             columns={columns}
+            getRowId={(row) => row._id}
             loading={loading}
             disableRowSelectionOnClick
             pagination

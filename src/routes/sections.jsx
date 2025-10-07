@@ -487,7 +487,7 @@ export default function Router() {
           ),
         },
         {
-          path: "/custom-duty/raise-to-bank/submit-detail/:id",
+          path: "/custom-duty/raise-to-bank/submit-detail/:finalRequestNo",
           element: (
             <ProtectedRoute
               path="/custom-duty/raise-to-bank"

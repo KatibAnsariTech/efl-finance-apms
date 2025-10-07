@@ -30,7 +30,7 @@ export const SubmittedColumns = () => {
             height: "100%",
             width: "100%",
           }}
-          onClick={() => router.push(`/custom-duty/raise-to-bank/submit-detail/${params.row._id || params.row.id}`)}
+          onClick={() => router.push(`/custom-duty/raise-to-bank/submit-detail/${params.row.FinalReqNo}`)}
         >
           {params.value}
         </Typography>

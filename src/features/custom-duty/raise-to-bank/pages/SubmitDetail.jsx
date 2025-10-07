@@ -15,11 +15,9 @@ import { RequestColumns } from "../components/SubmitDetailColumns";
 import RequestStatus from "../components/RequestStatus";
 
 export default function SubmitDetail() {
-  const router = useRouter();
-  const { id } = useParams();
+  const { finalRequestNo } = useParams();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [submitRequestData, setSubmitRequestData] = useState(null);
 
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -35,7 +33,7 @@ export default function SubmitDetail() {
       const limit = rowsPerPage;
       
       const response = await userRequest.get(
-        `custom/getRaisedToBankByFinalReqNo/${id}`,
+        `custom/getRaisedToBankByFinalReqNo/${finalRequestNo}`,
         {
           params: {
             page: page,
@@ -44,11 +42,16 @@ export default function SubmitDetail() {
         }
       );
 
-      const apiData = response.data?.data || [];
-      const totalCount = response.data?.totalCount || apiData.length;
+      if (response.data?.statusCode === 200 && response.data?.data) {
+        const apiData = response.data.data;
+        const totalCount = response.data?.pagination?.total || apiData.length;
 
-      setData(apiData);
-      setTotalCount(totalCount);
+        setData(apiData);
+        setTotalCount(totalCount);
+      } else {
+        setData([]);
+        setTotalCount(0);
+      }
     } catch (err) {
       console.error('Error fetching raised to bank detail records:', err);
       setData([]);
@@ -58,30 +61,13 @@ export default function SubmitDetail() {
     }
   };
 
-  const getSubmitRequestData = async () => {
-    try {
-      const response = await userRequest.get(
-        `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data/${id}`
-      );
-      setSubmitRequestData(response.data);
-    } catch (error) {
-      setSubmitRequestData({
-        id: id,
-        submitRequestNo: `2056627067`,
-        totalRecords: Math.floor(Math.random() * 50) + 20,
-        submitDate: new Date().toISOString(),
-        submittedBy: "shweta@efl.com",
-      });
-    }
-  };
 
   useEffect(() => {
     setPage(0);
     setData([]);
     setLoading(true);
-    getSubmitRequestData();
     getData(1);
-  }, [id]);
+  }, [finalRequestNo]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -120,6 +106,7 @@ export default function SubmitDetail() {
           <DataGrid
             rows={data}
             columns={columns}
+            getRowId={(row) => row._id || row.id}
             loading={loading}
             disableRowSelectionOnClick
             pagination
