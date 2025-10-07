@@ -3,9 +3,7 @@ import { Box, Typography, Checkbox, CircularProgress } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
 
-export const RequestColumns = ({ 
-  onRequestClick
-}) => {
+export const RequestColumns = ({ onRequestClick }) => {
   const router = useRouter();
 
   return [
@@ -31,7 +29,11 @@ export const RequestColumns = ({
             height: "100%",
             width: "100%",
           }}
-          onClick={() => onRequestClick ? onRequestClick(params.row) : router.push(`/request-detail/${params.value}`)}
+          onClick={() =>
+            onRequestClick
+              ? onRequestClick(params.row)
+              : router.push(`/request-detail/${params.value}`)
+          }
         >
           {params.value}
         </Typography>
@@ -60,8 +62,8 @@ export const RequestColumns = ({
       ),
     },
     {
-      field: "boeNumber",
-      headerName: "BOE number",
+      field: "documentNo",
+      headerName: "Document No",
       flex: 1,
       minWidth: 120,
       align: "center",
@@ -150,6 +152,31 @@ export const RequestColumns = ({
       minWidth: 150,
       align: "center",
       headerAlign: "center",
+    },
+    {
+      field: "icegateAckNo",
+      headerName: "Icegate Ack. No.",
+      width: 200,
+      resizable: true,
+    },
+    {
+      field: "referenceId",
+      headerName: "Reference ID",
+      width: 200,
+      resizable: true,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+          title={params.value}
+        >
+          {params.value}
+        </Box>
+      ),
     },
   ];
 };

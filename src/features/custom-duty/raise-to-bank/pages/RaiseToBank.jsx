@@ -28,42 +28,23 @@ export default function RaiseToBank() {
       const page = pageNum;
       const limit = rowsPerPage;
       
-      let apiData;
-      let totalCount;
-
-      try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: page,
-              limit: limit
-            }
+      const response = await userRequest.get(
+        `custom/getRaisedToBankRecords`,
+        {
+          params: {
+            page: page,
+            limit: limit
           }
-        );
-        apiData = response.data;
-        totalCount = response.headers['x-total-count'] || 100;
-      } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
-        );
-        const fetchData = await fetchResponse.json();
-        apiData = fetchData;
-        totalCount = 100;
-      }
+        }
+      );
 
-      const transformedData = apiData.map((item, index) => ({
-        id: item.id,
-        submitRequestNo: `2056627067`,
-        submitDate: new Date(item.requestedDate * 1000).toISOString(),
-        totalRecords: Math.floor(Math.random() * 50) + 20,
-        downloadLink: "Download File",
-        submittedBy: "shweta@efl.com",
-      }));
+      const apiData = response.data?.data || response.data || [];
+      const totalCount = response.data?.totalCount || response.data?.total || apiData.length;
 
-      setData(transformedData);
+      setData(apiData);
       setTotalCount(totalCount);
     } catch (err) {
+      console.error('Error fetching raised to bank records:', err);
       setData([]);
       setTotalCount(0);
     } finally {
@@ -80,7 +61,7 @@ export default function RaiseToBank() {
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
-    getData(newPage + 1); // API uses 1-based pagination
+    getData(newPage + 1);
   };
 
   const handleRowsPerPageChange = (newRowsPerPage) => {

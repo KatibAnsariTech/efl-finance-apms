@@ -185,7 +185,7 @@ export default function Requests() {
 
       const payload = {
         formIds: selectedRows,
-        comment: comment.trim() || "Good!!",
+        comment: comment.trim(),
       };
 
       if (action === "rejected") {
