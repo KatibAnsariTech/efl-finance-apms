@@ -19,6 +19,7 @@ import { applyFilter, getComparator } from "src/utils/utils";
 import excel from "../../../../../public/assets/excel.svg";
 import ColorIndicators from "../components/ColorIndicators";
 import CustomDutyRequestModal from "../components/CustomDutyRequestModal";
+import { MyRequestsColumns } from "../components/MyRequestsColumns";
 import Iconify from "src/components/iconify";
 
 export default function MyRequests() {
@@ -40,44 +41,7 @@ export default function MyRequests() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-  // Status color mapping
-  const getStatusColor = (status) => {
-    const normalizedStatus = (status || "").toLowerCase();
-    switch (normalizedStatus) {
-      case "pending":
-        return "#f4f5ba";
-      case "declined":
-        return "#e6b2aa";
-      case "approved":
-        return "#baf5c2";
-      case "clarification needed":
-        return "#9be7fa";
-      case "draft":
-        return "#e0e0e0";
-      case "submitted":
-        return "#bbdefb";
-      case "rejected":
-        return "#e6b2aa";
-      default:
-        return "white";
-    }
-  };
 
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      Draft: { color: "default", label: "Draft" },
-      Submitted: { color: "info", label: "Submitted" },
-      Approved: { color: "success", label: "Approved" },
-      Rejected: { color: "error", label: "Rejected" },
-      Pending: { color: "warning", label: "Pending" },
-      "Clarification Needed": { color: "info", label: "Clarification Needed" },
-    };
-
-    const config = statusConfig[status] || { color: "default", label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
-  };
-
-  // Debounced search
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
@@ -86,35 +50,38 @@ export default function MyRequests() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Fetch data
   const getData = async () => {
     try {
       setLoading(true);
-      
-      // Build query parameters for pagination
+
       const queryParams = new URLSearchParams({
-        page: (page + 1).toString(), // API expects 1-based page numbers
+        page: (page + 1).toString(),
         limit: rowsPerPage.toString(),
-        action: 'all'
+        action: "all",
       });
 
-      // Add search parameter if provided
       if (debouncedSearch) {
-        queryParams.append('search', debouncedSearch);
+        queryParams.append("search", debouncedSearch);
       }
 
-      // Add other filter parameters if provided
-      if (region) queryParams.append('region', region);
-      if (status) queryParams.append('status', status);
-      if (refund) queryParams.append('refund', refund);
-      if (startDate) queryParams.append('startDate', startDate);
-      if (endDate) queryParams.append('endDate', endDate);
+      if (region) queryParams.append("region", region);
+      if (status) queryParams.append("status", status);
+      if (refund) queryParams.append("refund", refund);
+      if (startDate) queryParams.append("startDate", startDate);
+      if (endDate) queryParams.append("endDate", endDate);
 
-      const response = await userRequest.get(`/custom/getForms?${queryParams.toString()}`);
-      
+      const response = await userRequest.get(
+        `/custom/getForms?${queryParams.toString()}`
+      );
+
       if (response.data && response.data.data) {
-        const { forms, totalForms, page: currentPage, limit } = response.data.data;
-        
+        const {
+          forms,
+          totalForms,
+          page: currentPage,
+          limit,
+        } = response.data.data;
+
         setData(forms || []);
         setTotalCount(totalForms || 0);
       } else {
@@ -169,80 +136,19 @@ export default function MyRequests() {
     setSearch(value);
   };
 
-  const dataFiltered = applyFilter({
-    inputData: data,
-    comparator: getComparator(order, orderBy),
-    search,
-  });
-
-  const handleExport = async () => {
-    try {
-      // Simulate export functionality
-      console.log("Exporting data...");
-    } catch (error) {
-      console.error("Export error:", error);
-    }
+  const handleRequestClick = (rowData) => {
+    setSelectedRowData(rowData);
+    setOpenModal(true);
   };
 
-  const columns = [
-    {
-      field: "requestNo",
-      headerName: "Request No.",
-      width: 200,
-    },
-    {
-      field: "typeOfTransaction",
-      headerName: "Transaction Type",
-      width: 150,
-    },
-    {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 150,
-      renderCell: (params) => {
-        const date = new Date(params.value);
-        return date.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "2-digit",
-        });
-      },
-    },
-    {
-      field: "transactionAmount",
-      headerName: "Amount",
-      width: 120,
-      renderCell: (params) => `₹${params.value.toLocaleString()}`,
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 120,
-    },
-    {
-      field: "company",
-      headerName: "Company",
-      width: 150,
-      renderCell: (params) => {
-        const company = params.value;
-        return company || "N/A";
-      },
-    },
-    {
-      field: "createdAt",
-      headerName: "Created At",
-      width: 150,
-      renderCell: (params) => {
-        const date = new Date(params.value);
-        return date.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "2-digit",
-        });
-      },
-    },
-  ];
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedRowData(null);
+  };
 
+
+
+  const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
 
   return (
     <>
@@ -259,11 +165,7 @@ export default function MyRequests() {
             gap: 0.2,
           }}
         >
-          <IconButton
-            size="small"
-            color="error"
-            sx={{ p: 0, mr: 0.5 }}
-          >
+          <IconButton size="small" color="error" sx={{ p: 0, mr: 0.5 }}>
             <Iconify icon="eva:info-fill" />
           </IconButton>
           <span
@@ -310,7 +212,7 @@ export default function MyRequests() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={data || []} 
+              rows={data || []}
               columns={columns}
               getRowId={(row) => row._id}
               autoHeight
@@ -382,7 +284,7 @@ export default function MyRequests() {
       </Container>
       <CustomDutyRequestModal
         open={openModal}
-        onClose={() => setOpenModal(false)}
+        onClose={handleCloseModal}
         rowData={selectedRowData}
         getRequestData={getData}
         selectedTab="myRequests"

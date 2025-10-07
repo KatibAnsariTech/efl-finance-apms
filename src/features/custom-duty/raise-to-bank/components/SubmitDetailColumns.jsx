@@ -70,7 +70,7 @@ export const RequestColumns = ({ onRequestClick }) => {
       headerAlign: "center",
     },
     {
-      field: "challanNumber",
+      field: "challanNo",
       headerName: "Challan number",
       flex: 1,
       minWidth: 140,
