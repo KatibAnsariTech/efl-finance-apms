@@ -6,6 +6,7 @@ import {
   Typography,
   Autocomplete,
   TextField,
+  Fade,
 } from "@mui/material";
 import {
   Business as BusinessIcon,
@@ -19,11 +20,11 @@ import { showErrorMessage } from "src/utils/errorUtils";
 export default function HierarchyManagementView() {
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [companiesLoading, setCompaniesLoading] = useState(true);
 
   const fetchDropdownData = async () => {
     try {
-      setLoading(true);
+      setCompaniesLoading(true);
       const res = await userRequest.get("/custom/getCompanies?limit=100");
       const companiesData = res?.data?.data?.companies || res?.data?.data || res?.data || [];
       const companiesArray = Array.isArray(companiesData) ? companiesData : [];
@@ -37,7 +38,7 @@ export default function HierarchyManagementView() {
       setCompanies([]);
       showErrorMessage(err);
     } finally {
-      setLoading(false);
+      setCompaniesLoading(false);
     }
   };
 
@@ -57,9 +58,6 @@ export default function HierarchyManagementView() {
     fetchDropdownData();
   }, []);
 
-  if (loading) {
-    return <CircularIndeterminate />;
-  }
 
   return (
     <Container maxWidth="xl">
@@ -74,6 +72,7 @@ export default function HierarchyManagementView() {
               getOptionLabel={(option) => option.name || ""}
               value={companies.find(company => company._id === selectedCompany) || null}
               onChange={handleCompanyChange}
+              loading={companiesLoading}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -103,16 +102,38 @@ export default function HierarchyManagementView() {
             />
           </Box>
           
-          {selectedCompany ? (
-            <HierarchyTable
-              companyId={selectedCompany}
-              getData={fetchTableData}
-            />
+          {companiesLoading ? (
+            <Fade in={companiesLoading} timeout={300}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '300px',
+                width: '100%',
+                gap: 2
+              }}>
+                <CircularIndeterminate />
+                <Typography variant="body2" color="text.secondary">
+                  Loading companies...
+                </Typography>
+              </Box>
+            </Fade>
           ) : (
-            <Box sx={{ textAlign: "center", py: 4 }}>
-              <Typography variant="body1" color="text.secondary">
-                Please select a company to view hierarchy levels
-              </Typography>
+            <Box>
+              {selectedCompany ? (
+                <HierarchyTable
+                  companyId={selectedCompany}
+                  getData={fetchTableData}
+                  companiesLoaded={!companiesLoading}
+                />
+              ) : (
+                <Box sx={{ textAlign: "center", py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    Please select a company to view hierarchy levels
+                  </Typography>
+                </Box>
+              )}
             </Box>
           )}
         </Card>

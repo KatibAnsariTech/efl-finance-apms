@@ -16,6 +16,8 @@ import {
   TextField,
   Autocomplete,
   Button,
+  CircularProgress,
+  Fade,
 } from "@mui/material";
 import {
   Update as UpdateIcon,
@@ -26,7 +28,7 @@ import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function HierarchyTable({ companyId, getData }) {
+export default function HierarchyTable({ companyId, getData, companiesLoaded = true }) {
   const theme = useTheme();
   const [hierarchyData, setHierarchyData] = useState([]);
   const [approvers, setApprovers] = useState([]);
@@ -112,10 +114,10 @@ export default function HierarchyTable({ companyId, getData }) {
   }, []);
 
   useEffect(() => {
-    if (approvers.length > 0) {
+    if (approvers.length > 0 && companiesLoaded && companyId) {
       fetchHierarchyData();
     }
-  }, [companyId, approvers]);
+  }, [companyId, approvers, companiesLoaded]);
 
   const handleEdit = (levelData) => {
     if (editingLevel === levelData.level) {
@@ -200,8 +202,27 @@ export default function HierarchyTable({ companyId, getData }) {
 
   return (
     <Box>
-      <TableContainer component={Paper}>
-        <Table>
+      {loading ? (
+        <Fade in={loading} timeout={300}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '250px',
+            width: '100%',
+            gap: 2
+          }}>
+            <CircularProgress size={40} />
+            <Typography variant="body2" color="text.secondary">
+              Loading hierarchy data...
+            </Typography>
+          </Box>
+        </Fade>
+      ) : (
+        <Fade in={!loading} timeout={300}>
+          <TableContainer component={Paper}>
+            <Table>
           <TableHead>
             <TableRow>
               <TableCell align="center" sx={{ width: "120px" }}>Level</TableCell>
@@ -299,6 +320,8 @@ export default function HierarchyTable({ companyId, getData }) {
           </TableBody>
         </Table>
       </TableContainer>
+        </Fade>
+      )}
 
       {hasChanges && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
