@@ -29,6 +29,7 @@ import { NAV } from "./config/layout";
 import Logo from "../../public/assets/logo-image.png";
 import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
 import generateNavigationConfig from "./config/navConfig.jsx";
+import { useJVM } from "src/contexts/JVMContext";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LockIcon from "@mui/icons-material/Lock";
@@ -114,6 +115,7 @@ const Sidebar = ({
   const [navigationItems, setNavigationItems] = useState([]);
   const router = useRouter();
   const pathname = usePathname();
+  const { jvmRequestCounts, autoReversalCounts } = useJVM();
 
   const collapsed =
     externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
@@ -191,6 +193,38 @@ const Sidebar = ({
 
   const handleNavigation = (path) => {
     router.push(path);
+  };
+
+  const renderNavigationText = (title, itemId) => {
+    let showRedDot = false;
+    
+    if (itemId === "jvm-requests" && jvmRequestCounts.pending > 0) {
+      showRedDot = true;
+    }
+    
+    if (itemId === "auto-reversal" && autoReversalCounts.active > 0) {
+      showRedDot = true;
+    }
+
+    if (showRedDot) {
+      return (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {title}
+          <span style={{
+            display: 'inline-block',
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: 'red',
+            marginLeft: 4,
+            animation: 'blinker 1s linear infinite',
+          }} />
+          <style>{`@keyframes blinker { 50% { opacity: 0.2; } }`}</style>
+        </span>
+      );
+    }
+    
+    return title;
   };
 
   return (
@@ -375,7 +409,7 @@ const Sidebar = ({
                             textOverflow: "ellipsis",
                           },
                         }}
-                        primary={item.title}
+                        primary={renderNavigationText(item.title, item.id)}
                       />
                       {item.hasSubItems && (
                         <Box
@@ -477,7 +511,7 @@ const Sidebar = ({
                                   textOverflow: "ellipsis",
                                 },
                               }}
-                              primary={subItem.title}
+                              primary={renderNavigationText(subItem.title, subItem.id)}
                             />
                           )}
                         </ListItemButton>
