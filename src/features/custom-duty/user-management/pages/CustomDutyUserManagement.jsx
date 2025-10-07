@@ -172,7 +172,8 @@ export default function CustomDutyUserManagement() {
       resizable: true,
       renderCell: (params) => {
         if (col.id === "sno") {
-          return page * rowsPerPage + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
+          const rowIndex = data.findIndex(row => row._id === params.id);
+          return rowIndex !== -1 ? page * rowsPerPage + rowIndex + 1 : 1;
         }
         if (col.id === "createdAt") {
           return fDateTime(params.value);
