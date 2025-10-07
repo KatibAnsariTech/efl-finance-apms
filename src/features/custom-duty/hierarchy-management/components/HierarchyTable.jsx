@@ -38,9 +38,13 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
 
   const fetchApprovers = async () => {
     try {
-      const response = await userRequest.get("/custom/getAllUsersWithRoles?userType=APPROVER");
-      const approversData = response?.data?.data?.users || [];
-      setApprovers(approversData);
+      const response = await userRequest.get(`/custom/getApproverByCompany/${companyId}`);
+      if (response?.data?.statusCode === 200 && response?.data?.data) {
+        const approversData = response.data.data.approvers || [];
+        setApprovers(approversData);
+      } else {
+        setApprovers([]);
+      }
     } catch (error) {
       console.error("Error fetching approvers:", error);
       setApprovers([]);
@@ -109,15 +113,22 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
   };
 
   useEffect(() => {
-    fetchApprovers();
+    if (companyId) {
+      fetchApprovers();
+    }
     setHierarchyData(createDefaultLevels());
-  }, []);
+  }, [companyId]);
 
   useEffect(() => {
     if (approvers.length > 0 && companiesLoaded && companyId) {
       fetchHierarchyData();
     }
   }, [companyId, approvers, companiesLoaded]);
+
+  useEffect(() => {
+    setEditingLevel(null);
+    setHasChanges(false);
+  }, [companyId]);
 
   const handleEdit = (levelData) => {
     if (editingLevel === levelData.level) {
