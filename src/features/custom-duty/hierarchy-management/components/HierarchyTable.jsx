@@ -62,17 +62,34 @@ export default function HierarchyTable({ companyId, getData }) {
 
     try {
       setLoading(true);
-      const res = await userRequest.get("/custom/getHierarchyLevels", {
+      const res = await userRequest.get("/custom/getApprovalTypesByCompany", {
         params: {
           companyId: companyId,
         },
       });
 
-      const result = res?.data?.data?.hierarchyLevels || [];
+      const approvalTypesData = res?.data?.data || [];
+      const approvalType = approvalTypesData.find(item => item.companyId._id === companyId);
+      const result = approvalType?.steps || [];
       
       const levels = [1, 2, 3, 4].map(level => {
         const existingData = result.find(item => item.level === level);
-        return existingData || {
+        if (existingData && existingData.status) {
+          const approversWithDetails = existingData.approverId.map(approver => ({
+            userRoleId: approver._id,
+            username: approver.user?.username || 'Unknown',
+            email: approver.user?.email || 'Unknown',
+            userId: approver.userId,
+            _id: approver._id
+          }));
+          return {
+            id: `level-${level}`,
+            level: level,
+            approvers: approversWithDetails,
+            status: existingData.status,
+          };
+        }
+        return {
           id: `level-${level}`,
           level: level,
           approvers: [],
@@ -82,7 +99,7 @@ export default function HierarchyTable({ companyId, getData }) {
 
       setHierarchyData(levels);
     } catch (error) {
-      console.error("Error fetching hierarchy data:", error);
+      console.error("Error fetching approval types data:", error);
       setHierarchyData(createDefaultLevels());
     } finally {
       setLoading(false);
@@ -95,8 +112,10 @@ export default function HierarchyTable({ companyId, getData }) {
   }, []);
 
   useEffect(() => {
-    fetchHierarchyData();
-  }, [companyId]);
+    if (approvers.length > 0) {
+      fetchHierarchyData();
+    }
+  }, [companyId, approvers]);
 
   const handleEdit = (levelData) => {
     if (editingLevel === levelData.level) {
@@ -157,23 +176,23 @@ export default function HierarchyTable({ companyId, getData }) {
       
       const requestBody = {
         companyId: companyId,
-        hierarchyLevels: hierarchyData.map(levelData => ({
-          level: levelData.level,
-          approvers: levelData.approvers,
-          status: levelData.status,
-          id: levelData.id
-        }))
+        steps: hierarchyData
+          .filter(levelData => levelData.status && levelData.approvers && levelData.approvers.length > 0)
+          .map(levelData => ({
+            level: levelData.level,
+            approverId: levelData.approvers.map(approver => approver._id || approver.userRoleId)
+          }))
       };
 
-      await userRequest.post("/custom/updateAllHierarchyLevels", requestBody);
+      await userRequest.put("/custom/updateApprovalType", requestBody);
 
       setHasChanges(false);
       setEditingLevel(null);
       fetchHierarchyData();
-      swal("Success!", "All hierarchy levels updated successfully!", "success");
+      swal("Success!", "Approval type updated successfully!", "success");
     } catch (error) {
-      console.error("Error updating all data:", error);
-      showErrorMessage(error, "Error updating data. Please try again later.", swal);
+      console.error("Error updating approval type:", error);
+      showErrorMessage(error, "Error updating approval type. Please try again later.", swal);
     } finally {
       setLoading(false);
     }
@@ -285,10 +304,9 @@ export default function HierarchyTable({ companyId, getData }) {
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
           <Button
             variant="contained"
-            // startIcon={<UpdateIcon />}
+            startIcon={<UpdateIcon />}
             onClick={handleUpdateAll}
-            // disabled={loading}
-            disabled={true}
+            disabled={loading}
             sx={{ minWidth: 150, py: 1.5 }}
           >
             {loading ? "Updating..." : "Update"}

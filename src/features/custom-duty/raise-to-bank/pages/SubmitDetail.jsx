@@ -13,8 +13,10 @@ import { useRouter } from "src/routes/hooks";
 import { useParams } from "react-router-dom";
 import { RequestColumns } from "../components/SubmitDetailColumns";
 import RequestStatus from "../components/RequestStatus";
+import CloseButton from "src/routes/components/CloseButton";
 
 export default function SubmitDetail() {
+  const router = useRouter();
   const { finalRequestNo } = useParams();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,11 +45,28 @@ export default function SubmitDetail() {
       );
 
       if (response.data?.statusCode === 200 && response.data?.data) {
-        const apiData = response.data.data;
-        const totalCount = response.data?.pagination?.total || apiData.length;
+        const { items, pagination } = response.data.data;
+        
+        const mappedData = items.map((item) => ({
+          _id: item._id,
+          requestNo: item.requestNo,
+          challanNo: item.challanNo,
+          documentNo: item.documentNo,
+          typeOfTransaction: item.typeOfTransaction,
+          transactionAmount: item.transactionAmount,
+          transactionDate: item.transactionDate,
+          companyId: item.companyId,
+          description: item.description,
+          referenceId: item.referenceId,
+          icegateAckNo: item.icegateAckNo,
+          formStatus: item.formStatus,
+          requesterId: item.requesterId,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        }));
 
-        setData(apiData);
-        setTotalCount(totalCount);
+        setData(mappedData);
+        setTotalCount(pagination?.total || mappedData.length);
       } else {
         setData([]);
         setTotalCount(0);
@@ -90,13 +109,23 @@ export default function SubmitDetail() {
     setSelectedRowData(null);
   };
 
+  const handleBack = () => {
+    router.push('/custom-duty/raise-to-bank');
+  };
+
   const columns = RequestColumns({
     onRequestClick: handleRequestClick,
   });
 
   return (
     <Container sx={{mb: -15 }}>
-      <Card sx={{ mt: 2, p: 2 }}>
+      <Card sx={{ mt: 2, p: 2, position: 'relative' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <CloseButton
+            onClick={handleBack}
+            tooltip="Back to Raise to Bank"
+          />
+        </Box>
         <Box
           sx={{
             width: "100%",

@@ -11,36 +11,36 @@ export const RequestColumns = ({ onRequestClick }) => {
       field: "requestNo",
       headerName: "Request No.",
       flex: 1,
-      minWidth: 150,
+      minWidth: 200,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Typography
-          sx={{
-            color: "#1976d2",
-            textDecoration: "underline",
-            cursor: "pointer",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-            fontSize: "0.875rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-            width: "100%",
-          }}
-          onClick={() =>
-            onRequestClick
-              ? onRequestClick(params.row)
-              : router.push(`/request-detail/${params.value}`)
-          }
-        >
-          {params.value}
-        </Typography>
-      ),
+      // renderCell: (params) => (
+      //   <Typography
+      //     sx={{
+      //       color: "#1976d2",
+      //       textDecoration: "underline",
+      //       cursor: "pointer",
+      //       fontWeight: 600,
+      //       "&:hover": { color: "#1565c0" },
+      //       fontSize: "0.875rem",
+      //       display: "flex",
+      //       alignItems: "center",
+      //       justifyContent: "center",
+      //       height: "100%",
+      //       width: "100%",
+      //     }}
+      //     onClick={() =>
+      //       onRequestClick
+      //         ? onRequestClick(params.row)
+      //         : router.push(`/request-detail/${params.value}`)
+      //     }
+      //   >
+      //     {params.value}
+      //   </Typography>
+      // ),
     },
     {
-      field: "requestedDate",
+      field: "createdAt",
       headerName: "Requested Date",
       flex: 1,
       minWidth: 180,
@@ -78,7 +78,7 @@ export const RequestColumns = ({ onRequestClick }) => {
       headerAlign: "center",
     },
     {
-      field: "transactionType",
+      field: "typeOfTransaction",
       headerName: "Type of transaction",
       flex: 1,
       minWidth: 150,
@@ -130,20 +130,26 @@ export const RequestColumns = ({ onRequestClick }) => {
       ),
     },
     {
-      field: "status",
-      headerName: "Status",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "company",
+      field: "companyId",
       headerName: "Company",
       flex: 1,
       minWidth: 100,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => (
+        <Typography
+          sx={{
+            fontSize: "0.875rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            width: "100%",
+          }}
+        >
+          {params.value?.name || "-"}
+        </Typography>
+      ),
     },
     {
       field: "description",
