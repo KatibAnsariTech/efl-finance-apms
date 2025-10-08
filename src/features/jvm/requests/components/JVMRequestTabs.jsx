@@ -17,7 +17,7 @@ function JVMRequestTabs({ selectedTab, setSelectedTab, menuItems, jvmRequestCoun
         {menuItems.map((item, index) => {
           let label = item.label;
           
-          if (item.value === "pendingWithMe" && jvmRequestCounts.pending > 0) {
+          if (item.value === "pendingWithMe" && jvmRequestCounts.pendingWithMe > 0) {
             label = (
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 {item.label}

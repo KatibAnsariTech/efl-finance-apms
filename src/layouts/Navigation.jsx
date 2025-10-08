@@ -115,7 +115,7 @@ const Sidebar = ({
   const [navigationItems, setNavigationItems] = useState([]);
   const router = useRouter();
   const pathname = usePathname();
-  const { jvmRequestCounts, autoReversalCounts } = useJVM();
+  const { jvmRequestCounts } = useJVM();
 
   const collapsed =
     externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
@@ -198,11 +198,11 @@ const Sidebar = ({
   const renderNavigationText = (title, itemId) => {
     let showRedDot = false;
     
-    if (itemId === "jvm-requests" && jvmRequestCounts.pending > 0) {
+    if (itemId === "jvm-requests" && jvmRequestCounts.pendingWithMe > 0) {
       showRedDot = true;
     }
     
-    if (itemId === "auto-reversal" && autoReversalCounts.active > 0) {
+    if (itemId === "auto-reversal" && jvmRequestCounts.active > 0) {
       showRedDot = true;
     }
 

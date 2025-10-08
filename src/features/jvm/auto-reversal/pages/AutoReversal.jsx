@@ -22,7 +22,7 @@ import { useJVM } from "src/contexts/JVMContext";
 export default function AutoReversal() {
   const router = useRouter();
   const navigate = useNavigate();
-  const { autoReversalCounts } = useJVM();
+  const { jvmRequestCounts } = useJVM();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -187,7 +187,7 @@ export default function AutoReversal() {
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
           menuItems={menuItems}
-          autoReversalCounts={autoReversalCounts}
+          autoReversalCounts={jvmRequestCounts}
         />
         <Card sx={{ mt: 2, p: 2 }}>
           <div
