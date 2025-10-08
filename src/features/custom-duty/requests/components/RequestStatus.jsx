@@ -50,17 +50,18 @@ export default function RequestStatus({
         const mappedData = {
           requester: apiData.requester,
           steps: apiData.steps.map(step => {
-            const firstApproval = step.approvals[0];
-            const allApprovers = step.approvals.map(approval => approval.approverId);
-            const allStatuses = step.approvals.map(approval => approval.status);
-            const allComments = step.approvals.map(approval => approval.comment).filter(Boolean);
+            const actualApprovals = step.approvals.filter(approval => approval.status !== 'Parallel Approved');
+            const firstApproval = actualApprovals[0] || step.approvals[0];
+            const actualApprovers = actualApprovals.map(approval => approval.approverId);
+            const actualStatuses = actualApprovals.map(approval => approval.status);
+            const actualComments = actualApprovals.map(approval => approval.comment).filter(Boolean);
             
             return {
-              approverId: allApprovers,
+              approverId: actualApprovers,
               position: step.position,
-              status: allStatuses.includes('Approved') ? 'Approved' : 
-                     allStatuses.includes('Declined') ? 'Declined' : 'Pending',
-              comment: allComments.join(', ') || '',
+              status: actualStatuses.includes('Approved') ? 'Approved' : 
+                     actualStatuses.includes('Declined') ? 'Declined' : 'Pending',
+              comment: actualComments.join(', ') || '',
               created: firstApproval?.created || step.createdAt,
               createdAt: step.createdAt,
               updatedAt: step.updatedAt
