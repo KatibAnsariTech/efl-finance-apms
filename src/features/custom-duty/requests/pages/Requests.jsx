@@ -29,6 +29,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
+import ColorIndicators from "../../my-requests/components/ColorIndicators";
 
 export default function Requests() {
   const router = useRouter();
@@ -76,10 +77,7 @@ export default function Requests() {
         },
       });
 
-      const apiData =
-        response.data.data.forms ||
-        response.data.data.requests ||
-        response.data.data;
+      const apiData = response.data.data.forms;
       const totalCount =
         response.data.data.totalForms || response.data.data.totalRequests || 0;
 
@@ -111,7 +109,6 @@ export default function Requests() {
       }
     }
   };
-
 
   useEffect(() => {
     setPage(0);
@@ -265,83 +262,83 @@ export default function Requests() {
               handleRowsPerPageChange(newModel.pageSize);
             }}
             pageSizeOptions={[5, 10, 25, 50]}
-          getRowClassName={(params) => {
-            const status = params.row.status?.toLowerCase();
-            if (status === "pending") return "row-pending";
-            if (status === "rejected") return "row-rejected";
-            if (status === "approved") return "row-approved";
-            if (status === "clarification needed") return "row-clarification";
-            if (status === "draft") return "row-draft";
-            if (status === "submitted") return "row-submitted";
-            if (status === "declined") return "row-declined";
-            return "";
-          }}
-          sx={{
-            "& .MuiDataGrid-cell": {
-              "&:focus": { outline: "none" },
-              "&:focus-visible": { outline: "none" },
-            },
-            "& .MuiDataGrid-cell[data-field='checkbox']": {
-              justifyContent: "center",
-              display: "flex",
-              alignItems: "center",
-              padding: "8px 0",
-            },
-            "& .MuiDataGrid-cell[data-field='requestNo']": {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f5f6f8",
-              fontWeight: "bold",
-              color: "#637381",
-            },
-            "& .MuiDataGrid-columnHeader[data-field='checkbox']": {
-              justifyContent: "center",
-              display: "flex",
-              alignItems: "center",
-              padding: "8px 0",
-            },
-            "& .MuiDataGrid-columnHeader[data-field='requestNo']": {
-              justifyContent: "flex-start",
-              display: "flex",
-              alignItems: "center",
-            },
-            "& .MuiDataGrid-columnHeaderTitle": {
-              width: "100%",
-              textAlign: "center",
-            },
-            "& .MuiDataGrid-row": {
-              "&:focus": { outline: "none" },
-              "&:focus-visible": { outline: "none" },
-            },
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-            },
-            "& .row-pending": {
-              backgroundColor: "#f4f5ba !important",
-            },
-            "& .row-rejected": {
-              backgroundColor: "#e6b2aa !important",
-            },
-            "& .row-approved": {
-              backgroundColor: "#baf5c2 !important",
-            },
-            "& .row-clarification": {
-              backgroundColor: "#9be7fa !important",
-            },
-            "& .row-draft": {
-              backgroundColor: "#e0e0e0 !important",
-            },
-            "& .row-submitted": {
-              backgroundColor: "#bbdefb !important",
-            },
-            "& .row-declined": {
-              backgroundColor: "#e6b2aa !important",
-            },
-          }}
-        />
+            getRowClassName={(params) => {
+              const status = params.row.status?.toLowerCase();
+              if (status === "pending") return "row-pending";
+              if (status === "rejected") return "row-rejected";
+              if (status === "approved") return "row-approved";
+              if (status === "clarification needed") return "row-clarification";
+              if (status === "draft") return "row-draft";
+              if (status === "submitted") return "row-submitted";
+              if (status === "declined") return "row-declined";
+              return "";
+            }}
+            sx={{
+              "& .MuiDataGrid-cell": {
+                "&:focus": { outline: "none" },
+                "&:focus-visible": { outline: "none" },
+              },
+              "& .MuiDataGrid-cell[data-field='checkbox']": {
+                justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                padding: "8px 0",
+              },
+              "& .MuiDataGrid-cell[data-field='requestNo']": {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f5f6f8",
+                fontWeight: "bold",
+                color: "#637381",
+              },
+              "& .MuiDataGrid-columnHeader[data-field='checkbox']": {
+                justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                padding: "8px 0",
+              },
+              "& .MuiDataGrid-columnHeader[data-field='requestNo']": {
+                justifyContent: "flex-start",
+                display: "flex",
+                alignItems: "center",
+              },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                width: "100%",
+                textAlign: "center",
+              },
+              "& .MuiDataGrid-row": {
+                "&:focus": { outline: "none" },
+                "&:focus-visible": { outline: "none" },
+              },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+              "& .row-pending": {
+                backgroundColor: "#f4f5ba !important",
+              },
+              "& .row-rejected": {
+                backgroundColor: "#e6b2aa !important",
+              },
+              "& .row-approved": {
+                backgroundColor: "#baf5c2 !important",
+              },
+              "& .row-clarification": {
+                backgroundColor: "#9be7fa !important",
+              },
+              "& .row-draft": {
+                backgroundColor: "#e0e0e0 !important",
+              },
+              "& .row-submitted": {
+                backgroundColor: "#bbdefb !important",
+              },
+              "& .row-declined": {
+                backgroundColor: "#e6b2aa !important",
+              },
+            }}
+          />
         </Box>
 
         {selectedRows.length > 0 && selectedTab !== "submitted" && (
@@ -401,6 +398,22 @@ export default function Requests() {
             />
           </Box>
         )}
+        <Box
+          sx={{
+            position: "relative",
+            height: "52px", 
+            marginTop: "-52px", 
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "16px",
+            zIndex: 0, 
+            pointerEvents: "none", 
+          }}
+        >
+          <Box sx={{ pointerEvents: "auto" }}>
+            <ColorIndicators />
+          </Box>
+        </Box>
       </Card>
 
       <RequestStatus

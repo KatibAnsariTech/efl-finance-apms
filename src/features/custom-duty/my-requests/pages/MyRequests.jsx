@@ -41,7 +41,6 @@ export default function MyRequests() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
@@ -146,8 +145,6 @@ export default function MyRequests() {
     setSelectedRowData(null);
   };
 
-
-
   const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
 
   return (
@@ -232,6 +229,7 @@ export default function MyRequests() {
                 if (status === "pending") return "row-pending";
                 if (status === "rejected") return "row-rejected";
                 if (status === "approved") return "row-approved";
+                if (status === "declined") return "row-declined";
                 if (status === "clarification needed")
                   return "row-clarification";
                 return "";
@@ -261,19 +259,22 @@ export default function MyRequests() {
                 "& .row-clarification": {
                   backgroundColor: "#9be7fa !important",
                 },
+                "& .row-declined": {
+                  backgroundColor: "#e6b2aa !important",
+                },
               }}
             />
           </Box>
           <Box
             sx={{
               position: "relative",
-              height: "52px", // Match DataGrid footer height
-              marginTop: "-52px", // Overlap with DataGrid footer
+              height: "52px",
+              marginTop: "-52px",
               display: "flex",
               alignItems: "center",
               paddingLeft: "16px",
-              zIndex: 0, // Lower z-index so pagination is clickable
-              pointerEvents: "none", // Allow clicks to pass through
+              zIndex: 0,
+              pointerEvents: "none",
             }}
           >
             <Box sx={{ pointerEvents: "auto" }}>
