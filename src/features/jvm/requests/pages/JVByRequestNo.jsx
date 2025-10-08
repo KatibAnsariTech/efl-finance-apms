@@ -6,16 +6,26 @@ import Container from "@mui/material/Container";
 import { FormTableToolbar } from "src/components/table";
 import { userRequest } from "src/requestMethod";
 import { useRouter, useParams } from "src/routes/hooks";
-import { Box } from "@mui/material";
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  TextField,
+  Button,
+  Stack,
+} from "@mui/material";
 import CloseButton from "src/routes/components/CloseButton";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
 import { JVByRequestNoColumns } from "../components/JVByRequestNoColumns";
 import JVCurrentStatus from "../components/JVCurrentStatus";
+import swal from "sweetalert";
+import { useJVM } from "src/contexts/JVMContext";
 
 export default function JVByRequestNo() {
   const router = useRouter();
   const { parentId } = useParams();
+  const { fetchJVMRequestCounts } = useJVM();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -24,6 +34,10 @@ export default function JVByRequestNo() {
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
   const [jvData, setJvData] = useState(null);
+  const [comment, setComment] = useState("");
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [assigned, setAssigned] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -69,10 +83,11 @@ export default function JVByRequestNo() {
   const getRequestInfo = async () => {
     try {
       const response = await userRequest.get(
-        `jvm/getRequestInfo?parentId=${parentId}`
+        `jvm/getRequestInfoByParentId?parentId=${parentId}`
       );
       if (response.data.statusCode === 200) {
         setJvData(response.data.data);
+        setAssigned(response.data.data.assigned || false);
       }
     } catch (error) {
       console.error("Error fetching request info:", error);
@@ -101,6 +116,53 @@ export default function JVByRequestNo() {
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
       setSearch(value);
+    }
+  };
+
+  const handleApprovalAction = async (action) => {
+    if (action === "rejected" && !comment.trim()) {
+      swal("Warning", "Please provide a comment for rejection", "warning");
+      return;
+    }
+
+    if (!parentId) {
+      swal("Error", "No request ID found", "error");
+      return;
+    }
+
+    try {
+      if (action === "approved") {
+        setApproveLoading(true);
+      } else {
+        setRejectLoading(true);
+      }
+
+      const apiEndpoint =
+        action === "approved" ? "jvm/acceptForm" : "jvm/declineForm";
+
+      const response = await userRequest.post(apiEndpoint, {
+        id: parentId,
+        comment:
+          comment.trim() || (action === "approved" ? "Approved" : "Declined"),
+      });
+
+      if (response.data.statusCode === 200) {
+        swal("Success", `JV ${action} successfully`, "success");
+        setComment("");
+        await getRequestInfo();
+        await fetchJVMRequestCounts();
+      } else {
+        throw new Error(response.data.message || `Failed to ${action} JV`);
+      }
+    } catch (error) {
+      console.error("Error performing action:", error);
+      showErrorMessage(error, `Failed to ${action} JV`, swal);
+    } finally {
+      if (action === "approved") {
+        setApproveLoading(false);
+      } else {
+        setRejectLoading(false);
+      }
     }
   };
 
@@ -202,6 +264,63 @@ export default function JVByRequestNo() {
           {jvData && (
             <Box sx={{ mt: 3 }}>
               <JVCurrentStatus steps={jvData.steps || []} data={jvData} />
+            </Box>
+          )}
+
+          {assigned && (
+            <Box
+              sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
+            >
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  JV Actions
+                </Typography>
+
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => handleApprovalAction("approved")}
+                    disabled={approveLoading || rejectLoading}
+                    startIcon={
+                      approveLoading ? <CircularProgress size={20} /> : null
+                    }
+                    sx={{ minWidth: 120 }}
+                  >
+                    {approveLoading ? "Processing..." : "Approved"}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleApprovalAction("rejected")}
+                    disabled={approveLoading || rejectLoading}
+                    startIcon={
+                      rejectLoading ? <CircularProgress size={20} /> : null
+                    }
+                    sx={{ minWidth: 120 }}
+                  >
+                    {rejectLoading ? "Processing..." : "Rejected"}
+                  </Button>
+                </Stack>
+              </Stack>
+
+              <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                Leave a comment with your response
+              </Typography>
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                placeholder="Comment..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                sx={{ mb: 2, backgroundColor: "#fff" }}
+              />
             </Box>
           )}
         </Card>
