@@ -130,10 +130,11 @@ export const RequestColumns = ({
       minWidth: 120,
     },
     {
-      field: "company",
+      field: "companyId",
       headerName: "Company",
       flex: 1,
       minWidth: 100,
+      renderCell: (params) => params.value?.name || "-",
     },
     {
       field: "description",
