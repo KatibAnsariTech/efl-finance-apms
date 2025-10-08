@@ -22,7 +22,7 @@ import { useJVM } from "src/contexts/JVMContext";
 export default function AutoReversal() {
   const router = useRouter();
   const navigate = useNavigate();
-  const { jvmRequestCounts } = useJVM();
+  const { jvmRequestCounts, fetchJVMRequestCounts } = useJVM();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -135,6 +135,7 @@ export default function AutoReversal() {
         await userRequest.delete(`jvm/deleteReversal/${row._id}`);
         swal("Deleted!", "Auto reversal request has been deleted successfully.", "success");
         getData();
+        await fetchJVMRequestCounts();
       } catch (error) {
         console.error("Delete error:", error);
         showErrorMessage(error, "Failed to delete auto reversal request. Please try again.", swal);

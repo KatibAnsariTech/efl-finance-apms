@@ -22,10 +22,12 @@ import ColorIndicators from "../components/ColorIndicators";
 import CloseButton from "src/routes/components/CloseButton";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "src/routes/hooks";
+import { useJVM } from "src/contexts/JVMContext";
 
 export default function JVDetails() {
   const router = useRouter();
   const { parentId, groupId } = useParams();
+  const { fetchJVMRequestCounts } = useJVM();
   
   const requestId = groupId;
   const [data, setData] = useState([]);
@@ -194,8 +196,8 @@ export default function JVDetails() {
       if (response.data.statusCode === 200) {
         swal("Success", `JV ${action} successfully`, "success");
         setComment("");
-        // Only refresh request info, not form items
         await getRequestInfo();
+        await fetchJVMRequestCounts();
       } else {
         throw new Error(response.data.message || `Failed to ${action} JV`);
       }
