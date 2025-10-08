@@ -36,6 +36,9 @@ const InitiateJVPage = lazy(() =>
 const JVDetailPage = lazy(() =>
   import("src/features/jvm/requested-jv/pages/JVDetails")
 );
+const JVByRequestNoPage = lazy(() =>
+  import("src/features/jvm/requested-jv/pages/JVByRequestNo")
+);
 const AutoReversalPage = lazy(() =>
   import("src/features/jvm/auto-reversal/pages/AutoReversal")
 );
@@ -53,6 +56,9 @@ const JVMRequestsPage = lazy(() =>
 );
 const JVRequestDetailPage = lazy(() =>
   import("src/features/jvm/requests/pages/JVDetails")
+);
+const JVRequestByRequestNoPage = lazy(() =>
+  import("src/features/jvm/requests/pages/JVByRequestNo")
 );
 
 const ImportPaymentPage = lazy(() =>
@@ -385,6 +391,12 @@ export default function Router() {
           ),
         },
         {
+          path: "/jvm/requested-jvs/:parentId",
+          element: (
+            <ProtectedRoute path="/jvm/requested-jvs" element={<JVByRequestNoPage />} />
+          ),
+        },
+        {
           path: "/jvm/auto-reversal",
           element: (
             <ProtectedRoute
@@ -421,7 +433,16 @@ export default function Router() {
           ),
         },
         {
-          path: "/jvm/requests/detail/:jvId",
+          path: "/jvm/requests/:parentId",
+          element: (
+            <ProtectedRoute
+              path="/jvm/requests"
+              element={<JVRequestByRequestNoPage />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/requests/:parentId/:groupId",
           element: (
             <ProtectedRoute
               path="/jvm/requests"
@@ -430,7 +451,7 @@ export default function Router() {
           ),
         },
         {
-          path: "/jvm/requested-jvs/detail/:jvId",
+          path: "/jvm/requested-jvs/:parentId/:groupId",
           element: (
             <ProtectedRoute
               path="/jvm/requested-jvs"

@@ -4,52 +4,35 @@ import Card from "@mui/material/Card";
 import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
 import { FormTableToolbar } from "src/components/table";
-import { getComparator } from "src/utils/utils";
 import { userRequest } from "src/requestMethod";
-import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
-import { useRouter } from "src/routes/hooks";
+import { useRouter, useParams } from "src/routes/hooks";
 import { Box } from "@mui/material";
-import RequestStatus from "../components/RequestStatus";
-import ColorIndicators from "../components/ColorIndicators";
-import swal from "sweetalert";
+import CloseButton from "src/routes/components/CloseButton";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
-import { RequestedJVColumns } from "../components/RequestedJVColumns";
+import { JVByRequestNoColumns } from "../components/JVByRequestNoColumns";
+import JVCurrentStatus from "../components/JVCurrentStatus";
 
-export default function RequestedJV() {
+export default function JVByRequestNo() {
   const router = useRouter();
+  const { parentId } = useParams();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [limit, setLimit] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
-  const [selectedTab, setSelectedTab] = useState("all");
-  const [statusCounts, setStatusCounts] = useState({
-    all: 0,
-    pending: 0,
-    approved: 0,
-    declined: 0,
-  });
-  const [openStatusModal, setOpenStatusModal] = useState(false);
-  const [selectedRowData, setSelectedRowData] = useState(null);
-
-  const menuItems = [
-    { label: "All", value: "all", count: statusCounts.all },
-    { label: "Pending", value: "Pending", count: statusCounts.pending },
-    { label: "Approved", value: "Approved", count: statusCounts.approved },
-    { label: "Declined", value: "Declined", count: statusCounts.declined },
-  ];
+  const [searchDebounced, setSearchDebounced] = useState("");
+  const [jvData, setJvData] = useState(null);
 
   const getData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get("jvm/getForms", {
+      const response = await userRequest.get(`jvm/getFormsByParentId?parentId=${parentId}`, {
         params: {
           page: page + 1,
           limit: rowsPerPage,
-          status: selectedTab !== "all" ? selectedTab : undefined,
+          search: searchDebounced || undefined,
         },
       });
 
@@ -58,22 +41,12 @@ export default function RequestedJV() {
         const pagination = response.data.data.pagination;
         const processedData = apiData.map((item, index) => ({
           ...item,
-          id: item.groupId || `${item.parentId}-${index}`,
-          groupId: item.groupId || `${item.parentId}-${index}`,
+          id: item.groupId || `group-${index}`,
+          groupId: item.groupId || `group-${index}`,
           createdAt: new Date(item.createdAt),
         }));
         setData(processedData);
         setTotalCount(pagination.totalCount);
-        const counts = {
-          all: pagination.totalCount,
-          pending: processedData.filter((item) => item.status === "Pending")
-            .length,
-          approved: processedData.filter((item) => item.status === "Approved")
-            .length,
-          declined: processedData.filter((item) => item.status === "Declined")
-            .length,
-        };
-        setStatusCounts(counts);
       } else {
         throw new Error(response.data.message || "Failed to fetch data");
       }
@@ -85,9 +58,50 @@ export default function RequestedJV() {
     }
   };
 
+  const getRequestInfo = async () => {
+    try {
+      if (!parentId) {
+        setJvData(null);
+        return;
+      }
+
+      const response = await userRequest.get(
+        `jvm/getRequestInfoByParentId?parentId=${parentId}`
+      );
+
+      if (response.data.statusCode === 200) {
+        const requestData = response.data.data;
+        setJvData(requestData);
+      } else {
+        throw new Error(
+          response.data.message || "Failed to fetch request info"
+        );
+      }
+    } catch (err) {
+      console.error("Error fetching request info:", err);
+      showErrorMessage(err, "Failed to fetch request details", swal);
+      setJvData(null);
+    }
+  };
+
   useEffect(() => {
     getData();
-  }, [page, rowsPerPage, selectedTab]);
+  }, [page, rowsPerPage, searchDebounced, parentId]);
+
+  useEffect(() => {
+    if (parentId) {
+      getRequestInfo();
+    }
+  }, [parentId]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchDebounced(search);
+      setPage(0);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
@@ -95,67 +109,25 @@ export default function RequestedJV() {
     }
   };
 
-  const handleExport = () => {
-    console.log("Export clicked");
-  };
-
-  const handleStatusClick = (rowData) => {
-    setSelectedRowData(rowData);
-    setOpenStatusModal(true);
-  };
-
-  const handleCloseStatusModal = () => {
-    setOpenStatusModal(false);
-    setSelectedRowData(null);
-  };
-
-  const handleDelete = async (row) => {
-    // Only allow deletion if canDelete is true
-    if (!row.canDelete) {
-      swal("Cannot Delete", "This request cannot be deleted.", "warning");
-      return;
-    }
-
-    const result = await swal({
-      title: "Are you sure?",
-      text: "Once deleted, you will not be able to recover this journal voucher request!",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    });
-
-    if (result) {
-      try {
-        await userRequest.delete(`jvm/deleteRequest/${row.groupId}`);
-        swal("Deleted!", "Journal voucher request has been deleted successfully.", "success");
-        getData();
-      } catch (error) {
-        console.error("Delete error:", error);
-        showErrorMessage(error, "Failed to delete journal voucher request. Please try again.", swal);
-      }
-    }
-  };
-
-  const columns = RequestedJVColumns({ handleStatusClick, router, handleDelete });
+  const columns = JVByRequestNoColumns({
+    router,
+    parentId,
+  });
 
   return (
     <>
       <Helmet>
-        <title>Requested JV's</title>
+        <title>JVs by Request No - {parentId}</title>
       </Helmet>
 
       <Container>
-        <FormRequestTabs
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
-          menuItems={menuItems}
-        />
         <Card sx={{ mt: 2, p: 2 }}>
-          <div
-            style={{
+          <Box
+            sx={{
+              mb: 2,
               display: "flex",
+              alignItems: "center",
               justifyContent: "space-between",
-              marginRight: "20px",
             }}
           >
             <FormTableToolbar
@@ -163,13 +135,17 @@ export default function RequestedJV() {
               onFilterChange={handleFilterChange}
               placeholder="Search JVs..."
             />
-          </div>
+             <CloseButton
+               onClick={() => router.back()}
+               tooltip="Back to Requested JV"
+             />
+          </Box>
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
               rows={data || []}
               columns={columns}
-              getRowId={(row) => row?.id}
+              getRowId={(row) => row?.groupId}
               loading={loading}
               pagination
               paginationMode="server"
@@ -178,7 +154,6 @@ export default function RequestedJV() {
               onPaginationModelChange={(newModel) => {
                 setPage(newModel.page);
                 setRowsPerPage(newModel.pageSize);
-                setLimit(newModel.pageSize);
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               getRowClassName={(params) => {
@@ -250,31 +225,12 @@ export default function RequestedJV() {
               }}
             />
           </Box>
-          <Box
-            sx={{
-              position: "relative",
-              height: "52px",
-              marginTop: "-52px",
-              display: "flex",
-              alignItems: "center",
-              paddingLeft: "16px",
-              zIndex: 0,
-              pointerEvents: "none",
-            }}
-          >
-            <Box sx={{ pointerEvents: "auto" }}>
-              <ColorIndicators />
+          {jvData && (
+            <Box sx={{ mt: 3 }}>
+              <JVCurrentStatus steps={jvData.steps || []} data={jvData} />
             </Box>
-          </Box>
+          )}
         </Card>
-
-        <RequestStatus
-          open={openStatusModal}
-          onClose={handleCloseStatusModal}
-          rowData={selectedRowData}
-          getRequestData={getData}
-          selectedTab="jv-status"
-        />
       </Container>
     </>
   );

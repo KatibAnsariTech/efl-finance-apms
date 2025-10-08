@@ -13,11 +13,13 @@ import { AutoReversalForm } from "../components/AutoReversalDetail";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { AutoReversalDetailsColumns } from "../components/AutoReversalDetailsColumns";
+import { useJVM } from "src/contexts/JVMContext";
 import ColorIndicators from "../components/ColorIndicators";
 
 export default function AutoReversalDetails() {
   const router = useRouter();
   const { arId } = useParams();
+  const { fetchJVMRequestCounts } = useJVM();
   const location = useLocation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -147,8 +149,8 @@ export default function AutoReversalDetails() {
       );
 
       if (response.data.statusCode === 200) {
-        // Refresh details and list after successful submission
         await Promise.all([getRequestInfo(), getData()]);
+        await fetchJVMRequestCounts();
         swal({
           title: "Success",
           text: "Reversal submitted successfully!",

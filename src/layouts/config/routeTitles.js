@@ -19,12 +19,15 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/credit-deviation/master-sheet")) return "Master Sheet";
 
   // JVM routes
-  if (path.startsWith("/jvm/requested-jvs/jv-detail/")) return "JV Detail";
+  if (path.startsWith("/jvm/requested-jvs/") && path.split('/').length === 5) return "JV Detail";
+  if (path.startsWith("/jvm/requested-jvs/") && path.split('/').length === 4) return "JVs by Group";
   if (path.startsWith("/jvm/requested-jvs")) return "JV Status";
   if (path.startsWith("/jvm/initiate-jv")) return "Initiate Journal Voucher";
   if (path.startsWith("/jvm/auto-reversal")) return "Auto Reversal";
   if (path.startsWith("/jvm/master")) return "Master Data";
   if (path.startsWith("/jvm/usermanagement")) return "User Management";
+  if (path.startsWith("/jvm/requests/") && path.split('/').length === 5) return "JV Detail";
+  if (path.startsWith("/jvm/requests/") && path.split('/').length === 4) return "JVs by Group";
   if (path.startsWith("/jvm/requests")) return "Requests";
 
   // Import Payment routes

@@ -130,7 +130,6 @@ export default function Requests() {
         <Box
           sx={{
             width: "100%",
-            height: 380,
           }}
         >
           <DataGrid
@@ -138,6 +137,7 @@ export default function Requests() {
             columns={columns}
             loading={loading}
             disableRowSelectionOnClick
+            autoHeight
             pagination
             paginationMode="server"
             rowCount={totalCount}
