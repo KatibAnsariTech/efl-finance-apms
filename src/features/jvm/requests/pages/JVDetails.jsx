@@ -21,15 +21,13 @@ import JVCurrentStatus from "../components/JVCurrentStatus";
 import ColorIndicators from "../components/ColorIndicators";
 import CloseButton from "src/routes/components/CloseButton";
 import { Helmet } from "react-helmet-async";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams } from "src/routes/hooks";
 
 export default function JVDetails() {
   const router = useRouter();
-  const { jvId } = useParams();
-  const [searchParams] = useSearchParams();
+  const { parentId, groupId } = useParams();
   
-  // Get ID from either URL parameter or query parameter
-  const requestId = jvId || searchParams.get('id');
+  const requestId = groupId;
   const [data, setData] = useState([]);
   const [jvData, setJvData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +43,7 @@ export default function JVDetails() {
   const [selectedRowData, setSelectedRowData] = useState(null);
 
   const handleBack = () => {
-    router.push("/jvm/requests");
+    router.back();
   };
 
 
@@ -219,24 +217,25 @@ export default function JVDetails() {
   return (
     <>
       <Helmet>
-        <title>JV Details - {requestId}</title>
+        <title>JV Details - {groupId}</title>
       </Helmet>
 
       <Container>
         <Card sx={{ mt: 2, p: 2 }}>
-          <Box
-            sx={{
+          <div
+            style={{
               display: "flex",
-              justifyContent: "flex-end",
+              justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              marginBottom: "16px",
             }}
           >
+            <h2>JV Details: {groupId}</h2>
             <CloseButton
-              tooltip="Back to JV Requests"
               onClick={handleBack}
+              tooltip="Back to JV Requests"
             />
-          </Box>
+          </div>
           <Box
             sx={{
               width: "100%",
