@@ -14,7 +14,7 @@ import { action } from "src/theme/palette";
 import { format } from "date-fns";
 import { useRouter } from "src/routes/hooks";
 import ColorIndicators from "./colorIndicator";
-import { useCounts } from "src/contexts/CountsContext";
+import { useCRDCount } from "src/contexts/CRDCountContext";
 import { Box } from "@mui/material";
 import RequestModal from "./RequestModal";
 import { fDateTime } from "src/utils/format-time";
@@ -22,7 +22,7 @@ import swal from 'sweetalert';
 import { showErrorMessage } from 'src/utils/errorUtils';
 
 export default function FormPage() {
-  const { clarificationCount } = useCounts();
+  const { clarificationCount } = useCRDCount();
   const menuItems = [
     {
       label: `Clarification Needed${

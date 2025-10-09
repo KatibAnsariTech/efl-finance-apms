@@ -1,6 +1,6 @@
 import { Box, CircularProgress } from "@mui/material";
 import React, { lazy, useState, useCallback, useEffect } from "react";
-import { useCounts } from "src/contexts/CountsContext";
+import { useCRDCount } from "src/contexts/CRDCountContext";
 import { useForm, FormProvider } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { userRequest } from "src/requestMethod";
@@ -21,7 +21,7 @@ const ApprovalForm = lazy(() =>
 );
 
 function FormDetailsView() {
-  const { refreshCounts } = useCounts();
+  const { refreshCounts } = useCRDCount();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState("");

@@ -18,7 +18,7 @@ import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import image1 from "../../../../public/assets/image1.png";
 import companyLogo from "../../../../public/assets/spacetotech.png";
 import { useForm } from "react-hook-form";
-import { useCounts } from "src/contexts/CountsContext";
+import { useCRDCount } from "src/contexts/CRDCountContext";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 import { getUser } from "src/utils/userUtils";
 
@@ -32,7 +32,7 @@ export default function LoginView() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginProcessing, setLoginProcessing] = useState(false);
   const navigate = useNavigate();
-  const { refreshCounts } = useCounts();
+  const { refreshCounts } = useCRDCount();
 
   const notifySuccess = (message) => toast.success(message);
 

@@ -2,9 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { userRequest } from "src/requestMethod";
 import { useAccount } from "src/hooks/use-account";
 
-const CountsContext = createContext();
+const CRDCountContext = createContext();
 
-export const CountsProvider = ({ children }) => {
+export const CRDCountProvider = ({ children }) => {
   const account = useAccount();
   const [approvalCount, setApprovalCount] = useState(0);
   const [clarificationCount, setClarificationCount] = useState(0);
@@ -36,10 +36,10 @@ export const CountsProvider = ({ children }) => {
   }, [account, hasInitialized, fetchCounts]);
 
   return (
-    <CountsContext.Provider value={{ approvalCount, clarificationCount, refreshCounts: fetchCounts }}>
+    <CRDCountContext.Provider value={{ approvalCount, clarificationCount, refreshCounts: fetchCounts }}>
       {children}
-    </CountsContext.Provider>
+    </CRDCountContext.Provider>
   );
 };
 
-export const useCounts = () => useContext(CountsContext); 
+export const useCRDCount = () => useContext(CRDCountContext); 

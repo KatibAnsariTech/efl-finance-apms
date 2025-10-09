@@ -16,7 +16,7 @@ import Divider from "@mui/material/Divider";
 import Iconify from "src/components/iconify";
 import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
-// import { useCounts } from "src/contexts/CountsContext";
+// import { useCRDCount } from "src/contexts/CRDCountContext";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 
 export default function OTPVerificationView() {
@@ -31,7 +31,7 @@ export default function OTPVerificationView() {
   const [timeLeft, setTimeLeft] = useState(60);
   const navigate = useNavigate();
   const location = useLocation();
-  // const { refreshCounts } = useCounts(); // Commented out for development
+  // const { refreshCounts } = useCRDCount(); // Commented out for development
 
   const email = location.state?.email || "";
 
