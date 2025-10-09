@@ -7,6 +7,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import App from './app';
 import { CountsProvider } from './contexts/CountsContext';
 import { JVMProvider } from './contexts/JVMContext';
+import { CustomCountProvider } from './contexts/CustomCountContext';
 
 // ----------------------------------------------------------------------
 
@@ -18,7 +19,9 @@ root.render(
       <Suspense>
         <CountsProvider>
           <JVMProvider>
-            <App />
+            <CustomCountProvider>
+              <App />
+            </CustomCountProvider>
           </JVMProvider>
         </CountsProvider>
       </Suspense>

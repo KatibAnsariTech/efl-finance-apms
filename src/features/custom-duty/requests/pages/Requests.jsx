@@ -30,9 +30,11 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
 import ColorIndicators from "../../my-requests/components/ColorIndicators";
+import { useCustomCount } from "src/contexts/CustomCountContext";
 
 export default function Requests() {
   const router = useRouter();
+  const { refreshCustomData, customRequestCounts } = useCustomCount();
   const [selectedTab, setSelectedTab] = useState("pendingWithMe");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -195,6 +197,7 @@ export default function Requests() {
       setSelectedRows([]);
       setComment("");
       getData();
+      refreshCustomData();
     } catch (error) {
       console.error("Error performing action:", error);
       showErrorMessage(error, `Failed to ${action} requests`, swal);
@@ -227,6 +230,27 @@ export default function Requests() {
     showCheckboxes: selectedTab === "pendingWithMe",
   });
 
+  const renderTabLabel = (label, hasPendingCount) => {
+    if (hasPendingCount && hasPendingCount > 0) {
+      return (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {label}
+          <span style={{
+            display: 'inline-block',
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: 'red',
+            marginLeft: 4,
+            animation: 'blinker 1s linear infinite',
+          }} />
+          <style>{`@keyframes blinker { 50% { opacity: 0.2; } }`}</style>
+        </span>
+      );
+    }
+    return label;
+  };
+
   return (
     <Container>
       <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
@@ -241,7 +265,11 @@ export default function Requests() {
           }}
         >
           {menuItems.map((item) => (
-            <Tab key={item.value} label={item.label} value={item.value} />
+            <Tab 
+              key={item.value} 
+              label={renderTabLabel(item.label, item.value === "pendingWithMe" ? customRequestCounts.pendingWithMe : 0)} 
+              value={item.value} 
+            />
           ))}
         </Tabs>
       </Box>

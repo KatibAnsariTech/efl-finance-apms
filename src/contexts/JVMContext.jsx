@@ -10,6 +10,7 @@ export const JVMProvider = ({ children }) => {
     pendingWithMe: 0,
     active: 0
   });
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const fetchJVMRequestCounts = useCallback(async () => {
     try {
@@ -36,16 +37,21 @@ export const JVMProvider = ({ children }) => {
   }, [fetchJVMRequestCounts]);
 
   useEffect(() => {
-    if (account && account.displayName && account.displayName.trim() !== "") {
+    if (account && account.displayName && account.displayName.trim() !== "" && !hasInitialized) {
+      console.log('JVMContext - Account accessibleProjects:', account.accessibleProjects);
       const hasJVMAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
-        project.id === "JVM" || project.projectId === "JVM"
+        project === "JVM" || 
+        (typeof project === 'object' && (project.id === "JVM" || project.projectId === "JVM"))
       );
       
+      console.log('JVMContext - Has JVM access:', hasJVMAccess);
       if (hasJVMAccess) {
-        refreshJVMData();
+        console.log('JVMContext - Fetching JVM request counts');
+        fetchJVMRequestCounts();
+        setHasInitialized(true);
       }
     }
-  }, [refreshJVMData, account]);
+  }, [account, hasInitialized, fetchJVMRequestCounts]);
 
   const value = {
     jvmRequestCounts,

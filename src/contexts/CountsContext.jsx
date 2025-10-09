@@ -8,6 +8,7 @@ export const CountsProvider = ({ children }) => {
   const account = useAccount();
   const [approvalCount, setApprovalCount] = useState(0);
   const [clarificationCount, setClarificationCount] = useState(0);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -21,16 +22,18 @@ export const CountsProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (account && account.displayName && account.displayName.trim() !== "") {
+    if (account && account.displayName && account.displayName.trim() !== "" && !hasInitialized) {
       const hasCustomDutyAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
-        project.id === "CRD" || project.projectId === "CRD"
+        project === "CRD" || 
+        (typeof project === 'object' && (project.id === "CRD" || project.projectId === "CRD"))
       );
       
       if (hasCustomDutyAccess) {
         fetchCounts();
+        setHasInitialized(true);
       }
     }
-  }, [fetchCounts, account]);
+  }, [account, hasInitialized, fetchCounts]);
 
   return (
     <CountsContext.Provider value={{ approvalCount, clarificationCount, refreshCounts: fetchCounts }}>
