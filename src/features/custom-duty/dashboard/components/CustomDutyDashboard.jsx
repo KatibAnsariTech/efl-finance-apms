@@ -24,7 +24,7 @@ export default function CustomDutyDashboard() {
 
   const getData = async () => {
     try {
-      const response = await userRequest.get('/admin/getFormStatistics');
+      const response = await userRequest.get('/custom/getFormStatistics');
       setCardData(response.data?.data);
     } catch (error) {
       // showErrorMessage(error, "Failed to fetch form statistics. Please try again later.", swal);
@@ -38,7 +38,7 @@ export default function CustomDutyDashboard() {
   const getChartData = async () => {
     try {
       setLoading(true);
-      const response = await userRequest.get('/admin/getFormBarChartData', {
+      const response = await userRequest.get('/custom/getFormBarChartData', {
         params: { period: filter },
       });
       setChartData(response.data?.data?.reverse());
@@ -56,7 +56,7 @@ export default function CustomDutyDashboard() {
   const getPieChartData = async () => {
     try {
       setPieLoading(true);
-      const response = await userRequest.get('/admin/getRegionPieChartData', {
+      const response = await userRequest.get('/custom/getRegionPieChartData', {
         params: { period: pieFilter },
       });
       setPieChartData(response.data?.data);
@@ -110,8 +110,8 @@ export default function CustomDutyDashboard() {
         <Grid container spacing={3}>
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Today Duty Payments"
-              total={cardData && cardData.todayForms}
+              title="Today Requests"
+              total={cardData && cardData.todayCustomEntries}
               color="success"
               icon={<img alt="icon" src="/assets/icons/glass/today-requests.svg" />}
               onClick={() => handleCardClick('todayRequests')}
@@ -120,8 +120,8 @@ export default function CustomDutyDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Total Duty Payments"
-              total={cardData && cardData.totalForms}
+              title="Total Requests"
+              total={cardData && cardData.totalCustomEntries}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/total-requests.svg" />}
               onClick={() => handleCardClick('totalRequests')}
@@ -130,8 +130,8 @@ export default function CustomDutyDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Processed Payments"
-              total={cardData && cardData.completedForms}
+              title="Approved Requests"
+              total={cardData && cardData.completedEntries}
               color="warning"
               icon={<img alt="icon" src="/assets/icons/glass/completed-requests.svg" />}
               onClick={() => handleCardClick('completedRequests')}
@@ -140,8 +140,8 @@ export default function CustomDutyDashboard() {
 
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Pending Payments"
-              total={cardData && cardData.pendingForms}
+              title="Pending Requests"
+              total={cardData && cardData.pendingEntries}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/pending-requests.svg" />}
               onClick={() => handleCardClick('pendingRequests')}
@@ -163,7 +163,7 @@ export default function CustomDutyDashboard() {
             ) : (
               <AppWebsiteVisits
                 style={{ height: '100%' }}
-                title="Custom Duty Overview"
+                title="Requests Overview"
                 setFilter={setFilter}
                 filter={filter}
                 chart={{
@@ -229,58 +229,6 @@ export default function CustomDutyDashboard() {
                 }}
               />
             )}
-          </Grid>
-        </Grid>
-
-        {/* Analytics Components Section */}
-        <Grid container spacing={3} sx={{ mt: 2 }}>
-          <Grid xs={12} md={6} lg={6}>
-            <AnalyticsConversionRates
-              title="Duty Payment Processing Rates"
-              subheader="Duty payment processing rates by category"
-              chart={{
-                series: [
-                  { name: 'Processed', data: [92, 88, 95, 90, 94] },
-                  { name: 'Pending', data: [8, 12, 5, 10, 6] }
-                ],
-                categories: ['Import Duty', 'Export Duty', 'Customs', 'Tax', 'Fees']
-              }}
-            />
-          </Grid>
-
-          <Grid xs={12} md={6} lg={6}>
-            <AnalyticsWebsiteVisits
-              title="Duty Payment Trends"
-              subheader="Weekly duty payment volume"
-              chart={{
-                series: [
-                  { name: 'This Week', data: [12, 8, 10, 15, 9, 12, 18] },
-                  { name: 'Last Week', data: [15, 12, 14, 20, 11, 15, 22] }
-                ],
-                categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-              }}
-            />
-          </Grid>
-
-          <Grid xs={12} md={6} lg={6}>
-            <AnalyticsCurrentSubject
-              title="Custom Duty Department Performance"
-              subheader="Duty processing efficiency by department"
-              chart={{
-                series: [
-                  { name: 'Customs', data: [95, 80, 60, 70, 100, 50] },
-                  { name: 'Finance', data: [40, 60, 70, 95, 40, 95] },
-                  { name: 'Operations', data: [70, 90, 95, 30, 70, 25] }
-                ],
-                categories: ['Speed', 'Accuracy', 'Processing', 'Follow-up', 'Resolution', 'Satisfaction']
-              }}
-            />
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={3} >
-          <Grid xs={12}>
-            <ReportTable style={{ height: '100%' }}/>
           </Grid>
         </Grid>
       </Container>
