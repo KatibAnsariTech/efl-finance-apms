@@ -369,6 +369,23 @@ export default function Requests() {
           />
         </Box>
 
+        <Box
+          sx={{
+            position: "relative",
+            height: "52px", 
+            marginTop: "-52px", 
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "16px",
+            zIndex: 10, 
+            pointerEvents: "none", 
+          }}
+        >
+          <Box sx={{ pointerEvents: "auto" }}>
+            <ColorIndicators />
+          </Box>
+        </Box>
+
         {selectedRows.length > 0 && selectedTab !== "submitted" && (
           <Box
             sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
@@ -426,22 +443,6 @@ export default function Requests() {
             />
           </Box>
         )}
-        <Box
-          sx={{
-            position: "relative",
-            height: "52px", 
-            marginTop: "-52px", 
-            display: "flex",
-            alignItems: "center",
-            paddingLeft: "16px",
-            zIndex: 0, 
-            pointerEvents: "none", 
-          }}
-        >
-          <Box sx={{ pointerEvents: "auto" }}>
-            <ColorIndicators />
-          </Box>
-        </Box>
       </Card>
 
       <RequestStatus
