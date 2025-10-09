@@ -7,8 +7,10 @@ import {
   Tabs,
   Tab,
   CircularProgress,
+  Button,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { FilterList } from "@mui/icons-material";
 import { userRequest } from "src/requestMethod";
 import { fDateTime } from "src/utils/format-time";
 import { useRouter } from "src/routes/hooks";
@@ -18,6 +20,7 @@ import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
 import ColorIndicators from "../components/ColorIndicators";
 import JVMRequestTabs from "../components/JVMRequestTabs";
+import FilterModal from "../../requested-jv/components/FilterModal";
 import { useJVM } from "src/contexts/JVMContext";
 
 export default function Requests() {
@@ -32,6 +35,9 @@ export default function Requests() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
 
   const menuItems = [
     { label: "Pending with Me", value: "pendingWithMe" },
@@ -53,12 +59,15 @@ export default function Requests() {
         ? "jvm/getMyAssignedForms" 
         : "jvm/getMyWorkflowForms";
 
-      const response = await userRequest.get(apiEndpoint, {
-        params: {
-          page: page,
-          limit: limit,
-        },
-      });
+      const params = {
+        page: page,
+        limit: limit,
+      };
+      
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
+      
+      const response = await userRequest.get(apiEndpoint, { params });
       apiData = response.data.data.data || [];
       totalCount = response.data.data.pagination?.totalCount || 0;
 
@@ -85,6 +94,12 @@ export default function Requests() {
     setData([]);
     setLoading(true);
     getData(1);
+  }, [selectedTab, filterStartDate, filterEndDate]);
+
+  // Clear filters when tab changes
+  useEffect(() => {
+    setFilterStartDate('');
+    setFilterEndDate('');
   }, [selectedTab]);
 
   const handleTabChange = (event, newValue) => {
@@ -113,6 +128,14 @@ export default function Requests() {
     setSelectedRowData(null);
   };
 
+  const handleOpenFilterModal = () => {
+    setOpenFilterModal(true);
+  };
+
+  const handleCloseFilterModal = () => {
+    setOpenFilterModal(false);
+  };
+
   const columns = RequestColumns({
     onRequestClick: handleRequestClick,
   });
@@ -127,6 +150,42 @@ export default function Requests() {
       />
 
       <Card sx={{ mt: 2, p: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            marginBottom: "16px",
+            mb: 1,
+          }}
+        >
+          <Button
+            variant="text"
+            size="small"
+            startIcon={<FilterList />}
+            onClick={handleOpenFilterModal}
+            sx={{ 
+              backgroundColor: 'transparent',
+              minHeight: 'auto',
+              height: '32px',
+              py: 0.5,
+              px: 1,
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                height: '32px',
+                minHeight: 'auto',
+              },
+              '&:focus': {
+                outline: 'none',
+              },
+              '&:focus-visible': {
+                outline: 'none',
+              },
+            }}
+          >
+            Filter
+          </Button>
+        </Box>
         <Box
           sx={{
             width: "100%",
@@ -234,6 +293,13 @@ export default function Requests() {
         rowData={selectedRowData}
         getRequestData={getData}
         selectedTab="requests"
+      />
+
+      <FilterModal
+        open={openFilterModal}
+        handleClose={handleCloseFilterModal}
+        setStartDate={setFilterStartDate}
+        setEndDate={setFilterEndDate}
       />
     </Container>
   );
