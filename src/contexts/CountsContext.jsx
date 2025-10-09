@@ -20,8 +20,6 @@ export const CountsProvider = ({ children }) => {
     }
   }, []);
 
-  console.log(account);
-
   useEffect(() => {
     if (account && account.displayName && account.displayName.trim() !== "") {
       const hasCustomDutyAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
