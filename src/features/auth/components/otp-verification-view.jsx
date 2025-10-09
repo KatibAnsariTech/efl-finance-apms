@@ -12,11 +12,9 @@ import IconButton from "@mui/material/IconButton";
 import LoadingButton from "@mui/lab/LoadingButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import Divider from "@mui/material/Divider";
-
 import Iconify from "src/components/iconify";
 import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
-// import { useCRDCount } from "src/contexts/CRDCountContext";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 
 export default function OTPVerificationView() {
@@ -31,8 +29,6 @@ export default function OTPVerificationView() {
   const [timeLeft, setTimeLeft] = useState(60);
   const navigate = useNavigate();
   const location = useLocation();
-  // const { refreshCounts } = useCRDCount(); // Commented out for development
-
   const email = location.state?.email || "";
 
   useEffect(() => {
