@@ -10,6 +10,7 @@ export const CustomCountProvider = ({ children }) => {
     pendingWithMe: 0
   });
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
 
   const fetchCustomRequestCounts = useCallback(async () => {
     try {
@@ -29,11 +30,13 @@ export const CustomCountProvider = ({ children }) => {
   }, []);
 
   const refreshCustomData = useCallback(async () => {
+    setIsManualRefresh(true);
     await fetchCustomRequestCounts();
+    setIsManualRefresh(false);
   }, [fetchCustomRequestCounts]);
 
   useEffect(() => {
-    if (account && account.displayName && account.displayName.trim() !== "" && !hasInitialized) {
+    if (account && account.displayName && account.displayName.trim() !== "" && !hasInitialized && !isManualRefresh) {
       const hasCustomAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
         project === "CUSTOM" || project === "custom-duty" || 
         (typeof project === 'object' && (project.id === "CUSTOM" || project.projectId === "CUSTOM" || project.id === "custom-duty" || project.projectId === "custom-duty"))
@@ -41,10 +44,10 @@ export const CustomCountProvider = ({ children }) => {
       
       if (hasCustomAccess) {
         fetchCustomRequestCounts();
-        setHasInitialized(true);
       }
+      setHasInitialized(true);
     }
-  }, [account, hasInitialized, fetchCustomRequestCounts]);
+  }, [account, hasInitialized, fetchCustomRequestCounts, isManualRefresh]);
 
   const value = {
     customRequestCounts,
