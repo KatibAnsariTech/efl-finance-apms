@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { userRequest } from "src/requestMethod";
+import { useAccount } from "src/hooks/use-account";
 
 const JVMContext = createContext();
 
 export const JVMProvider = ({ children }) => {
+  const account = useAccount();
   const [jvmRequestCounts, setJvmRequestCounts] = useState({
     pendingWithMe: 0,
     active: 0
@@ -34,8 +36,10 @@ export const JVMProvider = ({ children }) => {
   }, [fetchJVMRequestCounts]);
 
   useEffect(() => {
-    refreshJVMData();
-  }, [refreshJVMData]);
+    if (account && account.displayName && account.displayName.trim() !== "") {
+      refreshJVMData();
+    }
+  }, [refreshJVMData, account]);
 
   const value = {
     jvmRequestCounts,
