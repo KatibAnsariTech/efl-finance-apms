@@ -67,13 +67,13 @@ export default function RaiseRequest() {
     fetchCompanies();
   }, []);
 
-  useEffect(() => {
-    setIsAfter3PM(checkTimeRestriction());
-    const interval = setInterval(() => {
-      setIsAfter3PM(checkTimeRestriction());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [checkTimeRestriction]);
+  // useEffect(() => {
+  //   setIsAfter3PM(checkTimeRestriction());
+  //   const interval = setInterval(() => {
+  //     setIsAfter3PM(checkTimeRestriction());
+  //   }, 60000);
+  //   return () => clearInterval(interval);
+  // }, [checkTimeRestriction]);
 
   const handleUploadSuccess = (uploadedEntries) => {
     const entriesWithIds = uploadedEntries.map((entry, index) => ({
