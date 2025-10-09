@@ -171,7 +171,7 @@ export default function CustomDutyDashboard() {
                     chartData && chartData.length > 0 ? chartData.map((data) => getLabel(data)) : [],
                   series: [
                     {
-                      name: 'Total Duty Payments',
+                      name: 'Total Requests',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -180,7 +180,7 @@ export default function CustomDutyDashboard() {
                           : [],
                     },
                     {
-                      name: 'Processed Payments',
+                      name: 'Approved Requests',
                       type: 'area',
                       fill: 'gradient',
                       data:
@@ -189,7 +189,7 @@ export default function CustomDutyDashboard() {
                           : [],
                     },
                     {
-                      name: 'Pending Payments',
+                      name: 'Pending Requests',
                       type: 'area',
                       fill: 'gradient',
                       data:
