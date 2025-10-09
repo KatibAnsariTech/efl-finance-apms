@@ -223,7 +223,7 @@ export default function CustomDutyDashboard() {
                 filter={pieFilter}
                 chart={{
                   series: (pieChartData || []).map((item) => ({
-                    label: item?.region ? item?.region.charAt(0) + item.region.slice(1).toLowerCase() : 'Unknown',
+                    label: item?.companyName || item?.label || 'Unknown',
                     value: Number(item?.count || 0),
                   })),
                 }}
