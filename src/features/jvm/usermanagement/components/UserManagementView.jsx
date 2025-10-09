@@ -53,7 +53,6 @@ export default function UserManagementView() {
 
   const handleDelete = async (id) => {
     // Add delete functionality here if needed
-    console.log("Delete user with ID:", id);
   };
 
   const getAPIURL = () => {

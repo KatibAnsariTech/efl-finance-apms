@@ -139,7 +139,6 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
         ]
       };
 
-      console.log("Sending data:", formattedData); // Debug log
 
       if (hierarchyData?._id) {
         await userRequest.put(`/jvm/updateMaster/${hierarchyData._id}`, formattedData);
@@ -229,7 +228,6 @@ function AddEditHierarchy({ handleClose, open, editData: hierarchyData, getData 
             getOptionLabel={(option) => option?.label || option || ""}
             value={selectedRequester}
             onChange={(_, newValue) => {
-              console.log("Selected Requester:", newValue); // Debug log
               setSelectedRequester(newValue);
               setValue("requester", newValue?.value || "");
             }}

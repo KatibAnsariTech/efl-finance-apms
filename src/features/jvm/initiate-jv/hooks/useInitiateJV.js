@@ -141,7 +141,6 @@ export const useInitiateJV = () => {
 
   const handleConfirmSubmit = () => {
     // setConfirmModalOpen(true);
-    console.log("Submit confirmed");
   };
 
   const handleSubmitRequest = async () => {

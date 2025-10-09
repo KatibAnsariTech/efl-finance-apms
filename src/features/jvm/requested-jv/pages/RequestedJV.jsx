@@ -96,7 +96,6 @@ export default function RequestedJV() {
   };
 
   const handleExport = () => {
-    console.log("Export clicked");
   };
 
   const handleStatusClick = (rowData) => {

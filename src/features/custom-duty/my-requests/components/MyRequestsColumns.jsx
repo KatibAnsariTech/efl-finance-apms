@@ -84,13 +84,10 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
       width: 120,
     },
     {
-      field: "company",
+      field: "companyId",
       headerName: "Company",
       width: 150,
-      renderCell: (params) => {
-        const company = params.value;
-        return company || "N/A";
-      },
+      renderCell: (params) => params.value?.name || "-",
     },
     {
       field: "icegateAckNo",

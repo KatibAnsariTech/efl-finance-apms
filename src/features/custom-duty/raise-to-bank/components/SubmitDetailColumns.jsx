@@ -14,30 +14,6 @@ export const RequestColumns = ({ onRequestClick }) => {
       minWidth: 200,
       align: "center",
       headerAlign: "center",
-      // renderCell: (params) => (
-      //   <Typography
-      //     sx={{
-      //       color: "#1976d2",
-      //       textDecoration: "underline",
-      //       cursor: "pointer",
-      //       fontWeight: 600,
-      //       "&:hover": { color: "#1565c0" },
-      //       fontSize: "0.875rem",
-      //       display: "flex",
-      //       alignItems: "center",
-      //       justifyContent: "center",
-      //       height: "100%",
-      //       width: "100%",
-      //     }}
-      //     onClick={() =>
-      //       onRequestClick
-      //         ? onRequestClick(params.row)
-      //         : router.push(`/request-detail/${params.value}`)
-      //     }
-      //   >
-      //     {params.value}
-      //   </Typography>
-      // ),
     },
     {
       field: "createdAt",

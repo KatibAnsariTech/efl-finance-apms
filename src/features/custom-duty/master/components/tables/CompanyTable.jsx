@@ -60,7 +60,6 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
   }, [paginationModel, refreshTrigger]);
 
   const handleEdit = (id) => {
-    console.log("Edit Company:", id);
     if (parentHandleEdit) {
       const rowData = data.find(item => item.id === id);
       parentHandleEdit(rowData);
@@ -70,7 +69,6 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
   };
 
   const handleDelete = (id) => {
-    console.log("Delete Company:", id);
     if (parentHandleDelete) {
       parentHandleDelete(id);
     } else {

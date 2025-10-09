@@ -4,33 +4,92 @@ import Modal from "@mui/material/Modal";
 import CircularProgress from "@mui/material/CircularProgress";
 import { userRequest } from "src/requestMethod";
 import { fDate, fDateTime } from "src/utils/format-time";
-import { Button, Divider, Typography } from "@mui/material";
-import { useAccount } from "src/hooks/use-account";
+import {
+  Divider,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  styled,
+} from "@mui/material";
 
-const style = {
+
+const ModalBox = styled(Box)(({ theme }) => ({
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  p: 5,
-  borderRadius: 2,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[24],
+  padding: theme.spacing(5),
+  borderRadius: theme.spacing(2),
   width: "85dvw",
   maxHeight: "80vh",
   overflowY: "auto",
-};
+}));
+
+const StatusTableCell = styled(TableCell)(({ status }) => ({
+  padding: "8px",
+  textAlign: "center",
+  color:
+    status === "approved"
+      ? "green"
+      : status === "pending"
+      ? "orange"
+      : status === "declined"
+      ? "red"
+      : "gray",
+  fontWeight: "bold",
+}));
+
+const CommentTableCell = styled(TableCell)({
+  padding: "8px",
+  textAlign: "center",
+  maxWidth: "30dvw",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+});
+
+const TableHeaderCell = styled(TableCell)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  padding: "6px",
+  fontSize: "0.875rem",
+  fontWeight: 600,
+  textAlign: "center",
+  backgroundColor: "#003a95",
+  color: "#fff",
+}));
+
+const TableRowStyled = styled(TableRow)({
+  borderBottom: "1px solid #aeaeae",
+});
+
+const LoadingContainer = styled(Box)({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "200px",
+});
+
+const ModalTitleContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: theme.spacing(2),
+}));
 
 export default function RequestStatus({
   open,
   onClose,
   rowData,
-  getRequestData,
-  selectedTab,
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const account = useAccount();
 
   const getData = async () => {
     setLoading(true);
@@ -64,19 +123,6 @@ export default function RequestStatus({
     }
   }, [open]);
 
-  const getStatusStyle = (status) => {
-    switch (status.toLowerCase()) {
-      case "approved":
-        return { color: "green", fontWeight: "bold" };
-      case "pending":
-        return { color: "orange", fontWeight: "bold" };
-      case "declined":
-        return { color: "red", fontWeight: "bold" };
-      default:
-        return { color: "gray", fontWeight: "bold" };
-    }
-  };
-
   const formatStatus = (status) => {
     switch (status.toLowerCase()) {
       case "approved":
@@ -90,9 +136,7 @@ export default function RequestStatus({
     }
   };
 
-  // Map steps array from the new API response structure
   const renderSteps = (data) => {
-    // Add requester step if formId is present
     const requesterStep = data?.requesterId
       ? {
           username:
@@ -109,13 +153,15 @@ export default function RequestStatus({
     let stepsArr = [];
     if (Array.isArray(data?.steps)) {
       stepsArr = data.steps.map((step, idx) => {
-        const displayName = step.approverId?.username || "-";
-        const displayEmail = step.approverId?.email || "-";
+        const approvers = Array.isArray(step.approverId) ? step.approverId : [step.approverId];
+        const displayNames = approvers.map(approver => 
+          `${approver?.username || "-"} (${approver?.email || "-"})`
+        ).join('\n');
         const displayStatus = step.status || "-";
         const displayComment = step.comment || "-";
         return {
           key: `step-${idx}`,
-          assignedTo: `${displayName} (${displayEmail})`,
+          assignedTo: displayNames,
           assignedOn: step.created ? fDateTime(step.created) : "N/A",
           actionedOn:
             step.updatedAt && displayStatus !== "Pending"
@@ -126,7 +172,6 @@ export default function RequestStatus({
         };
       });
     }
-    // Compose final steps array
     const allSteps = [
       requesterStep && {
         key: "requester",
@@ -145,237 +190,67 @@ export default function RequestStatus({
 
     if (allSteps.length > 0) {
       return allSteps.map((step, idx) => (
-        <tr style={{ borderBottom: "1px solid #aeaeae" }} key={step.key || idx}>
-          <td style={{ padding: "8px", textAlign: "center" }}>
+        <TableRowStyled key={step.key || idx}>
+          <TableCell sx={{ padding: "8px", textAlign: "center", whiteSpace: "pre-line" }}>
             {step.assignedTo}
-          </td>
-          <td style={{ padding: "8px", textAlign: "center" }}>
+          </TableCell>
+          <TableCell sx={{ padding: "8px", textAlign: "center" }}>
             {step.assignedOn}
-          </td>
-          <td style={{ padding: "8px", textAlign: "center" }}>
+          </TableCell>
+          <TableCell sx={{ padding: "8px", textAlign: "center" }}>
             {step.actionedOn}
-          </td>
-          <td
-            style={{
-              padding: "8px",
-              textAlign: "center",
-              ...getStatusStyle(step.status),
-            }}
-          >
+          </TableCell>
+          <StatusTableCell status={step.status?.toLowerCase()}>
             {formatStatus(step.status)}
-          </td>
-          <td
-            style={{
-              padding: "8px",
-              textAlign: "center",
-              maxWidth: "30dvw",
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-              textOverflow: "ellipsis",
-            }}
-            title={step.comment}
-          >
+          </StatusTableCell>
+          <CommentTableCell title={step.comment}>
             {step.comment}
-          </td>
-        </tr>
+          </CommentTableCell>
+        </TableRowStyled>
       ));
     }
-    // fallback to old logic if steps is not present
-    return Object.keys(data)
-      .filter((key) => key.startsWith("step") && data[key]?.length > 0)
-      .sort(
-        (a, b) =>
-          parseInt(a.replace("step", ""), 10) -
-          parseInt(b.replace("step", ""), 10)
-      )
-      .map((stepKey) => {
-        const stepDataArray = data[stepKey];
-
-        const firstApproved = stepDataArray.find(
-          (item) => item.status === "Approved"
-        );
-        const firstDeclined = stepDataArray.find(
-          (item) => item.status === "Declined"
-        );
-        const firstPending = stepDataArray.find(
-          (item) => item.status === "Pending"
-        );
-
-        const allPendingEmails = stepDataArray
-          .filter((item) => item.status === "Pending")
-          .map((item) => <div key={item.email}>{item.email}</div>);
-
-        const displayStatus = firstApproved
-          ? firstApproved.status
-          : firstDeclined
-          ? firstDeclined.status
-          : "Pending";
-
-        const displayEmail = firstApproved
-          ? firstApproved.email
-          : firstDeclined
-          ? firstDeclined.email
-          : allPendingEmails;
-
-        const displayComment =
-          firstApproved?.comment || firstDeclined?.comment || "N/A";
-
-        return (
-          <tr style={{ borderBottom: "1px solid #aeaeae" }} key={stepKey}>
-            <td style={{ padding: "8px", textAlign: "center" }}>
-              {displayEmail}
-            </td>
-            <td style={{ padding: "8px", textAlign: "center" }}>
-              {firstApproved?.createdAt ||
-              firstDeclined?.createdAt ||
-              firstPending?.createdAt
-                ? fDate(
-                    firstApproved?.createdAt ||
-                      firstDeclined?.createdAt ||
-                      firstPending?.createdAt
-                  )
-                : "N/A"}
-            </td>
-            <td style={{ padding: "8px", textAlign: "center" }}>
-              {displayStatus === "Pending"
-                ? "N/A"
-                : fDate(firstApproved?.updatedAt || firstDeclined?.updatedAt)}
-            </td>
-            <td
-              style={{
-                padding: "8px",
-                textAlign: "center",
-                ...getStatusStyle(displayStatus),
-              }}
-            >
-              {formatStatus(displayStatus)}
-            </td>
-            <td
-              style={{
-                padding: "8px",
-                textAlign: "center",
-                maxWidth: "30dvw",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }}
-              title={displayComment}
-            >
-              {displayComment}
-            </td>
-          </tr>
-        );
-      });
+    return [];
   };
 
   return (
-    <div>
-      <Modal
-        open={open}
-        onClose={onClose}
-        keepMounted
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-      >
-        <Box sx={style}>
-          <div className="modal-content">
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mb: 2,
-              }}
-            >
-              <Typography variant="h5">
-                Request No. #{rowData?.groupId}
-              </Typography>
-            </Box>
-            <Divider sx={{ borderStyle: "solid" }} />
-            {loading ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "200px",
-                }}
-              >
-                <CircularProgress />
-              </div>
-            ) : data ? (
-              <>
-                <table
-                  className="status-table"
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "0.875rem",
-                  }}
-                >
-                  <thead>
-                    <tr style={{ backgroundColor: "#003a95", color: "#fff" }}>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        Assigned To
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        Assigned On
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        Actioned On
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        Status
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        Comment
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>{renderSteps(data)}</tbody>
-                </table>
-              </>
-            ) : (
-              <p>No data available</p>
-            )}
-          </div>
-        </Box>
-      </Modal>
-    </div>
+    <Modal
+      open={open}
+      onClose={onClose}
+      keepMounted
+      aria-labelledby="modal-title"
+      aria-describedby="modal-description"
+    >
+      <ModalBox>
+        <ModalTitleContainer>
+          <Typography variant="h5">Request No. #{rowData?.groupId}</Typography>
+        </ModalTitleContainer>
+        <Divider sx={{ borderStyle: "solid" }} />
+        {loading ? (
+          <LoadingContainer>
+            <CircularProgress />
+          </LoadingContainer>
+        ) : data ? (
+          <TableContainer
+            component={Paper}
+            sx={{ width: "100%", fontSize: "0.875rem" }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeaderCell>Assigned To</TableHeaderCell>
+                  <TableHeaderCell>Assigned On</TableHeaderCell>
+                  <TableHeaderCell>Actioned On</TableHeaderCell>
+                  <TableHeaderCell>Status</TableHeaderCell>
+                  <TableHeaderCell>Comment</TableHeaderCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>{renderSteps(data)}</TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography>No data available</Typography>
+        )}
+      </ModalBox>
+    </Modal>
   );
 }

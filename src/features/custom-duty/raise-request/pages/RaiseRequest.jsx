@@ -57,7 +57,7 @@ export default function RaiseRequest() {
     const fetchCompanies = async () => {
       try {
         const response = await userRequest.get("/custom/getCompanies");
-        setCompanies(response.data.data.companies); 
+        setCompanies(response.data.data.companies);
       } catch (error) {
         console.error("Failed to fetch companies:", error);
         showErrorMessage(error, "Failed to fetch companies", swal);
@@ -67,16 +67,15 @@ export default function RaiseRequest() {
     fetchCompanies();
   }, []);
 
-  // useEffect(() => {
-  //   setIsAfter3PM(checkTimeRestriction());
-  //   const interval = setInterval(() => {
-  //     setIsAfter3PM(checkTimeRestriction());
-  //   }, 60000);
-  //   return () => clearInterval(interval);
-  // }, [checkTimeRestriction]);
+  useEffect(() => {
+    setIsAfter3PM(checkTimeRestriction());
+    const interval = setInterval(() => {
+      setIsAfter3PM(checkTimeRestriction());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [checkTimeRestriction]);
 
   const handleUploadSuccess = (uploadedEntries) => {
-    // Add unique IDs to each entry for DataGrid
     const entriesWithIds = uploadedEntries.map((entry, index) => ({
       ...entry,
       id: `entry_${Date.now()}_${index}`,
@@ -100,7 +99,6 @@ export default function RaiseRequest() {
       return;
     }
 
-    // Show SweetAlert confirmation
     const result = await swal({
       title: "Confirm Submission",
       text: `Are you sure you want to submit ${data.length} custom duty entries?`,
@@ -132,7 +130,10 @@ export default function RaiseRequest() {
         icegateAckNo: entry.icegateAckNo,
       }));
 
-      const response = await userRequest.post(`/custom/createRequest`, customDutyEntries);
+      const response = await userRequest.post(
+        `/custom/createRequest`,
+        customDutyEntries
+      );
 
       swal(
         "Success!",
@@ -140,7 +141,6 @@ export default function RaiseRequest() {
         "success"
       );
 
-      // Reset form
       setData([]);
     } catch (error) {
       console.error("Submit error:", error);
@@ -149,7 +149,6 @@ export default function RaiseRequest() {
       setSubmitting(false);
     }
   };
-
 
   const columns = RaiseRequestColumns();
 
