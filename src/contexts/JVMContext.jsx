@@ -37,7 +37,13 @@ export const JVMProvider = ({ children }) => {
 
   useEffect(() => {
     if (account && account.displayName && account.displayName.trim() !== "") {
-      refreshJVMData();
+      const hasJVMAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
+        project.id === "JVM" || project.projectId === "JVM"
+      );
+      
+      if (hasJVMAccess) {
+        refreshJVMData();
+      }
     }
   }, [refreshJVMData, account]);
 

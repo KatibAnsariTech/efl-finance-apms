@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { userRequest } from "src/requestMethod";
+import { useAccount } from "src/hooks/use-account";
 
 const CountsContext = createContext();
 
 export const CountsProvider = ({ children }) => {
+  const account = useAccount();
   const [approvalCount, setApprovalCount] = useState(0);
   const [clarificationCount, setClarificationCount] = useState(0);
 
   const fetchCounts = useCallback(async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) return;
     try {
       const res = await userRequest.get("/admin/getRequestFormCounts");
       setApprovalCount(res?.data?.data?.approvalCount || 0);
@@ -20,9 +20,19 @@ export const CountsProvider = ({ children }) => {
     }
   }, []);
 
+  console.log(account);
+
   useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
+    if (account && account.displayName && account.displayName.trim() !== "") {
+      const hasCustomDutyAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
+        project.id === "CRD" || project.projectId === "CRD"
+      );
+      
+      if (hasCustomDutyAccess) {
+        fetchCounts();
+      }
+    }
+  }, [fetchCounts, account]);
 
   return (
     <CountsContext.Provider value={{ approvalCount, clarificationCount, refreshCounts: fetchCounts }}>
