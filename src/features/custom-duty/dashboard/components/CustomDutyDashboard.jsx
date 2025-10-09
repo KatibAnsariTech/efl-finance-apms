@@ -176,7 +176,7 @@ export default function CustomDutyDashboard() {
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
-                          ? chartData.map((data) => data?.totalRequests)
+                          ? chartData.map((data) => data?.totalRequests || 0)
                           : [],
                     },
                     {
@@ -185,7 +185,7 @@ export default function CustomDutyDashboard() {
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
-                          ? chartData.map((data) => data?.completedRequests)
+                          ? chartData.map((data) => data?.completedRequests || 0)
                           : [],
                     },
                     {
@@ -194,7 +194,7 @@ export default function CustomDutyDashboard() {
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
-                          ? chartData.map((data) => data?.pendingRequests)
+                          ? chartData.map((data) => data?.pendingRequests || 0)
                           : [],
                     },
                   ],
@@ -218,13 +218,13 @@ export default function CustomDutyDashboard() {
               </div>
             ) : (
               <AppCurrentVisits
-                title="Duty Payments by Region"
+                title="Requests by Company"
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
-                  series: pieChartData.map((item) => ({
-                    label: item.region.charAt(0) + item.region.slice(1).toLowerCase(),
-                    value: Number(item.count),
+                  series: (pieChartData || []).map((item) => ({
+                    label: item?.region ? item?.region.charAt(0) + item.region.slice(1).toLowerCase() : 'Unknown',
+                    value: Number(item?.count || 0),
                   })),
                 }}
               />
