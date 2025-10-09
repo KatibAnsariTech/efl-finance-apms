@@ -22,6 +22,10 @@
   customDutyPending: '#f4f5ba',
   customDutyApproved: '#baf5c2',
   customDutyRejected: '#e6b2aa',
+  
+  // Auto Reversal Status Colors
+  active: '#bbdefb',
+  completed: '#baf5c2',
 };
 
 // Status Labels - Human readable labels for each status
@@ -49,6 +53,10 @@ export const STATUS_LABELS = {
   customDutyPending: 'Pending',
   customDutyApproved: 'Approved',
   customDutyRejected: 'Rejected',
+  
+  // Auto Reversal Status Labels
+  active: 'Active',
+  completed: 'Completed',
 };
 
 // Color Groups - Organized by feature/context

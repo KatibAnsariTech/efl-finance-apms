@@ -24,10 +24,9 @@ export default function JVMDashboard() {
 
   const getData = async () => {
     try {
-      const response = await userRequest.get('/admin/getFormStatistics');
+      const response = await userRequest.get('/jvm/getFormStatistics');
       setCardData(response.data?.data);
     } catch (error) {
-      console.log('error:', error);
       // showErrorMessage(error, "Failed to fetch form statistics. Please try again later.", swal);
     }
   };
@@ -39,12 +38,11 @@ export default function JVMDashboard() {
   const getChartData = async () => {
     try {
       setLoading(true);
-      const response = await userRequest.get('/admin/getFormBarChartData', {
+      const response = await userRequest.get('/jvm/getFormBarChartData', {
         params: { period: filter },
       });
       setChartData(response.data?.data?.reverse());
     } catch (error) {
-      console.log('error:', error);
       // showErrorMessage(error, "Failed to fetch chart data. Please try again later.", swal);
     } finally {
       setLoading(false);
@@ -58,19 +56,17 @@ export default function JVMDashboard() {
   const getPieChartData = async () => {
     try {
       setPieLoading(true);
-      const response = await userRequest.get('/admin/getRegionPieChartData', {
+      const response = await userRequest.get('/jvm/getAutoReversalPieChart', {
         params: { period: pieFilter },
       });
       setPieChartData(response.data?.data);
     } catch (error) {
-      console.log('error:', error);
       // showErrorMessage(error, "Failed to fetch pie chart data. Please try again later.", swal);
     } finally {
       setPieLoading(false);
     }
   };
 
-  console.log(pieChartData, 'pieChartData');
 
   useEffect(() => {
     getPieChartData();
@@ -115,7 +111,7 @@ export default function JVMDashboard() {
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
               title="Today JVM Entries"
-              total={cardData && cardData.todayForms}
+              total={cardData && cardData.todayJvmEntries}
               color="success"
               icon={<img alt="icon" src="/assets/icons/glass/today-requests.svg" />}
               onClick={() => handleCardClick('todayRequests')}
@@ -125,7 +121,7 @@ export default function JVMDashboard() {
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
               title="Total JVM Entries"
-              total={cardData && cardData.totalForms}
+              total={cardData && cardData.totalJvmEntries}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/total-requests.svg" />}
               onClick={() => handleCardClick('totalRequests')}
@@ -135,7 +131,7 @@ export default function JVMDashboard() {
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
               title="Completed Entries"
-              total={cardData && cardData.completedForms}
+              total={cardData && cardData.completedEntries}
               color="warning"
               icon={<img alt="icon" src="/assets/icons/glass/completed-requests.svg" />}
               onClick={() => handleCardClick('completedRequests')}
@@ -145,7 +141,7 @@ export default function JVMDashboard() {
           <Grid xs={12} sm={6} md={3}>
             <AppWidgetSummary
               title="Pending Entries"
-              total={cardData && cardData.pendingForms}
+              total={cardData && cardData.pendingEntries}
               color="info"
               icon={<img alt="icon" src="/assets/icons/glass/pending-requests.svg" />}
               onClick={() => handleCardClick('pendingRequests')}
@@ -222,12 +218,12 @@ export default function JVMDashboard() {
               </div>
             ) : (
               <AppCurrentVisits
-                title="JVM Entries by Region"
+                title="Auto Reversal Distribution"
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
                   series: pieChartData.map((item) => ({
-                    label: item.region.charAt(0) + item.region.slice(1).toLowerCase(),
+                    label: item.label,
                     value: Number(item.count),
                   })),
                 }}
@@ -237,7 +233,7 @@ export default function JVMDashboard() {
         </Grid>
 
         {/* Analytics Components Section */}
-        <Grid container spacing={3} sx={{ mt: 2 }}>
+        {/* <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid xs={12} md={6} lg={6}>
             <AnalyticsConversionRates
               title="JVM Processing Rates"
@@ -280,13 +276,13 @@ export default function JVMDashboard() {
               }}
             />
           </Grid>
-        </Grid>
+        </Grid> */}
 
-        <Grid container spacing={3} >
+        {/* <Grid container spacing={3} >
           <Grid xs={12}>
             <ReportTable style={{ height: '100%' }}/>
           </Grid>
-        </Grid>
+        </Grid> */}
       </Container>
     </>
   );

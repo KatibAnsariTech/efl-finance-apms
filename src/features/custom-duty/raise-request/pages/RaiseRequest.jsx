@@ -8,28 +8,18 @@ import {
   Button,
   Card,
   CardContent,
-  Grid,
   Paper,
   IconButton,
-  Chip,
-  CircularProgress,
-  FormControl,
-  FormControlLabel,
-  Switch,
-  Divider,
-  Select,
-  MenuItem,
-  InputLabel,
   TextField,
   Autocomplete,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { fDateTime } from "src/utils/format-time";
 import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import UploadCustomDutyModal from "../components/UploadCustomDutyModal.jsx";
+import { RaiseRequestColumns } from "../components/RaiseRequestColumns.jsx";
 
 export default function RaiseRequest() {
   const [data, setData] = useState([]);
@@ -38,27 +28,44 @@ export default function RaiseRequest() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isAfter3PM, setIsAfter3PM] = useState(false);
+  const [companies, setCompanies] = useState([]);
 
   const checkTimeRestriction = useCallback(() => {
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentTime = currentHour * 60 + currentMinute;
-    
+
     // Restriction starts at 2:59:59 PM (14:59) and ends at 11:59:59 PM (23:59)
     const restrictionStartTime = 14 * 60 + 59; // 2:59 PM = 899 minutes
-    const restrictionEndTime = 23 * 60 + 59;   // 11:59 PM = 1439 minutes
-    
-    return currentTime >= restrictionStartTime && currentTime <= restrictionEndTime;
+    const restrictionEndTime = 23 * 60 + 59; // 11:59 PM = 1439 minutes
+
+    return (
+      currentTime >= restrictionStartTime && currentTime <= restrictionEndTime
+    );
   }, []);
 
-  const companies = [
-    { id: 1, name: "EFL" },
-    { id: 2, name: "Eureka Forbes" },
-    { id: 3, name: "Eureka Industries" },
-  ];
+  const showTimeRestrictionAlert = useCallback((action) => {
+    swal(
+      "Time Restriction",
+      `Cannot ${action} after 3:00 PM. Please try again tomorrow.`,
+      "warning"
+    );
+  }, []);
 
-  const BASE_URL = "https://crd-test-2ib6.onrender.com/api/v1/journal-vouchers";
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await userRequest.get("/custom/getCompanies");
+        setCompanies(response.data.data.companies);
+      } catch (error) {
+        console.error("Failed to fetch companies:", error);
+        showErrorMessage(error, "Failed to fetch companies", swal);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
 
   useEffect(() => {
     setIsAfter3PM(checkTimeRestriction());
@@ -68,41 +75,30 @@ export default function RaiseRequest() {
     return () => clearInterval(interval);
   }, [checkTimeRestriction]);
 
-  // Add new custom duty entry to local state
-  const addCustomDutyEntry = (newEntry) => {
-    const entryWithId = {
-      ...newEntry,
-      _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      srNo: newEntry.srNo || "",
-      createdAt: new Date().toISOString(),
-    };
-    setData((prev) => [...prev, entryWithId]);
-  };
-
   const handleUploadSuccess = (uploadedEntries) => {
-    // Add _id to each uploaded entry and replace existing data
-    const entriesWithId = uploadedEntries.map((entry, index) => ({
+    const entriesWithIds = uploadedEntries.map((entry, index) => ({
       ...entry,
-      _id: `uploaded_${Date.now()}_${index}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`,
+      id: `entry_${Date.now()}_${index}`,
     }));
-    setData(entriesWithId);
+    setData(entriesWithIds);
     setUploadModalOpen(false);
     swal("Success!", "Custom duty entries uploaded successfully!", "success");
   };
 
   const handleSubmitRequest = async () => {
     if (isAfter3PM) {
+      showTimeRestrictionAlert("generate requests");
+      return;
+    }
+    if (!selectedCompany) {
       swal(
-        "Time Restriction",
-        "Cannot generate requests after 3:00 PM. Please try again tomorrow.",
-        "warning"
+        "Company Selection Required",
+        "Please select a company before submitting the request.",
+        "error"
       );
       return;
     }
 
-    // Show SweetAlert confirmation
     const result = await swal({
       title: "Confirm Submission",
       text: `Are you sure you want to submit ${data.length} custom duty entries?`,
@@ -123,25 +119,20 @@ export default function RaiseRequest() {
     try {
       setSubmitting(true);
       const customDutyEntries = data.map((entry) => ({
-        srNo: entry.srNo?.toString(),
+        typeOfTransaction: entry.typeOfTransaction,
+        transactionDate: entry.transactionDate,
+        transactionAmount: parseFloat(entry.transactionAmount),
+        companyId: selectedCompany._id,
         challanNo: entry.challanNo,
         documentNo: entry.documentNo,
-        transactionDate: entry.transactionDate,
         referenceId: entry.referenceId,
         description: entry.description,
-        typeOfTransaction: entry.typeOfTransaction,
-        transactionAmount: parseFloat(entry.transactionAmount),
         icegateAckNo: entry.icegateAckNo,
       }));
 
-      const requestBody = {
-        customDutyEntries,
-      };
-
-      // Call the custom duty API endpoint
       const response = await userRequest.post(
-        `${BASE_URL}/createCustomDuty`,
-        requestBody
+        `/custom/createRequest`,
+        customDutyEntries
       );
 
       swal(
@@ -150,7 +141,6 @@ export default function RaiseRequest() {
         "success"
       );
 
-      // Reset form
       setData([]);
     } catch (error) {
       console.error("Submit error:", error);
@@ -160,114 +150,7 @@ export default function RaiseRequest() {
     }
   };
 
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      Draft: { color: "default", label: "Draft" },
-      Submitted: { color: "info", label: "Submitted" },
-      Approved: { color: "success", label: "Approved" },
-      Rejected: { color: "error", label: "Rejected" },
-      Pending: { color: "warning", label: "Pending" },
-    };
-
-    const config = statusConfig[status] || { color: "default", label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
-  };
-
-  const columns = [
-    {
-      field: "srNo",
-      headerName: "Sr.no.",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-    },
-    {
-      field: "challanNo",
-      headerName: "Challan No.",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "documentNo",
-      headerName: "Document No",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleString("en-GB", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              fractionalSecondDigits: 3,
-            });
-      },
-    },
-    {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      width: 150,
-      resizable: true,
-    },
-    {
-      field: "typeOfTransaction",
-      headerName: "Type of Transaction",
-      width: 180,
-      resizable: true,
-      // renderCell: (params) => (
-      //   <Chip
-      //     label={params.value}
-      //     color={params.value === "Debit" ? "error" : "success"}
-      //     size="small"
-      //     variant="outlined"
-      //   />
-      // ),
-    },
-    {
-      field: "transactionAmount",
-      headerName: "Transaction Amount",
-      width: 180,
-      resizable: true,
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-      resizable: true,
-    },
-  ];
+  const columns = RaiseRequestColumns();
 
   return (
     <>
@@ -371,17 +254,21 @@ export default function RaiseRequest() {
               variant="text"
               size="small"
               onClick={() => {
-                if (isAfter3PM) {
+                if (!selectedCompany) {
                   swal(
-                    "Time Restriction",
-                    "Cannot upload files after 3:00 PM. Please try again tomorrow.",
+                    "Company Selection Required",
+                    "Please select a company before uploading files.",
                     "warning"
                   );
                   return;
                 }
+                if (isAfter3PM) {
+                  showTimeRestrictionAlert("upload files");
+                  return;
+                }
                 setUploadModalOpen(true);
               }}
-              disabled={isAfter3PM}
+              disabled={!selectedCompany || isAfter3PM}
               sx={{
                 fontSize: "0.875rem",
                 color: isAfter3PM ? "red" : "primary.main",
@@ -389,8 +276,8 @@ export default function RaiseRequest() {
                   backgroundColor: "transparent",
                 },
                 "&.Mui-disabled": {
-                  color: "red",
-                  opacity: 0.8,
+                  color: isAfter3PM ? "red" : "rgba(0, 0, 0, 0.26)",
+                  opacity: isAfter3PM ? 0.8 : 0.6,
                 },
               }}
             >
@@ -448,16 +335,21 @@ export default function RaiseRequest() {
                 <DataGrid
                   rows={data}
                   columns={columns}
-                  getRowId={(row) =>
-                    row._id || row.srNo || `row-${Math.random()}`
-                  }
+                  getRowId={(row) => row.id}
                   loading={submitting}
-                  pagination={false}
+                  pagination
+                  paginationMode="client"
+                  initialState={{
+                    pagination: {
+                      paginationModel: { pageSize: 10 },
+                    },
+                  }}
+                  pageSizeOptions={[5, 10, 25, 50]}
+                  hideFooter={false}
                   disableRowSelectionOnClick
                   disableRowClick
                   columnResize
                   disableColumnResize={false}
-                  hideFooter
                   autoHeight={false}
                   columnResizeMode="onResize"
                   editMode="cell"

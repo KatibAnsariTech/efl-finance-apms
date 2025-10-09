@@ -7,7 +7,6 @@ import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { getComparator } from "src/utils/utils";
 import { userRequest } from "src/requestMethod";
-import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
 import { useRouter } from "src/routes/hooks";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
@@ -16,10 +15,14 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
 import { AutoReversalColumns } from "../components/AutoReversalColumns";
+import AutoReversalTabs from "../components/AutoReversalTabs";
+import ColorIndicators from "../components/ColorIndicators";
+import { useJVM } from "src/contexts/JVMContext";
 
 export default function AutoReversal() {
   const router = useRouter();
   const navigate = useNavigate();
+  const { jvmRequestCounts, fetchJVMRequestCounts } = useJVM();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -31,14 +34,12 @@ export default function AutoReversal() {
   const [statusCounts, setStatusCounts] = useState({
     all: 0,
     active: 0,
-    delayed: 0,
     completed: 0,
   });
 
   const menuItems = [
     { label: "All", value: "all", count: statusCounts.all },
     { label: "Active", value: "active", count: statusCounts.active },
-    { label: "Delayed", value: "delayed", count: statusCounts.delayed },
     { label: "Completed", value: "completed", count: statusCounts.completed },
   ];
 
@@ -134,6 +135,7 @@ export default function AutoReversal() {
         await userRequest.delete(`jvm/deleteReversal/${row._id}`);
         swal("Deleted!", "Auto reversal request has been deleted successfully.", "success");
         getData();
+        await fetchJVMRequestCounts();
       } catch (error) {
         console.error("Delete error:", error);
         showErrorMessage(error, "Failed to delete auto reversal request. Please try again.", swal);
@@ -182,10 +184,11 @@ export default function AutoReversal() {
       </Helmet>
 
       <Container>
-        <FormRequestTabs
+        <AutoReversalTabs
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
           menuItems={menuItems}
+          autoReversalCounts={jvmRequestCounts}
         />
         <Card sx={{ mt: 2, p: 2 }}>
           <div
@@ -225,6 +228,12 @@ export default function AutoReversal() {
                 setLimit(newModel.pageSize);
               }}
               pageSizeOptions={[5, 10, 25, 50]}
+              getRowClassName={(params) => {
+                const status = params.row.status?.toLowerCase();
+                if (status === "active") return "row-active";
+                if (status === "completed") return "row-completed";
+                return "";
+              }}
               autoHeight
               disableRowSelectionOnClick
               sx={{
@@ -263,8 +272,30 @@ export default function AutoReversal() {
                   backgroundColor: (theme) => theme.palette.action.hover,
                   opacity: 0.8,
                 },
+                "& .row-active": {
+                  backgroundColor: "#bbdefb !important",
+                },
+                "& .row-completed": {
+                  backgroundColor: "#baf5c2 !important",
+                },
               }}
             />
+          </Box>
+          <Box
+            sx={{
+              position: "relative",
+              height: "52px", // Match DataGrid footer height
+              marginTop: "-52px", // Overlap with DataGrid footer
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "16px",
+              zIndex: 0, // Lower z-index so pagination is clickable
+              pointerEvents: "none", // Allow clicks to pass through
+            }}
+          >
+            <Box sx={{ pointerEvents: "auto" }}>
+              <ColorIndicators />
+            </Box>
           </Box>
         </Card>
       </Container>

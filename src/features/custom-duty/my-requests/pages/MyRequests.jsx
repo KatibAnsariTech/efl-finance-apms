@@ -19,6 +19,7 @@ import { applyFilter, getComparator } from "src/utils/utils";
 import excel from "../../../../../public/assets/excel.svg";
 import ColorIndicators from "../components/ColorIndicators";
 import CustomDutyRequestModal from "../components/CustomDutyRequestModal";
+import { MyRequestsColumns } from "../components/MyRequestsColumns";
 import Iconify from "src/components/iconify";
 
 export default function MyRequests() {
@@ -40,44 +41,6 @@ export default function MyRequests() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-  // Status color mapping
-  const getStatusColor = (status) => {
-    const normalizedStatus = (status || "").toLowerCase();
-    switch (normalizedStatus) {
-      case "pending":
-        return "#f4f5ba";
-      case "declined":
-        return "#e6b2aa";
-      case "approved":
-        return "#baf5c2";
-      case "clarification needed":
-        return "#9be7fa";
-      case "draft":
-        return "#e0e0e0";
-      case "submitted":
-        return "#bbdefb";
-      case "rejected":
-        return "#e6b2aa";
-      default:
-        return "white";
-    }
-  };
-
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      Draft: { color: "default", label: "Draft" },
-      Submitted: { color: "info", label: "Submitted" },
-      Approved: { color: "success", label: "Approved" },
-      Rejected: { color: "error", label: "Rejected" },
-      Pending: { color: "warning", label: "Pending" },
-      "Clarification Needed": { color: "info", label: "Clarification Needed" },
-    };
-
-    const config = statusConfig[status] || { color: "default", label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
-  };
-
-  // Debounced search
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
@@ -86,94 +49,48 @@ export default function MyRequests() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Fetch data
   const getData = async () => {
     try {
       setLoading(true);
-      // Generate dummy data for demonstration
-      const generateDummyData = (startId, count) => {
-        const statuses = ["Pending", "Approved", "Rejected"];
-        const descriptions = [
-          "Duty Payment",
-          "Custom Duty Payment",
-          "Import Duty",
-          "Export Duty Refund",
-          "Additional Duty",
-          "Countervailing Duty",
-          "Anti-dumping Duty",
-          "Safeguard Duty",
-        ];
-        const transactionTypes = ["Debit", "Credit"];
 
-        return Array.from({ length: count }, (_, index) => {
-          const id = startId + index;
-          const status = statuses[Math.floor(Math.random() * statuses.length)];
-          const description =
-            descriptions[Math.floor(Math.random() * descriptions.length)];
-          const typeOfTransaction =
-            transactionTypes[
-              Math.floor(Math.random() * transactionTypes.length)
-            ];
-          const amount = Math.floor(Math.random() * 500000) + 50000;
+      const queryParams = new URLSearchParams({
+        page: (page + 1).toString(),
+        limit: rowsPerPage.toString(),
+        action: "all",
+      });
 
-          return {
-            id: id.toString(),
-            _id: id.toString(),
-            requestNo: `CDR-2024-${String(id).padStart(3, "0")}`,
-            requestedDate: new Date(
-              2024,
-              0,
-              15 + Math.floor(Math.random() * 30),
-              Math.floor(Math.random() * 24),
-              Math.floor(Math.random() * 60)
-            ).toISOString(),
-            boeNumber: `BOE-2024-${String(id).padStart(3, "0")}`,
-            srNo: id.toString(),
-            challanNo: `2056627${String(67 + id).padStart(3, "0")}`,
-            transactionDate: new Date(
-              2024,
-              0,
-              15 + Math.floor(Math.random() * 30),
-              Math.floor(Math.random() * 24),
-              Math.floor(Math.random() * 60)
-            ).toISOString(),
-            referenceId: `007000BEINDEL41457${String(50 + id).padStart(
-              3,
-              "0"
-            )}`,
-            description,
-            typeOfTransaction,
-            transactionAmount: amount,
-            icegateAckNo: `IG1082920250645${String(509 + id).padStart(3, "0")}`,
-            status,
-            createdAt: new Date(
-              2024,
-              0,
-              15 + Math.floor(Math.random() * 30),
-              Math.floor(Math.random() * 24),
-              Math.floor(Math.random() * 60)
-            ).toISOString(),
-          };
-        });
-      };
+      if (debouncedSearch) {
+        queryParams.append("search", debouncedSearch);
+      }
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (region) queryParams.append("region", region);
+      if (status) queryParams.append("status", status);
+      if (refund) queryParams.append("refund", refund);
+      if (startDate) queryParams.append("startDate", startDate);
+      if (endDate) queryParams.append("endDate", endDate);
 
-      // Generate 50 total records for pagination demo
-      const allData = generateDummyData(1, 50);
-      const totalRecords = allData.length;
-      setTotalCount(totalRecords);
+      const response = await userRequest.get(
+        `/custom/getForms?${queryParams.toString()}`
+      );
 
-      // Get paginated data
-      const startIndex = page * rowsPerPage;
-      const endIndex = startIndex + rowsPerPage;
-      const paginatedData = allData.slice(startIndex, endIndex);
+      if (response.data && response.data.data) {
+        const {
+          forms,
+          totalForms,
+          page: currentPage,
+          limit,
+        } = response.data.data;
 
-      setData(paginatedData);
+        setData(forms || []);
+        setTotalCount(totalForms || 0);
+      } else {
+        setData([]);
+        setTotalCount(0);
+      }
     } catch (error) {
       console.error("Error fetching requests:", error);
       setData([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -218,172 +135,17 @@ export default function MyRequests() {
     setSearch(value);
   };
 
-  const dataFiltered = applyFilter({
-    inputData: data,
-    comparator: getComparator(order, orderBy),
-    search,
-  });
-
-  const handleExport = async () => {
-    try {
-      // Simulate export functionality
-      console.log("Exporting data...");
-    } catch (error) {
-      console.error("Export error:", error);
-    }
+  const handleRequestClick = (rowData) => {
+    setSelectedRowData(rowData);
+    setOpenModal(true);
   };
 
-  const columns = [
-    {
-      field: "requestNo",
-      headerName: "Request No.",
-      flex: 1,
-      minWidth: 160,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            cursor: "pointer",
-            color: "#1976d2",
-            textDecoration: "underline",
-            textDecorationThickness: "2px",
-            textUnderlineOffset: "4px",
-            fontWeight: 600,
-            "&:hover": { color: "#1565c0" },
-          }}
-          onClick={() => {
-            setSelectedRowData(params.row);
-            setOpenModal(true);
-          }}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "requestedDate",
-      headerName: "Requested Date",
-      flex: 1,
-      minWidth: 200,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
-    },
-    {
-      field: "boeNumber",
-      headerName: "BOE Number",
-      flex: 1,
-      minWidth: 150,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "challanNo",
-      headerName: "Challan No.",
-      flex: 1,
-      minWidth: 140,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "typeOfTransaction",
-      headerName: "Type of Transaction",
-      flex: 1,
-      minWidth: 100,
-      align: "center",
-      headerAlign: "center",
-      //   renderCell: (params) => (
-      //     <Chip
-      //       label={params.value}
-      //       color={params.value === "Debit" ? "error" : "success"}
-      //       size="small"
-      //       variant="outlined"
-      //     />
-      //   ),
-    },
-    {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => {
-        if (!params.value) return "";
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleString("en-GB", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              fractionalSecondDigits: 3,
-            });
-      },
-    },
-    {
-      field: "transactionAmount",
-      headerName: "Transaction Amount",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      flex: 1,
-      minWidth: 130,
-      align: "center",
-      headerAlign: "center",
-      //   renderCell: (params) => getStatusChip(params.value),
-    },
-    {
-      field: "company",
-      headerName: "Company",
-      flex: 1,
-      minWidth: 130,
-      align: "center",
-      headerAlign: "center",
-      renderCell: () => "EFL",
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      flex: 1,
-      minWidth: 130,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-      resizable: true,
-    },
-  ];
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedRowData(null);
+  };
+
+  const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
 
   return (
     <>
@@ -400,11 +162,7 @@ export default function MyRequests() {
             gap: 0.2,
           }}
         >
-          <IconButton
-            size="small"
-            color="error"
-            sx={{ p: 0, mr: 0.5 }}
-          >
+          <IconButton size="small" color="error" sx={{ p: 0, mr: 0.5 }}>
             <Iconify icon="eva:info-fill" />
           </IconButton>
           <span
@@ -451,15 +209,11 @@ export default function MyRequests() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={
-                dataFiltered?.map((row, index) => ({
-                  ...row,
-                  id: row._id || row.requestNo || `row-${index}`,
-                  backgroundColor: getStatusColor(row.status),
-                })) || []
-              }
+              rows={data || []}
               columns={columns}
-              getRowId={(row) => row?.id}
+              getRowId={(row) => row._id}
+              autoHeight
+              disableSelectionOnClick
               loading={loading}
               pagination
               paginationMode="server"
@@ -470,12 +224,12 @@ export default function MyRequests() {
                 setRowsPerPage(newModel.pageSize);
               }}
               pageSizeOptions={[5, 10, 25, 50]}
-              autoHeight
               getRowClassName={(params) => {
                 const status = params.row.status?.toLowerCase();
                 if (status === "pending") return "row-pending";
                 if (status === "rejected") return "row-rejected";
                 if (status === "approved") return "row-approved";
+                if (status === "declined") return "row-declined";
                 if (status === "clarification needed")
                   return "row-clarification";
                 return "";
@@ -505,19 +259,22 @@ export default function MyRequests() {
                 "& .row-clarification": {
                   backgroundColor: "#9be7fa !important",
                 },
+                "& .row-declined": {
+                  backgroundColor: "#e6b2aa !important",
+                },
               }}
             />
           </Box>
           <Box
             sx={{
               position: "relative",
-              height: "52px", // Match DataGrid footer height
-              marginTop: "-52px", // Overlap with DataGrid footer
+              height: "52px",
+              marginTop: "-52px",
               display: "flex",
               alignItems: "center",
               paddingLeft: "16px",
-              zIndex: 0, // Lower z-index so pagination is clickable
-              pointerEvents: "none", // Allow clicks to pass through
+              zIndex: 0,
+              pointerEvents: "none",
             }}
           >
             <Box sx={{ pointerEvents: "auto" }}>
@@ -528,7 +285,7 @@ export default function MyRequests() {
       </Container>
       <CustomDutyRequestModal
         open={openModal}
-        onClose={() => setOpenModal(false)}
+        onClose={handleCloseModal}
         rowData={selectedRowData}
         getRequestData={getData}
         selectedTab="myRequests"

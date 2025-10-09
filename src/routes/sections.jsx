@@ -27,14 +27,17 @@ const JVMPage = lazy(() => import("src/features/jvm/dashboard/pages/JVM"));
 const JVMDashboard = lazy(() =>
   import("src/features/jvm/dashboard/components/JVMDashboard")
 );
-const JVStatusPage = lazy(() =>
-  import("src/features/jvm/jvs-status/pages/JVStatus")
+const RequestedJVPage = lazy(() =>
+  import("src/features/jvm/requested-jv/pages/RequestedJV")
 );
 const InitiateJVPage = lazy(() =>
   import("src/features/jvm/initiate-jv/pages/InitiateJV")
 );
 const JVDetailPage = lazy(() =>
-  import("src/features/jvm/jvs-status/pages/JVDetails")
+  import("src/features/jvm/requested-jv/pages/JVDetails")
+);
+const JVByRequestNoPage = lazy(() =>
+  import("src/features/jvm/requested-jv/pages/JVByRequestNo")
 );
 const AutoReversalPage = lazy(() =>
   import("src/features/jvm/auto-reversal/pages/AutoReversal")
@@ -53,6 +56,9 @@ const JVMRequestsPage = lazy(() =>
 );
 const JVRequestDetailPage = lazy(() =>
   import("src/features/jvm/requests/pages/JVDetails")
+);
+const JVRequestByRequestNoPage = lazy(() =>
+  import("src/features/jvm/requests/pages/JVByRequestNo")
 );
 
 const ImportPaymentPage = lazy(() =>
@@ -90,6 +96,12 @@ const SubmitDetail = lazy(() =>
 );
 const CustomDutyMaster = lazy(() =>
   import("src/features/custom-duty/master/pages/CustomDutyMaster")
+);
+const CustomDutyUserManagement = lazy(() =>
+  import("src/features/custom-duty/user-management/pages/CustomDutyUserManagement")
+);
+const CustomDutyHierarchyManagement = lazy(() =>
+  import("src/features/custom-duty/hierarchy-management/pages/HierarchyManagement")
 );
 
 const PettyCashPage = lazy(() =>
@@ -375,7 +387,13 @@ export default function Router() {
         {
           path: "/jvm/requested-jvs",
           element: (
-            <ProtectedRoute path="/jvm/requested-jvs" element={<JVStatusPage />} />
+            <ProtectedRoute path="/jvm/requested-jvs" element={<RequestedJVPage />} />
+          ),
+        },
+        {
+          path: "/jvm/requested-jvs/:parentId",
+          element: (
+            <ProtectedRoute path="/jvm/requested-jvs" element={<JVByRequestNoPage />} />
           ),
         },
         {
@@ -415,7 +433,16 @@ export default function Router() {
           ),
         },
         {
-          path: "/jvm/requests/detail/:jvId",
+          path: "/jvm/requests/:parentId",
+          element: (
+            <ProtectedRoute
+              path="/jvm/requests"
+              element={<JVRequestByRequestNoPage />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/requests/:parentId/:groupId",
           element: (
             <ProtectedRoute
               path="/jvm/requests"
@@ -424,7 +451,7 @@ export default function Router() {
           ),
         },
         {
-          path: "/jvm/requested-jvs/detail/:jvId",
+          path: "/jvm/requested-jvs/:parentId/:groupId",
           element: (
             <ProtectedRoute
               path="/jvm/requested-jvs"
@@ -481,10 +508,10 @@ export default function Router() {
           ),
         },
         {
-          path: "/custom-duty/raise-to-bank/submit-detail/:id",
+          path: "/custom-duty/raise-to-bank/submit-detail/:finalRequestNo",
           element: (
             <ProtectedRoute
-              path="/custom-duty/raise-to-bank/submit-detail/:id"
+              path="/custom-duty/raise-to-bank"
               element={<SubmitDetail />}
             />
           ),
@@ -495,6 +522,24 @@ export default function Router() {
             <ProtectedRoute
               path="/custom-duty/master"
               element={<CustomDutyMaster />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/user-management",
+          element: (
+            <ProtectedRoute
+              path="/custom-duty/user-management"
+              element={<CustomDutyUserManagement />}
+            />
+          ),
+        },
+        {
+          path: "/custom-duty/hierarchy-management",
+          element: (
+            <ProtectedRoute
+              path="/custom-duty/hierarchy-management"
+              element={<CustomDutyHierarchyManagement />}
             />
           ),
         },

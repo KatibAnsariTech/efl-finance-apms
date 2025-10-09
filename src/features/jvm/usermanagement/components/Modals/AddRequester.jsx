@@ -72,9 +72,6 @@ function AddRequester({ handleClose, open, editData, getData }) {
     }
   }, [open]);
 
-  console.log(regionOptions, "regionOptions");
-  console.log(salesOfficeOptions, "salesOfficeOptions");
-  console.log(salesGroupOptions, "salesGroupOptions");
 
   const selectedRegions = watch("region") || [];
   const selectedSalesOffices = watch("salesOffice") || [];
@@ -89,7 +86,6 @@ function AddRequester({ handleClose, open, editData, getData }) {
               ","
             )}`
           );
-          console.log(res?.data?.data?.masters, "sales office res");
           setSalesOfficeOptions(
             res?.data?.data?.masters?.map((item) => ({
               value: item._id,

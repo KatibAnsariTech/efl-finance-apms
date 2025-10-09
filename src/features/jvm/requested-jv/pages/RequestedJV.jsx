@@ -3,24 +3,20 @@ import { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import { DataGrid } from "@mui/x-data-grid";
 import Container from "@mui/material/Container";
-import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
-import { applyFilter, getComparator } from "src/utils/utils";
-import { publicRequest, userRequest } from "src/requestMethod";
+import { getComparator } from "src/utils/utils";
+import { userRequest } from "src/requestMethod";
 import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
-import { action } from "src/theme/palette";
-import { format } from "date-fns";
 import { useRouter } from "src/routes/hooks";
-import { useCounts } from "src/contexts/CountsContext";
-import { Box, Tooltip } from "@mui/material";
+import { Box } from "@mui/material";
 import RequestStatus from "../components/RequestStatus";
-import { fDateTime } from "src/utils/format-time";
+import ColorIndicators from "../components/ColorIndicators";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
-import { JVStatusColumns } from "../components/JVStatusColumns";
+import { RequestedJVColumns } from "../components/RequestedJVColumns";
 
-export default function JVStatus() {
+export default function RequestedJV() {
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +26,6 @@ export default function JVStatus() {
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
   const [selectedTab, setSelectedTab] = useState("all");
-  const [approvalCount, setApprovalCount] = useState(0);
   const [statusCounts, setStatusCounts] = useState({
     all: 0,
     pending: 0,
@@ -52,7 +47,7 @@ export default function JVStatus() {
     try {
       const response = await userRequest.get("jvm/getForms", {
         params: {
-          page: page + 1, // API uses 1-based pagination
+          page: page + 1,
           limit: rowsPerPage,
           status: selectedTab !== "all" ? selectedTab : undefined,
         },
@@ -63,7 +58,8 @@ export default function JVStatus() {
         const pagination = response.data.data.pagination;
         const processedData = apiData.map((item, index) => ({
           ...item,
-          id: item.groupId,
+          id: item.groupId || `${item.parentId}-${index}`,
+          groupId: item.groupId || `${item.parentId}-${index}`,
           createdAt: new Date(item.createdAt),
         }));
         setData(processedData);
@@ -100,8 +96,6 @@ export default function JVStatus() {
   };
 
   const handleExport = () => {
-    // Export functionality
-    console.log("Export clicked");
   };
 
   const handleStatusClick = (rowData) => {
@@ -141,43 +135,12 @@ export default function JVStatus() {
     }
   };
 
-  // Get columns from separate file
-  const columns = JVStatusColumns({ handleStatusClick, router, handleDelete });
-
-  // Apply filtering and sorting to the data
-  const dataFiltered = (() => {
-    let filteredData = [...data];
-
-    // Apply status tab filter
-    if (selectedTab !== "all") {
-      filteredData = filteredData.filter((item) => item.status === selectedTab);
-    }
-
-    // Apply search filter if search term exists
-    if (search) {
-      filteredData = filteredData.filter((item) =>
-        ["groupId", "parentId", "status"].some((field) =>
-          item[field]?.toString().toLowerCase().includes(search.toLowerCase())
-        )
-      );
-    }
-
-    // Apply sorting
-    const comparator = getComparator("desc", "createdAt");
-    const stabilizedThis = filteredData.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-      const order = comparator(a[0], b[0]);
-      if (order !== 0) return order;
-      return a[1] - b[1];
-    });
-
-    return stabilizedThis.map((el) => el[0]);
-  })();
+  const columns = RequestedJVColumns({ handleStatusClick, router, handleDelete });
 
   return (
     <>
       <Helmet>
-        <title>JV's Status</title>
+        <title>Requested JV's</title>
       </Helmet>
 
       <Container>
@@ -185,7 +148,6 @@ export default function JVStatus() {
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
           menuItems={menuItems}
-          approvalCount={approvalCount}
         />
         <Card sx={{ mt: 2, p: 2 }}>
           <div
@@ -204,9 +166,9 @@ export default function JVStatus() {
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
-              rows={dataFiltered || []}
+              rows={data || []}
               columns={columns}
-              getRowId={(row) => row?.groupId}
+              getRowId={(row) => row?.id}
               loading={loading}
               pagination
               paginationMode="server"
@@ -218,6 +180,16 @@ export default function JVStatus() {
                 setLimit(newModel.pageSize);
               }}
               pageSizeOptions={[5, 10, 25, 50]}
+              getRowClassName={(params) => {
+                const status = params.row.status?.toLowerCase();
+                if (status === "pending") return "row-pending";
+                if (status === "rejected") return "row-rejected";
+                if (status === "approved") return "row-approved";
+                if (status === "declined") return "row-declined";
+                if (status === "draft") return "row-draft";
+                if (status === "submitted") return "row-submitted";
+                return "";
+              }}
               autoHeight
               disableRowSelectionOnClick
               sx={{
@@ -256,8 +228,42 @@ export default function JVStatus() {
                   backgroundColor: (theme) => theme.palette.action.hover,
                   opacity: 0.8,
                 },
+                "& .row-pending": {
+                  backgroundColor: "#f4f5ba !important",
+                },
+                "& .row-rejected": {
+                  backgroundColor: "#e6b2aa !important",
+                },
+                "& .row-approved": {
+                  backgroundColor: "#baf5c2 !important",
+                },
+                "& .row-declined": {
+                  backgroundColor: "#e6b2aa !important",
+                },
+                "& .row-draft": {
+                  backgroundColor: "#e0e0e0 !important",
+                },
+                "& .row-submitted": {
+                  backgroundColor: "#bbdefb !important",
+                },
               }}
             />
+          </Box>
+          <Box
+            sx={{
+              position: "relative",
+              height: "52px",
+              marginTop: "-52px",
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "16px",
+              zIndex: 0,
+              pointerEvents: "none",
+            }}
+          >
+            <Box sx={{ pointerEvents: "auto" }}>
+              <ColorIndicators />
+            </Box>
           </Box>
         </Card>
 

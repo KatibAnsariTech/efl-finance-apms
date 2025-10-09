@@ -48,8 +48,12 @@ function JVCurrentStatus({ steps = [], data }) {
                 <Typography fontWeight="bold" color="text.primary">
                   Raised By
                 </Typography>
-                <Typography>{data?.requesterId?.username}</Typography>
-                {data?.formId?.requesterRemark &&<Typography>with comment:</Typography>}
+                <Typography>
+                  {data?.requesterId?.username}({data?.requesterId?.email})
+                </Typography>
+                {data?.formId?.requesterRemark && (
+                  <Typography>with comment:</Typography>
+                )}
               </Stack>
               <Box
                 sx={{
@@ -108,8 +112,7 @@ function JVCurrentStatus({ steps = [], data }) {
                   )}
                   {step.approverId?.username && (
                     <Typography>
-                      {step?.approverId?.username }
-                      ({step?.approverId?.email})
+                      {step?.approverId?.username}({step?.approverId?.email})
                     </Typography>
                   )}
                   {step.comment && <Typography>with comment:</Typography>}

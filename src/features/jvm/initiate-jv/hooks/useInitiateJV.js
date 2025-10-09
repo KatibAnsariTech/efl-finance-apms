@@ -62,24 +62,10 @@ export const useInitiateJV = () => {
     setModalOpen(false);
   };
 
-  const handleUploadSuccess = (uploadedEntries, fileUrl) => {
-    uploadedEntries.forEach((entry) => addJVEntry(entry));
-    setUploadedFileUrl(fileUrl);
-    setUploadModalOpen(false);
-    swal("Success!", "Journal vouchers uploaded successfully!", "success");
-  };
-
-  const handleConfirmSubmit = () => {
-    // setConfirmModalOpen(true);
-    console.log("Submit confirmed");
-  };
-
-  const handleSubmitRequest = async () => {
+  const handleUploadSuccess = async (uploadedEntries, fileUrl) => {
     try {
-      setSubmitting(true);
-
-      // Validate slNo entry limit before submitting
-      const exceededGroups = validateSlNoEntryLimit(data);
+      // Validate slNo entry limit before uploading
+      const exceededGroups = validateSlNoEntryLimit(uploadedEntries);
       if (exceededGroups.length > 0) {
         const errorMessage = exceededGroups
           .map(
@@ -94,12 +80,11 @@ export const useInitiateJV = () => {
           icon: "error",
           button: "OK",
         });
-        setSubmitting(false);
         return;
       }
 
-      // Validate slNo balance before submitting
-      const unbalancedGroups = validateSlNoBalance(data);
+      // Validate slNo balance before uploading
+      const unbalancedGroups = validateSlNoBalance(uploadedEntries);
       if (unbalancedGroups.length > 0) {
         const errorMessage = unbalancedGroups
           .map(
@@ -116,12 +101,11 @@ export const useInitiateJV = () => {
           icon: "error",
           button: "OK",
         });
-        setSubmitting(false);
         return;
       }
 
-      // Validate slNo date consistency before submitting
-      const inconsistentDateGroups = validateSlNoDateConsistency(data);
+      // Validate slNo date consistency before uploading
+      const inconsistentDateGroups = validateSlNoDateConsistency(uploadedEntries);
       if (inconsistentDateGroups.length > 0) {
         const errorMessage = inconsistentDateGroups
           .map((group) => {
@@ -142,9 +126,26 @@ export const useInitiateJV = () => {
           icon: "error",
           button: "OK",
         });
-        setSubmitting(false);
         return;
       }
+
+      uploadedEntries.forEach((entry) => addJVEntry(entry));
+      setUploadedFileUrl(fileUrl);
+      setUploadModalOpen(false);
+      swal("Success!", "Journal vouchers uploaded successfully!", "success");
+    } catch (error) {
+      console.error("Upload error:", error);
+      showErrorMessage(error, "Failed to upload journal vouchers", swal);
+    }
+  };
+
+  const handleConfirmSubmit = () => {
+    // setConfirmModalOpen(true);
+  };
+
+  const handleSubmitRequest = async () => {
+    try {
+      setSubmitting(true);
 
       const items = data.map((entry) => ({
         slNo: parseInt(entry.slNo) || 0,
@@ -173,7 +174,7 @@ export const useInitiateJV = () => {
         document: uploadedFileUrl,
         items: items,
       };
-      
+
       const response = await userRequest.post("jvm/createRequest", requestData);
 
       swal(

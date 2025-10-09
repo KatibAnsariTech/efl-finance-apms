@@ -29,6 +29,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
+import ColorIndicators from "../../my-requests/components/ColorIndicators";
 
 export default function Requests() {
   const router = useRouter();
@@ -37,17 +38,15 @@ export default function Requests() {
   const [loading, setLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState([]);
   const [comment, setComment] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [selectAllLoading, setSelectAllLoading] = useState(false);
   const [allData, setAllData] = useState([]);
   const [isSelectAll, setIsSelectAll] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
@@ -56,170 +55,67 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  // Status color mapping
-  const getStatusColor = (status) => {
-    const normalizedStatus = (status || "").toLowerCase();
-    switch (normalizedStatus) {
-      case "pending":
-        return "#f4f5ba";
-      case "declined":
-        return "#e6b2aa";
-      case "approved":
-        return "#baf5c2";
-      case "clarification needed":
-        return "#9be7fa";
-      case "draft":
-        return "#e0e0e0";
-      case "submitted":
-        return "#bbdefb";
-      case "rejected":
-        return "#e6b2aa";
-      default:
-        return "white";
-    }
-  };
-
-  const getData = async (pageNum = 1, isLoadMore = false) => {
+  const getData = async (pageNum = 1, shouldSelectAll = false) => {
     try {
-      if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
+      setLoading(true);
+      if (shouldSelectAll) {
+        setSelectAllLoading(true);
       }
 
       const page = pageNum;
-      const limit = rowsPerPage;
+      const limit = shouldSelectAll ? 10000 : rowsPerPage;
 
-      let apiData;
-      let totalCount;
+      const apiEndpoint =
+        selectedTab === "pendingWithMe"
+          ? "/custom/getPendingRequestForms"
+          : "/custom/getRequestsForApprover";
 
-      try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: page,
-              limit: limit,
-            },
-          }
-        );
-        apiData = response.data;
-        totalCount = response.headers["x-total-count"] || 100;
-      } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=${page}&limit=${limit}`
-        );
-        const fetchData = await fetchResponse.json();
-        apiData = fetchData;
-        totalCount = 100;
-      }
+      const response = await userRequest.get(apiEndpoint, {
+        params: {
+          page: page,
+          limit: limit,
+        },
+      });
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const apiData = response.data.data.forms;
+      const totalCount =
+        response.data.data.totalForms || response.data.data.totalRequests || 0;
 
-      let transformedData;
-
-      transformedData = apiData.map((item, index) => ({
-        id: item.id,
-        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
-        transactionType: item.transactionType,
-        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-        transactionAmount: parseFloat(item.transactionAmount),
-        status: item.status,
-        company: item.company,
-        description: item.description,
+      const transformedData = apiData.map((item) => ({
+        ...item,
+        id: item._id,
+        requestedDate: item.requestedDate || item.createdAt,
       }));
 
-      if (isLoadMore) {
-        setData((prev) => [...prev, ...transformedData]);
-      } else {
-        setData(transformedData);
-        setAllData(transformedData);
-      }
-
-      setTotalCount(totalCount);
-      setHasMore(page * limit < totalCount);
-    } catch (err) {
-      setData([]);
-      setAllData([]);
-      setTotalCount(0);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  };
-
-  const getAllData = async (shouldSelectAll = false) => {
-    try {
-      setSelectAllLoading(true);
-
-      let allApiData;
-
-      try {
-        const response = await userRequest.get(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data`,
-          {
-            params: {
-              page: 1,
-              limit: 1000,
-            },
-          }
-        );
-        allApiData = response.data;
-      } catch (userRequestError) {
-        const fetchResponse = await fetch(
-          `https://68cce4b9da4697a7f303dd30.mockapi.io/requests/request-data?page=1&limit=1000`
-        );
-        const fetchData = await fetchResponse.json();
-        allApiData = fetchData;
-      }
-
-      let transformedData;
-
-      transformedData = allApiData.map((item, index) => ({
-        id: item.id,
-        requestNo: `REQ${String(item.requestNo).padStart(6, "0")}`,
-        requestedDate: new Date(item.requestedDate * 1000).toISOString(),
-        boeNumber: `BOE${String(item.boeNumber).padStart(4, "0")}`,
-        challanNumber: `CHL${String(item.challanNumber).padStart(4, "0")}`,
-        transactionType: item.transactionType,
-        transactionDate: new Date(item.transactionDate * 1000).toISOString(),
-        transactionAmount: parseFloat(item.transactionAmount),
-        status: item.status,
-        company: item.company,
-        description: item.description,
-        finalRequestNo: `FREQ${String(item.requestNo).padStart(6, "0")}`,
-      }));
-
-      setAllData(transformedData);
       setData(transformedData);
-      setTotalCount(transformedData.length);
-      setHasMore(false);
+      setTotalCount(totalCount);
 
       if (shouldSelectAll) {
+        setAllData(transformedData);
         setSelectedRows(transformedData.map((item) => item.id));
         setIsSelectAll(true);
       }
     } catch (err) {
-      setAllData([]);
+      console.error("Error fetching data:", err);
       setData([]);
       setTotalCount(0);
-      setHasMore(false);
+      if (shouldSelectAll) {
+        setAllData([]);
+      }
     } finally {
-      setSelectAllLoading(false);
+      setLoading(false);
+      if (shouldSelectAll) {
+        setSelectAllLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    setPage(1);
+    setPage(0);
     setData([]);
     setAllData([]);
     setSelectedRows([]);
     setIsSelectAll(false);
-    setIsLoadingMore(false);
     setLoading(true);
     getData(1);
   }, [selectedTab]);
@@ -232,68 +128,23 @@ export default function Requests() {
 
   const handleSelectAll = async (event) => {
     if (event.target.checked) {
-      await getAllData(true);
+      await getData(1, true);
     } else {
       setSelectedRows([]);
       setIsSelectAll(false);
     }
   };
 
-  const handleLoadMore = useCallback(() => {
-    if (hasMore && !loadingMore && !loading && !isLoadingMore) {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      setPage(nextPage);
-      getData(nextPage, true).finally(() => {
-        setIsLoadingMore(false);
-      });
-    }
-  }, [hasMore, loadingMore, loading, page, isLoadingMore]);
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    getData(newPage + 1);
+  };
 
-  useEffect(() => {
-    const dataGrid = document.querySelector(".MuiDataGrid-root");
-    if (!dataGrid) return;
-
-    const scrollableElement = dataGrid.querySelector(
-      ".MuiDataGrid-virtualScroller"
-    );
-    if (!scrollableElement) return;
-
-    let isScrolling = false;
-    let scrollTimeout;
-
-    const handleScroll = () => {
-      if (isScrolling) return;
-
-      isScrolling = true;
-      clearTimeout(scrollTimeout);
-
-      scrollTimeout = setTimeout(() => {
-        const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
-
-        if (
-          isNearBottom &&
-          hasMore &&
-          !loadingMore &&
-          !loading &&
-          !isLoadingMore
-        ) {
-          handleLoadMore();
-        }
-
-        isScrolling = false;
-      }, 100);
-    };
-
-    scrollableElement.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
-    return () => {
-      scrollableElement.removeEventListener("scroll", handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
+  const handleRowsPerPageChange = (newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
+    getData(1);
+  };
 
   const handleSelectRow = (rowId) => {
     setSelectedRows((prev) => {
@@ -323,9 +174,22 @@ export default function Requests() {
     }
 
     try {
-      setActionLoading(true);
+      if (action === "approved") {
+        setApproveLoading(true);
+      } else if (action === "rejected") {
+        setRejectLoading(true);
+      }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const payload = {
+        formIds: selectedRows,
+        comment: comment.trim(),
+      };
+
+      if (action === "rejected") {
+        await userRequest.post("/custom/declineForm", payload);
+      } else if (action === "approved") {
+        await userRequest.post("/custom/acceptForm", payload);
+      }
 
       swal("Success", `Requests ${action} successfully`, "success");
       setSelectedRows([]);
@@ -335,7 +199,11 @@ export default function Requests() {
       console.error("Error performing action:", error);
       showErrorMessage(error, `Failed to ${action} requests`, swal);
     } finally {
-      setActionLoading(false);
+      if (action === "approved") {
+        setApproveLoading(false);
+      } else if (action === "rejected") {
+        setRejectLoading(false);
+      }
     }
   };
 
@@ -379,62 +247,21 @@ export default function Requests() {
       </Box>
 
       <Card sx={{ mt: 2, p: 2 }}>
-        <Box
-          sx={{
-            width: "100%",
-            height: 300,
-            position: "relative",
-          }}
-        >
-          {(loading || loadingMore) && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                zIndex: 10,
-                height: "100%",
-                width: "100%",
-              }}
-            >
-              <CircularProgress size={50} thickness={4} />
-              <Typography
-                variant="h6"
-                sx={{
-                  mt: 2,
-                  color: "text.secondary",
-                  fontWeight: 500,
-                  textAlign: "center",
-                }}
-              >
-                {loading
-                  ? "Loading data..."
-                  : loadingMore
-                  ? "Loading more data..."
-                  : "Loading..."}
-              </Typography>
-            </Box>
-          )}
-
+        <Box sx={{ height: 400, width: "100%" }}>
           <DataGrid
             rows={data}
             columns={columns}
-            loading={false}
+            loading={loading}
             disableRowSelectionOnClick
-            hideFooterSelectedRowCount
-            pagination={false}
-            hideFooterPagination
-            onRowsScrollEnd={handleLoadMore}
-            slots={{
-              footer: () => null,
+            pagination
+            paginationMode="server"
+            rowCount={totalCount}
+            paginationModel={{ page: page, pageSize: rowsPerPage }}
+            onPaginationModelChange={(newModel) => {
+              handlePageChange(newModel.page);
+              handleRowsPerPageChange(newModel.pageSize);
             }}
+            pageSizeOptions={[5, 10, 25, 50]}
             getRowClassName={(params) => {
               const status = params.row.status?.toLowerCase();
               if (status === "pending") return "row-pending";
@@ -533,25 +360,25 @@ export default function Requests() {
                   variant="contained"
                   color="success"
                   onClick={() => handleApprovalAction("approved")}
-                  disabled={actionLoading}
+                  disabled={approveLoading || rejectLoading}
                   startIcon={
-                    actionLoading ? <CircularProgress size={20} /> : null
+                    approveLoading ? <CircularProgress size={20} /> : null
                   }
                   sx={{ minWidth: 120 }}
                 >
-                  {actionLoading ? "Processing..." : "Approved"}
+                  {approveLoading ? "Processing..." : "Approved"}
                 </Button>
                 <Button
                   variant="contained"
                   color="error"
                   onClick={() => handleApprovalAction("rejected")}
-                  disabled={actionLoading}
+                  disabled={approveLoading || rejectLoading}
                   startIcon={
-                    actionLoading ? <CircularProgress size={20} /> : null
+                    rejectLoading ? <CircularProgress size={20} /> : null
                   }
                   sx={{ minWidth: 120 }}
                 >
-                  {actionLoading ? "Processing..." : "Rejected"}
+                  {rejectLoading ? "Processing..." : "Rejected"}
                 </Button>
               </Stack>
             </Stack>
@@ -571,6 +398,22 @@ export default function Requests() {
             />
           </Box>
         )}
+        <Box
+          sx={{
+            position: "relative",
+            height: "52px", 
+            marginTop: "-52px", 
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "16px",
+            zIndex: 0, 
+            pointerEvents: "none", 
+          }}
+        >
+          <Box sx={{ pointerEvents: "auto" }}>
+            <ColorIndicators />
+          </Box>
+        </Box>
       </Card>
 
       <RequestStatus

@@ -3,26 +3,30 @@ import { Box, Typography, Checkbox, CircularProgress } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
 
-// Component for other tabs columns
-export const RequestColumns = ({ 
-  isSelectAll, 
-  handleSelectAll, 
-  selectAllLoading, 
-  selectedRows, 
+export const RequestColumns = ({
+  isSelectAll,
+  handleSelectAll,
+  selectAllLoading,
+  selectedRows,
   handleSelectRow,
   onRequestClick,
-  showCheckboxes = true
+  showCheckboxes = true,
 }) => {
   const router = useRouter();
 
   const columns = [];
 
-  // Add checkbox column only if showCheckboxes is true
   if (showCheckboxes) {
     columns.push({
       field: "checkbox",
       headerName: (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           {selectAllLoading ? (
             <CircularProgress size={20} />
           ) : (
@@ -39,8 +43,8 @@ export const RequestColumns = ({
       filterable: false,
       resizable: false,
       disableColumnMenu: true,
-      headerAlign: 'center',
-      align: 'center',
+      headerAlign: "center",
+      align: "center",
       renderCell: (params) => (
         <Checkbox
           checked={selectedRows.includes(params.row.id)}
@@ -51,7 +55,6 @@ export const RequestColumns = ({
     });
   }
 
-  // Add other columns
   columns.push(
     {
       field: "requestNo",
@@ -64,10 +67,15 @@ export const RequestColumns = ({
             color: "#1976d2",
             textDecoration: "underline",
             cursor: "pointer",
+            fontSize: "0.87rem",
             fontWeight: 600,
             "&:hover": { color: "#1565c0" },
           }}
-          onClick={() => onRequestClick ? onRequestClick(params.row) : router.push(`/request-detail/${params.value}`)}
+          onClick={() =>
+            onRequestClick
+              ? onRequestClick(params.row)
+              : router.push(`/request-detail/${params.value}`)
+          }
         >
           {params.value}
         </Typography>
@@ -78,22 +86,25 @@ export const RequestColumns = ({
       headerName: "Requested Date",
       flex: 1,
       minWidth: 180,
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => {
+        const dateValue = params.value || params.row.createdAt;
+        return dateValue ? fDateTime(dateValue) : "-";
+      },
     },
     {
-      field: "boeNumber",
-      headerName: "BOE number",
+      field: "documentNo",
+      headerName: "Document No",
       flex: 1,
       minWidth: 120,
     },
     {
-      field: "challanNumber",
-      headerName: "Challan number",
+      field: "challanNo",
+      headerName: "Challan No",
       flex: 1,
       minWidth: 140,
     },
     {
-      field: "transactionType",
+      field: "typeOfTransaction",
       headerName: "Type of transaction",
       flex: 1,
       minWidth: 150,
@@ -119,16 +130,43 @@ export const RequestColumns = ({
       minWidth: 120,
     },
     {
-      field: "company",
+      field: "companyId",
       headerName: "Company",
       flex: 1,
       minWidth: 100,
+      renderCell: (params) => params.value?.name || "-",
     },
     {
       field: "description",
       headerName: "Description",
       flex: 1,
       minWidth: 150,
+      renderCell: (params) => params.value || "-",
+    },
+    {
+      field: "icegateAckNo",
+      headerName: "Icegate Ack. No.",
+      width: 200,
+      resizable: true,
+    },
+    {
+      field: "referenceId",
+      headerName: "Reference ID",
+      width: 200,
+      resizable: true,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+          title={params.value}
+        >
+          {params.value}
+        </Box>
+      ),
     },
     {
       field: "finalRequestNo",

@@ -15,10 +15,10 @@ function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
 
   React.useEffect(() => {
     if (companyData) {
-      setValue("companyName", companyData.companyName);
-      setValue("govtIdentifier", companyData.govtIdentifier);
-      setValue("bankAccountNumber", companyData.bankAccountNumber);
-      setValue("isActive", companyData.isActive);
+      setValue("name", companyData.companyName || companyData.name);
+      setValue("govId", companyData.govtIdentifier || companyData.govId);
+      setValue("bankAccount", companyData.bankAccountNumber || companyData.bankAccount);
+      setValue("status", companyData.status || (companyData.isActive ? "ACTIVE" : "INACTIVE"));
     } else {
       reset();
     }
@@ -27,15 +27,20 @@ function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
   const handleSaveData = async (data) => {
     try {
       const formattedData = {
-        key: "Company",
-        ...data,
+        name: data.name,
+        govId: data.govId,
+        bankAccount: data.bankAccount,
+        status: data.status,
       };
+      
       if (companyData?._id) {
-        await userRequest.put(`/admin/updateMaster?id=${companyData._id}`, formattedData);
+        // Update existing company
+        await userRequest.put(`/custom/updateCompany/${companyData._id}`, formattedData);
         getData();
         swal("Updated!", "Company data updated successfully!", "success");
       } else {
-        await userRequest.post("/admin/createMasters", formattedData);
+        // Create new company
+        await userRequest.post("/custom/createCompany", formattedData);
         getData();
         swal("Success!", "Company data saved successfully!", "success");
       }
@@ -95,41 +100,42 @@ function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
           onSubmit={handleSubmit(handleSaveData)}
         >
           <TextField
-            id="companyName"
+            id="name"
             label="Company Name"
-            {...register("companyName", { required: true })}
+            {...register("name", { required: true })}
             fullWidth
             required
           />
           <TextField
-            id="govtIdentifier"
+            id="govId"
             label="Govt Identifier (Code)"
-            {...register("govtIdentifier", { required: true })}
+            {...register("govId", { required: true })}
             fullWidth
             required
             helperText="GST number or other government identifier"
           />
           <TextField
-            id="bankAccountNumber"
+            id="bankAccount"
             label="Bank Account Number"
-            {...register("bankAccountNumber", { required: true })}
+            {...register("bankAccount", { required: true })}
             fullWidth
             required
             type="number"
             inputProps={{ pattern: "[0-9]*" }}
           />
           <TextField
-            id="isActive"
-            label="Active Status"
-            {...register("isActive")}
+            id="status"
+            label="Status"
+            {...register("status", { required: true })}
             select
             fullWidth
+            required
             SelectProps={{
               native: true,
             }}
           >
-            <option value={true}>Active</option>
-            <option value={false}>Inactive</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
           </TextField>
           <Button
             sx={{ marginTop: "20px", height: "50px" }}

@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
 
-// Component for other tabs columns
 export const RequestColumns = ({ onRequestClick }) => {
   const router = useRouter();
 
@@ -15,8 +14,8 @@ export const RequestColumns = ({ onRequestClick }) => {
 
   const columns = [
     {
-      field: "groupId",
-      headerName: "Request No.",
+      field: "parentId",
+      headerName: "P.Id",
       flex: 1,
       minWidth: 160,
       align: "center",
@@ -33,21 +32,12 @@ export const RequestColumns = ({ onRequestClick }) => {
             "&:hover": { color: "#1565c0" },
           }}
           onClick={() => {
-            localStorage.setItem("jvDetailData", JSON.stringify(params.row));
-            router.push(`/jvm/requests/detail/${params.row.groupId}`);
+            router.push(`/jvm/requests/${params.value}`);
           }}
         >
           {params.value}
         </Box>
       ),
-    },
-    {
-      field: "parentId",
-      headerName: "P.Id",
-      flex: 1,
-      minWidth: 120,
-      align: "center",
-      headerAlign: "center",
     },
     {
       field: "createdAt",
@@ -99,6 +89,15 @@ export const RequestColumns = ({ onRequestClick }) => {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
+    },
+    {
+      field: "autoReversal",
+      headerName: "Auto Reversal",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `${params.value === true ? "Yes" : "No"}`,
     },
   ];
 

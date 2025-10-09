@@ -10,7 +10,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete }) {
+export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,151 +23,30 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Generate dummy data
-      const dummyData = [
-        {
-          _id: "1",
-          companyName: "Eureka Forbes Ltd",
-          govtIdentifier: "GST123456789012",
-          bankAccountNumber: "1234567890123456",
-          isActive: true,
-          createdAt: "2024-01-15T10:30:00Z",
+      const response = await userRequest.get("/custom/getCompanies", {
+        params: {
+          page: paginationModel.page + 1, // API uses 1-based pagination
+          limit: paginationModel.pageSize,
         },
-        {
-          _id: "2",
-          companyName: "Forbes Technologies Pvt Ltd",
-          govtIdentifier: "GST987654321098",
-          bankAccountNumber: "9876543210987654",
-          isActive: true,
-          createdAt: "2024-01-16T10:30:00Z",
-        },
-        {
-          _id: "3",
-          companyName: "AquaGuard Solutions Inc",
-          govtIdentifier: "GST456789123456",
-          bankAccountNumber: "4567891234567890",
-          isActive: false,
-          createdAt: "2024-01-17T10:30:00Z",
-        },
-        {
-          _id: "4",
-          companyName: "WaterTech Industries",
-          govtIdentifier: "GST789123456789",
-          bankAccountNumber: "7891234567890123",
-          isActive: true,
-          createdAt: "2024-01-18T10:30:00Z",
-        },
-        {
-          _id: "5",
-          companyName: "PureWater Systems Ltd",
-          govtIdentifier: "GST321654987321",
-          bankAccountNumber: "3216549873216549",
-          isActive: true,
-          createdAt: "2024-01-19T10:30:00Z",
-        },
-        {
-          _id: "6",
-          companyName: "CleanTech Corporation",
-          govtIdentifier: "GST654321987654",
-          bankAccountNumber: "6543219876543210",
-          isActive: false,
-          createdAt: "2024-01-20T10:30:00Z",
-        },
-        {
-          _id: "7",
-          companyName: "AquaPure Technologies",
-          govtIdentifier: "GST147258369147",
-          bankAccountNumber: "1472583691472583",
-          isActive: true,
-          createdAt: "2024-01-21T10:30:00Z",
-        },
-        {
-          _id: "8",
-          companyName: "WaterWorks Solutions",
-          govtIdentifier: "GST369147258369",
-          bankAccountNumber: "3691472583691472",
-          isActive: true,
-          createdAt: "2024-01-22T10:30:00Z",
-        },
-        {
-          _id: "9",
-          companyName: "HydroTech Industries",
-          govtIdentifier: "GST258147369258",
-          bankAccountNumber: "2581473692581473",
-          isActive: false,
-          createdAt: "2024-01-23T10:30:00Z",
-        },
-        {
-          _id: "10",
-          companyName: "AquaFlow Systems",
-          govtIdentifier: "GST741852963741",
-          bankAccountNumber: "7418529637418529",
-          isActive: true,
-          createdAt: "2024-01-24T10:30:00Z",
-        },
-        {
-          _id: "11",
-          companyName: "PureFlow Technologies",
-          govtIdentifier: "GST852963741852",
-          bankAccountNumber: "8529637418529637",
-          isActive: true,
-          createdAt: "2024-01-25T10:30:00Z",
-        },
-        {
-          _id: "12",
-          companyName: "WaterMaster Corp",
-          govtIdentifier: "GST963741852963",
-          bankAccountNumber: "9637418529637418",
-          isActive: false,
-          createdAt: "2024-01-26T10:30:00Z",
-        },
-        {
-          _id: "13",
-          companyName: "AquaShield Ltd",
-          govtIdentifier: "GST159753486159",
-          bankAccountNumber: "1597534861597534",
-          isActive: true,
-          createdAt: "2024-01-27T10:30:00Z",
-        },
-        {
-          _id: "14",
-          companyName: "CleanWater Solutions",
-          govtIdentifier: "GST357951486357",
-          bankAccountNumber: "3579514863579514",
-          isActive: true,
-          createdAt: "2024-01-28T10:30:00Z",
-        },
-        {
-          _id: "15",
-          companyName: "AquaTech Enterprises",
-          govtIdentifier: "GST753159486753",
-          bankAccountNumber: "7531594867531594",
-          isActive: false,
-          createdAt: "2024-01-29T10:30:00Z",
-        }
-      ];
+      });
 
-      // Simulate pagination
-      const startIndex = paginationModel.page * paginationModel.pageSize;
-      const endIndex = startIndex + paginationModel.pageSize;
-      const paginatedData = dummyData.slice(startIndex, endIndex);
+      const apiData = response.data.data.companies || response.data.data || [];
+      const totalCount = response.data.data.totalCompanies || response.data.data.total || 0;
 
-      const mappedData = paginatedData.map((item, index) => ({
+      const mappedData = apiData.map((item, index) => ({
         id: item._id,
-        sno: startIndex + index + 1,
-        companyName: item.companyName || "-",
-        govtIdentifier: item.govtIdentifier || "-",
-        bankAccountNumber: item.bankAccountNumber || "-",
-        isActive: item.isActive,
+        sno: (paginationModel.page * paginationModel.pageSize) + index + 1,
+        companyName: item.name || "-",
+        govtIdentifier: item.govId || "-",
+        bankAccountNumber: item.bankAccount || "-",
+        isActive: item.status === "ACTIVE",
+        status: item.status || "INACTIVE",
         createdAt: item.createdAt,
         ...item,
       }));
 
       setData(mappedData);
-      setRowCount(dummyData.length);
+      setRowCount(totalCount);
     } catch (error) {
       console.error("Error fetching Company data:", error);
       showErrorMessage(error, "Error fetching Company data", swal);
@@ -178,10 +57,9 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
 
   useEffect(() => {
     fetchData();
-  }, [paginationModel]);
+  }, [paginationModel, refreshTrigger]);
 
   const handleEdit = (id) => {
-    console.log("Edit Company:", id);
     if (parentHandleEdit) {
       const rowData = data.find(item => item.id === id);
       parentHandleEdit(rowData);
@@ -191,7 +69,6 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
   };
 
   const handleDelete = (id) => {
-    console.log("Delete Company:", id);
     if (parentHandleDelete) {
       parentHandleDelete(id);
     } else {
@@ -316,7 +193,7 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
           >
             <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
           </IconButton>
-          <IconButton
+          {/* <IconButton
             size="small"
             onClick={(event) => {
               event.stopPropagation();
@@ -330,7 +207,7 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
             }}
           >
             <Iconify icon="solar:trash-bin-trash-bold" />
-          </IconButton>
+          </IconButton> */}
         </Box>
       ),
     },

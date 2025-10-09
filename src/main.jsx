@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import App from './app';
 import { CountsProvider } from './contexts/CountsContext';
+import { JVMProvider } from './contexts/JVMContext';
 
 // ----------------------------------------------------------------------
 
@@ -16,7 +17,9 @@ root.render(
     <BrowserRouter>
       <Suspense>
         <CountsProvider>
-          <App />
+          <JVMProvider>
+            <App />
+          </JVMProvider>
         </CountsProvider>
       </Suspense>
     </BrowserRouter>

@@ -27,7 +27,6 @@ export default function CustomDutyDashboard() {
       const response = await userRequest.get('/admin/getFormStatistics');
       setCardData(response.data?.data);
     } catch (error) {
-      console.log('error:', error);
       // showErrorMessage(error, "Failed to fetch form statistics. Please try again later.", swal);
     }
   };
@@ -44,7 +43,6 @@ export default function CustomDutyDashboard() {
       });
       setChartData(response.data?.data?.reverse());
     } catch (error) {
-      console.log('error:', error);
       // showErrorMessage(error, "Failed to fetch chart data. Please try again later.", swal);
     } finally {
       setLoading(false);
@@ -63,14 +61,12 @@ export default function CustomDutyDashboard() {
       });
       setPieChartData(response.data?.data);
     } catch (error) {
-      console.log('error:', error);
       // showErrorMessage(error, "Failed to fetch pie chart data. Please try again later.", swal);
     } finally {
       setPieLoading(false);
     }
   };
 
-  console.log(pieChartData, 'pieChartData');
 
   useEffect(() => {
     getPieChartData();

@@ -17,6 +17,7 @@ export default function CustomDutyMaster() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [editData, setEditData] = useState(null);
   const [open, setOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const selectedCategory = menuItems[selectedTab];
 
   const handleEdit = (row) => {
@@ -45,9 +46,7 @@ export default function CustomDutyMaster() {
       });
 
       if (result) {
-        console.log("Deleting company with ID:", id);
-        // Add actual delete API call here
-        // await userRequest.delete(`/admin/deleteMaster/${id}`);
+        await userRequest.delete(`/custom/deleteCompany/${id}`);
         
         // Show success message
         swal("Deleted!", "Company has been deleted successfully.", "success");
@@ -62,9 +61,8 @@ export default function CustomDutyMaster() {
   };
 
   const getData = () => {
-    // This function is now handled by individual table components
-    console.log("Data refresh requested");
-    // The table will refresh automatically when needed
+    // Trigger refresh by updating the refresh trigger
+    setRefreshTrigger(prev => prev + 1);
   };
 
   return (
@@ -115,6 +113,7 @@ export default function CustomDutyMaster() {
             <CompanyTable 
               handleEdit={handleEdit}
               handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
             />
           )}
         </Box>

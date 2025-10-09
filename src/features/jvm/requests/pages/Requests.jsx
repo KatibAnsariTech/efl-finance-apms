@@ -16,9 +16,13 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
+import ColorIndicators from "../components/ColorIndicators";
+import JVMRequestTabs from "../components/JVMRequestTabs";
+import { useJVM } from "src/contexts/JVMContext";
 
 export default function Requests() {
   const router = useRouter();
+  const { jvmRequestCounts } = useJVM();
   const [selectedTab, setSelectedTab] = useState("pendingWithMe");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,10 +30,6 @@ export default function Requests() {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [allData, setAllData] = useState([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
@@ -38,13 +38,9 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  const getData = async (pageNum = 1, isLoadMore = false) => {
+  const getData = async (pageNum = 1) => {
     try {
-      if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
 
       const page = pageNum;
       const limit = rowsPerPage;
@@ -65,7 +61,6 @@ export default function Requests() {
       });
       apiData = response.data.data.data || [];
       totalCount = response.data.data.pagination?.totalCount || 0;
-      setHasMore(response.data.data.pagination?.hasNextPage || false);
 
       // Ensure each row has an id field for DataGrid
       const dataWithIds = apiData.map((item, index) => ({
@@ -73,34 +68,21 @@ export default function Requests() {
         id: item.groupId || item.id || index,
       }));
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      if (isLoadMore) {
-        setData((prev) => [...prev, ...dataWithIds]);
-      } else {
-        setData(dataWithIds);
-        setAllData(dataWithIds);
-      }
-
+      setData(dataWithIds);
       setTotalCount(totalCount);
     } catch (err) {
       console.error("Error in getData:", err);
       setData([]);
-      setAllData([]);
       setTotalCount(0);
-      setHasMore(false);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
 
   useEffect(() => {
-    setPage(1);
+    setPage(0);
     setData([]);
-    setAllData([]);
-    setIsLoadingMore(false);
     setLoading(true);
     getData(1);
   }, [selectedTab]);
@@ -110,61 +92,16 @@ export default function Requests() {
   };
 
 
-  const handleLoadMore = useCallback(() => {
-    if (hasMore && !loadingMore && !loading && !isLoadingMore) {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      setPage(nextPage);
-      getData(nextPage, true).finally(() => {
-        setIsLoadingMore(false);
-      });
-    }
-  }, [hasMore, loadingMore, loading, page, isLoadingMore]);
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    getData(newPage + 1); // API uses 1-based pagination
+  };
 
-  useEffect(() => {
-    const dataGrid = document.querySelector(".MuiDataGrid-root");
-    if (!dataGrid) return;
-
-    const scrollableElement = dataGrid.querySelector(
-      ".MuiDataGrid-virtualScroller"
-    );
-    if (!scrollableElement) return;
-
-    let isScrolling = false;
-    let scrollTimeout;
-
-    const handleScroll = () => {
-      if (isScrolling) return;
-
-      isScrolling = true;
-      clearTimeout(scrollTimeout);
-
-      scrollTimeout = setTimeout(() => {
-        const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
-
-        if (
-          isNearBottom &&
-          hasMore &&
-          !loadingMore &&
-          !loading &&
-          !isLoadingMore
-        ) {
-          handleLoadMore();
-        }
-
-        isScrolling = false;
-      }, 100);
-    };
-
-    scrollableElement.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
-    return () => {
-      scrollableElement.removeEventListener("scroll", handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [hasMore, loadingMore, loading, isLoadingMore, handleLoadMore]);
+  const handleRowsPerPageChange = (newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
+    getData(1);
+  };
 
   const handleRequestClick = (rowData) => {
     setSelectedRowData(rowData);
@@ -182,82 +119,46 @@ export default function Requests() {
 
   return (
     <Container>
-      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{
-            "& .MuiTabs-indicator": { backgroundColor: "#1877F2" },
-            "& .MuiTab-root": { fontWeight: "bold" },
-          }}
-        >
-          {menuItems.map((item) => (
-            <Tab key={item.value} label={item.label} value={item.value} />
-          ))}
-        </Tabs>
-      </Box>
+      <JVMRequestTabs
+        selectedTab={selectedTab}
+        setSelectedTab={handleTabChange}
+        menuItems={menuItems}
+        jvmRequestCounts={jvmRequestCounts}
+      />
 
       <Card sx={{ mt: 2, p: 2 }}>
         <Box
           sx={{
             width: "100%",
-            height: 380,
-            position: "relative",
           }}
         >
-          {(loading || loadingMore) && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                zIndex: 10,
-                height: "100%",
-                width: "100%",
-              }}
-            >
-              <CircularProgress size={50} thickness={4} />
-              <Typography
-                variant="h6"
-                sx={{
-                  mt: 2,
-                  color: "text.secondary",
-                  fontWeight: 500,
-                  textAlign: "center",
-                }}
-              >
-                {loading
-                  ? "Loading data..."
-                  : loadingMore
-                  ? "Loading more data..."
-                  : "Loading..."}
-              </Typography>
-            </Box>
-          )}
-
           <DataGrid
             rows={data}
             columns={columns}
-            loading={false}
+            loading={loading}
             disableRowSelectionOnClick
-            hideFooterSelectedRowCount
-            pagination={false}
-            hideFooterPagination
-            onRowsScrollEnd={handleLoadMore}
+            autoHeight
+            pagination
+            paginationMode="server"
+            rowCount={totalCount}
+            paginationModel={{ page: page, pageSize: rowsPerPage }}
+            onPaginationModelChange={(newModel) => {
+              handlePageChange(newModel.page);
+              handleRowsPerPageChange(newModel.pageSize);
+            }}
+            pageSizeOptions={[5, 10, 25, 50]}
+            getRowClassName={(params) => {
+              const status = params.row.status?.toLowerCase();
+              if (status === "pending") return "row-pending";
+              if (status === "rejected") return "row-rejected";
+              if (status === "approved") return "row-approved";
+              if (status === "declined") return "row-declined";
+              if (status === "draft") return "row-draft";
+              if (status === "submitted") return "row-submitted";
+              return "";
+            }}
             columnResizeMode="onResize"
             disableColumnResize={false}
-            slots={{
-              footer: () => null,
-            }}
             sx={{
               "& .MuiDataGrid-cell": {
                 "&:focus": { outline: "none" },
@@ -287,8 +188,42 @@ export default function Requests() {
               "& .MuiDataGrid-row:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
+              "& .row-pending": {
+                backgroundColor: "#f4f5ba !important",
+              },
+              "& .row-rejected": {
+                backgroundColor: "#e6b2aa !important",
+              },
+              "& .row-approved": {
+                backgroundColor: "#baf5c2 !important",
+              },
+              "& .row-declined": {
+                backgroundColor: "#e6b2aa !important",
+              },
+              "& .row-draft": {
+                backgroundColor: "#e0e0e0 !important",
+              },
+              "& .row-submitted": {
+                backgroundColor: "#bbdefb !important",
+              },
             }}
           />
+        </Box>
+        <Box
+          sx={{
+            position: "relative",
+            height: "52px", // Match DataGrid footer height
+            marginTop: "-52px", // Overlap with DataGrid footer
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "16px",
+            zIndex: 0, // Lower z-index so pagination is clickable
+            pointerEvents: "none", // Allow clicks to pass through
+          }}
+        >
+          <Box sx={{ pointerEvents: "auto" }}>
+            <ColorIndicators />
+          </Box>
         </Box>
 
       </Card>

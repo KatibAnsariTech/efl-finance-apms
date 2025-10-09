@@ -7,92 +7,67 @@ import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { getComparator } from "src/utils/utils";
 import { useRouter } from "src/routes/hooks";
-import { Box, Tooltip, Typography, IconButton } from "@mui/material";
-import { fDateTime } from "src/utils/format-time";
+import { Box, IconButton } from "@mui/material";
+import CloseButton from "src/routes/components/CloseButton";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import { useParams } from "src/routes/hooks";
 import { userRequest } from "src/requestMethod";
 import { JVDetailsColumns } from "../components/JVDetailsColumns";
-import JVCurrentStatus from "../components/JVCurrentStatus";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
 export default function JVDetails() {
   const router = useRouter();
-  const { jvId } = useParams();
-  const id = jvId;
+  const { parentId, groupId } = useParams();
+  const id = groupId;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
-  const [jvData, setJvData] = useState(null);
 
-  const getData = useCallback(async () => {
-    setLoading(true);
-    try {
-      if (!id) return;
+  const getData = useCallback(
+    async (pageNum = 1, limit = rowsPerPage) => {
+      setLoading(true);
+      try {
+        if (!id) return;
 
-      const response = await userRequest.get(
-        `jvm/getFormItemsByGroupId?groupId=${id}`
-      );
-
-      if (response.data.statusCode === 200) {
-        const { items } = response.data.data;
-
-        const data = items.map((item, index) => ({
-          ...item,
-          id: item._id,
-          lineNumber: index + 1,
-        }));
-
-        setData(data);
-        setTotalCount(data.length);
-      } else {
-        throw new Error(response.data.message || "Failed to fetch form items");
-      }
-    } catch (error) {
-      console.error("Error fetching JV detail data:", error);
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-  const getRequestInfo = useCallback(async () => {
-    try {
-      if (!id) {
-        setJvData(null);
-        return;
-      }
-
-      const response = await userRequest.get(
-        `jvm/getRequestInfoByGroupId?groupId=${id}`
-      );
-
-      if (response.data.statusCode === 200) {
-        const requestData = response.data.data;
-
-        // Store the full JV data for CurrentStatus component
-        setJvData(requestData);
-      } else {
-        throw new Error(
-          response.data.message || "Failed to fetch request info"
+        const response = await userRequest.get(
+          `jvm/getFormItemsByGroupId?groupId=${id}&page=${pageNum}&limit=${limit}`
         );
+
+        if (response.data.statusCode === 200) {
+          const { items, pagination } = response.data.data;
+
+          const data = items.map((item, index) => ({
+            ...item,
+            id: item._id,
+            lineNumber: (pageNum - 1) * limit + index + 1,
+          }));
+
+          setData(data);
+          setTotalCount(pagination.totalItems);
+        } else {
+          throw new Error(
+            response.data.message || "Failed to fetch form items"
+          );
+        }
+      } catch (error) {
+        setData([]);
+        setTotalCount(0);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching request info:", err);
-      showErrorMessage(err, "Failed to fetch request details", swal);
-      setJvData(null);
-    }
-  }, [id]);
+    },
+    [id, rowsPerPage]
+  );
 
   useEffect(() => {
     if (id) {
-      getData();
-      getRequestInfo();
+      getData(page + 1, rowsPerPage);
     }
-  }, [id, page, rowsPerPage, getData, getRequestInfo]);
+  }, [id, page, rowsPerPage, getData]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
@@ -133,7 +108,6 @@ export default function JVDetails() {
     );
   };
 
-  // Get columns from separate file
   const columns = JVDetailsColumns();
 
   const dataFiltered = (() => {
@@ -195,54 +169,10 @@ export default function JVDetails() {
               onFilterChange={handleFilterChange}
               placeholder="Search by JV No, document type, GL account, remarks, reference..."
             />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-                position: "relative",
-                "&:hover .close-tooltip": { opacity: 1, pointerEvents: "auto" },
-                mr: 1,
-              }}
-              onClick={handleBack}
-            >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="#e53935"
-                stroke="#fff"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ borderRadius: "50%" }}
-              >
-                <circle cx="12" cy="12" r="12" fill="#e53935" />
-                <line x1="8" y1="8" x2="16" y2="16" />
-                <line x1="16" y1="8" x2="8" y2="16" />
-              </svg>
-              <Box
-                className="close-tooltip"
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  right: 35,
-                  background: "#12368d",
-                  color: "#fff",
-                  px: 1.5,
-                  py: 0.5,
-                  borderRadius: 1,
-                  fontSize: "0.85rem",
-                  whiteSpace: "nowrap",
-                  opacity: 0,
-                  pointerEvents: "none",
-                  transition: "opacity 0.2s",
-                  zIndex: 10,
-                }}
-              >
-                Back to JV Status
-              </Box>
-            </Box>
+             <CloseButton
+               onClick={() => router.back()}
+               tooltip="Back to JVs by Group"
+             />
           </Box>
 
           <Box sx={{ width: "100%" }}>
@@ -252,8 +182,8 @@ export default function JVDetails() {
               getRowId={(row) => row?.id}
               loading={loading}
               pagination
-              paginationMode="client"
-              rowCount={dataFiltered.length}
+              paginationMode="server"
+              rowCount={totalCount}
               paginationModel={{ page: page, pageSize: rowsPerPage }}
               onPaginationModelChange={(newModel) => {
                 setPage(newModel.page);
@@ -301,12 +231,6 @@ export default function JVDetails() {
               }}
             />
           </Box>
-          {/* Approval History */}
-          {jvData && (
-            <Box sx={{ mt: 3 }}>
-              <JVCurrentStatus steps={jvData.steps || []} data={jvData} />
-            </Box>
-          )}
         </Card>
       </Container>
     </>

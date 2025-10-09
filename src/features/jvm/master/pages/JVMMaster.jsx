@@ -59,7 +59,6 @@ export default function JVMMaster() {
       });
 
       if (result) {
-        console.log(`Deleting ${selectedCategory} with ID:`, id);
         await userRequest.delete(`/jvm/deleteMaster/${id}`);
         
         // Show success message

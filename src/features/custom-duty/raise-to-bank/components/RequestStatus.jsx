@@ -3,92 +3,130 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import CircularProgress from "@mui/material/CircularProgress";
 import { userRequest } from "src/requestMethod";
-import { fDate, fDateTime } from "src/utils/format-time";
-import { Button, Divider, Typography } from "@mui/material";
-import { useAccount } from "src/hooks/use-account";
+import { fDateTime } from "src/utils/format-time";
+import {
+  Divider,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  styled,
+} from "@mui/material";
 
-const style = {
+const ModalBox = styled(Box)(({ theme }) => ({
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  p: 5,
-  borderRadius: 2,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[24],
+  padding: theme.spacing(5),
+  borderRadius: theme.spacing(2),
   width: "85dvw",
   maxHeight: "80vh",
   overflowY: "auto",
-};
+}));
+
+const StatusTableCell = styled(TableCell)(({ status }) => ({
+  padding: "8px",
+  textAlign: "center",
+  color:
+    status === "approved"
+      ? "green"
+      : status === "pending"
+      ? "orange"
+      : status === "declined"
+      ? "red"
+      : "gray",
+  fontWeight: "bold",
+}));
+
+const CommentTableCell = styled(TableCell)({
+  padding: "8px",
+  textAlign: "center",
+  maxWidth: "30dvw",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+});
+
+const TableHeaderCell = styled(TableCell)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  padding: "6px",
+  fontSize: "0.875rem",
+  fontWeight: 600,
+  textAlign: "center",
+  backgroundColor: "#003a95",
+  color: "#fff",
+}));
+
+const TableRowStyled = styled(TableRow)({
+  borderBottom: "1px solid #aeaeae",
+});
+
+const LoadingContainer = styled(Box)({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100px",
+});
+
+const ModalTitleContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: theme.spacing(2),
+}));
 
 export default function RequestStatus({
   open,
   onClose,
   rowData,
-  getRequestData,
-  selectedTab,
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const account = useAccount();
 
   const getData = async () => {
     setLoading(true);
     try {
-      // For demo purposes, using dummy data
-      // In production, uncomment the API call below
-      // const res = await userRequest.get(
-      //   `/admin/getFormSteps?id=${rowData?._id}`
-      // );
-      // setData(res?.data?.data);
+      const res = await userRequest.get(
+        `/custom/getFormSteps?formId=${rowData?._id}`
+      );
       
-      // Dummy data for demonstration
-      const dummyData = {
-        formId: {
-          requesterRemark: "Custom duty payment request for import goods",
-          createdAt: "2024-01-15T10:30:00Z",
-          updatedAt: "2024-01-15T10:30:00Z"
-        },
-        requesterId: {
-          username: "john.doe"
-        },
-        steps: [
-          {
-            approverId: {
-              username: "shweta.more"
-            },
-            position: "Finance Manager",
-            status: "Pending",
-            comment: "kjjjjjjjjjjjjjjjj",
-            created: "2024-01-15T11:00:00Z",
-            updatedAt: null
-          },
-          {
-            approverId: {
-              username: "rajesh.kumar"
-            },
-            position: "Senior Finance Manager",
-            status: "Pending",
-            comment: "Awaiting approval",
-            created: "2024-01-15T12:00:00Z",
-            updatedAt: null
-          },
-          {
-            approverId: {
-              username: "priya.sharma"
-            },
-            position: "Finance Director",
-            status: "Pending",
-            comment: "Final approval required",
-            created: "2024-01-15T13:00:00Z",
-            updatedAt: null
-          }
-        ]
-      };
-      
-      setData(dummyData);
+      if (res?.data?.statusCode === 200 && res?.data?.data) {
+        const apiData = res.data.data;
+        const mappedData = {
+          requester: apiData.requester,
+          steps: apiData.steps.map(step => {
+            const actualApprovals = step.approvals.filter(approval => approval.status !== 'Parallel Approved');
+            const firstApproval = actualApprovals[0] || step.approvals[0];
+            const actualApprovers = actualApprovals.map(approval => approval.approverId);
+            const actualStatuses = actualApprovals.map(approval => approval.status);
+            const actualComments = actualApprovals.map(approval => approval.comment).filter(Boolean);
+            
+            return {
+              approverId: actualApprovers,
+              position: step.position,
+              status: actualStatuses.includes('Approved') ? 'Approved' : 
+                     actualStatuses.includes('Declined') ? 'Declined' : 'Pending',
+              comment: actualComments.join(', ') || '',
+              created: firstApproval?.created || step.createdAt,
+              createdAt: step.createdAt,
+              updatedAt: step.updatedAt
+            };
+          })
+        };
+        setData(mappedData);
+      } else {
+        setData(null);
+      }
     } catch (err) {
-      console.log("err:", err);
+      console.error("Error fetching form steps:", err);
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -100,18 +138,6 @@ export default function RequestStatus({
     }
   }, [open]);
 
-  const getStatusStyle = (status) => {
-    switch (status.toLowerCase()) {
-      case "approved":
-        return { color: "green", fontWeight: "bold" };
-      case "pending":
-        return { color: "orange", fontWeight: "bold" };
-      case "declined":
-        return { color: "red", fontWeight: "bold" };
-      default:
-        return { color: "gray", fontWeight: "bold" };
-    }
-  };
 
   const formatStatus = (status) => {
     switch (status.toLowerCase()) {
@@ -126,29 +152,29 @@ export default function RequestStatus({
     }
   };
 
-  // Map steps array if present, and add requester step at the top
   const renderSteps = (data) => {
-    // Add requester step if formId is present
-    const requesterStep = data?.formId
+    const requesterStep = data?.requester
       ? {
-          username: data?.requesterId?.username || "-",
+          username: `${data?.requester?.username} (${data?.requester?.email})`,
           status: "Raised",
-          comment: data?.formId.requesterRemark || "-",
-          created: data?.formId.createdAt,
-          updatedAt: data?.formId.updatedAt,
+          comment: "Request submitted",
+          created: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
       : null;
 
     let stepsArr = [];
     if (Array.isArray(data?.steps)) {
       stepsArr = data.steps.map((step, idx) => {
-        const displayName = step.approverId?.username || "-";
-        const displayPosition = step.position || "-";
+        const approvers = step.approverId;
+        const displayNames = approvers.map(approver => 
+          `${approver?.username || "-"} (${approver?.email || "-"})`
+        ).join('\n');
         const displayStatus = step.status || "-";
         const displayComment = step.comment || "-";
         return {
           key: `step-${idx}`,
-          assignedTo: `${displayName} (${displayPosition})`,
+          assignedTo: displayNames,
           assignedOn: step.created ? fDateTime(step.created) : "N/A",
           actionedOn:
             step.updatedAt && displayStatus !== "Pending"
@@ -159,7 +185,6 @@ export default function RequestStatus({
         };
       });
     }
-    // Compose final steps array
     const allSteps = [
       requesterStep && {
         key: "requester",
@@ -178,235 +203,64 @@ export default function RequestStatus({
 
     if (allSteps.length > 0) {
       return allSteps.map((step, idx) => (
-        <tr style={{ borderBottom: "1px solid #aeaeae" }} key={step.key || idx}>
-          <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
+        <TableRowStyled key={step.key || idx}>
+          <TableCell sx={{ padding: "8px", textAlign: "center", whiteSpace: "pre-line" }}>
             {step.assignedTo}
-          </td>
-          <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
+          </TableCell>
+          <TableCell sx={{ padding: "8px", textAlign: "center" }}>
             {step.assignedOn}
-          </td>
-          <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
+          </TableCell>
+          <TableCell sx={{ padding: "8px", textAlign: "center" }}>
             {step.actionedOn}
-          </td>
-          <td
-            style={{
-              padding: "6px",
-              textAlign: "center",
-              fontSize: "0.875rem",
-              ...getStatusStyle(step.status),
-            }}
-          >
+          </TableCell>
+          <StatusTableCell status={step.status?.toLowerCase()}>
             {formatStatus(step.status)}
-          </td>
-          <td
-            style={{
-              padding: "6px",
-              textAlign: "center",
-              maxWidth: "30dvw",
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-              textOverflow: "ellipsis",
-              fontSize: "0.875rem",
-            }}
-            title={step.comment}
-          >
+          </StatusTableCell>
+          <CommentTableCell title={step.comment}>
             {step.comment}
-          </td>
-        </tr>
+          </CommentTableCell>
+        </TableRowStyled>
       ));
     }
-    // fallback to old logic if steps is not present
-    return Object.keys(data)
-      .filter((key) => key.startsWith("step") && data[key]?.length > 0)
-      .sort(
-        (a, b) =>
-          parseInt(a.replace("step", ""), 10) -
-          parseInt(b.replace("step", ""), 10)
-      )
-      .map((stepKey) => {
-        const stepDataArray = data[stepKey];
-
-        const firstApproved = stepDataArray.find(
-          (item) => item.status === "Approved"
-        );
-        const firstDeclined = stepDataArray.find(
-          (item) => item.status === "Declined"
-        );
-        const firstPending = stepDataArray.find(
-          (item) => item.status === "Pending"
-        );
-
-        const allPendingEmails = stepDataArray
-          .filter((item) => item.status === "Pending")
-          .map((item) => <div key={item.email}>{item.email}</div>);
-
-        const displayStatus = firstApproved
-          ? firstApproved.status
-          : firstDeclined
-          ? firstDeclined.status
-          : "Pending";
-
-        const displayEmail = firstApproved
-          ? firstApproved.email
-          : firstDeclined
-          ? firstDeclined.email
-          : allPendingEmails;
-
-        const displayComment =
-          firstApproved?.comment || firstDeclined?.comment || "N/A";
-
-        return (
-          <tr style={{ borderBottom: "1px solid #aeaeae" }} key={stepKey}>
-            <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
-              {displayEmail}
-            </td>
-            <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
-              {firstApproved?.createdAt ||
-              firstDeclined?.createdAt ||
-              firstPending?.createdAt
-                ? fDate(
-                    firstApproved?.createdAt ||
-                      firstDeclined?.createdAt ||
-                      firstPending?.createdAt
-                  )
-                : "N/A"}
-            </td>
-            <td style={{ padding: "6px", textAlign: "center", fontSize: "0.875rem" }}>
-              {displayStatus === "Pending"
-                ? "N/A"
-                : fDate(firstApproved?.updatedAt || firstDeclined?.updatedAt)}
-            </td>
-            <td
-              style={{
-                padding: "6px",
-                textAlign: "center",
-                fontSize: "0.875rem",
-                ...getStatusStyle(displayStatus),
-              }}
-            >
-              {formatStatus(displayStatus)}
-            </td>
-            <td
-              style={{
-                padding: "6px",
-                textAlign: "center",
-                maxWidth: "30dvw",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-                fontSize: "0.875rem",
-              }}
-              title={displayComment}
-            >
-              {displayComment}
-            </td>
-          </tr>
-        );
-      });
+    return [];
   };
 
   return (
-    <div>
-      <Modal
-        open={open}
-        onClose={onClose}
-        keepMounted
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-      >
-        <Box sx={style}>
-          <div className="modal-content">
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mb: 2,
-              }}
-            >
-              <Typography variant="h5">Request No. #{rowData?.requestNo}</Typography>
-            </Box>
-            <Divider sx={{ borderStyle: "solid" }} />
-            {loading ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "200px",
-                }}
-              >
-                <CircularProgress />
-              </div>
-            ) : data ? (
-              <>
-                <table
-                  className="status-table"
-                  style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}
-                >
-                  <thead>
-                    <tr style={{ backgroundColor: "#003a95", color: "#fff" }}>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600"
-                        }}
-                      >
-                        Assigned To
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600"
-                        }}
-                      >
-                        Assigned On
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600"
-                        }}
-                      >
-                        Actioned On
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600"
-                        }}
-                      >
-                        Status
-                      </th>
-                      <th
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: "600"
-                        }}
-                      >
-                        Comment
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>{renderSteps(data)}</tbody>
-                </table>
-              </>
-            ) : (
-              <p>No data available</p>
-            )}
-          </div>
-        </Box>
-      </Modal>
-    </div>
+    <Modal
+      open={open}
+      onClose={onClose}
+      keepMounted
+      aria-labelledby="modal-title"
+      aria-describedby="modal-description"
+    >
+      <ModalBox>
+        <ModalTitleContainer>
+          <Typography variant="h5">Request No. #{rowData?.requestNo}</Typography>
+        </ModalTitleContainer>
+        <Divider sx={{ borderStyle: "solid" }} />
+        {loading ? (
+          <LoadingContainer>
+            <CircularProgress />
+          </LoadingContainer>
+        ) : data ? (
+          <TableContainer component={Paper} sx={{ width: "100%", fontSize: "0.875rem" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeaderCell>Assigned To</TableHeaderCell>
+                  <TableHeaderCell>Assigned On</TableHeaderCell>
+                  <TableHeaderCell>Actioned On</TableHeaderCell>
+                  <TableHeaderCell>Status</TableHeaderCell>
+                  <TableHeaderCell>Comment</TableHeaderCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>{renderSteps(data)}</TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography>No data available</Typography>
+        )}
+      </ModalBox>
+    </Modal>
   );
 }

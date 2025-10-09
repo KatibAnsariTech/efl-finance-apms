@@ -2,13 +2,14 @@ import React from "react";
 import { Typography } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
+import { userRequest } from "src/requestMethod";
 
 export const SubmittedColumns = () => {
   const router = useRouter();
 
   return [
     {
-      field: "submitRequestNo",
+      field: "FinalReqNo",
       headerName: "Final Request No.",
       flex: 1,
       minWidth: 180,
@@ -29,14 +30,14 @@ export const SubmittedColumns = () => {
             height: "100%",
             width: "100%",
           }}
-          onClick={() => router.push(`/custom-duty/raise-to-bank/submit-detail/${params.row.id}`)}
+          onClick={() => router.push(`/custom-duty/raise-to-bank/submit-detail/${params.row.FinalReqNo}`)}
         >
           {params.value}
         </Typography>
       ),
     },
     {
-      field: "submitDate",
+      field: "createdAt",
       headerName: "Submitted At",
       flex: 1,
       minWidth: 180,
@@ -58,7 +59,7 @@ export const SubmittedColumns = () => {
       ),
     },
     {
-      field: "totalRecords",
+      field: "totalItems",
       headerName: "Total Records",
       flex: 1,
       minWidth: 120,
@@ -102,8 +103,30 @@ export const SubmittedColumns = () => {
             height: "100%",
             width: "100%",
           }}
-          onClick={() => {
-            console.log('Download file for:', params.row.submitRequestNo);
+          onClick={async () => {
+            try {
+              const response = await userRequest.get(
+                `/custom/exportRaisedToBankToExcel`,
+                {
+                  params: {
+                    finalReqNo: params.row.FinalReqNo,
+                    itemIds: params.row.itemIds?.join(',') || '',
+                  },
+                  responseType: 'blob',
+                }
+              );
+
+              const url = window.URL.createObjectURL(new Blob([response.data]));
+              const link = document.createElement('a');
+              link.href = url;
+              link.setAttribute('download', `raised-to-bank-${params.row.FinalReqNo}.xlsx`);
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+              window.URL.revokeObjectURL(url);
+            } catch (error) {
+              console.error('Error downloading file:', error);
+            }
           }}
         >
           Download File
@@ -111,7 +134,7 @@ export const SubmittedColumns = () => {
       ),
     },
     {
-      field: "submittedBy",
+      field: "requestor",
       headerName: "Submitted by",
       flex: 1,
       minWidth: 150,
