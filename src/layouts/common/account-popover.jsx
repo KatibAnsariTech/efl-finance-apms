@@ -69,24 +69,22 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
 
     setAccount(getAccountData());
 
+    const handleProfileUpdate = () => {
+      setAccount(getAccountData());
+    };
+
     const handleStorageChange = () => {
       setAccount(getAccountData());
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
-    const interval = setInterval(() => {
-      const currentUser = JSON.parse(localStorage.getItem("user"));
-      if (currentUser && account && currentUser.profileImg !== account.profileImg) {
-        setAccount(getAccountData());
-      }
-    }, 1000);
+    window.addEventListener('profileUpdated', handleProfileUpdate);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
-  }, [account]);
+  }, []);
 
   const handleOpenPopover = useCallback((event) => {
     setOpenPopover(event.currentTarget);

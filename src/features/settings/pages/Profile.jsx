@@ -92,6 +92,8 @@ export default function Profile() {
               const token = localStorage.getItem("accessToken");
               await getUser(token);
               
+              window.dispatchEvent(new CustomEvent('profileUpdated'));
+              
               await swal({
                 title: "Success!",
                 text: "Profile photo updated successfully!",
@@ -133,6 +135,8 @@ export default function Profile() {
       if (response.data.success) {
         const token = localStorage.getItem("accessToken");
         await getUser(token);
+        
+        window.dispatchEvent(new CustomEvent('profileUpdated'));
         
         await swal({
           title: "Success!",
