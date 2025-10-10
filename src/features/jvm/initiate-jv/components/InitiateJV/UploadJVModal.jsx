@@ -437,7 +437,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
   const handleDownloadSample = async () => {
     try {
       const sampleUrl =
-        "http://efl-finance-controller.onrender.com/uploads/1760083585650-file.xlsx";
+        "https://efl-finance-controller.onrender.com/uploads/1760083585650-file.xlsx";
 
       const response = await fetch(sampleUrl);
       if (!response.ok) {
@@ -455,7 +455,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
     } catch (error) {
       console.error("Download error:", error);
       const sampleUrl =
-        "http://efl-finance-controller.onrender.com/uploads/1760083585650-file.xlsx";
+        "https://efl-finance-controller.onrender.com/uploads/1760083585650-file.xlsx";
       window.open(sampleUrl, "_blank");
     }
   };
