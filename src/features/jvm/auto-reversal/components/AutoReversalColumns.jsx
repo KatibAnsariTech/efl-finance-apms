@@ -6,7 +6,7 @@ import Iconify from "src/components/iconify/iconify";
 export const AutoReversalColumns = ({ navigate, handleDelete }) => {
   const columns = [
     {
-      field: "requestNo",
+      field: "groupId",
       headerName: "Request No.",
       flex: 1,
       minWidth: 160,
@@ -40,7 +40,7 @@ export const AutoReversalColumns = ({ navigate, handleDelete }) => {
       ),
     },
     {
-      field: "pId",
+      field: "parentId",
       headerName: "P.Id",
       flex: 1,
       minWidth: 120,
