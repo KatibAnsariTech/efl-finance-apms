@@ -276,14 +276,30 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
   };
 
   // Simple sample download
-  const handleDownloadSample = () => {
-    const sampleUrl = "/sample-files/custom-duty-sample.csv";
-    const a = document.createElement("a");
-    a.href = sampleUrl;
-    a.download = "Sample_Custom_Duty.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownloadSample = async () => {
+    try {
+      const sampleUrl =
+        "https://efl-finance-controller.onrender.com/uploads/1760079439776-file.xlsx";
+      
+      const response = await fetch(sampleUrl);
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Sample_Custom_Duty.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      const sampleUrl =
+        "https://efl-finance-controller.onrender.com/uploads/1760079439776-file.xlsx";
+      window.open(sampleUrl, '_blank');
+    }
   };
 
   return (
