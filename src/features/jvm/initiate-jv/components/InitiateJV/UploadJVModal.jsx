@@ -224,7 +224,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
               entry.postingDate || new Date().toISOString().split("T")[0],
             businessArea: entry.businessArea || "1000",
             accountType: entry.accountType || "S",
-            postingKey: entry.postingKey || "40",
+            postingKey: String(entry.postingKey || "40"),
             type: entry.type || "Debit",
             amount: parseFloat(entry.amount) || 0,
             assignment: entry.assignment || "",

@@ -153,7 +153,7 @@ export const useInitiateJV = () => {
         documentDate: new Date(entry.documentDate).toISOString(),
         businessArea: entry.businessArea,
         accountType: entry.accountType,
-        postingKey: entry.postingKey,
+        postingKey: String(entry.postingKey),
         vendorCustomerGLNumber: entry.vendorCustomerGLNumber,
         amount: parseFloat(entry.amount),
         type: entry.type,
