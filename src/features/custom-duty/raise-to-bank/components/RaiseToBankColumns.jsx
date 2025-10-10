@@ -147,7 +147,7 @@ export const SubmittedColumns = () => {
             width: "100%",
           }}
         >
-          {params.value}
+          {params.value?.name || "-"}
         </Typography>
       ),
     },
