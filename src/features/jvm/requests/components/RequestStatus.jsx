@@ -94,8 +94,8 @@ export default function RequestStatus({
   const getData = async () => {
     setLoading(true);
     try {
-      if (!rowData?.groupId) {
-        console.error("No groupId found in rowData");
+      if (!rowData?.parentId) {
+        console.error("No parentId found in rowData");
         setData(null);
         return;
       }
@@ -222,7 +222,7 @@ export default function RequestStatus({
     >
       <ModalBox>
         <ModalTitleContainer>
-          <Typography variant="h5">Request No. #{rowData?.groupId}</Typography>
+          <Typography variant="h5">Request No. #{rowData?.parentId}</Typography>
         </ModalTitleContainer>
         <Divider sx={{ borderStyle: "solid" }} />
         {loading ? (
