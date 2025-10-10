@@ -4,13 +4,15 @@ import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import MasterTabs from "../components/MasterTabs";
 import AddEditCompany from "../components/Modals/AddEditCompany";
+import AddEditBank from "../components/Modals/AddEditBank";
 import { Box } from "@mui/material";
-import { CompanyTable } from "../components/tables";
+import { CompanyTable, BankTable } from "../components/tables";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 
 const menuItems = [
-  "Company"
+  "Company",
+  "Bank"
 ];
 
 export default function CustomDutyMaster() {
@@ -46,17 +48,22 @@ export default function CustomDutyMaster() {
       });
 
       if (result) {
-        await userRequest.delete(`/custom/deleteCompany/${id}`);
+        const itemType = selectedCategory.toLowerCase();
+        const endpoint = selectedTab === 0 
+          ? `/custom/deleteCompany/${id}`
+          : `/custom/deleteBank/${id}`;
+        
+        await userRequest.delete(endpoint);
         
         // Show success message
-        swal("Deleted!", "Company has been deleted successfully.", "success");
+        swal("Deleted!", `${selectedCategory} has been deleted successfully.`, "success");
         
         // Refresh data
         getData();
       }
     } catch (error) {
-      console.error("Error deleting company:", error);
-      swal("Error!", "Failed to delete company. Please try again.", "error");
+      console.error(`Error deleting ${selectedCategory.toLowerCase()}:`, error);
+      swal("Error!", `Failed to delete ${selectedCategory.toLowerCase()}. Please try again.`, "error");
     }
   };
 
@@ -108,9 +115,28 @@ export default function CustomDutyMaster() {
           </Suspense>
         )}
 
+        {open && selectedTab === 1 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditBank
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && (
             <CompanyTable 
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+            />
+          )}
+          
+          {selectedTab === 1 && (
+            <BankTable 
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
