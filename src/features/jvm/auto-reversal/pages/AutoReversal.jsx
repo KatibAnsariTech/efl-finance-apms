@@ -55,7 +55,7 @@ export default function AutoReversal() {
       if (response.data.statusCode === 200) {
         const apiData = response.data.data.reversals;
         const pagination = response.data.data.pagination;
-        
+
         const processedData = apiData.map((item, index) => ({
           ...item,
           id: item.groupId || item.id || index,
@@ -132,11 +132,13 @@ export default function AutoReversal() {
           autoReversalCounts={jvmRequestCounts}
         />
         <Card sx={{ mt: 2, p: 2 }}>
-          <div
-            style={{
+          <Box
+            sx={{
               display: "flex",
               justifyContent: "flex-end",
-              marginRight: "20px",
+              alignItems: "center",
+              marginBottom: "16px",
+              mb: 1,
             }}
           >
             <Button
@@ -144,28 +146,28 @@ export default function AutoReversal() {
               size="small"
               startIcon={<FilterList />}
               onClick={handleOpenFilterModal}
-              sx={{ 
-                backgroundColor: 'transparent',
-                minHeight: 'auto',
-                height: '32px',
+              sx={{
+                backgroundColor: "transparent",
+                minHeight: "auto",
+                height: "32px",
                 py: 0.5,
                 px: 1,
-                '&:hover': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                  height: '32px',
-                  minHeight: 'auto',
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                  height: "32px",
+                  minHeight: "auto",
                 },
-                '&:focus': {
-                  outline: 'none',
+                "&:focus": {
+                  outline: "none",
                 },
-                '&:focus-visible': {
-                  outline: 'none',
+                "&:focus-visible": {
+                  outline: "none",
                 },
               }}
             >
               Filter
             </Button>
-          </div>
+          </Box>
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
