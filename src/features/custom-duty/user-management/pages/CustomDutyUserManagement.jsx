@@ -169,7 +169,6 @@ export default function CustomDutyUserManagement() {
       sortable: col.sortable !== false,
       align: col.align || "center",
       headerAlign: col.align || "center",
-      resizable: true,
       cellClassName: col.id === "company" ? "company-cell" : "",
       renderCell: (params) => {
         if (col.id === "sno") {

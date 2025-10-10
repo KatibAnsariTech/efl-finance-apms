@@ -19,7 +19,14 @@ export const RequestColumns = ({
   if (showCheckboxes) {
     columns.push({
       field: "checkbox",
-      headerName: (
+      headerName: "Select",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      headerAlign: "center",
+      align: "center",
+      renderHeader: () => (
         <Box
           sx={{
             display: "flex",
@@ -38,13 +45,6 @@ export const RequestColumns = ({
           )}
         </Box>
       ),
-      width: 80,
-      sortable: false,
-      filterable: false,
-      resizable: false,
-      disableColumnMenu: true,
-      headerAlign: "center",
-      align: "center",
       renderCell: (params) => (
         <Checkbox
           checked={selectedRows.includes(params.row.id)}
@@ -147,13 +147,11 @@ export const RequestColumns = ({
       field: "icegateAckNo",
       headerName: "Icegate Ack. No.",
       width: 200,
-      resizable: true,
     },
     {
       field: "referenceId",
       headerName: "Reference ID",
       width: 200,
-      resizable: true,
       renderCell: (params) => (
         <Box
           sx={{

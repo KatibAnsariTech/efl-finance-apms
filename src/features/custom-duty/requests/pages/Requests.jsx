@@ -57,7 +57,7 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  const getData = async (pageNum = 1, shouldSelectAll = false) => {
+  const getData = async (pageNum = 1, shouldSelectAll = false, customPageSize = null) => {
     try {
       setLoading(true);
       if (shouldSelectAll) {
@@ -65,7 +65,7 @@ export default function Requests() {
       }
 
       const page = pageNum;
-      const limit = shouldSelectAll ? 10000 : rowsPerPage;
+      const limit = shouldSelectAll ? 10000 : (customPageSize || rowsPerPage);
 
       const apiEndpoint =
         selectedTab === "pendingWithMe"
@@ -83,18 +83,28 @@ export default function Requests() {
       const totalCount =
         response.data.data.totalForms || response.data.data.totalRequests || 0;
 
-      const transformedData = apiData.map((item) => ({
+      const transformedData = apiData.map((item, index) => ({
         ...item,
-        id: item._id,
+        id: item._id || `temp-${index}`, // Fallback ID to prevent undefined keys
         requestedDate: item.requestedDate || item.createdAt,
       }));
 
-      setData(transformedData);
+      // Remove duplicates based on _id
+      const uniqueData = transformedData.filter((item, index, self) => 
+        index === self.findIndex(t => t._id === item._id)
+      );
+
+      // Debug: Log if duplicates were found
+      if (transformedData.length !== uniqueData.length) {
+        console.warn(`Removed ${transformedData.length - uniqueData.length} duplicate items from API response`);
+      }
+
+      setData(uniqueData);
       setTotalCount(totalCount);
 
       if (shouldSelectAll) {
-        setAllData(transformedData);
-        setSelectedRows(transformedData.map((item) => item.id));
+        setAllData(uniqueData);
+        setSelectedRows(uniqueData.map((item) => item.id));
         setIsSelectAll(true);
       }
     } catch (err) {
@@ -126,6 +136,7 @@ export default function Requests() {
     setSelectedTab(newValue);
     setSelectedRows([]);
     setIsSelectAll(false);
+    setAllData([]);
   };
 
   const handleSelectAll = async (event) => {
@@ -134,18 +145,21 @@ export default function Requests() {
     } else {
       setSelectedRows([]);
       setIsSelectAll(false);
+      setAllData([]);
+      // Refresh current page data
+      getData(page + 1);
     }
   };
 
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    getData(newPage + 1);
-  };
-
-  const handleRowsPerPageChange = (newRowsPerPage) => {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-    getData(1);
+  const handlePaginationModelChange = (newModel) => {
+    // Don't allow pagination changes when Select All is active
+    if (isSelectAll) {
+      return;
+    }
+    
+    setPage(newModel.page);
+    setRowsPerPage(newModel.pageSize);
+    getData(newModel.page + 1, false, newModel.pageSize);
   };
 
   const handleSelectRow = (rowId) => {
@@ -276,20 +290,27 @@ export default function Requests() {
 
       <Card sx={{ mt: 2, p: 2 }}>
         <Box sx={{ height: 400, width: "100%" }}>
-          <DataGrid
-            rows={data}
-            columns={columns}
-            loading={loading}
-            disableRowSelectionOnClick
-            pagination
-            paginationMode="server"
-            rowCount={totalCount}
-            paginationModel={{ page: page, pageSize: rowsPerPage }}
-            onPaginationModelChange={(newModel) => {
-              handlePageChange(newModel.page);
-              handleRowsPerPageChange(newModel.pageSize);
-            }}
-            pageSizeOptions={[5, 10, 25, 50]}
+           <DataGrid
+             rows={isSelectAll ? allData : data}
+             columns={columns}
+             loading={loading}
+             disableRowSelectionOnClick
+             {...(!isSelectAll && {
+               pagination: true,
+               paginationMode: "server",
+               rowCount: totalCount,
+               paginationModel: { page: page, pageSize: rowsPerPage },
+               onPaginationModelChange: handlePaginationModelChange,
+               pageSizeOptions: [5, 10, 25, 50]
+             })}
+             getRowId={(row) => {
+               const id = row._id || row.id;
+               if (!id) {
+                 console.error('Row missing ID:', row);
+                 return `missing-id-${Math.random()}`;
+               }
+               return id;
+             }}
             getRowClassName={(params) => {
               const status = params.row.status?.toLowerCase();
               if (status === "pending") return "row-pending";
