@@ -207,7 +207,7 @@ export default function CustomDutyUserManagement() {
         if (col.id === "company") {
           const companies = params.row.companies;
           if (Array.isArray(companies) && companies.length > 0) {
-            return companies.map(company => company.name).join('\n');
+            return companies.map(company => company.name).join(',\n');
           }
           return "-";
         }
@@ -391,6 +391,9 @@ export default function CustomDutyUserManagement() {
               "& .company-cell": {
                 whiteSpace: "pre-line",
                 lineHeight: 1.4,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               },
             }}
           />
