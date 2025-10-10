@@ -19,6 +19,7 @@ import * as yup from "yup";
 import swal from "sweetalert";
 
 import { useAccount } from "src/hooks/use-account";
+import { useAccountContext } from "src/contexts/AccountContext";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 import { getUser } from "src/utils/userUtils";
@@ -34,6 +35,7 @@ const profileSchema = yup.object().shape({
 export default function Profile() {
   const navigate = useNavigate();
   const account = useAccount();
+  const { refreshAccount } = useAccountContext();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [profileImg, setProfileImg] = useState(null);
@@ -92,7 +94,7 @@ export default function Profile() {
               const token = localStorage.getItem("accessToken");
               await getUser(token);
               
-              window.dispatchEvent(new CustomEvent('profileUpdated'));
+              refreshAccount();
               
               await swal({
                 title: "Success!",
@@ -136,7 +138,7 @@ export default function Profile() {
         const token = localStorage.getItem("accessToken");
         await getUser(token);
         
-        window.dispatchEvent(new CustomEvent('profileUpdated'));
+        refreshAccount();
         
         await swal({
           title: "Success!",
