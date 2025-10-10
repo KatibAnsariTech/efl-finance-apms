@@ -297,7 +297,7 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
     } catch (error) {
       console.error('Download error:', error);
       const sampleUrl =
-        "https://efl-finance-controller.onrender.com/uploads/1760079439776-file.xlsx";
+        "http://efl-finance-controller.onrender.com/uploads/1760084502492-file.xlsx";
       window.open(sampleUrl, '_blank');
     }
   };
