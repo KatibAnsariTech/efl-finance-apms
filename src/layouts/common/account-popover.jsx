@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import swal from "sweetalert";
 
@@ -40,9 +40,53 @@ const MENU_OPTIONS = [
 
 export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
   const [openPopover, setOpenPopover] = useState(null);
+  const [account, setAccount] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const account = useAccount();
+  const initialAccount = useAccount();
+
+  useEffect(() => {
+    const getAccountData = () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user) {
+        return {
+          ...user,
+          photoURL: user.profileImg && user.profileImg.trim() !== "" ? user.profileImg : "/assets/eurekaforbes-icon.png",
+          displayName: user.displayName || user.username || "User",
+          accessibleProjects: user.accessibleProjects || [],
+          projectRoles: user.projectRoles || {},
+        };
+      }
+      return {
+        displayName: "",
+        email: "",
+        photoURL: "/assets/eurekaforbes-icon.png",
+        userRoles: [],
+        accessibleProjects: [],
+        projectRoles: {},
+      };
+    };
+
+    setAccount(getAccountData());
+
+    const handleStorageChange = () => {
+      setAccount(getAccountData());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    const interval = setInterval(() => {
+      const currentUser = JSON.parse(localStorage.getItem("user"));
+      if (currentUser && account && currentUser.profileImg !== account.profileImg) {
+        setAccount(getAccountData());
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [account]);
 
   const handleOpenPopover = useCallback((event) => {
     setOpenPopover(event.currentTarget);
