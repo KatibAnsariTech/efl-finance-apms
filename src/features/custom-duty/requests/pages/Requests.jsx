@@ -76,10 +76,11 @@ export default function Requests() {
         params: {
           page: page,
           limit: limit,
+          _t: Date.now(),
         },
       });
 
-      const apiData = response.data.data.forms;
+      const apiData = response.data.data.forms || [];
       const totalCount =
         response.data.data.totalForms || response.data.data.totalRequests || 0;
 
@@ -210,7 +211,11 @@ export default function Requests() {
       swal("Success", `Requests ${action} successfully`, "success");
       setSelectedRows([]);
       setComment("");
-      getData();
+      setIsSelectAll(false);
+      setAllData([]);
+      setPage(0);
+      setData([]);
+      getData(1);
       refreshCustomData();
     } catch (error) {
       console.error("Error performing action:", error);
