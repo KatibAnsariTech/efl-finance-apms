@@ -106,12 +106,8 @@ export const SubmittedColumns = () => {
           onClick={async () => {
             try {
               const response = await userRequest.get(
-                `/custom/exportRaisedToBankToExcel`,
+                `/custom/exportItemsByFinalReqNo/${params.row.FinalReqNo}`,
                 {
-                  params: {
-                    finalReqNo: params.row.FinalReqNo,
-                    itemIds: params.row.itemIds?.join(',') || '',
-                  },
                   responseType: 'blob',
                 }
               );
