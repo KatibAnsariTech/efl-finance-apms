@@ -170,6 +170,7 @@ export default function CustomDutyUserManagement() {
       align: col.align || "center",
       headerAlign: col.align || "center",
       resizable: true,
+      cellClassName: col.id === "company" ? "company-cell" : "",
       renderCell: (params) => {
         if (col.id === "sno") {
           const rowIndex = data.findIndex(row => row._id === params.id);
@@ -202,6 +203,13 @@ export default function CustomDutyUserManagement() {
           return Array.isArray(params.value) && params.value.length > 0
             ? params.value.join(", ")
             : "-";
+        }
+        if (col.id === "company") {
+          const companies = params.row.companies;
+          if (Array.isArray(companies) && companies.length > 0) {
+            return companies.map(company => company.name).join('\n');
+          }
+          return "-";
         }
         return params.value || "-";
       },
@@ -379,6 +387,10 @@ export default function CustomDutyUserManagement() {
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "8px 0",
+              },
+              "& .company-cell": {
+                whiteSpace: "pre-line",
+                lineHeight: 1.4,
               },
             }}
           />
