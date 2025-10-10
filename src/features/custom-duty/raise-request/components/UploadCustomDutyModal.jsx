@@ -279,7 +279,7 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
   const handleDownloadSample = async () => {
     try {
       const sampleUrl =
-        "https://efl-finance-controller.onrender.com/uploads/1760079439776-file.xlsx";
+        "http://efl-finance-controller.onrender.com/uploads/1760084502492-file.xlsx";
       
       const response = await fetch(sampleUrl);
       if (!response.ok) {
