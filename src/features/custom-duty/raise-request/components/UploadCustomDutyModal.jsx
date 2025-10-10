@@ -149,6 +149,9 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
 
                 // Reference ID variations
                 "Reference ID": "referenceId",
+                "Reference ID.": "referenceId",
+                "Reference Id": "referenceId",
+                "Reference Id.": "referenceId",
                 referenceId: "referenceId",
                 referenceid: "referenceId",
                 REFERENCEID: "referenceId",
