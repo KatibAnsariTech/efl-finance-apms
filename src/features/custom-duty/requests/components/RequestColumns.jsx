@@ -11,6 +11,7 @@ export const RequestColumns = ({
   handleSelectRow,
   onRequestClick,
   showCheckboxes = true,
+  selectedTab,
 }) => {
   const router = useRouter();
 
@@ -166,14 +167,14 @@ export const RequestColumns = ({
         </Box>
       ),
     },
-    {
+    ...(selectedTab !== "pendingWithMe" ? [{
       field: "finalRequestNo",
       headerName: "Final Request No.",
       flex: 1,
       minWidth: 150,
       align: "center",
       headerAlign: "center",
-    }
+    }] : [])
   );
 
   return columns;

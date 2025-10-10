@@ -247,6 +247,7 @@ export default function Requests() {
     handleSelectRow,
     onRequestClick: handleRequestClick,
     showCheckboxes: selectedTab === "pendingWithMe",
+    selectedTab,
   });
 
   const renderTabLabel = (label, hasPendingCount) => {
