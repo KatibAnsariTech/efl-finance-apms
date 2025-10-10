@@ -101,7 +101,7 @@ export default function RequestStatus({
       }
 
       const response = await userRequest.get(
-        `jvm/getSteps?groupId=${rowData.groupId}`
+        `jvm/getSteps?parentId=${rowData.parentId}`
       );
 
       if (response.data.statusCode === 200) {
