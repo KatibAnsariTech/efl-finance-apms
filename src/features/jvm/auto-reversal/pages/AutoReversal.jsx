@@ -53,14 +53,16 @@ export default function AutoReversal() {
       const response = await userRequest.get(`jvm/getReversals`, { params });
 
       if (response.data.statusCode === 200) {
-        const apiData = response.data.data;
+        const apiData = response.data.data.reversals;
+        const pagination = response.data.data.pagination;
+        
         const processedData = apiData.map((item, index) => ({
           ...item,
           id: item.groupId || item.id || index,
         }));
 
         setData(processedData);
-        setTotalCount(apiData.length);
+        setTotalCount(pagination.totalCount);
       } else {
         throw new Error(response.data.message || "Failed to fetch data");
       }
