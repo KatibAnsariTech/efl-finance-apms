@@ -1,23 +1,45 @@
-import * as React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
 function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, control } = useForm();
+  const [banks, setBanks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        setLoading(true);
+        const response = await userRequest.get("/custom/getBanks?page=1&limit=100");
+        setBanks(response.data.data.banks || []);
+      } catch (error) {
+        console.error("Failed to fetch banks:", error);
+        showErrorMessage(error, "Failed to fetch banks", swal);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (open) {
+      fetchBanks();
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (companyData) {
       setValue("name", companyData.companyName || companyData.name);
       setValue("govId", companyData.govtIdentifier || companyData.govId);
-      setValue("bankAccount", companyData.bankAccountNumber || companyData.bankAccount);
+      setValue("bank", companyData.bank?._id || "");
       setValue("status", companyData.status || (companyData.isActive ? "ACTIVE" : "INACTIVE"));
     } else {
       reset();
@@ -29,7 +51,7 @@ function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
       const formattedData = {
         name: data.name,
         govId: data.govId,
-        bankAccount: data.bankAccount,
+        bank: data.bank,
         status: data.status,
       };
       
@@ -114,14 +136,35 @@ function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
             required
             helperText="GST number or other government identifier"
           />
-          <TextField
-            id="bankAccount"
-            label="Bank Account Number"
-            {...register("bankAccount", { required: true })}
-            fullWidth
-            required
-            type="number"
-            inputProps={{ pattern: "[0-9]*" }}
+          <Controller
+            name="bank"
+            control={control}
+            rules={{ required: "Bank selection is required" }}
+            render={({ field, fieldState: { error } }) => (
+              <FormControl fullWidth error={!!error} required>
+                <InputLabel>Bank</InputLabel>
+                <Select
+                  {...field}
+                  label="Bank"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <MenuItem disabled>Loading banks...</MenuItem>
+                  ) : (
+                    banks.map((bank) => (
+                      <MenuItem key={bank._id} value={bank._id}>
+                        {bank.bankName} - {bank.accountNumber}
+                      </MenuItem>
+                    ))
+                  )}
+                </Select>
+                {error && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                    {error.message}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
           />
           <TextField
             id="status"

@@ -30,15 +30,15 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
         },
       });
 
-      const apiData = response.data.data.companies || response.data.data || [];
-      const totalCount = response.data.data.totalCompanies || response.data.data.total || 0;
+      const apiData = response.data.data.companies || [];
+      const totalCount = response.data.data.pagination?.total || 0;
 
       const mappedData = apiData.map((item, index) => ({
         id: item._id,
         sno: (paginationModel.page * paginationModel.pageSize) + index + 1,
         companyName: item.name || "-",
         govtIdentifier: item.govId || "-",
-        bankAccountNumber: item.bankAccount || "-",
+        bankAccountNumber: item.bank?.bankName || "-",
         isActive: item.status === "ACTIVE",
         status: item.status || "INACTIVE",
         createdAt: item.createdAt,
