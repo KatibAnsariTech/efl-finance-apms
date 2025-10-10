@@ -14,16 +14,12 @@ import IconButton from "@mui/material/IconButton";
 
 import { clearTokens } from "src/requestMethod";
 import { useAccount } from "src/hooks/use-account";
+import { useAccountContext } from "src/contexts/AccountContext";
 import Iconify from "src/components/iconify";
 
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
-  {
-    //   label: "Profile",
-    href: "/profile",
-    icon: <Iconify width={22} icon="solar:shield-keyhole-bold-duotone" />,
-  },
   {
     label: "Settings",
     href: "/settings",
@@ -38,6 +34,7 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
   const navigate = useNavigate();
   const location = useLocation();
   const account = useAccount();
+  const { clearAccount } = useAccountContext();
 
   const handleOpenPopover = useCallback((event) => {
     setOpenPopover(event.currentTarget);
@@ -57,6 +54,7 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
 
   const logout = () => {
     clearTokens();
+    clearAccount();
     swal({
       title: "Logout",
       text: "Logged out successfully",

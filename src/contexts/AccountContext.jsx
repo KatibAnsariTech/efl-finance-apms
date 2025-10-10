@@ -30,6 +30,17 @@ export const AccountProvider = ({ children }) => {
     setAccount(getAccountData());
   }, [getAccountData]);
 
+  const clearAccount = useCallback(() => {
+    setAccount({
+      displayName: "",
+      email: "",
+      photoURL: "/assets/eurekaforbes-icon.png",
+      userRoles: [],
+      accessibleProjects: [],
+      projectRoles: {},
+    });
+  }, []);
+
   useEffect(() => {
     const handleStorageChange = () => {
       setAccount(getAccountData());
@@ -45,6 +56,7 @@ export const AccountProvider = ({ children }) => {
   const value = {
     account,
     refreshAccount,
+    clearAccount,
   };
 
   return (
