@@ -182,6 +182,7 @@ export default function AutoReversalDetails() {
           initialData={{
             initiatedDate: arInfo.initiatedDate ? new Date(arInfo.initiatedDate) : (arInfo.createdAt ? new Date(arInfo.createdAt) : undefined),
             documentDate: arInfo.documentDate ? new Date(arInfo.documentDate) : undefined,
+            sapDocumentNumber: arInfo.sapDocumentNumber || "",
             postingDate: arInfo.postingDate ? new Date(arInfo.postingDate) : undefined,
             reversalDate:
               arInfo.reversalRemarks === "02" || arInfo.reversalRemarks === 2

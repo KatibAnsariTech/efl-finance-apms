@@ -230,7 +230,7 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
                   fullWidth
                   size="small"
                   label="SAP Document Number"
-                  value="21002006"
+                  value={initialData.sapDocumentNumber || ""}
                   InputProps={{
                     readOnly: true,
                   }}
