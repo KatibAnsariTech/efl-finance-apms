@@ -279,7 +279,7 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
   const handleDownloadSample = async () => {
     try {
       const sampleUrl =
-        "https://efl-finance-controller.onrender.com/uploads/1760084502492-file.xlsx";
+        "https://ik.imagekit.io/mpnzxgplf/test-uploads/raise_request_sample.xlsx?updatedAt=1760362449028";
       
       const response = await fetch(sampleUrl);
       if (!response.ok) {
@@ -297,7 +297,7 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
     } catch (error) {
       console.error('Download error:', error);
       const sampleUrl =
-        "https://efl-finance-controller.onrender.com/uploads/1760084502492-file.xlsx";
+        "https://ik.imagekit.io/mpnzxgplf/test-uploads/raise_request_sample.xlsx?updatedAt=1760362449028";
       window.open(sampleUrl, '_blank');
     }
   };
