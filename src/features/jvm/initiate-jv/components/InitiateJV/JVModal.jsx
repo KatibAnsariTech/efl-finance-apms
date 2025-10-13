@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -103,6 +103,24 @@ export default function JVModal({
   const [specialGLIndications, setSpecialGLIndications] = useState([]);
   const [specialGLMasters, setSpecialGLMasters] = useState([]);
   const [masterDataLoading, setMasterDataLoading] = useState(false);
+
+  // File upload state
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState("");
+  const fileInputRef = useRef(null);
+
+  // Reset file upload state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setSelectedFile(null);
+      setUploadedFileUrl("");
+      setUploadingFile(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -256,6 +274,51 @@ export default function JVModal({
     return () => subscription.unsubscribe();
   }, [watch, postingKeyMasters]);
 
+  // File upload functions
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    setUploadingFile(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await userRequest.post("/util/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.success) {
+        setUploadedFileUrl(response.data.data);
+        swal("Success!", "File uploaded successfully!", "success");
+      } else {
+        throw new Error(response.data.msg || "File upload failed");
+      }
+    } catch (error) {
+      console.error("File upload error:", error);
+      showErrorMessage(error, "Failed to upload file", swal);
+      setSelectedFile(null);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    setUploadedFileUrl("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const onSubmit = (data) => {
     setLoading(true);
 
@@ -264,6 +327,7 @@ export default function JVModal({
       documentDate: data.documentDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
       postingDate: data.postingDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
       amount: parseFloat(data.amount),
+      supportDocument: uploadedFileUrl, // Include the uploaded file URL
     };
 
     if (isEditMode) {
@@ -701,14 +765,68 @@ export default function JVModal({
                     >
                       Upload Supporting Documents (if any)
                     </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      endIcon={<Iconify icon="eva:download-fill" />}
-                      sx={{ alignSelf: "flex-start", fontSize: "0.875rem" }}
-                    >
-                      Choose File
-                    </Button>
+                    
+                    {/* Hidden file input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                      disabled={uploadingFile}
+                    />
+                    
+                    {selectedFile ? (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ 
+                            color: "#1976d2", 
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            wordBreak: "break-all"
+                          }}
+                        >
+                          {selectedFile.name}
+                        </Typography>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={handleFileSelect}
+                            disabled={uploadingFile}
+                            sx={{ fontSize: "0.75rem", minWidth: "auto", px: 1 }}
+                          >
+                            Change
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={removeFile}
+                            disabled={uploadingFile}
+                            sx={{ fontSize: "0.75rem", minWidth: "auto", px: 1 }}
+                          >
+                            Remove
+                          </Button>
+                        </Box>
+                        {uploadingFile && (
+                          <Typography variant="caption" sx={{ color: "#1976d2" }}>
+                            Uploading...
+                          </Typography>
+                        )}
+                      </Box>
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleFileSelect}
+                        disabled={uploadingFile}
+                        endIcon={<Iconify icon="eva:upload-fill" />}
+                        sx={{ alignSelf: "flex-start", fontSize: "0.875rem" }}
+                      >
+                        {uploadingFile ? "Uploading..." : "Choose File"}
+                      </Button>
+                    )}
                   </Box>
                 </Grid>
               )}

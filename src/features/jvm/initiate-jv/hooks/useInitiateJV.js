@@ -166,6 +166,7 @@ export const useInitiateJV = () => {
         vendorCustomerGLName: entry.vendorCustomerGLName,
         costCenter: entry.costCenter,
         personalNumber: entry.personalNumber,
+        supportDocument: entry.supportDocument || uploadedFileUrl, // Use entry's supportDocument if available, otherwise fall back to global uploadedFileUrl
       }));
 
       const requestData = {
