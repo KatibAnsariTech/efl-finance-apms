@@ -6,6 +6,7 @@ import {
   validateSlNoEntryLimit,
   validateSlNoBalance,
   validateSlNoDateConsistency,
+  validateAllJVEntries,
 } from "../utils";
 
 export const useInitiateJV = () => {
@@ -146,6 +147,161 @@ export const useInitiateJV = () => {
   const handleSubmitRequest = async () => {
     try {
       setSubmitting(true);
+
+      const validationResults = validateAllJVEntries(data);
+      if (!validationResults.isValid) {
+        const errorMessages = validationResults.errors.map((error) => {
+          if (error.type === "entryLimit") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
+              )
+              .join("\n");
+          } else if (error.type === "balance") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${
+                    group.slNo
+                  }: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
+              )
+              .join("\n");
+          } else if (error.type === "dateConsistency") {
+            return error.details
+              .map((group) => {
+                let message = `Serial Number ${group.slNo}:`;
+                if (group.inconsistentDocumentDate) {
+                  message += `\n  - Document Date inconsistency`;
+                }
+                if (group.inconsistentPostingDate) {
+                  message += `\n  - Posting Date inconsistency`;
+                }
+                return message;
+              })
+              .join("\n\n");
+          }
+        });
+
+        await swal({
+          title: "Validation Errors",
+          text: errorMessages.join("\n\n"),
+          icon: "error",
+          button: "OK",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      const [dtRes, atRes, pkRes, sgRes] = await Promise.all([
+        userRequest.get("/jvm/getMasters?key=DocumentType&page=1&limit=1000"),
+        userRequest.get("/jvm/getMasters?key=AccountType&page=1&limit=1000"),
+        userRequest.get("/jvm/getMasters?key=PostingKey&page=1&limit=1000"),
+        userRequest.get("/jvm/getMasters?key=SpecialGLIndication&page=1&limit=1000"),
+      ]);
+
+      const docTypes = dtRes?.data?.success 
+        ? (dtRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim().toUpperCase())
+        : [];
+      const accountTypes = atRes?.data?.success 
+        ? (atRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim())
+        : [];
+      const postingKeyMasters = pkRes?.data?.success ? pkRes.data.data?.masters || [] : [];
+      const specialGLMasters = sgRes?.data?.success ? sgRes.data.data?.masters || [] : [];
+
+      // Build validation sets
+      const normalize = (v) => (v ?? "").toString().trim();
+      const normalizeUpper = (v) => normalize(v).toUpperCase();
+
+      const pkAllowedByAcct = postingKeyMasters.reduce((acc, m) => {
+        const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+        const acct = other0
+          ? typeof other0 === "object"
+            ? normalize(other0.value)
+            : normalize(other0)
+          : "";
+        if (!acct) return acc;
+        acc[acct] = acc[acct] || new Set();
+        acc[acct].add(normalize(m.value));
+        return acc;
+      }, {});
+      
+      const sgAllowedByAcct = specialGLMasters.reduce((acc, m) => {
+        const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+        const acct = other0
+          ? typeof other0 === "object"
+            ? normalize(other0.value)
+            : normalize(other0)
+          : "";
+        if (!acct) return acc;
+        acc[acct] = acc[acct] || new Set();
+        acc[acct].add(normalize(m.value));
+        return acc;
+      }, {});
+
+      const pkAll = new Set(postingKeyMasters.map((m) => normalize(m.value)));
+      const sgAll = new Set(specialGLMasters.map((m) => normalize(m.value)));
+      const dtAll = new Set(docTypes);
+      const atAll = new Set(accountTypes);
+
+      // Validate each entry against master data
+      const masterDataErrors = [];
+      data.forEach((entry, idx) => {
+        const line = idx + 1;
+        const dt = normalizeUpper(entry.documentType);
+        const at = normalize(entry.accountType);
+        const pk = normalize(entry.postingKey);
+        const sg = normalize(entry.specialGLIndication);
+
+        if (!dtAll.has(dt)) {
+          masterDataErrors.push(
+            `Entry ${line}: Invalid Document Type '${entry.documentType}'`
+          );
+        }
+        if (!atAll.has(at)) {
+          masterDataErrors.push(`Entry ${line}: Invalid Account Type '${entry.accountType}'`);
+        }
+        if (!pkAll.has(pk)) {
+          masterDataErrors.push(`Entry ${line}: Invalid Posting Key '${entry.postingKey}'`);
+        }
+        if (!sgAll.has(sg)) {
+          masterDataErrors.push(
+            `Entry ${line}: Invalid Special GL Indication '${entry.specialGLIndication}'`
+          );
+        }
+        // Relationship checks only if Account Type is valid
+        if (atAll.has(at)) {
+          const allowedPK = pkAllowedByAcct[at];
+          if (allowedPK && !allowedPK.has(pk)) {
+            masterDataErrors.push(
+              `Entry ${line}: Posting Key '${entry.postingKey}' not allowed for Account Type '${entry.accountType}'`
+            );
+          }
+          const allowedSG = sgAllowedByAcct[at];
+          if (allowedSG && !allowedSG.has(sg)) {
+            masterDataErrors.push(
+              `Entry ${line}: Special GL '${entry.specialGLIndication}' not allowed for Account Type '${entry.accountType}'`
+            );
+          }
+        }
+      });
+
+      if (masterDataErrors.length > 0) {
+        const maxShow = 15;
+        const msg =
+          masterDataErrors.slice(0, maxShow).join("\n") +
+          (masterDataErrors.length > maxShow
+            ? `\n...and ${masterDataErrors.length - maxShow} more.`
+            : "");
+        await swal({
+          title: "Master Data Validation Errors",
+          text: msg,
+          icon: "error",
+          button: "OK",
+        });
+        setSubmitting(false);
+        return;
+      }
 
       const items = data.map((entry) => ({
         slNo: parseInt(entry.slNo) || 0,
