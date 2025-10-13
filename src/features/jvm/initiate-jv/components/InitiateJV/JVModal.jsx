@@ -625,7 +625,7 @@ export default function JVModal({
                       label="Assignment *"
                       inputProps={{ maxLength: 25 }}
                       error={!!error}
-                      helperText={error?.message || "Exactly 25 characters required"}
+                      helperText={error?.message || "Up to 25 characters allowed"}
                     />
                   )}
                 />

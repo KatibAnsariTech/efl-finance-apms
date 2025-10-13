@@ -46,7 +46,7 @@ export const jvEntrySchema = yup.object().shape({
   assignment: yup
     .string()
     .required("Assignment is required")
-    .length(25, "Assignment must be exactly 25 characters"),
+    .max(25, "Assignment must not exceed 25 characters"),
   profitCenter: yup
     .string()
     .required("Profit Center is required")
@@ -118,7 +118,7 @@ export const autoReversalSchema = yup.object().shape({
   assignment: yup
     .string()
     .required("Assignment is required")
-    .length(25, "Assignment must be exactly 25 characters"),
+    .max(25, "Assignment must not exceed 25 characters"),
   profitCenter: yup
     .string()
     .required("Profit Center is required")
