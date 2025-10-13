@@ -67,7 +67,7 @@ export default function ChangePassword() {
     setLoading(true);
 
     try {
-      const response = await userRequest.post("/admin/updatePassword", {
+      const response = await userRequest.put("/admin/updatePassword", {
         oldPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
