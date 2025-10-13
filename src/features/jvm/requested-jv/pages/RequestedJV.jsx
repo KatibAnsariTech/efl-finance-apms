@@ -66,8 +66,8 @@ export default function RequestedJV() {
         const pagination = response.data.data.pagination;
         const processedData = apiData.map((item, index) => ({
           ...item,
-          id: item.groupId || `${item.parentId}-${index}`,
-          groupId: item.groupId || `${item.parentId}-${index}`,
+          id: item.parentId || `temp-${index}`,
+          groupId: item.parentId || `temp-${index}`,
           createdAt: new Date(item.createdAt),
         }));
         setData(processedData);
