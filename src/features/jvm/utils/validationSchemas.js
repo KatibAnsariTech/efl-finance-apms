@@ -65,7 +65,7 @@ export const jvEntrySchema = yup.object().shape({
   costCenter: yup
     .string()
     .required("Cost Center is required")
-    .matches(/^[A-Za-z0-9]{1,10}$/, "Cost Center must be 1-10 alphanumeric characters"),
+    .matches(/^[A-Za-z0-9]{0,10}$/, "Cost Center must be up to 10 alphanumeric characters"),
   personalNumber: yup
     .string()
     .required("Personal Number is required")
@@ -137,7 +137,7 @@ export const autoReversalSchema = yup.object().shape({
   costCenter: yup
     .string()
     .required("Cost Center is required")
-    .matches(/^[A-Za-z0-9]{1,10}$/, "Cost Center must be 1-10 alphanumeric characters"),
+    .matches(/^[A-Za-z0-9]{0,10}$/, "Cost Center must be up to 10 alphanumeric characters"),
   personalNumber: yup
     .string()
     .required("Personal Number is required")

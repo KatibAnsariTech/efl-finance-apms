@@ -339,7 +339,8 @@ export default function JVModal({
     };
 
     if (isEditMode) {
-      // Update existing record in local state
+      // Include the _id for updating existing record
+      submitData._id = editData._id;
       onSuccess(submitData, 'edit');
     } else {
       // Create new record in local state
@@ -652,7 +653,7 @@ export default function JVModal({
                       label="Cost Center *"
                       inputProps={{ maxLength: 10 }}
                       error={!!error}
-                      helperText={error?.message || "1-10 alphanumeric characters"}
+                      helperText={error?.message || "Up to 10 alphanumeric characters"}
                     />
                   )}
                 />
