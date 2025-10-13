@@ -40,7 +40,7 @@ export const useInitiateJV = () => {
     setData((prev) =>
       prev.map((item) =>
         item._id === updatedEntry._id
-          ? { ...updatedEntry, slNo: item.slNo }
+          ? { ...item, ...updatedEntry }
           : item
       )
     );

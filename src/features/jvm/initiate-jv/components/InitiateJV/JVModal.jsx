@@ -110,7 +110,7 @@ export default function JVModal({
   const [uploadedFileUrl, setUploadedFileUrl] = useState("");
   const fileInputRef = useRef(null);
 
-  // Reset file upload state when modal closes
+  // Reset file upload state when modal closes or when editing an entry with existing supportDocument
   useEffect(() => {
     if (!open) {
       setSelectedFile(null);
@@ -119,8 +119,16 @@ export default function JVModal({
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+    } else if (isEditMode && editData?.supportDocument) {
+      // If editing an entry that already has a supportDocument, don't show file upload
+      setSelectedFile(null);
+      setUploadedFileUrl("");
+      setUploadingFile(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
-  }, [open]);
+  }, [open, isEditMode, editData?.supportDocument]);
 
   useEffect(() => {
     if (open) {
@@ -473,7 +481,7 @@ export default function JVModal({
                       size="small"
                       label="Business Area *"
                       error={!!error}
-                      helperText={error?.message || "Exactly 4 characters required"}
+                      helperText={error?.message || "Up to 4 alphanumeric characters"}
                     />
                   )}
                 />
@@ -642,9 +650,9 @@ export default function JVModal({
                       fullWidth
                       size="small"
                       label="Cost Center *"
-                      inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
+                      inputProps={{ maxLength: 10 }}
                       error={!!error}
-                      helperText={error?.message || "1-10 digits only"}
+                      helperText={error?.message || "1-10 alphanumeric characters"}
                     />
                   )}
                 />
@@ -753,7 +761,7 @@ export default function JVModal({
                   )}
                 />
               </Grid>
-              {!isEditMode && (
+              {(!isEditMode || !editData?.supportDocument) && (
                 <Grid item xs={12} sm={6} md={3}>
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
@@ -763,7 +771,7 @@ export default function JVModal({
                       color="text.secondary"
                       sx={{ fontSize: "0.875rem" }}
                     >
-                      Upload Supporting Documents (if any)
+                      {isEditMode ? "Add Supporting Document" : "Upload Supporting Documents (if any)"}
                     </Typography>
                     
                     {/* Hidden file input */}
