@@ -65,71 +65,53 @@ export const useInitiateJV = () => {
 
   const handleUploadSuccess = async (uploadedEntries, fileUrl) => {
     try {
-      // Validate slNo entry limit before uploading
-      const exceededGroups = validateSlNoEntryLimit(uploadedEntries);
-      if (exceededGroups.length > 0) {
-        const errorMessage = exceededGroups
-          .map(
-            (group) =>
-              `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
-          )
-          .join("\n");
+      // Validate the new uploaded entries only (since we're resetting data)
+      const validationResults = validateAllJVEntries(uploadedEntries);
+      if (!validationResults.isValid) {
+        const errorMessages = validationResults.errors.map((error) => {
+          if (error.type === "entryLimit") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
+              )
+              .join("\n");
+          } else if (error.type === "balance") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${
+                    group.slNo
+                  }: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
+              )
+              .join("\n");
+          } else if (error.type === "dateConsistency") {
+            return error.details
+              .map((group) => {
+                let message = `Serial Number ${group.slNo}:`;
+                if (group.inconsistentDocumentDate) {
+                  message += `\n  - Document Date inconsistency`;
+                }
+                if (group.inconsistentPostingDate) {
+                  message += `\n  - Posting Date inconsistency`;
+                }
+                return message;
+              })
+              .join("\n\n");
+          }
+        });
 
         await swal({
-          title: "Validation Error",
-          text: `The following serial numbers exceed the maximum entry limit:\n\n${errorMessage}\n\nPlease ensure that each serial number has no more than 950 entries.`,
+          title: "Validation Errors",
+          text: errorMessages.join("\n\n"),
           icon: "error",
           button: "OK",
         });
         return;
       }
 
-      // Validate slNo balance before uploading
-      const unbalancedGroups = validateSlNoBalance(uploadedEntries);
-      if (unbalancedGroups.length > 0) {
-        const errorMessage = unbalancedGroups
-          .map(
-            (group) =>
-              `Serial Number ${
-                group.slNo
-              }: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
-          )
-          .join("\n");
-
-        await swal({
-          title: "Validation Error",
-          text: `The following serial numbers have unbalanced debit and credit amounts:\n\n${errorMessage}\n\nPlease ensure that for each serial number, the total debit amount equals the total credit amount.`,
-          icon: "error",
-          button: "OK",
-        });
-        return;
-      }
-
-      // Validate slNo date consistency before uploading
-      const inconsistentDateGroups = validateSlNoDateConsistency(uploadedEntries);
-      if (inconsistentDateGroups.length > 0) {
-        const errorMessage = inconsistentDateGroups
-          .map((group) => {
-            let message = `Serial Number ${group.slNo}:`;
-            if (group.inconsistentDocumentDate) {
-              message += `\n  - Document Date inconsistency`;
-            }
-            if (group.inconsistentPostingDate) {
-              message += `\n  - Posting Date inconsistency`;
-            }
-            return message;
-          })
-          .join("\n\n");
-
-        await swal({
-          title: "Validation Error",
-          text: `The following serial numbers have inconsistent dates:\n\n${errorMessage}\n\nPlease ensure that all records with the same serial number have identical Document Date and Posting Date.`,
-          icon: "error",
-          button: "OK",
-        });
-        return;
-      }
-
+      // If all validations pass, reset existing data and add new entries
+      setData([]); // Clear all existing data
       uploadedEntries.forEach((entry) => addJVEntry(entry));
       setUploadedFileUrl(fileUrl);
       setUploadModalOpen(false);
