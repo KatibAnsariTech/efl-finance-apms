@@ -16,6 +16,25 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useRouter } from "src/routes/hooks";
 import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+// Validation schema
+const validationSchema = yup.object({
+  fiscalYear: yup
+    .string()
+    .required("Fiscal Year is required")
+    .matches(/^\d{4}$/, "Fiscal Year must be a 4-digit year")
+    .test("valid-year", "Fiscal Year must be between 2000 and 2100", (value) => {
+      const year = parseInt(value);
+      return year >= 2000 && year <= 2100;
+    }),
+  reversalDate: yup
+    .string()
+    .nullable()
+    .required("Reversal Posting Date is required")
+    .matches(/^\d{4}-\d{2}-\d{2}$/, "Please select a valid date"),
+});
 
 export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit = true }) {
   const router = useRouter();
@@ -26,10 +45,19 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
     formState: { errors },
     reset,
   } = useForm({
+    resolver: yupResolver(validationSchema),
     defaultValues: {
       fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
       reversalRemarks: initialData.reversalRemarks || "",
-      reversalDate: initialData.reversalDate || null,
+      reversalDate: initialData.reversalDate
+        ? (() => {
+            const date = new Date(initialData.reversalDate);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          })()
+        : null,
     },
   });
 
@@ -38,7 +66,13 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
       fiscalYear: initialData.fiscalYear || new Date().getFullYear().toString(),
       reversalRemarks: initialData.reversalRemarks || "",
       reversalDate: initialData.reversalDate
-        ? new Date(initialData.reversalDate)
+        ? (() => {
+            const date = new Date(initialData.reversalDate);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          })()
         : null,
     });
   }, [initialData, reset]);
@@ -253,6 +287,8 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
                       label="Fiscal Year *"
                       type="number"
                       placeholder={new Date().getFullYear().toString()}
+                      error={!!errors.fiscalYear}
+                      helperText={errors.fiscalYear?.message}
                       inputProps={{
                         min: 2000,
                         max: 2100,
@@ -291,14 +327,16 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
                   render={({ field }) => (
                     <DatePicker
                       {...field}
-                      label="Reversal Posting Date"
+                      label="Reversal Posting Date *"
                       value={
-                        // If a reversalDate is present in initialData, show it (this should be a Date)
-                        initialData.reversalDate
-                          ? new Date(initialData.reversalDate)
+                        // Convert string date to Date object for DatePicker display
+                        field.value
+                          ? new Date(field.value)
                           : (initialData.reversalRemarks === "01"
-                              ? (initialData.postingDate ? new Date(initialData.postingDate) : new Date())
-                              : field.value)
+                              ? (initialData.postingDate 
+                                  ? new Date(initialData.postingDate)
+                                  : new Date())
+                              : null)
                       }
                       // Disable editing when reversalRemarks indicates existing posting (01)
                       // or when a reversalDate has already been set (server-provided)
@@ -310,6 +348,8 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
                           fullWidth: true,
                           size: "small",
                           placeholder: "Select date",
+                          error: !!errors.reversalDate,
+                          helperText: errors.reversalDate?.message,
                           sx: (initialData.reversalRemarks === "01" || Boolean(initialData.reversalDate)) ? {
                             "& .MuiInputBase-input": {
                               backgroundColor: "#f5f5f5",
@@ -317,7 +357,18 @@ export default function AutoReversalForm({ onSubmit, initialData = {}, canSubmit
                           } : {},
                         },
                       }}
-                      onChange={(date) => field.onChange(date)}
+                      onChange={(date) => {
+                        // Pass only the date string to avoid timezone conversion issues
+                        if (date) {
+                          const year = date.getFullYear();
+                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                          const day = String(date.getDate()).padStart(2, '0');
+                          const dateString = `${year}-${month}-${day}`;
+                          field.onChange(dateString);
+                        } else {
+                          field.onChange(null);
+                        }
+                      }}
                     />
                   )}
                 />
