@@ -10,14 +10,12 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger }) {
+export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [rowCount, setRowCount] = useState(0);
 
   const fetchData = async () => {
@@ -25,8 +23,8 @@ export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: 
     try {
       const response = await userRequest.get("/custom/getBanks", {
         params: {
-          page: paginationModel.page + 1, // API uses 1-based pagination
-          limit: paginationModel.pageSize,
+          page: page + 1, // API uses 1-based pagination
+          limit: rowsPerPage,
         },
       });
 
@@ -35,7 +33,7 @@ export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: 
 
       const mappedData = apiData.map((item, index) => ({
         id: item._id,
-        sno: (paginationModel.page * paginationModel.pageSize) + index + 1,
+        sno: (page * rowsPerPage) + index + 1,
         bankName: item.bankName || "-",
         accountNumber: item.accountNumber || "-",
         iecCode: item.iecCode || "-",
@@ -57,7 +55,13 @@ export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: 
 
   useEffect(() => {
     fetchData();
-  }, [paginationModel, refreshTrigger]);
+  }, [page, rowsPerPage, refreshTrigger]);
+
+  useEffect(() => {
+    if (tabChangeTrigger > 0 || refreshTrigger > 0) {
+      setPage(0);
+    }
+  }, [tabChangeTrigger, refreshTrigger]);
 
   const handleEdit = (id) => {
     if (parentHandleEdit) {
@@ -74,6 +78,15 @@ export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: 
     } else {
       alert(`Delete Bank: ${id}`);
     }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const columns = [
@@ -221,19 +234,20 @@ export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: 
     },
   ];
 
-  if (loading) {
-    return <CircularIndeterminate />;
-  }
-
   return (
     <DataGrid
+      key={`bank-table-${tabChangeTrigger}`}
       rows={data}
       columns={columns}
       loading={loading}
+      pagination
       paginationMode="server"
       rowCount={rowCount}
-      paginationModel={paginationModel}
-      onPaginationModelChange={setPaginationModel}
+      paginationModel={{ page: page, pageSize: rowsPerPage }}
+      onPaginationModelChange={(newModel) => {
+        handleChangePage(null, newModel.page);
+        handleChangeRowsPerPage({ target: { value: newModel.pageSize } });
+      }}
       pageSizeOptions={[5, 10, 25, 50]}
       disableRowSelectionOnClick
       autoHeight

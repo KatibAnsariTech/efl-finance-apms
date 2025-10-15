@@ -20,6 +20,7 @@ export default function CustomDutyMaster() {
   const [editData, setEditData] = useState(null);
   const [open, setOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [tabChangeTrigger, setTabChangeTrigger] = useState(0);
   const selectedCategory = menuItems[selectedTab];
 
   const handleEdit = (row) => {
@@ -55,10 +56,8 @@ export default function CustomDutyMaster() {
         
         await userRequest.delete(endpoint);
         
-        // Show success message
         swal("Deleted!", `${selectedCategory} has been deleted successfully.`, "success");
         
-        // Refresh data
         getData();
       }
     } catch (error) {
@@ -68,15 +67,19 @@ export default function CustomDutyMaster() {
   };
 
   const getData = () => {
-    // Trigger refresh by updating the refresh trigger
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleTabChange = (newTab) => {
+    setSelectedTab(newTab);
+    setTabChangeTrigger(prev => prev + 1);
   };
 
   return (
     <Container maxWidth="xl">
       <MasterTabs
         selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
+        setSelectedTab={handleTabChange}
         menuItems={menuItems}
       />
       <Card sx={{ p: 3 }}>
@@ -103,7 +106,6 @@ export default function CustomDutyMaster() {
           </div>
         </div>
 
-        {/* Conditionally render modals based on selected tab */}
         {open && selectedTab === 0 && (
           <Suspense fallback={<CircularIndeterminate />}>
             <AddEditCompany
@@ -132,6 +134,7 @@ export default function CustomDutyMaster() {
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
             />
           )}
           
@@ -140,6 +143,7 @@ export default function CustomDutyMaster() {
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
             />
           )}
         </Box>
