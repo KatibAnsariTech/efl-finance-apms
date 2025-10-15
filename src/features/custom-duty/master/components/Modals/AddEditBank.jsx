@@ -15,7 +15,8 @@ import { showErrorMessage } from "src/utils/errorUtils";
 const bankSchema = yup.object({
   bankName: yup.string().required("Bank name is required").min(2, "Bank name must be at least 2 characters"),
   accountNumber: yup.string().required("Account number is required").matches(/^\d+$/, "Account number must contain only digits"),
-  ifscCode: yup.string().required("IFSC code is required").matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, "IFSC code must be in format: ABCD0123456"),
+  // ifscCode: yup.string().required("IFSC code is required").matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, "IFSC code must be in format: ABCD0123456"),
+  ifscCode: yup.string().required("IFSC code is required"),
   iecCode: yup.string().required("IEC code is required").min(3, "IEC code must be at least 3 characters"),
   address1: yup.string().required("Address 1 is required").min(5, "Address must be at least 5 characters"),
   address2: yup.string(),

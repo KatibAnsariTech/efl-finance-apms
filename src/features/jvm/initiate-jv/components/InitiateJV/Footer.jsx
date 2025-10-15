@@ -84,8 +84,9 @@ const Footer = ({
       const urls = uploadedFiles.map(file => file.url);
       const names = uploadedFiles.map(file => file.name);
       
-      setSupportingDocuments(prev => [...prev, ...urls]);
-      setUploadedFileNames(prev => [...prev, ...names]);
+      // Replace existing files instead of adding to them
+      setSupportingDocuments(urls);
+      setUploadedFileNames(names);
       
       swal(
         "Success!", 
