@@ -11,6 +11,7 @@ import ColorIndicators from "../components/ColorIndicators";
 import CloseButton from "src/routes/components/CloseButton";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "src/routes/hooks";
+import swal from "sweetalert";
 
 export default function JVDetails() {
   const router = useRouter();
@@ -95,19 +96,23 @@ export default function JVDetails() {
       setPage(0);
       setData([]);
       setLoading(true);
-      getData(1);
+      getFormItems(1);
     }
-  }, [requestId]);
+  }, [requestId, getFormItems]);
+
+  useEffect(() => {
+    if (requestId && page > 0) {
+      getFormItems(page + 1);
+    }
+  }, [page, rowsPerPage, requestId, getFormItems]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
-    getData(newPage + 1);
   };
 
   const handleRowsPerPageChange = (newRowsPerPage) => {
     setRowsPerPage(newRowsPerPage);
     setPage(0);
-    getData(1);
   };
 
   const handleRequestClick = (rowData) => {
@@ -160,8 +165,12 @@ export default function JVDetails() {
               autoHeight
               paginationModel={{ page: page, pageSize: rowsPerPage }}
               onPaginationModelChange={(newModel) => {
-                handlePageChange(newModel.page);
-                handleRowsPerPageChange(newModel.pageSize);
+                if (newModel.page !== page) {
+                  handlePageChange(newModel.page);
+                }
+                if (newModel.pageSize !== rowsPerPage) {
+                  handleRowsPerPageChange(newModel.pageSize);
+                }
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               getRowClassName={(params) => {
