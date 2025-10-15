@@ -45,7 +45,7 @@ export default function Requests() {
 
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectAllLoading, setSelectAllLoading] = useState(false);
   const [allData, setAllData] = useState([]);
   const [isSelectAll, setIsSelectAll] = useState(false);
@@ -153,14 +153,12 @@ export default function Requests() {
   };
 
   const handlePaginationModelChange = (newModel) => {
-    // Don't allow pagination changes when Select All is active
-    if (isSelectAll) {
-      return;
-    }
-    
     setPage(newModel.page);
     setRowsPerPage(newModel.pageSize);
-    getData(newModel.page + 1, false, newModel.pageSize);
+    
+    if (!isSelectAll) {
+      getData(newModel.page + 1, false, newModel.pageSize);
+    }
   };
 
   const handleSelectRow = (rowId) => {
@@ -309,14 +307,12 @@ export default function Requests() {
              loading={loading}
              autoHeight
              disableRowSelectionOnClick
-             {...(!isSelectAll && {
-               pagination: true,
-               paginationMode: "server",
-               rowCount: totalCount,
-               paginationModel: { page: page, pageSize: rowsPerPage },
-               onPaginationModelChange: handlePaginationModelChange,
-               pageSizeOptions: [5, 10, 25, 50]
-             })}
+             pagination={true}
+             paginationMode={isSelectAll ? "client" : "server"}
+             rowCount={isSelectAll ? allData.length : totalCount}
+             paginationModel={{ page: page, pageSize: rowsPerPage }}
+             onPaginationModelChange={handlePaginationModelChange}
+             pageSizeOptions={[5, 10, 25, 50]}
              getRowId={(row) => {
                return row._id || row.id;
              }}
