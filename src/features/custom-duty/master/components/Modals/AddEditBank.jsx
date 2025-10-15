@@ -15,6 +15,7 @@ import { showErrorMessage } from "src/utils/errorUtils";
 const bankSchema = yup.object({
   bankName: yup.string().required("Bank name is required").min(2, "Bank name must be at least 2 characters"),
   accountNumber: yup.string().required("Account number is required").matches(/^\d+$/, "Account number must contain only digits"),
+  ifscCode: yup.string().required("IFSC code is required").matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, "IFSC code must be in format: ABCD0123456"),
   iecCode: yup.string().required("IEC code is required").min(3, "IEC code must be at least 3 characters"),
   address1: yup.string().required("Address 1 is required").min(5, "Address must be at least 5 characters"),
   address2: yup.string(),
@@ -33,6 +34,7 @@ function AddEditBank({ handleClose, open, editData: bankData, getData }) {
     defaultValues: {
       bankName: bankData?.bankName || bankData?.name || "",
       accountNumber: bankData?.accountNumber || "",
+      ifscCode: bankData?.ifscCode || "",
       iecCode: bankData?.iecCode || "",
       address1: bankData?.address1 || "",
       address2: bankData?.address2 || "",
@@ -45,6 +47,7 @@ function AddEditBank({ handleClose, open, editData: bankData, getData }) {
       const formattedData = {
         bankName: data.bankName,
         accountNumber: data.accountNumber,
+        ifscCode: data.ifscCode,
         iecCode: data.iecCode,
         address1: data.address1,
         address2: data.address2,
@@ -159,6 +162,28 @@ function AddEditBank({ handleClose, open, editData: bankData, getData }) {
                 error={!!error}
                 helperText={error?.message}
                 inputProps={{ pattern: "[0-9]*" }}
+              />
+            )}
+          />
+          
+          <Controller
+            name="ifscCode"
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <TextField
+                {...field}
+                label="IFSC Code"
+                fullWidth
+                required
+                error={!!error}
+                helperText={error?.message}
+                inputProps={{ 
+                  style: { textTransform: 'uppercase' },
+                  maxLength: 11
+                }}
+                onChange={(e) => {
+                  field.onChange(e.target.value.toUpperCase());
+                }}
               />
             )}
           />

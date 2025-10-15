@@ -36,6 +36,7 @@ export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: 
         sno: (page * rowsPerPage) + index + 1,
         bankName: item.bankName || "-",
         accountNumber: item.accountNumber || "-",
+        ifscCode: item.ifscCode || "-",
         iecCode: item.iecCode || "-",
         address1: item.address1 || "-",
         address2: item.address2 || "-",
@@ -124,6 +125,21 @@ export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: 
       resizable: true,
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "ifscCode",
+      headerName: "IFSC Code",
+      minWidth: 150,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
           {params.value || "-"}
         </Typography>
       ),
