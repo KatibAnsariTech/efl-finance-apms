@@ -130,7 +130,7 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
     },
     {
       field: "bankAccountNumber",
-      headerName: "Bank Account Number",
+      headerName: "Bank Name",
       minWidth: 200,
       flex: 1,
       sortable: true,
