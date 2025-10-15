@@ -27,8 +27,8 @@ export default function CustomDutyUserManagement() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [editData, setEditData] = useState(null);
   const [open, setOpen] = useState(false);
   const selectedCategory = menuItems[selectedTab];
@@ -125,10 +125,8 @@ export default function CustomDutyUserManagement() {
   }, [selectedTab]);
 
   useEffect(() => {
-    if (search !== "") {
-      getData();
-    }
-  }, [getData]);
+    getData();
+  }, [debouncedSearch, page, rowsPerPage]);
 
 
   const sortableColumns = ["username", "email"];
@@ -141,14 +139,6 @@ export default function CustomDutyUserManagement() {
     }
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === 'search') {
@@ -156,8 +146,6 @@ export default function CustomDutyUserManagement() {
       setSearch(value);
     }
   };
-
-  const dataFiltered = data;
 
   const columns = headLabel(selectedTab)
     .filter((col) => col.id !== "action")
@@ -172,8 +160,7 @@ export default function CustomDutyUserManagement() {
       cellClassName: col.id === "company" ? "company-cell" : "",
       renderCell: (params) => {
         if (col.id === "sno") {
-          const rowIndex = data.findIndex(row => row._id === params.id);
-          return rowIndex !== -1 ? page * rowsPerPage + rowIndex + 1 : 1;
+          return page * rowsPerPage + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
         }
         if (col.id === "createdAt") {
           return fDateTime(params.value);
@@ -340,7 +327,7 @@ export default function CustomDutyUserManagement() {
 
         <Box sx={{ width: "100%" }}>
           <DataGrid
-            rows={dataFiltered}
+            rows={data}
             columns={columns}
             getRowId={(row) => row.userRoleId}
             loading={loading}
@@ -349,8 +336,8 @@ export default function CustomDutyUserManagement() {
             rowCount={totalCount}
             paginationModel={{ page: page, pageSize: rowsPerPage }}
             onPaginationModelChange={(newModel) => {
-              handleChangePage(null, newModel.page);
-              handleChangeRowsPerPage({ target: { value: newModel.pageSize } });
+              setPage(newModel.page);
+              setRowsPerPage(newModel.pageSize);
             }}
             pageSizeOptions={[5, 10, 25, 50]}
             disableRowSelectionOnClick
