@@ -86,7 +86,7 @@ export default function Requests() {
 
       const transformedData = apiData.map((item, index) => ({
         ...item,
-        id: item._id || `temp-${index}`, // Fallback ID to prevent undefined keys
+        id: item._id,
         requestedDate: item.requestedDate || item.createdAt,
       }));
 
@@ -105,7 +105,7 @@ export default function Requests() {
 
       if (shouldSelectAll) {
         setAllData(uniqueData);
-        setSelectedRows(uniqueData.map((item) => item.id));
+        setSelectedRows(uniqueData.map((item) => item._id));
         setIsSelectAll(true);
       }
     } catch (err) {
@@ -169,7 +169,14 @@ export default function Requests() {
         ? prev.filter((id) => id !== rowId)
         : [...prev, rowId];
 
-      setIsSelectAll(newSelection.length === data.length && data.length > 0);
+      const isAllSelected = newSelection.length === data.length && data.length > 0;
+      setIsSelectAll(isAllSelected);
+      
+      if (isAllSelected) {
+        setAllData(data);
+      } else {
+        setAllData([]);
+      }
 
       return newSelection;
     });
@@ -295,11 +302,12 @@ export default function Requests() {
       </Box>
 
       <Card sx={{ mt: 2, p: 2 }}>
-        <Box sx={{ height: 400, width: "100%" }}>
+        <Box sx={{ width: "100%" }}>
            <DataGrid
              rows={isSelectAll ? allData : data}
              columns={columns}
              loading={loading}
+             autoHeight
              disableRowSelectionOnClick
              {...(!isSelectAll && {
                pagination: true,
@@ -310,12 +318,7 @@ export default function Requests() {
                pageSizeOptions: [5, 10, 25, 50]
              })}
              getRowId={(row) => {
-               const id = row._id || row.id;
-               if (!id) {
-                 console.error('Row missing ID:', row);
-                 return `missing-id-${Math.random()}`;
-               }
-               return id;
+               return row._id || row.id;
              }}
             getRowClassName={(params) => {
               const status = params.row.status?.toLowerCase();
