@@ -22,6 +22,7 @@ export const useInitiateJV = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadedFileUrl, setUploadedFileUrl] = useState("");
+  const [supportingDocuments, setSupportingDocuments] = useState([]);
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -304,13 +305,13 @@ export const useInitiateJV = () => {
         vendorCustomerGLName: entry.vendorCustomerGLName,
         costCenter: entry.costCenter,
         personalNumber: entry.personalNumber,
-        supportDocument: entry.supportDocument || uploadedFileUrl, // Use entry's supportDocument if available, otherwise fall back to global uploadedFileUrl
       }));
 
       const requestData = {
         autoReversal: autoReversal === "Yes",
         reversalRemarks: autoReversal === "Yes" ? reversalRemarks : "",
         document: uploadedFileUrl,
+        supportingDocuments: supportingDocuments,
         items: items,
       };
 
@@ -404,12 +405,14 @@ export const useInitiateJV = () => {
     submitting,
     page,
     rowsPerPage,
+    supportingDocuments,
     
     // Setters
     setAutoReversal,
     setReversalRemarks,
     setPage,
     setRowsPerPage,
+    setSupportingDocuments,
     
     // Handlers
     handleModalSuccess,

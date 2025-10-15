@@ -104,31 +104,7 @@ export default function JVModal({
   const [specialGLMasters, setSpecialGLMasters] = useState([]);
   const [masterDataLoading, setMasterDataLoading] = useState(false);
 
-  // File upload state
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadingFile, setUploadingFile] = useState(false);
-  const [uploadedFileUrl, setUploadedFileUrl] = useState("");
-  const fileInputRef = useRef(null);
 
-  // Reset file upload state when modal closes or when editing an entry with existing supportDocument
-  useEffect(() => {
-    if (!open) {
-      setSelectedFile(null);
-      setUploadedFileUrl("");
-      setUploadingFile(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } else if (isEditMode && editData?.supportDocument) {
-      // If editing an entry that already has a supportDocument, don't show file upload
-      setSelectedFile(null);
-      setUploadedFileUrl("");
-      setUploadingFile(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  }, [open, isEditMode, editData?.supportDocument]);
 
   useEffect(() => {
     if (open) {
@@ -282,50 +258,6 @@ export default function JVModal({
     return () => subscription.unsubscribe();
   }, [watch, postingKeyMasters]);
 
-  // File upload functions
-  const handleFileSelect = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setSelectedFile(file);
-    setUploadingFile(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await userRequest.post("/util/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.data.success) {
-        setUploadedFileUrl(response.data.data);
-        swal("Success!", "File uploaded successfully!", "success");
-      } else {
-        throw new Error(response.data.msg || "File upload failed");
-      }
-    } catch (error) {
-      console.error("File upload error:", error);
-      showErrorMessage(error, "Failed to upload file", swal);
-      setSelectedFile(null);
-    } finally {
-      setUploadingFile(false);
-    }
-  };
-
-  const removeFile = () => {
-    setSelectedFile(null);
-    setUploadedFileUrl("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
 
   const onSubmit = (data) => {
     setLoading(true);
@@ -335,7 +267,6 @@ export default function JVModal({
       documentDate: data.documentDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
       postingDate: data.postingDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
       amount: parseFloat(data.amount),
-      supportDocument: uploadedFileUrl, // Include the uploaded file URL
     };
 
     if (isEditMode) {
