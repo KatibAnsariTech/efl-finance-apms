@@ -152,7 +152,7 @@ export const RequestColumns = ({
     {
       field: "referenceId",
       headerName: "Reference ID",
-      width: 200,
+      width: 250,
       renderCell: (params) => (
         <Box
           sx={{
@@ -168,10 +168,10 @@ export const RequestColumns = ({
       ),
     },
     ...(selectedTab !== "pendingWithMe" ? [{
-      field: "finalRequestNo",
+      field: "finalReqNo",
       headerName: "Final Request No.",
       flex: 1,
-      minWidth: 150,
+      minWidth: 180,
       align: "center",
       headerAlign: "center",
     }] : [])
