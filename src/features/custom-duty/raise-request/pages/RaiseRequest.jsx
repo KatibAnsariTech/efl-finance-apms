@@ -119,15 +119,15 @@ export default function RaiseRequest() {
     try {
       setSubmitting(true);
       const customDutyEntries = data.map((entry) => ({
-        typeOfTransaction: entry.typeOfTransaction,
-        transactionDate: entry.transactionDate,
-        transactionAmount: parseFloat(entry.transactionAmount),
-        companyId: selectedCompany._id,
         challanNo: entry.challanNo,
-        documentNo: entry.documentNo,
-        referenceId: entry.referenceId,
-        description: entry.description,
-        icegateAckNo: entry.icegateAckNo,
+        IECNo: entry.IECNo,
+        docNo: entry.docNo,
+        locationCode: entry.locationCode,
+        docType: entry.docType,
+        docNumber: entry.docNumber,
+        docDate: entry.docDate,
+        dueAmount: parseFloat(entry.dueAmount),
+        companyId: selectedCompany._id,
       }));
 
       const response = await userRequest.post(
