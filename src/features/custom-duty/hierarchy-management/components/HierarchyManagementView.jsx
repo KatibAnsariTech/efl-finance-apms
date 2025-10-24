@@ -7,6 +7,7 @@ import {
   Autocomplete,
   TextField,
   Fade,
+  CircularProgress,
 } from "@mui/material";
 import {
   Business as BusinessIcon,
@@ -29,10 +30,6 @@ export default function HierarchyManagementView() {
       const companiesData = res?.data?.data?.companies || res?.data?.data || res?.data || [];
       const companiesArray = Array.isArray(companiesData) ? companiesData : [];
       setCompanies(companiesArray);
-      
-      if (companiesArray.length > 0 && !selectedCompany) {
-        setSelectedCompany(companiesArray[0]._id);
-      }
     } catch (err) {
       console.error("Error fetching companies:", err);
       setCompanies([]);
@@ -73,10 +70,21 @@ export default function HierarchyManagementView() {
               value={companies.find(company => company._id === selectedCompany) || null}
               onChange={handleCompanyChange}
               loading={companiesLoading}
+              loadingText="Loading companies..."
               renderInput={(params) => (
                 <TextField
                   {...params}
                   variant="outlined"
+                  placeholder="Select"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {companiesLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
                   sx={{
                     "& .MuiInputBase-input": {
                       color: "rgba(0, 0, 0, 0.87)",
@@ -102,40 +110,21 @@ export default function HierarchyManagementView() {
             />
           </Box>
           
-          {companiesLoading ? (
-            <Fade in={companiesLoading} timeout={300}>
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '300px',
-                width: '100%',
-                gap: 2
-              }}>
-                <CircularIndeterminate />
-                <Typography variant="body2" color="text.secondary">
-                  Loading companies...
+          <Box>
+            {selectedCompany ? (
+              <HierarchyTable
+                companyId={selectedCompany}
+                getData={fetchTableData}
+                companiesLoaded={!companiesLoading}
+              />
+            ) : (
+              <Box sx={{ textAlign: "center", py: 4 }}>
+                <Typography variant="body1" color="text.secondary">
+                  Please select a company to view hierarchy levels
                 </Typography>
               </Box>
-            </Fade>
-          ) : (
-            <Box>
-              {selectedCompany ? (
-                <HierarchyTable
-                  companyId={selectedCompany}
-                  getData={fetchTableData}
-                  companiesLoaded={!companiesLoading}
-                />
-              ) : (
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    Please select a company to view hierarchy levels
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          )}
+            )}
+          </Box>
         </Card>
       </Box>
     </Container>

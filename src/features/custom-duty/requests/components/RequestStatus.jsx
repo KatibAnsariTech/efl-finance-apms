@@ -106,10 +106,14 @@ export default function RequestStatus({
       if (response?.data?.statusCode === 200 && response?.data?.data) {
         const apiData = response.data.data;
         const mappedData = {
-          requester: apiData.requester,
-          steps: apiData.steps.map(step => {
-            const actualApprovals = step.approvals.filter(approval => approval.status !== 'Parallel Approved');
-            const firstApproval = actualApprovals[0] || step.approvals[0];
+          requester: {
+            ...apiData.requester,
+            createdAt: apiData?.createdAt || null,
+            updatedAt: apiData?.updatedAt || null
+          },
+          steps: (apiData.steps || []).map(step => {
+            const actualApprovals = (step.approvals || []).filter(approval => approval.status !== 'Parallel Approved');
+            const firstApproval = actualApprovals[0] || step.approvals?.[0];
             const actualApprovers = actualApprovals.map(approval => approval.approverId);
             const actualStatuses = actualApprovals.map(approval => approval.status);
             const actualComments = actualApprovals.map(approval => approval.comment).filter(Boolean);
@@ -120,9 +124,9 @@ export default function RequestStatus({
               status: actualStatuses.includes('Approved') ? 'Approved' : 
                      actualStatuses.includes('Declined') ? 'Declined' : 'Pending',
               comment: actualComments.join(', ') || '',
-              created: firstApproval?.created || step.createdAt,
-              createdAt: step.createdAt,
-              updatedAt: step.updatedAt
+              created: firstApproval?.created || step.createdAt || null,
+              createdAt: step.createdAt || null,
+              updatedAt: step.updatedAt || null
             };
           })
         };
@@ -161,11 +165,11 @@ export default function RequestStatus({
   const renderSteps = (data) => {
     const requesterStep = data?.requester
       ? {
-          username: `${data?.requester?.username} (${data?.requester?.email})`,
+          username: `${data?.requester?.username || 'Unknown'} (${data?.requester?.email || 'No email'})`,
           status: "Raised",
           comment: "Request submitted",
-          created: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          created: data?.requester?.createdAt,
+          updatedAt: data?.requester?.updatedAt || data?.requester?.createdAt,
         }
       : null;
 

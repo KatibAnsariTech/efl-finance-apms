@@ -18,7 +18,8 @@ import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import image1 from "../../../../public/assets/image1.png";
 import companyLogo from "../../../../public/assets/spacetotech.png";
 import { useForm } from "react-hook-form";
-import { useCounts } from "src/contexts/CountsContext";
+import { useCountRefresh } from "src/hooks/useCountRefresh";
+import { useAccountContext } from "src/contexts/AccountContext";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 import { getUser } from "src/utils/userUtils";
 
@@ -32,7 +33,8 @@ export default function LoginView() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginProcessing, setLoginProcessing] = useState(false);
   const navigate = useNavigate();
-  const { refreshCounts } = useCounts();
+  const { refreshUserCounts } = useCountRefresh();
+  const { refreshAccount } = useAccountContext();
 
   const notifySuccess = (message) => toast.success(message);
 
@@ -43,16 +45,12 @@ export default function LoginView() {
         email: data.email,
         password: data.password,
       });
-      
-      // Get token directly from login response
       const token = response.data.data || response.data.token;
       if (token) {
         setTokens(token);
-        await getUser(token);
-        await refreshCounts();
-        
-        const user = JSON.parse(localStorage.getItem("user"));
-        
+        const user = await getUser(token);
+        refreshAccount();
+        await refreshUserCounts(user);
         notifySuccess("Login successful!");
         setTimeout(() => navigate("/"), 1000);
       } else {
@@ -73,7 +71,7 @@ export default function LoginView() {
   };
 
   const handleContactAdmin = () => {
-    toast.info("Contact administrator functionality");
+    toast.info("Contact administrator");
   };
 
   return (

@@ -2,12 +2,14 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { userRequest } from "src/requestMethod";
 import { useAccount } from "src/hooks/use-account";
 
-const CountsContext = createContext();
+const CRDCountContext = createContext();
 
-export const CountsProvider = ({ children }) => {
+export const CRDCountProvider = ({ children }) => {
   const account = useAccount();
   const [approvalCount, setApprovalCount] = useState(0);
   const [clarificationCount, setClarificationCount] = useState(0);
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -20,25 +22,31 @@ export const CountsProvider = ({ children }) => {
     }
   }, []);
 
-  console.log(account);
+  const refreshCounts = useCallback(async () => {
+    setIsManualRefresh(true);
+    await fetchCounts();
+    setIsManualRefresh(false);
+  }, [fetchCounts]);
 
   useEffect(() => {
-    if (account && account.displayName && account.displayName.trim() !== "") {
+    if (account && account.displayName && account.displayName.trim() !== "" && !hasInitialized && !isManualRefresh) {
       const hasCustomDutyAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
-        project.id === "CRD" || project.projectId === "CRD"
+        project === "CRD" || 
+        (typeof project === 'object' && (project.id === "CRD" || project.projectId === "CRD"))
       );
       
       if (hasCustomDutyAccess) {
         fetchCounts();
       }
+      setHasInitialized(true);
     }
-  }, [fetchCounts, account]);
+  }, [account, hasInitialized, fetchCounts, isManualRefresh]);
 
   return (
-    <CountsContext.Provider value={{ approvalCount, clarificationCount, refreshCounts: fetchCounts }}>
+    <CRDCountContext.Provider value={{ approvalCount, clarificationCount, refreshCounts }}>
       {children}
-    </CountsContext.Provider>
+    </CRDCountContext.Provider>
   );
 };
 
-export const useCounts = () => useContext(CountsContext); 
+export const useCRDCount = () => useContext(CRDCountContext); 

@@ -10,7 +10,7 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
+export default function BankTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,33 +21,34 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get("/custom/getCompanies", {
+      const response = await userRequest.get("/custom/getBanks", {
         params: {
           page: page + 1, // API uses 1-based pagination
           limit: rowsPerPage,
         },
       });
 
-      const apiData = response.data.data.companies || [];
+      const apiData = response.data.data.banks || [];
       const totalCount = response.data.data.pagination?.total || 0;
 
       const mappedData = apiData.map((item, index) => ({
         id: item._id,
         sno: (page * rowsPerPage) + index + 1,
-        companyName: item.name || "-",
-        govtIdentifier: item.govId || "-",
-        bankAccountNumber: item.bank?.bankName || "-",
-        isActive: item.status === "ACTIVE",
-        status: item.status || "INACTIVE",
-        createdAt: item.createdAt,
+        bankName: item.bankName || "-",
+        accountNumber: item.accountNumber || "-",
+        ifscCode: item.ifscCode || "-",
+        iecCode: item.iecCode || "-",
+        address1: item.address1 || "-",
+        address2: item.address2 || "-",
+        address3: item.address3 || "-",
         ...item,
       }));
 
       setData(mappedData);
       setRowCount(totalCount);
     } catch (error) {
-      console.error("Error fetching Company data:", error);
-      showErrorMessage(error, "Error fetching Company data", swal);
+      console.error("Error fetching Bank data:", error);
+      showErrorMessage(error, "Error fetching Bank data", swal);
     } finally {
       setLoading(false);
     }
@@ -68,7 +69,7 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
       const rowData = data.find(item => item.id === id);
       parentHandleEdit(rowData);
     } else {
-      alert(`Edit Company: ${id}`);
+      alert(`Edit Bank: ${id}`);
     }
   };
 
@@ -76,7 +77,7 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
     if (parentHandleDelete) {
       parentHandleDelete(id);
     } else {
-      alert(`Delete Company: ${id}`);
+      alert(`Delete Bank: ${id}`);
     }
   };
 
@@ -99,37 +100,7 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
       headerAlign: "center",
     },
     {
-      field: "companyName",
-      headerName: "Company Name",
-      minWidth: 200,
-      flex: 1,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value || "-"}
-        </Typography>
-      ),
-    },
-    {
-      field: "govtIdentifier",
-      headerName: "Govt Identifier (Code)",
-      minWidth: 180,
-      flex: 1,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value || "-"}
-        </Typography>
-      ),
-    },
-    {
-      field: "bankAccountNumber",
+      field: "bankName",
       headerName: "Bank Name",
       minWidth: 200,
       flex: 1,
@@ -144,111 +115,163 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
       ),
     },
     {
-      field: "isActive",
-      headerName: "Status",
-      width: 120,
+      field: "accountNumber",
+      headerName: "Account Number",
+      minWidth: 180,
+      flex: 1,
       sortable: true,
       align: "center",
       headerAlign: "center",
+      resizable: true,
       renderCell: (params) => (
-        <Box
-          sx={{
-            color: params.value ? "success.main" : "error.main",
-            fontWeight: "bold",
-          }}
-        >
-          {params.value ? "Active" : "Inactive"}
-        </Box>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
       ),
     },
     {
-      field: "createdAt",
-      headerName: "Created Date",
-      width: 150,
+      field: "ifscCode",
+      headerName: "IFSC Code",
+      minWidth: 150,
+      flex: 1,
       sortable: true,
       align: "center",
       headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "iecCode",
+      headerName: "IEC Code",
+      minWidth: 150,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value ? fDate(params.value) : "-"}
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "address1",
+      headerName: "Address 1",
+      minWidth: 200,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "address2",
+      headerName: "Address 2",
+      minWidth: 200,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "address3",
+      headerName: "Address 3",
+      minWidth: 200,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
         </Typography>
       ),
     },
     {
       field: "actions",
+      type: "actions",
       headerName: "Actions",
-      width: 120,
-      sortable: false,
+      width: 100,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 1,
-          }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <IconButton
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleEdit(params.row.id);
-            }}
-            sx={{
-              color: theme.palette.primary.main,
-              "&:hover": {
-                backgroundColor: theme.palette.primary.lighter,
-              },
-            }}
-          >
-            <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
-          </IconButton>
-          {/* <IconButton
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleDelete(params.row.id);
-            }}
-            sx={{
-              color: theme.palette.error.main,
-              "&:hover": {
-                backgroundColor: theme.palette.error.lighter,
-              },
-            }}
-          >
-            <Iconify icon="solar:trash-bin-trash-bold" />
-          </IconButton> */}
-        </Box>
-      ),
+      getActions: (params) => [
+        <GridActionsCellItem
+          icon={
+            <IconButton
+              size="small"
+              sx={{
+                color: theme.palette.primary.main,
+                "&:hover": {
+                  backgroundColor: theme.palette.primary.light + "20",
+                },
+              }}
+            >
+              <Iconify icon="eva:edit-fill" width={16} height={16} />
+            </IconButton>
+          }
+          label="Edit"
+          onClick={() => handleEdit(params.id)}
+        />,
+        <GridActionsCellItem
+          icon={
+            <IconButton
+              size="small"
+              sx={{
+                color: theme.palette.error.main,
+                "&:hover": {
+                  backgroundColor: theme.palette.error.light + "20",
+                },
+              }}
+            >
+              <Iconify icon="eva:trash-2-fill" width={16} height={16} />
+            </IconButton>
+          }
+          label="Delete"
+          onClick={() => handleDelete(params.id)}
+        />,
+      ],
     },
   ];
 
   return (
-      <DataGrid
-        key={`company-table-${tabChangeTrigger}`}
-        rows={data}
-        columns={columns}
-        loading={loading}
-        pagination
-        paginationMode="server"
-        rowCount={rowCount}
-        paginationModel={{ page: page, pageSize: rowsPerPage }}
-        onPaginationModelChange={(newModel) => {
-          handleChangePage(null, newModel.page);
-          handleChangeRowsPerPage({ target: { value: newModel.pageSize } });
-        }}
-        pageSizeOptions={[5, 10, 25, 50]}
-        disableRowSelectionOnClick
-        disableColumnResize={false}
-        autoHeight
-        sx={{
+    <DataGrid
+      key={`bank-table-${tabChangeTrigger}`}
+      rows={data}
+      columns={columns}
+      loading={loading}
+      pagination
+      paginationMode="server"
+      rowCount={rowCount}
+      paginationModel={{ page: page, pageSize: rowsPerPage }}
+      onPaginationModelChange={(newModel) => {
+        handleChangePage(null, newModel.page);
+        handleChangeRowsPerPage({ target: { value: newModel.pageSize } });
+      }}
+      pageSizeOptions={[5, 10, 25, 50]}
+      disableRowSelectionOnClick
+      autoHeight
+      sx={{
         "& .MuiDataGrid-root": {
           tableLayout: "fixed",
         },
-          "& .MuiDataGrid-cell": {
+        "& .MuiDataGrid-cell": {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -271,21 +294,15 @@ export default function CompanyTable({ handleEdit: parentHandleEdit, handleDelet
         "& .MuiIconButton-root:focus-visible": {
           outline: "none",
         },
-        "& .MuiSwitch-root:focus": {
-          outline: "none",
-        },
-        "& .MuiSwitch-root:focus-visible": {
-          outline: "none",
-        },
         "& .MuiDataGrid-columnSeparator": {
           display: "none",
         },
         "& .MuiDataGrid-columnHeader:hover .MuiDataGrid-columnSeparator": {
           display: "block",
           opacity: 0.3,
-            color: "#637381",
-          },
-        }}
-      />
+          color: "#637381",
+        },
+      }}
+    />
   );
 }

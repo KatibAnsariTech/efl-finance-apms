@@ -25,12 +25,14 @@ export default function InitiateJV() {
     submitting,
     page,
     rowsPerPage,
+    supportingDocuments,
     
     // Setters
     setAutoReversal,
     setReversalRemarks,
     setPage,
     setRowsPerPage,
+    setSupportingDocuments,
     
     // Handlers
     handleModalSuccess,
@@ -102,6 +104,8 @@ export default function InitiateJV() {
             setReversalRemarks={setReversalRemarks}
             onSubmitRequest={handleSubmitRequest}
             submitting={submitting}
+            supportingDocuments={supportingDocuments}
+            setSupportingDocuments={setSupportingDocuments}
           />
         )}
 
