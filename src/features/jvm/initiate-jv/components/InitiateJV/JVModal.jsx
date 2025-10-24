@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -103,6 +103,8 @@ export default function JVModal({
   const [specialGLIndications, setSpecialGLIndications] = useState([]);
   const [specialGLMasters, setSpecialGLMasters] = useState([]);
   const [masterDataLoading, setMasterDataLoading] = useState(false);
+
+
 
   useEffect(() => {
     if (open) {
@@ -256,6 +258,7 @@ export default function JVModal({
     return () => subscription.unsubscribe();
   }, [watch, postingKeyMasters]);
 
+
   const onSubmit = (data) => {
     setLoading(true);
 
@@ -267,7 +270,8 @@ export default function JVModal({
     };
 
     if (isEditMode) {
-      // Update existing record in local state
+      // Include the _id for updating existing record
+      submitData._id = editData._id;
       onSuccess(submitData, 'edit');
     } else {
       // Create new record in local state
@@ -409,7 +413,7 @@ export default function JVModal({
                       size="small"
                       label="Business Area *"
                       error={!!error}
-                      helperText={error?.message || "Exactly 4 characters required"}
+                      helperText={error?.message || "Up to 4 alphanumeric characters"}
                     />
                   )}
                 />
@@ -561,7 +565,7 @@ export default function JVModal({
                       label="Assignment *"
                       inputProps={{ maxLength: 25 }}
                       error={!!error}
-                      helperText={error?.message || "Exactly 25 characters required"}
+                      helperText={error?.message || "Up to 25 characters allowed"}
                     />
                   )}
                 />
@@ -578,9 +582,9 @@ export default function JVModal({
                       fullWidth
                       size="small"
                       label="Cost Center *"
-                      inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
+                      inputProps={{ maxLength: 10 }}
                       error={!!error}
-                      helperText={error?.message || "1-10 digits only"}
+                      helperText={error?.message || "Up to 10 alphanumeric characters"}
                     />
                   )}
                 />
@@ -689,29 +693,7 @@ export default function JVModal({
                   )}
                 />
               </Grid>
-              {!isEditMode && (
-                <Grid item xs={12} sm={6} md={3}>
-                  <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: "0.875rem" }}
-                    >
-                      Upload Supporting Documents (if any)
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      endIcon={<Iconify icon="eva:download-fill" />}
-                      sx={{ alignSelf: "flex-start", fontSize: "0.875rem" }}
-                    >
-                      Choose File
-                    </Button>
-                  </Box>
-                </Grid>
-              )}
+             
 
               {/* Action Buttons */}
               <Grid item xs={12} sm={12} md={12}>

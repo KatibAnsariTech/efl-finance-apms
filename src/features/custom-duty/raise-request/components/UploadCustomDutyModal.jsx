@@ -149,6 +149,9 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
 
                 // Reference ID variations
                 "Reference ID": "referenceId",
+                "Reference ID.": "referenceId",
+                "Reference Id": "referenceId",
+                "Reference Id.": "referenceId",
                 referenceId: "referenceId",
                 referenceid: "referenceId",
                 REFERENCEID: "referenceId",
@@ -273,14 +276,30 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
   };
 
   // Simple sample download
-  const handleDownloadSample = () => {
-    const sampleUrl = "/sample-files/custom-duty-sample.csv";
-    const a = document.createElement("a");
-    a.href = sampleUrl;
-    a.download = "Sample_Custom_Duty.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownloadSample = async () => {
+    try {
+      const sampleUrl =
+        "https://ik.imagekit.io/mpnzxgplf/test-uploads/raise_request_sample.xlsx?updatedAt=1760362449028";
+      
+      const response = await fetch(sampleUrl);
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Sample_Custom_Duty.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      const sampleUrl =
+        "https://ik.imagekit.io/mpnzxgplf/test-uploads/raise_request_sample.xlsx?updatedAt=1760362449028";
+      window.open(sampleUrl, '_blank');
+    }
   };
 
   return (

@@ -26,7 +26,7 @@ export const jvEntrySchema = yup.object().shape({
   businessArea: yup
     .string()
     .required("Business Area is required")
-    .matches(/^[A-Za-z0-9]{4}$/, "Business Area must be exactly 4 alphanumeric characters"),
+    .matches(/^[A-Za-z0-9]{0,4}$/, "Business Area must be up to 4 alphanumeric characters"),
   accountType: yup.string().required("Account Type is required"),
   postingKey: yup.string().required("Posting Key is required"),
   type: yup.string().required("Type is required"),
@@ -46,7 +46,7 @@ export const jvEntrySchema = yup.object().shape({
   assignment: yup
     .string()
     .required("Assignment is required")
-    .length(25, "Assignment must be exactly 25 characters"),
+    .max(25, "Assignment must not exceed 25 characters"),
   profitCenter: yup
     .string()
     .required("Profit Center is required")
@@ -65,7 +65,7 @@ export const jvEntrySchema = yup.object().shape({
   costCenter: yup
     .string()
     .required("Cost Center is required")
-    .matches(/^\d{1,10}$/, "Cost Center must be 1-10 digits only"),
+    .matches(/^[A-Za-z0-9]{0,10}$/, "Cost Center must be up to 10 alphanumeric characters"),
   personalNumber: yup
     .string()
     .required("Personal Number is required")
@@ -98,7 +98,7 @@ export const autoReversalSchema = yup.object().shape({
   businessArea: yup
     .string()
     .required("Business Area is required")
-    .matches(/^[A-Za-z0-9]{4}$/, "Business Area must be exactly 4 alphanumeric characters"),
+    .matches(/^[A-Za-z0-9]{0,4}$/, "Business Area must be up to 4 alphanumeric characters"),
   accountType: yup.string().required("Account Type is required"),
   postingKey: yup.string().required("Posting Key is required"),
   type: yup.string().required("Type is required"),
@@ -118,7 +118,7 @@ export const autoReversalSchema = yup.object().shape({
   assignment: yup
     .string()
     .required("Assignment is required")
-    .length(25, "Assignment must be exactly 25 characters"),
+    .max(25, "Assignment must not exceed 25 characters"),
   profitCenter: yup
     .string()
     .required("Profit Center is required")
@@ -137,7 +137,7 @@ export const autoReversalSchema = yup.object().shape({
   costCenter: yup
     .string()
     .required("Cost Center is required")
-    .matches(/^\d{1,10}$/, "Cost Center must be 1-10 digits only"),
+    .matches(/^[A-Za-z0-9]{0,10}$/, "Cost Center must be up to 10 alphanumeric characters"),
   personalNumber: yup
     .string()
     .required("Personal Number is required")

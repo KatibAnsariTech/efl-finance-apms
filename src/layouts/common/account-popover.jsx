@@ -14,21 +14,12 @@ import IconButton from "@mui/material/IconButton";
 
 import { clearTokens } from "src/requestMethod";
 import { useAccount } from "src/hooks/use-account";
+import { useAccountContext } from "src/contexts/AccountContext";
 import Iconify from "src/components/iconify";
 
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
-  // {
-  //   label: "Home",
-  //   href: "/",
-  //   icon: <Iconify width={22} icon="solar:home-angle-bold-duotone" />,
-  // },
-  // {
-  //   label: "Profile",
-  //   href: "/profile",
-  //   icon: <Iconify width={22} icon="solar:shield-keyhole-bold-duotone" />,
-  // },
   {
     label: "Settings",
     href: "/settings",
@@ -43,6 +34,7 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
   const navigate = useNavigate();
   const location = useLocation();
   const account = useAccount();
+  const { clearAccount } = useAccountContext();
 
   const handleOpenPopover = useCallback((event) => {
     setOpenPopover(event.currentTarget);
@@ -62,6 +54,7 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
 
   const logout = () => {
     clearTokens();
+    clearAccount();
     swal({
       title: "Logout",
       text: "Logged out successfully",
@@ -79,8 +72,6 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
           p: "2px",
           width: 40,
           height: 40,
-          // background: (theme) =>
-          //   `conic-gradient(${theme.palette.primary.light}, ${theme.palette.warning.light}, ${theme.palette.primary.light})`,
           background: (theme) => theme.palette.background.default,
           ...sx,
         }}
@@ -103,11 +94,10 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         slotProps={{
           paper: {
-            sx: { width: 200,mt: 1.5, ml: 0.5},
+            sx: { width: 200, mt: 1.5, ml: 0.5 },
           },
         }}
       >
-        {/* Account Info */}
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
             {account?.username || account?.displayName}
@@ -119,7 +109,6 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
 
         <Divider sx={{ borderStyle: "dashed" }} />
 
-        {/* Menu Options */}
         <MenuList
           disablePadding
           sx={{
@@ -155,9 +144,14 @@ export default function AccountPopover({ data = MENU_OPTIONS, sx, ...other }) {
 
         <Divider sx={{ borderStyle: "dashed" }} />
 
-        {/* Logout */}
         <Box sx={{ p: 1 }}>
-          <Button fullWidth color="error" size="medium" variant="text" onClick={logout}>
+          <Button
+            fullWidth
+            color="error"
+            size="medium"
+            variant="text"
+            onClick={logout}
+          >
             Logout
           </Button>
         </Box>

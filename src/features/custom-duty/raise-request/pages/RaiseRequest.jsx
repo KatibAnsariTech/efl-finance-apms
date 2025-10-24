@@ -67,13 +67,13 @@ export default function RaiseRequest() {
     fetchCompanies();
   }, []);
 
-  useEffect(() => {
-    setIsAfter3PM(checkTimeRestriction());
-    const interval = setInterval(() => {
-      setIsAfter3PM(checkTimeRestriction());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [checkTimeRestriction]);
+  // useEffect(() => {
+  //   setIsAfter3PM(checkTimeRestriction());
+  //   const interval = setInterval(() => {
+  //     setIsAfter3PM(checkTimeRestriction());
+  //   }, 60000);
+  //   return () => clearInterval(interval);
+  // }, [checkTimeRestriction]);
 
   const handleUploadSuccess = (uploadedEntries) => {
     const entriesWithIds = uploadedEntries.map((entry, index) => ({
@@ -220,7 +220,7 @@ export default function RaiseRequest() {
               gap: 0.2,
             }}
           >
-            {isAfter3PM ? (
+            {(isAfter3PM || showInfoText) ? (
               <span
                 style={{
                   fontSize: "0.75rem",
@@ -237,7 +237,11 @@ export default function RaiseRequest() {
               size="small"
               color="error"
               sx={{ p: 0, mr: 0.5 }}
-              onClick={() => setShowInfoText(!showInfoText)}
+              onClick={() => {
+                if (!isAfter3PM) {
+                  setShowInfoText(!showInfoText);
+                }
+              }}
             >
               <Iconify icon="eva:info-fill" />
             </IconButton>
