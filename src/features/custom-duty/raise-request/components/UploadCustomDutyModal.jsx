@@ -4,6 +4,7 @@ import swal from "sweetalert";
 import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import { getErrorMessage, showErrorMessage } from "src/utils/errorUtils";
+import { parseDate, isValidDate, parseExcelDate, formatDate } from "src/utils/format-time";
 import * as XLSX from "xlsx";
 
 export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
@@ -103,19 +104,72 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
             if (value !== undefined && value !== null && value !== "") {
               // Map common column names to our field names for Custom Duty
               const fieldMap = {
-                // Serial Number variations
-                "Sr.No": "srNo",
-                srNo: "srNo",
-                sno: "srNo",
-                srno: "srNo",
-                SRNO: "srNo",
-                "Serial Number": "srNo",
-                "serial number": "srNo",
-                "SERIAL NUMBER": "srNo",
-                "Sr No": "srNo",
-                "Sr. No": "srNo",
+                // IEC Number variations
+                "IEC": "IECNo",
+                IEC: "IECNo",
+                iec: "IECNo",
+                IECNo: "IECNo",
+                iecno: "IECNo",
+                IECNO: "IECNo",
+                "IEC No": "IECNo",
+                "IEC No.": "IECNo",
+                "IEC Number": "IECNo",
+                "iec number": "IECNo",
+                "IEC NUMBER": "IECNo",
+
+                // Location Code variations
+                "Location Code": "locationCode",
+                locationCode: "locationCode",
+                locationcode: "locationCode",
+                LOCATIONCODE: "locationCode",
+                "Location": "locationCode",
+                location: "locationCode",
+                LOCATION: "locationCode",
+                "Loc Code": "locationCode",
+                locCode: "locationCode",
+                LocCode: "locationCode",
+
+                // Document Type variations
+                "Doc type": "docType",
+                "Doc Type": "docType",
+                docType: "docType",
+                doctype: "docType",
+                DOCTYPE: "docType",
+                "Document Type": "docType",
+                "document type": "docType",
+                "DOCUMENT TYPE": "docType",
+                Type: "docType",
+                type: "docType",
+                TYPE: "docType",
+
+                // Document Number variations
+                "Doc no.": "docNumber",
+                "Doc No": "docNumber",
+                "Doc No.": "docNumber",
+                docNumber: "docNumber",
+                docnumber: "docNumber",
+                DOCNUMBER: "docNumber",
+                "Document No": "docNumber",
+                "Document No.": "docNumber",
+                "Document Number": "docNumber",
+                "document number": "docNumber",
+                "DOCUMENT NUMBER": "docNumber",
+
+                // Document Date variations
+                "Doc date": "docDate",
+                "Doc Date": "docDate",
+                docDate: "docDate",
+                docdate: "docDate",
+                DOCDATE: "docDate",
+                "Document Date": "docDate",
+                "document date": "docDate",
+                "DOCUMENT DATE": "docDate",
+                Date: "docDate",
+                date: "docDate",
+                DATE: "docDate",
 
                 // Challan Number variations
+                "Challan no.": "challanNo",
                 "Challan No": "challanNo",
                 "Challan No.": "challanNo",
                 challanNo: "challanNo",
@@ -125,100 +179,20 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
                 "challan number": "challanNo",
                 "CHALLAN NUMBER": "challanNo",
 
-                // Document Number variations
-                "Document No": "documentNo",
-                "Document No.": "documentNo",
-                documentNo: "documentNo",
-                documentno: "documentNo",
-                DOCUMENTNO: "documentNo",
-                "Document Number": "documentNo",
-                "document number": "documentNo",
-                "DOCUMENT NUMBER": "documentNo",
-
-                // Transaction Date variations
-                "Transaction Date": "transactionDate",
-                transactionDate: "transactionDate",
-                transactiondate: "transactionDate",
-                TRANSACTIONDATE: "transactionDate",
-                Date: "transactionDate",
-                date: "transactionDate",
-                DATE: "transactionDate",
-                "Txn Date": "transactionDate",
-                txnDate: "transactionDate",
-                TxnDate: "transactionDate",
-
-                // Reference ID variations
-                "Reference ID": "referenceId",
-                "Reference ID.": "referenceId",
-                "Reference Id": "referenceId",
-                "Reference Id.": "referenceId",
-                referenceId: "referenceId",
-                referenceid: "referenceId",
-                REFERENCEID: "referenceId",
-                Reference: "referenceId",
-                reference: "referenceId",
-                REFERENCE: "referenceId",
-                "Ref ID": "referenceId",
-                refId: "referenceId",
-                RefId: "referenceId",
-
-                // Description variations
-                Description: "description",
-                description: "description",
-                DESCRIPTION: "description",
-                Desc: "description",
-                desc: "description",
-                DESC: "description",
-                Remarks: "description",
-                remarks: "description",
-                REMARKS: "remarks",
-
-                // Type of Transaction variations
-                "Type of Transaction": "typeOfTransaction",
-                typeOfTransaction: "typeOfTransaction",
-                typeoftransaction: "typeOfTransaction",
-                TYPEOFTRANSACTION: "typeOfTransaction",
-                "Transaction Type": "typeOfTransaction",
-                transactionType: "typeOfTransaction",
-                TransactionType: "typeOfTransaction",
-                Type: "typeOfTransaction",
-                type: "typeOfTransaction",
-                TYPE: "typeOfTransaction",
-                "Txn Type": "typeOfTransaction",
-                txnType: "typeOfTransaction",
-                TxnType: "typeOfTransaction",
-
-                // Transaction Amount variations
-                "Transaction Amount": "transactionAmount",
-                transactionAmount: "transactionAmount",
-                transactionamount: "transactionAmount",
-                TRANSACTIONAMOUNT: "transactionAmount",
-                Amount: "transactionAmount",
-                amount: "transactionAmount",
-                AMOUNT: "transactionAmount",
-                "Txn Amount": "transactionAmount",
-                txnAmount: "transactionAmount",
-                TxnAmount: "transactionAmount",
-                Value: "transactionAmount",
-                value: "transactionAmount",
-                VALUE: "transactionAmount",
-
-                // Icegate Acknowledgement Number variations
-                "Icegate Ack. No.": "icegateAckNo",
-                icegateAckNo: "icegateAckNo",
-                icegateackno: "icegateAckNo",
-                ICEGATEACKNO: "icegateAckNo",
-                "Icegate Ack No": "icegateAckNo",
-                "Icegate Ack No.": "icegateAckNo",
-                "Icegate Acknowledgement": "icegateAckNo",
-                "icegate acknowledgement": "icegateAckNo",
-                "ICEGATE ACKNOWLEDGEMENT": "icegateAckNo",
-                "Ack No": "icegateAckNo",
-                ackNo: "icegateAckNo",
-                AckNo: "icegateAckNo",
-                Acknowledgement: "icegateAckNo",
-                acknowledgement: "icegateAckNo",
-                ACKNOWLEDGEMENT: "icegateAckNo",
+                // Due Amount variations
+                "Due Amount": "dueAmount",
+                dueAmount: "dueAmount",
+                dueamount: "dueAmount",
+                DUEAMOUNT: "dueAmount",
+                Amount: "dueAmount",
+                amount: "dueAmount",
+                AMOUNT: "dueAmount",
+                "Due": "dueAmount",
+                due: "dueAmount",
+                DUE: "dueAmount",
+                Value: "dueAmount",
+                value: "dueAmount",
+                VALUE: "dueAmount",
               };
 
               // Case-insensitive field mapping
@@ -232,22 +206,63 @@ export default function UploadCustomDutyModal({ open, onClose, onSuccess }) {
             }
           });
 
+          // Parse and validate dates
+          let parsedDocDate = "";
+          if (entry.docDate) {
+            // Handle Excel date numbers
+            if (typeof entry.docDate === 'number') {
+              parsedDocDate = parseExcelDate(entry.docDate);
+            } else {
+              parsedDocDate = parseDate(entry.docDate);
+            }
+          }
+          
+          // Convert to DD-MM-YYYY format for server
+          const serverDateFormat = parsedDocDate ? formatDate(parsedDocDate, 'dd-mm-yyyy') : "";
+
           // Ensure required fields have default values for Custom Duty
           return {
             ...entry,
-            srNo: entry.srNo || (index + 1).toString(),
             challanNo: entry.challanNo || "",
-            documentNo: entry.documentNo || "",
-            transactionDate:
-              entry.transactionDate || new Date().toISOString().split("T")[0],
-            referenceId: entry.referenceId || "",
-            description: entry.description || "",
-            typeOfTransaction: entry.typeOfTransaction || "Debit",
-            transactionAmount: parseFloat(entry.transactionAmount) || 0,
-            icegateAckNo: entry.icegateAckNo || "",
+            IECNo: entry.IECNo || "",
+            locationCode: entry.locationCode || "",
+            docType: entry.docType || "",
+            docNumber: entry.docNumber || "",
+            docDate: serverDateFormat,
+            dueAmount: parseFloat(entry.dueAmount) || 0,
           };
         })
-        .filter((entry) => entry.transactionAmount > 0);
+
+      // Validate required fields
+      const errors = [];
+      extractedData.forEach((entry, index) => {
+        const line = index + 2; // considering headers at line 1
+        
+        if (!entry.docType || entry.docType.trim() === "") {
+          errors.push(`Row ${line}: Document Type is required`);
+        }
+        if (!entry.docDate || entry.docDate.trim() === "") {
+          errors.push(`Row ${line}: Document Date is required`);
+        } else if (!isValidDate(entry.docDate)) {
+          errors.push(`Row ${line}: Invalid Document Date format. Please use DD.MM.YYYY, DD/MM/YYYY, or YYYY-MM-DD format`);
+        }
+        if (!entry.dueAmount || entry.dueAmount <= 0) {
+          errors.push(`Row ${line}: Due Amount must be greater than 0`);
+        }
+      });
+
+      if (errors.length > 0) {
+        const maxShow = 15;
+        const msg =
+          errors.slice(0, maxShow).join("\n") +
+          (errors.length > maxShow
+            ? `\n...and ${errors.length - maxShow} more.`
+            : "");
+        setUploadError("Validation failed. See details.");
+        swal({ title: "Validation Errors", text: msg, icon: "error" });
+        setUploading(false);
+        return;
+      }
 
       setUploadProgress(100);
       setUploadSuccess(true);
