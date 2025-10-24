@@ -229,7 +229,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
             amount: parseFloat(entry.amount) || 0,
             assignment: entry.assignment || "",
             profitCenter: entry.profitCenter || "1000",
-            specialGLIndication: entry.specialGLIndication || "N",
+            specialGLIndication: entry.specialGLIndication || "",
             referenceNumber: entry.referenceNumber || "",
             remarks: entry.remarks || "",
             vendorCustomerGLName: entry.vendorCustomerGLName || "",
@@ -295,7 +295,8 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         if (!pkAll.has(pk)) {
           errors.push(`Row ${line}: Invalid Posting Key '${row.postingKey}'`);
         }
-        if (!sgAll.has(sg)) {
+        // Only validate specialGLIndication if it's not empty
+        if (sg && !sgAll.has(sg)) {
           errors.push(
             `Row ${line}: Invalid Special GL Indication '${row.specialGLIndication}'`
           );
@@ -309,7 +310,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
             );
           }
           const allowedSG = sgAllowedByAcct[at];
-          if (allowedSG && !allowedSG.has(sg)) {
+          if (allowedSG && sg && !allowedSG.has(sg)) {
             errors.push(
               `Row ${line}: Special GL '${row.specialGLIndication}' not allowed for Account Type '${row.accountType}'`
             );

@@ -247,7 +247,8 @@ export const useInitiateJV = () => {
         if (!pkAll.has(pk)) {
           masterDataErrors.push(`Entry ${line}: Invalid Posting Key '${entry.postingKey}'`);
         }
-        if (!sgAll.has(sg)) {
+        // Only validate specialGLIndication if it's not empty
+        if (sg && !sgAll.has(sg)) {
           masterDataErrors.push(
             `Entry ${line}: Invalid Special GL Indication '${entry.specialGLIndication}'`
           );
@@ -261,7 +262,7 @@ export const useInitiateJV = () => {
             );
           }
           const allowedSG = sgAllowedByAcct[at];
-          if (allowedSG && !allowedSG.has(sg)) {
+          if (allowedSG && sg && !allowedSG.has(sg)) {
             masterDataErrors.push(
               `Entry ${line}: Special GL '${entry.specialGLIndication}' not allowed for Account Type '${entry.accountType}'`
             );
