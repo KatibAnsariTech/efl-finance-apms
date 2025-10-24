@@ -33,35 +33,35 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
       ),
     },
     {
-      field: "requestedDate",
+      field: "createdAt",
       headerName: "Requested Date",
       flex: 1,
       minWidth: 180,
       renderCell: (params) => {
-        const dateValue = params.value || params.row.createdAt;
+        const dateValue = params.value;
         return dateValue ? fDateTime(dateValue) : "-";
       },
     },
     {
-      field: "documentNo",
+      field: "docNumber",
       headerName: "Document No",
       flex: 1,
       minWidth: 120,
     },
     {
-      field: "challanNo",
-      headerName: "Challan No",
+      field: "locationCode",
+      headerName: "Location Code",
       flex: 1,
       minWidth: 140,
     },
     {
-      field: "typeOfTransaction",
-      headerName: "Transaction Type",
+      field: "docType",
+      headerName: "Document Type",
       width: 150,
     },
     {
-      field: "transactionDate",
-      headerName: "Transaction Date",
+      field: "docDate",
+      headerName: "Document Date",
       width: 150,
       renderCell: (params) => {
         const date = new Date(params.value);
@@ -73,7 +73,7 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
       },
     },
     {
-      field: "transactionAmount",
+      field: "dueAmount",
       headerName: "Amount",
       width: 120,
       renderCell: (params) => `₹${params.value.toLocaleString()}`,
@@ -88,31 +88,6 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
       headerName: "Company",
       width: 150,
       renderCell: (params) => params.value?.name || "-",
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
     },
   ];
 

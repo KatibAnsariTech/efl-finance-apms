@@ -75,7 +75,53 @@ export default function RaiseRequest() {
   //   return () => clearInterval(interval);
   // }, [checkTimeRestriction]);
 
+  const validateIECNumbers = (uploadedEntries) => {
+    if (!selectedCompany) {
+      return { isValid: false, message: "Please select a company first." };
+    }
+
+    const selectedCompanyIEC = selectedCompany.bank?.iecCode;
+    if (!selectedCompanyIEC) {
+      return { isValid: false, message: `Company "${selectedCompany.name}" does not have an IEC code configured.` };
+    }
+
+    const invalidEntries = [];
+    uploadedEntries.forEach((entry, index) => {
+      if (entry.IECNo) {
+        const entryIEC = String(entry.IECNo).trim();
+        const companyIEC = String(selectedCompanyIEC).trim();
+        
+        if (entryIEC !== companyIEC) {
+          invalidEntries.push({
+            row: index + 1,
+            iecNo: entryIEC,
+            expectedIEC: selectedCompanyIEC
+          });
+        }
+      }
+    });
+
+    if (invalidEntries.length > 0) {
+      const errorMessage = `IEC Number validation failed:\n\n` +
+        invalidEntries.map(entry => 
+          `Row ${entry.row}: Found "${entry.iecNo}"`
+        ).join('\n') +
+        `\n\nAll IEC numbers must match the selected company's IEC code.`;
+      
+      return { isValid: false, message: errorMessage };
+    }
+
+    return { isValid: true };
+  };
+
   const handleUploadSuccess = (uploadedEntries) => {
+    const validation = validateIECNumbers(uploadedEntries);
+    
+    if (!validation.isValid) {
+      swal("Validation Error", validation.message, "error");
+      return;
+    }
+
     const entriesWithIds = uploadedEntries.map((entry, index) => ({
       ...entry,
       id: `entry_${Date.now()}_${index}`,
@@ -99,6 +145,12 @@ export default function RaiseRequest() {
       return;
     }
 
+    const validation = validateIECNumbers(data);
+    if (!validation.isValid) {
+      swal("Validation Error", validation.message, "error");
+      return;
+    }
+
     const result = await swal({
       title: "Confirm Submission",
       text: `Are you sure you want to submit ${data.length} custom duty entries?`,
@@ -119,15 +171,15 @@ export default function RaiseRequest() {
     try {
       setSubmitting(true);
       const customDutyEntries = data.map((entry) => ({
-        typeOfTransaction: entry.typeOfTransaction,
-        transactionDate: entry.transactionDate,
-        transactionAmount: parseFloat(entry.transactionAmount),
-        companyId: selectedCompany._id,
         challanNo: entry.challanNo,
-        documentNo: entry.documentNo,
-        referenceId: entry.referenceId,
-        description: entry.description,
-        icegateAckNo: entry.icegateAckNo,
+        IECNo: entry.IECNo,
+        docNo: entry.docNo,
+        locationCode: entry.locationCode,
+        docType: entry.docType,
+        docNumber: entry.docNumber,
+        docDate: entry.docDate,
+        dueAmount: parseFloat(entry.dueAmount),
+        companyId: selectedCompany._id,
       }));
 
       const response = await userRequest.post(
