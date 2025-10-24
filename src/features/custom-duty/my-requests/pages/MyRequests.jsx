@@ -8,6 +8,8 @@ import {
   Chip,
   CircularProgress,
   IconButton,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { fDateTime } from "src/utils/format-time";
@@ -40,6 +42,14 @@ export default function MyRequests() {
   const [endDate, setEndDate] = useState();
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [selectedTab, setSelectedTab] = useState(null);
+
+  const menuItems = [
+    { label: "All", value: null },
+    { label: "Pending", value: "pending" },
+    { label: "Approved", value: "approved" },
+    { label: "Declined", value: "declined" },
+  ];
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -61,6 +71,10 @@ export default function MyRequests() {
 
       if (debouncedSearch) {
         queryParams.append("search", debouncedSearch);
+      }
+
+      if (selectedTab) {
+        queryParams.append("status", selectedTab);
       }
 
       if (region) queryParams.append("region", region);
@@ -107,6 +121,7 @@ export default function MyRequests() {
     refund,
     startDate,
     endDate,
+    selectedTab,
   ]);
 
   const sortableColumns = ["createdAt", "requestNo"];
@@ -145,6 +160,18 @@ export default function MyRequests() {
     setSelectedRowData(null);
   };
 
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
+    setPage(0);
+    setData([]);
+    setTotalCount(0);
+    setLoading(true);
+  };
+
+  const renderTabLabel = (label) => {
+    return label;
+  };
+
   const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
 
   return (
@@ -176,6 +203,28 @@ export default function MyRequests() {
             Requests pending after 3:30 PM will be auto rejected.
           </span>
         </Box>
+        
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              "& .MuiTabs-indicator": { backgroundColor: "#1877F2" },
+              "& .MuiTab-root": { fontWeight: "bold" },
+            }}
+          >
+            {menuItems.map((item) => (
+              <Tab 
+                key={item.value} 
+                label={renderTabLabel(item.label)} 
+                value={item.value} 
+              />
+            ))}
+          </Tabs>
+        </Box>
+
         <Card sx={{ mt: 2, p: 2 }}>
           {/* <div
             style={{

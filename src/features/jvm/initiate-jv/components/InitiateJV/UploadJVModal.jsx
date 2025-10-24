@@ -4,7 +4,7 @@ import swal from "sweetalert";
 import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import { getErrorMessage, showErrorMessage } from "src/utils/errorUtils";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import { validateAllJVEntries } from "../../utils/validationUtils"; // Import validation utility
 
 export default function UploadJVModal({ open, onClose, onSuccess }) {
@@ -43,14 +43,24 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
           userRequest.get("/jvm/getMasters?key=DocumentType&page=1&limit=1000"),
           userRequest.get("/jvm/getMasters?key=AccountType&page=1&limit=1000"),
           userRequest.get("/jvm/getMasters?key=PostingKey&page=1&limit=1000"),
-          userRequest.get("/jvm/getMasters?key=SpecialGLIndication&page=1&limit=1000"),
+          userRequest.get(
+            "/jvm/getMasters?key=SpecialGLIndication&page=1&limit=1000"
+          ),
         ]);
 
         if (dtRes?.data?.success) {
-          setDocTypes((dtRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim().toUpperCase()));
+          setDocTypes(
+            (dtRes.data.data?.masters || []).map((m) =>
+              (m.value || "").toString().trim().toUpperCase()
+            )
+          );
         }
         if (atRes?.data?.success) {
-          setAccountTypes((atRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim()));
+          setAccountTypes(
+            (atRes.data.data?.masters || []).map((m) =>
+              (m.value || "").toString().trim()
+            )
+          );
         }
         if (pkRes?.data?.success) {
           setPostingKeyMasters(pkRes.data.data?.masters || []);
@@ -60,7 +70,11 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         }
       } catch (err) {
         console.error("Error fetching masters for validation:", err);
-        showErrorMessage(err, "Failed to load master data for validation", swal);
+        showErrorMessage(
+          err,
+          "Failed to load master data for validation",
+          swal
+        );
       }
     };
     fetchMasters();
@@ -98,7 +112,6 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
   };
   const triggerFileInput = () => inputRef.current.click();
 
-
   const handleUpload = async () => {
     if (!selectedFile) return;
 
@@ -111,116 +124,120 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
       setUploadProgress(10);
       // 1) Parse file locally first
       let jsonData;
-      
-      if (selectedFile.name.toLowerCase().endsWith('.csv')) {
+
+      if (selectedFile.name.toLowerCase().endsWith(".csv")) {
         const text = await selectedFile.text();
-        const lines = text.split('\n');
-        jsonData = lines.map(line => line.split(','));
+        const lines = text.split("\n");
+        jsonData = lines.map((line) => line.split(","));
       } else {
         const arrayBuffer = await selectedFile.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
         const worksheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[worksheetName];
-        
+
         jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       }
-      
+
       const headers = jsonData[0];
       const dataRows = jsonData.slice(1);
-      
-      const extractedData = dataRows.map((row, index) => {
-        const entry = {};
-        headers.forEach((header, colIndex) => {
-          const value = row[colIndex];
-          if (value !== undefined && value !== null && value !== '') {
-            const fieldMap = {
-              // JV No variations - all map to slNo for backend compatibility
-              'slNo': 'slNo',
-              'SlNo': 'slNo',
-              'SLNO': 'slNo',
-              'JV No': 'slNo',
-              'jvNo': 'slNo',
-              'jvno': 'slNo',
-              'JVNO': 'slNo',
-              'Sr.No': 'slNo',
-              'srNo': 'slNo',
-              'sno': 'slNo',
-              'srno': 'slNo',
-              'SRNO': 'slNo',
-              'Serial Number': 'slNo',
-              'serial number': 'slNo',
-              'SERIAL NUMBER': 'slNo',
-              'Document Type': 'documentType',
-              'Document Date': 'documentDate',
-              'Business Area': 'businessArea',
-              'Account Type': 'accountType',
-              'Posting Key': 'postingKey',
-              'Type': 'type',
-              'Vendor/Customer/GL Number': 'vendorCustomerGLNumber',
-              'Vendor/Customer/GL Name': 'vendorCustomerGLName',
-              'Amount': 'amount',
-              'Assignment': 'assignment',
-              'Cost Center': 'costCenter',
-              'Profit Center': 'profitCenter',
-              'Special GL Indication': 'specialGLIndication',
-              'Reference Number': 'referenceNumber',
-              'Personal Number': 'personalNumber',
-              'Remarks': 'remarks',
-              'Posting Date': 'postingDate',
-              // Direct field name mapping
-              'documentType': 'documentType',
-              'documentDate': 'documentDate',
-              'businessArea': 'businessArea',
-              'accountType': 'accountType',
-              'postingKey': 'postingKey',
-              'type': 'type',
-              'vendorCustomerGLNumber': 'vendorCustomerGLNumber',
-              'vendorCustomerGLName': 'vendorCustomerGLName',
-              'amount': 'amount',
-              'assignment': 'assignment',
-              'costCenter': 'costCenter',
-              'profitCenter': 'profitCenter',
-              'specialGLIndication': 'specialGLIndication',
-              'referenceNumber': 'referenceNumber',
-              'personalNumber': 'personalNumber',
-              'remarks': 'remarks',
-              'postingDate': 'postingDate'
-              
-            };
-            
-            // Case-insensitive field mapping
-            const normalizedHeader = header?.toString().trim();
-            const fieldName = fieldMap[normalizedHeader] || 
-                             fieldMap[normalizedHeader?.toLowerCase()] || 
-                             fieldMap[normalizedHeader?.toUpperCase()] ||
-                             normalizedHeader?.toLowerCase().replace(/\s+/g, '');
-            entry[fieldName] = value;
-          }
-        });
-        
-        // Ensure required fields have default values
-        return {
-          ...entry,
-          slNo: entry.slNo || '',
-          documentType: entry.documentType || 'DR',
-          documentDate: entry.documentDate || new Date().toISOString().split('T')[0],
-          postingDate: entry.postingDate || new Date().toISOString().split('T')[0],
-          businessArea: entry.businessArea || '1000',
-          accountType: entry.accountType || 'S',
-          postingKey: entry.postingKey || '40',
-          type: entry.type || 'Debit',
-          amount: parseFloat(entry.amount) || 0,
-          assignment: entry.assignment || '',
-          profitCenter: entry.profitCenter || '1000',
-          specialGLIndication: entry.specialGLIndication || 'N',
-          referenceNumber: entry.referenceNumber || '',
-          remarks: entry.remarks || '',
-          vendorCustomerGLName: entry.vendorCustomerGLName || '',
-          costCenter: entry.costCenter || '1000',
-          personalNumber: entry.personalNumber || ''
-        };
-      }).filter(entry => entry.amount > 0); // Filter out entries with zero amount
+
+      const extractedData = dataRows
+        .map((row, index) => {
+          const entry = {};
+          headers.forEach((header, colIndex) => {
+            const value = row[colIndex];
+            if (value !== undefined && value !== null && value !== "") {
+              const fieldMap = {
+                // JV No variations - all map to slNo for backend compatibility
+                slNo: "slNo",
+                SlNo: "slNo",
+                SLNO: "slNo",
+                "JV No": "slNo",
+                jvNo: "slNo",
+                jvno: "slNo",
+                JVNO: "slNo",
+                "Sr.No": "slNo",
+                srNo: "slNo",
+                sno: "slNo",
+                srno: "slNo",
+                SRNO: "slNo",
+                "Serial Number": "slNo",
+                "serial number": "slNo",
+                "SERIAL NUMBER": "slNo",
+                "Document Type": "documentType",
+                "Document Date": "documentDate",
+                "Business Area": "businessArea",
+                "Account Type": "accountType",
+                "Posting Key": "postingKey",
+                Type: "type",
+                "Vendor/Customer/GL Number": "vendorCustomerGLNumber",
+                "Vendor/Customer/GL Name": "vendorCustomerGLName",
+                Amount: "amount",
+                Assignment: "assignment",
+                "Cost Center": "costCenter",
+                "Profit Center": "profitCenter",
+                "Special GL Indication": "specialGLIndication",
+                "Reference Number": "referenceNumber",
+                "Personal Number": "personalNumber",
+                Remarks: "remarks",
+                "Posting Date": "postingDate",
+                // Direct field name mapping
+                documentType: "documentType",
+                documentDate: "documentDate",
+                businessArea: "businessArea",
+                accountType: "accountType",
+                postingKey: "postingKey",
+                type: "type",
+                vendorCustomerGLNumber: "vendorCustomerGLNumber",
+                vendorCustomerGLName: "vendorCustomerGLName",
+                amount: "amount",
+                assignment: "assignment",
+                costCenter: "costCenter",
+                profitCenter: "profitCenter",
+                specialGLIndication: "specialGLIndication",
+                referenceNumber: "referenceNumber",
+                personalNumber: "personalNumber",
+                remarks: "remarks",
+                postingDate: "postingDate",
+              };
+
+              // Case-insensitive field mapping
+              const normalizedHeader = header?.toString().trim();
+              const fieldName =
+                fieldMap[normalizedHeader] ||
+                fieldMap[normalizedHeader?.toLowerCase()] ||
+                fieldMap[normalizedHeader?.toUpperCase()] ||
+                normalizedHeader?.toLowerCase().replace(/\s+/g, "");
+              entry[fieldName] = value;
+            }
+          });
+
+          // Ensure required fields have default values
+          return {
+            ...entry,
+            slNo: entry.slNo || "",
+            documentType: entry.documentType || "DR",
+            documentDate:
+              entry.documentDate || new Date().toISOString().split("T")[0],
+            postingDate:
+              entry.postingDate || new Date().toISOString().split("T")[0],
+            businessArea: entry.businessArea || "1000",
+            accountType: entry.accountType || "S",
+            postingKey: String(entry.postingKey || "40"),
+            type: entry.type || "Debit",
+            amount: parseFloat(entry.amount) || 0,
+            assignment: entry.assignment || "",
+            profitCenter: entry.profitCenter || "1000",
+            specialGLIndication: entry.specialGLIndication || "",
+            referenceNumber: entry.referenceNumber || "",
+            remarks: entry.remarks || "",
+            vendorCustomerGLName: entry.vendorCustomerGLName || "",
+            costCenter: entry.costCenter || "1000",
+            personalNumber: entry.personalNumber || "",
+          };
+        })
+        .filter((entry) => entry.amount > 0); // Filter out entries with zero amount
 
       setUploadProgress(50);
 
@@ -232,7 +249,11 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
       // Build quick lookup for PK/SG allowed by accountType (by label/value)
       const pkAllowedByAcct = postingKeyMasters.reduce((acc, m) => {
         const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
-        const acct = other0 ? (typeof other0 === "object" ? normalize(other0.value) : normalize(other0)) : "";
+        const acct = other0
+          ? typeof other0 === "object"
+            ? normalize(other0.value)
+            : normalize(other0)
+          : "";
         if (!acct) return acc;
         acc[acct] = acc[acct] || new Set();
         acc[acct].add(normalize(m.value));
@@ -240,7 +261,11 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
       }, {});
       const sgAllowedByAcct = specialGLMasters.reduce((acc, m) => {
         const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
-        const acct = other0 ? (typeof other0 === "object" ? normalize(other0.value) : normalize(other0)) : "";
+        const acct = other0
+          ? typeof other0 === "object"
+            ? normalize(other0.value)
+            : normalize(other0)
+          : "";
         if (!acct) return acc;
         acc[acct] = acc[acct] || new Set();
         acc[acct].add(normalize(m.value));
@@ -260,7 +285,9 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         const sg = normalize(row.specialGLIndication);
 
         if (!dtAll.has(dt)) {
-          errors.push(`Row ${line}: Invalid Document Type '${row.documentType}'`);
+          errors.push(
+            `Row ${line}: Invalid Document Type '${row.documentType}'`
+          );
         }
         if (!atAll.has(at)) {
           errors.push(`Row ${line}: Invalid Account Type '${row.accountType}'`);
@@ -268,25 +295,36 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         if (!pkAll.has(pk)) {
           errors.push(`Row ${line}: Invalid Posting Key '${row.postingKey}'`);
         }
-        if (!sgAll.has(sg)) {
-          errors.push(`Row ${line}: Invalid Special GL Indication '${row.specialGLIndication}'`);
+        // Only validate specialGLIndication if it's not empty
+        if (sg && !sgAll.has(sg)) {
+          errors.push(
+            `Row ${line}: Invalid Special GL Indication '${row.specialGLIndication}'`
+          );
         }
         // Relationship checks only if Account Type is valid
         if (atAll.has(at)) {
           const allowedPK = pkAllowedByAcct[at];
           if (allowedPK && !allowedPK.has(pk)) {
-            errors.push(`Row ${line}: Posting Key '${row.postingKey}' not allowed for Account Type '${row.accountType}'`);
+            errors.push(
+              `Row ${line}: Posting Key '${row.postingKey}' not allowed for Account Type '${row.accountType}'`
+            );
           }
           const allowedSG = sgAllowedByAcct[at];
-          if (allowedSG && !allowedSG.has(sg)) {
-            errors.push(`Row ${line}: Special GL '${row.specialGLIndication}' not allowed for Account Type '${row.accountType}'`);
+          if (allowedSG && sg && !allowedSG.has(sg)) {
+            errors.push(
+              `Row ${line}: Special GL '${row.specialGLIndication}' not allowed for Account Type '${row.accountType}'`
+            );
           }
         }
       });
 
       if (errors.length > 0) {
         const maxShow = 15;
-        const msg = errors.slice(0, maxShow).join("\n") + (errors.length > maxShow ? `\n...and ${errors.length - maxShow} more.` : "");
+        const msg =
+          errors.slice(0, maxShow).join("\n") +
+          (errors.length > maxShow
+            ? `\n...and ${errors.length - maxShow} more.`
+            : "");
         setUploadError("Validation failed. See details.");
         swal({ title: "Validation Errors", text: msg, icon: "error" });
         setUploading(false);
@@ -343,20 +381,22 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
 
       // 3) Only now upload file to server
       const formData = new FormData();
-      formData.append('file', selectedFile);
-      
-      const uploadResponse = await userRequest.post('/util/upload', formData, {
+      formData.append("file", selectedFile);
+
+      const uploadResponse = await userRequest.post("/util/upload", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
         onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 30) / progressEvent.total);
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 30) / progressEvent.total
+          );
           setUploadProgress(70 + percentCompleted);
         },
       });
 
       if (!uploadResponse.data.success) {
-        throw new Error(uploadResponse.data.msg || 'File upload failed');
+        throw new Error(uploadResponse.data.msg || "File upload failed");
       }
 
       const fileUrl = uploadResponse.data.data;
@@ -365,22 +405,27 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
       setUploadSuccess(true);
       setSelectedFile(null);
 
-      swal("Upload Successful!", `Successfully uploaded file and extracted ${extractedData.length} journal voucher entries.`, "success");
+      swal(
+        "Upload Successful!",
+        `Successfully uploaded file and extracted ${extractedData.length} journal voucher entries.`,
+        "success"
+      );
 
       if (onSuccess) onSuccess(extractedData, fileUrl);
     } catch (err) {
       console.error("Error uploading/processing file:", err);
-      
+
       // Determine if it's an upload error or processing error
-      const isUploadError = err.message?.includes('upload') || err.response?.status >= 400;
-      const errorMessage = isUploadError 
-        ? "Error uploading file. Please try again." 
+      const isUploadError =
+        err.message?.includes("upload") || err.response?.status >= 400;
+      const errorMessage = isUploadError
+        ? "Error uploading file. Please try again."
         : "Error processing Excel file. Please ensure the file format is correct.";
-      
+
       setUploadError(errorMessage);
       showErrorMessage(
         err,
-        isUploadError 
+        isUploadError
           ? "Failed to upload file. Please check your connection and try again."
           : "Error processing Excel file. Please check the file format and try again.",
         swal
@@ -390,15 +435,30 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
     }
   };
 
-  // Simple sample download
-  const handleDownloadSample = () => {
-    const sampleUrl = "/sample-files/jv-sample.csv"; // <-- fixed location
-    const a = document.createElement("a");
-    a.href = sampleUrl;
-    a.download = "Sample_JV.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownloadSample = async () => {
+    try {
+      const sampleUrl =
+        "https://ik.imagekit.io/mpnzxgplf/test-uploads/jv-sample.xlsx?updatedAt=1760362449080";
+
+      const response = await fetch(sampleUrl);
+      if (!response.ok) {
+        throw new Error("Download failed");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Sample_JV.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Download error:", error);
+      const sampleUrl =
+        "https://ik.imagekit.io/mpnzxgplf/test-uploads/jv-sample.xlsx?updatedAt=1760362449080";
+      window.open(sampleUrl, "_blank");
+    }
   };
 
   return (

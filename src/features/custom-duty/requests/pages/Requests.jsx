@@ -30,9 +30,11 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
 import RequestStatus from "../components/RequestStatus";
 import ColorIndicators from "../../my-requests/components/ColorIndicators";
+import { useCustomCount } from "src/contexts/CustomCountContext";
 
 export default function Requests() {
   const router = useRouter();
+  const { refreshCustomData, customRequestCounts } = useCustomCount();
   const [selectedTab, setSelectedTab] = useState("pendingWithMe");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function Requests() {
 
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectAllLoading, setSelectAllLoading] = useState(false);
   const [allData, setAllData] = useState([]);
   const [isSelectAll, setIsSelectAll] = useState(false);
@@ -55,7 +57,7 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  const getData = async (pageNum = 1, shouldSelectAll = false) => {
+  const getData = async (pageNum = 1, shouldSelectAll = false, customPageSize = null) => {
     try {
       setLoading(true);
       if (shouldSelectAll) {
@@ -63,7 +65,7 @@ export default function Requests() {
       }
 
       const page = pageNum;
-      const limit = shouldSelectAll ? 10000 : rowsPerPage;
+      const limit = shouldSelectAll ? 10000 : (customPageSize || rowsPerPage);
 
       const apiEndpoint =
         selectedTab === "pendingWithMe"
@@ -74,25 +76,36 @@ export default function Requests() {
         params: {
           page: page,
           limit: limit,
+          _t: Date.now(),
         },
       });
 
-      const apiData = response.data.data.forms;
+      const apiData = response.data.data.forms || [];
       const totalCount =
         response.data.data.totalForms || response.data.data.totalRequests || 0;
 
-      const transformedData = apiData.map((item) => ({
+      const transformedData = apiData.map((item, index) => ({
         ...item,
         id: item._id,
         requestedDate: item.requestedDate || item.createdAt,
       }));
 
-      setData(transformedData);
+      // Remove duplicates based on _id
+      const uniqueData = transformedData.filter((item, index, self) => 
+        index === self.findIndex(t => t._id === item._id)
+      );
+
+      // Debug: Log if duplicates were found
+      if (transformedData.length !== uniqueData.length) {
+        console.warn(`Removed ${transformedData.length - uniqueData.length} duplicate items from API response`);
+      }
+
+      setData(uniqueData);
       setTotalCount(totalCount);
 
       if (shouldSelectAll) {
-        setAllData(transformedData);
-        setSelectedRows(transformedData.map((item) => item.id));
+        setAllData(uniqueData);
+        setSelectedRows(uniqueData.map((item) => item._id));
         setIsSelectAll(true);
       }
     } catch (err) {
@@ -124,6 +137,7 @@ export default function Requests() {
     setSelectedTab(newValue);
     setSelectedRows([]);
     setIsSelectAll(false);
+    setAllData([]);
   };
 
   const handleSelectAll = async (event) => {
@@ -132,18 +146,19 @@ export default function Requests() {
     } else {
       setSelectedRows([]);
       setIsSelectAll(false);
+      setAllData([]);
+      // Refresh current page data
+      getData(page + 1);
     }
   };
 
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    getData(newPage + 1);
-  };
-
-  const handleRowsPerPageChange = (newRowsPerPage) => {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-    getData(1);
+  const handlePaginationModelChange = (newModel) => {
+    setPage(newModel.page);
+    setRowsPerPage(newModel.pageSize);
+    
+    if (!isSelectAll) {
+      getData(newModel.page + 1, false, newModel.pageSize);
+    }
   };
 
   const handleSelectRow = (rowId) => {
@@ -152,7 +167,14 @@ export default function Requests() {
         ? prev.filter((id) => id !== rowId)
         : [...prev, rowId];
 
-      setIsSelectAll(newSelection.length === data.length && data.length > 0);
+      const isAllSelected = newSelection.length === data.length && data.length > 0;
+      setIsSelectAll(isAllSelected);
+      
+      if (isAllSelected) {
+        setAllData(data);
+      } else {
+        setAllData([]);
+      }
 
       return newSelection;
     });
@@ -194,7 +216,12 @@ export default function Requests() {
       swal("Success", `Requests ${action} successfully`, "success");
       setSelectedRows([]);
       setComment("");
-      getData();
+      setIsSelectAll(false);
+      setAllData([]);
+      setPage(0);
+      setData([]);
+      getData(1);
+      refreshCustomData();
     } catch (error) {
       console.error("Error performing action:", error);
       showErrorMessage(error, `Failed to ${action} requests`, swal);
@@ -225,7 +252,29 @@ export default function Requests() {
     handleSelectRow,
     onRequestClick: handleRequestClick,
     showCheckboxes: selectedTab === "pendingWithMe",
+    selectedTab,
   });
+
+  const renderTabLabel = (label, hasPendingCount) => {
+    if (hasPendingCount && hasPendingCount > 0) {
+      return (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {label}
+          <span style={{
+            display: 'inline-block',
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: 'red',
+            marginLeft: 4,
+            animation: 'blinker 1s linear infinite',
+          }} />
+          <style>{`@keyframes blinker { 50% { opacity: 0.2; } }`}</style>
+        </span>
+      );
+    }
+    return label;
+  };
 
   return (
     <Container>
@@ -241,27 +290,32 @@ export default function Requests() {
           }}
         >
           {menuItems.map((item) => (
-            <Tab key={item.value} label={item.label} value={item.value} />
+            <Tab 
+              key={item.value} 
+              label={renderTabLabel(item.label, item.value === "pendingWithMe" ? customRequestCounts.pendingWithMe : 0)} 
+              value={item.value} 
+            />
           ))}
         </Tabs>
       </Box>
 
       <Card sx={{ mt: 2, p: 2 }}>
-        <Box sx={{ height: 400, width: "100%" }}>
-          <DataGrid
-            rows={data}
-            columns={columns}
-            loading={loading}
-            disableRowSelectionOnClick
-            pagination
-            paginationMode="server"
-            rowCount={totalCount}
-            paginationModel={{ page: page, pageSize: rowsPerPage }}
-            onPaginationModelChange={(newModel) => {
-              handlePageChange(newModel.page);
-              handleRowsPerPageChange(newModel.pageSize);
-            }}
-            pageSizeOptions={[5, 10, 25, 50]}
+        <Box sx={{ width: "100%" }}>
+           <DataGrid
+             rows={isSelectAll ? allData : data}
+             columns={columns}
+             loading={loading}
+             autoHeight
+             disableRowSelectionOnClick
+             pagination={true}
+             paginationMode={isSelectAll ? "client" : "server"}
+             rowCount={isSelectAll ? allData.length : totalCount}
+             paginationModel={{ page: page, pageSize: rowsPerPage }}
+             onPaginationModelChange={handlePaginationModelChange}
+             pageSizeOptions={[5, 10, 25, 50]}
+             getRowId={(row) => {
+               return row._id || row.id;
+             }}
             getRowClassName={(params) => {
               const status = params.row.status?.toLowerCase();
               if (status === "pending") return "row-pending";
@@ -341,6 +395,23 @@ export default function Requests() {
           />
         </Box>
 
+        <Box
+          sx={{
+            position: "relative",
+            height: "52px", 
+            marginTop: "-52px", 
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "16px",
+            zIndex: 10, 
+            pointerEvents: "none", 
+          }}
+        >
+          <Box sx={{ pointerEvents: "auto" }}>
+            <ColorIndicators />
+          </Box>
+        </Box>
+
         {selectedRows.length > 0 && selectedTab !== "submitted" && (
           <Box
             sx={{ mt: 3, p: 2, backgroundColor: "#f8f9fa", borderRadius: 1 }}
@@ -398,22 +469,6 @@ export default function Requests() {
             />
           </Box>
         )}
-        <Box
-          sx={{
-            position: "relative",
-            height: "52px", 
-            marginTop: "-52px", 
-            display: "flex",
-            alignItems: "center",
-            paddingLeft: "16px",
-            zIndex: 0, 
-            pointerEvents: "none", 
-          }}
-        >
-          <Box sx={{ pointerEvents: "auto" }}>
-            <ColorIndicators />
-          </Box>
-        </Box>
       </Card>
 
       <RequestStatus

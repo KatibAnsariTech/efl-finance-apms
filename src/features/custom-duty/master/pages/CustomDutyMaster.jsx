@@ -4,13 +4,15 @@ import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import MasterTabs from "../components/MasterTabs";
 import AddEditCompany from "../components/Modals/AddEditCompany";
+import AddEditBank from "../components/Modals/AddEditBank";
 import { Box } from "@mui/material";
-import { CompanyTable } from "../components/tables";
+import { CompanyTable, BankTable } from "../components/tables";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 
 const menuItems = [
-  "Company"
+  "Company",
+  "Bank"
 ];
 
 export default function CustomDutyMaster() {
@@ -18,6 +20,7 @@ export default function CustomDutyMaster() {
   const [editData, setEditData] = useState(null);
   const [open, setOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [tabChangeTrigger, setTabChangeTrigger] = useState(0);
   const selectedCategory = menuItems[selectedTab];
 
   const handleEdit = (row) => {
@@ -46,30 +49,37 @@ export default function CustomDutyMaster() {
       });
 
       if (result) {
-        await userRequest.delete(`/custom/deleteCompany/${id}`);
+        const itemType = selectedCategory.toLowerCase();
+        const endpoint = selectedTab === 0 
+          ? `/custom/deleteCompany/${id}`
+          : `/custom/deleteBank/${id}`;
         
-        // Show success message
-        swal("Deleted!", "Company has been deleted successfully.", "success");
+        await userRequest.delete(endpoint);
         
-        // Refresh data
+        swal("Deleted!", `${selectedCategory} has been deleted successfully.`, "success");
+        
         getData();
       }
     } catch (error) {
-      console.error("Error deleting company:", error);
-      swal("Error!", "Failed to delete company. Please try again.", "error");
+      console.error(`Error deleting ${selectedCategory.toLowerCase()}:`, error);
+      swal("Error!", `Failed to delete ${selectedCategory.toLowerCase()}. Please try again.`, "error");
     }
   };
 
   const getData = () => {
-    // Trigger refresh by updating the refresh trigger
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleTabChange = (newTab) => {
+    setSelectedTab(newTab);
+    setTabChangeTrigger(prev => prev + 1);
   };
 
   return (
     <Container maxWidth="xl">
       <MasterTabs
         selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
+        setSelectedTab={handleTabChange}
         menuItems={menuItems}
       />
       <Card sx={{ p: 3 }}>
@@ -96,10 +106,20 @@ export default function CustomDutyMaster() {
           </div>
         </div>
 
-        {/* Conditionally render modals based on selected tab */}
         {open && selectedTab === 0 && (
           <Suspense fallback={<CircularIndeterminate />}>
             <AddEditCompany
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
+        {open && selectedTab === 1 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditBank
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -114,6 +134,16 @@ export default function CustomDutyMaster() {
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
+            />
+          )}
+          
+          {selectedTab === 1 && (
+            <BankTable 
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
             />
           )}
         </Box>

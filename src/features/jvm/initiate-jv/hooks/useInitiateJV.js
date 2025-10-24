@@ -6,6 +6,7 @@ import {
   validateSlNoEntryLimit,
   validateSlNoBalance,
   validateSlNoDateConsistency,
+  validateAllJVEntries,
 } from "../utils";
 
 export const useInitiateJV = () => {
@@ -21,6 +22,7 @@ export const useInitiateJV = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadedFileUrl, setUploadedFileUrl] = useState("");
+  const [supportingDocuments, setSupportingDocuments] = useState([]);
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -40,7 +42,7 @@ export const useInitiateJV = () => {
     setData((prev) =>
       prev.map((item) =>
         item._id === updatedEntry._id
-          ? { ...updatedEntry, slNo: item.slNo }
+          ? { ...item, ...updatedEntry }
           : item
       )
     );
@@ -64,71 +66,53 @@ export const useInitiateJV = () => {
 
   const handleUploadSuccess = async (uploadedEntries, fileUrl) => {
     try {
-      // Validate slNo entry limit before uploading
-      const exceededGroups = validateSlNoEntryLimit(uploadedEntries);
-      if (exceededGroups.length > 0) {
-        const errorMessage = exceededGroups
-          .map(
-            (group) =>
-              `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
-          )
-          .join("\n");
+      // Validate the new uploaded entries only (since we're resetting data)
+      const validationResults = validateAllJVEntries(uploadedEntries);
+      if (!validationResults.isValid) {
+        const errorMessages = validationResults.errors.map((error) => {
+          if (error.type === "entryLimit") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
+              )
+              .join("\n");
+          } else if (error.type === "balance") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${
+                    group.slNo
+                  }: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
+              )
+              .join("\n");
+          } else if (error.type === "dateConsistency") {
+            return error.details
+              .map((group) => {
+                let message = `Serial Number ${group.slNo}:`;
+                if (group.inconsistentDocumentDate) {
+                  message += `\n  - Document Date inconsistency`;
+                }
+                if (group.inconsistentPostingDate) {
+                  message += `\n  - Posting Date inconsistency`;
+                }
+                return message;
+              })
+              .join("\n\n");
+          }
+        });
 
         await swal({
-          title: "Validation Error",
-          text: `The following serial numbers exceed the maximum entry limit:\n\n${errorMessage}\n\nPlease ensure that each serial number has no more than 950 entries.`,
+          title: "Validation Errors",
+          text: errorMessages.join("\n\n"),
           icon: "error",
           button: "OK",
         });
         return;
       }
 
-      // Validate slNo balance before uploading
-      const unbalancedGroups = validateSlNoBalance(uploadedEntries);
-      if (unbalancedGroups.length > 0) {
-        const errorMessage = unbalancedGroups
-          .map(
-            (group) =>
-              `Serial Number ${
-                group.slNo
-              }: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
-          )
-          .join("\n");
-
-        await swal({
-          title: "Validation Error",
-          text: `The following serial numbers have unbalanced debit and credit amounts:\n\n${errorMessage}\n\nPlease ensure that for each serial number, the total debit amount equals the total credit amount.`,
-          icon: "error",
-          button: "OK",
-        });
-        return;
-      }
-
-      // Validate slNo date consistency before uploading
-      const inconsistentDateGroups = validateSlNoDateConsistency(uploadedEntries);
-      if (inconsistentDateGroups.length > 0) {
-        const errorMessage = inconsistentDateGroups
-          .map((group) => {
-            let message = `Serial Number ${group.slNo}:`;
-            if (group.inconsistentDocumentDate) {
-              message += `\n  - Document Date inconsistency`;
-            }
-            if (group.inconsistentPostingDate) {
-              message += `\n  - Posting Date inconsistency`;
-            }
-            return message;
-          })
-          .join("\n\n");
-
-        await swal({
-          title: "Validation Error",
-          text: `The following serial numbers have inconsistent dates:\n\n${errorMessage}\n\nPlease ensure that all records with the same serial number have identical Document Date and Posting Date.`,
-          icon: "error",
-          button: "OK",
-        });
-        return;
-      }
-
+      // If all validations pass, reset existing data and add new entries
+      setData([]); // Clear all existing data
       uploadedEntries.forEach((entry) => addJVEntry(entry));
       setUploadedFileUrl(fileUrl);
       setUploadModalOpen(false);
@@ -147,13 +131,169 @@ export const useInitiateJV = () => {
     try {
       setSubmitting(true);
 
+      const validationResults = validateAllJVEntries(data);
+      if (!validationResults.isValid) {
+        const errorMessages = validationResults.errors.map((error) => {
+          if (error.type === "entryLimit") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${group.slNo}: ${group.count} entries (Limit: ${group.limit})`
+              )
+              .join("\n");
+          } else if (error.type === "balance") {
+            return error.details
+              .map(
+                (group) =>
+                  `Serial Number ${
+                    group.slNo
+                  }: Debit ₹${group.debit.toLocaleString()} vs Credit ₹${group.credit.toLocaleString()} (Difference: ₹${group.difference.toLocaleString()})`
+              )
+              .join("\n");
+          } else if (error.type === "dateConsistency") {
+            return error.details
+              .map((group) => {
+                let message = `Serial Number ${group.slNo}:`;
+                if (group.inconsistentDocumentDate) {
+                  message += `\n  - Document Date inconsistency`;
+                }
+                if (group.inconsistentPostingDate) {
+                  message += `\n  - Posting Date inconsistency`;
+                }
+                return message;
+              })
+              .join("\n\n");
+          }
+        });
+
+        await swal({
+          title: "Validation Errors",
+          text: errorMessages.join("\n\n"),
+          icon: "error",
+          button: "OK",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      const [dtRes, atRes, pkRes, sgRes] = await Promise.all([
+        userRequest.get("/jvm/getMasters?key=DocumentType&page=1&limit=1000"),
+        userRequest.get("/jvm/getMasters?key=AccountType&page=1&limit=1000"),
+        userRequest.get("/jvm/getMasters?key=PostingKey&page=1&limit=1000"),
+        userRequest.get("/jvm/getMasters?key=SpecialGLIndication&page=1&limit=1000"),
+      ]);
+
+      const docTypes = dtRes?.data?.success 
+        ? (dtRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim().toUpperCase())
+        : [];
+      const accountTypes = atRes?.data?.success 
+        ? (atRes.data.data?.masters || []).map((m) => (m.value || "").toString().trim())
+        : [];
+      const postingKeyMasters = pkRes?.data?.success ? pkRes.data.data?.masters || [] : [];
+      const specialGLMasters = sgRes?.data?.success ? sgRes.data.data?.masters || [] : [];
+
+      // Build validation sets
+      const normalize = (v) => (v ?? "").toString().trim();
+      const normalizeUpper = (v) => normalize(v).toUpperCase();
+
+      const pkAllowedByAcct = postingKeyMasters.reduce((acc, m) => {
+        const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+        const acct = other0
+          ? typeof other0 === "object"
+            ? normalize(other0.value)
+            : normalize(other0)
+          : "";
+        if (!acct) return acc;
+        acc[acct] = acc[acct] || new Set();
+        acc[acct].add(normalize(m.value));
+        return acc;
+      }, {});
+      
+      const sgAllowedByAcct = specialGLMasters.reduce((acc, m) => {
+        const other0 = Array.isArray(m.other) ? m.other[0] : undefined;
+        const acct = other0
+          ? typeof other0 === "object"
+            ? normalize(other0.value)
+            : normalize(other0)
+          : "";
+        if (!acct) return acc;
+        acc[acct] = acc[acct] || new Set();
+        acc[acct].add(normalize(m.value));
+        return acc;
+      }, {});
+
+      const pkAll = new Set(postingKeyMasters.map((m) => normalize(m.value)));
+      const sgAll = new Set(specialGLMasters.map((m) => normalize(m.value)));
+      const dtAll = new Set(docTypes);
+      const atAll = new Set(accountTypes);
+
+      // Validate each entry against master data
+      const masterDataErrors = [];
+      data.forEach((entry, idx) => {
+        const line = idx + 1;
+        const dt = normalizeUpper(entry.documentType);
+        const at = normalize(entry.accountType);
+        const pk = normalize(entry.postingKey);
+        const sg = normalize(entry.specialGLIndication);
+
+        if (!dtAll.has(dt)) {
+          masterDataErrors.push(
+            `Entry ${line}: Invalid Document Type '${entry.documentType}'`
+          );
+        }
+        if (!atAll.has(at)) {
+          masterDataErrors.push(`Entry ${line}: Invalid Account Type '${entry.accountType}'`);
+        }
+        if (!pkAll.has(pk)) {
+          masterDataErrors.push(`Entry ${line}: Invalid Posting Key '${entry.postingKey}'`);
+        }
+        // Only validate specialGLIndication if it's not empty
+        if (sg && !sgAll.has(sg)) {
+          masterDataErrors.push(
+            `Entry ${line}: Invalid Special GL Indication '${entry.specialGLIndication}'`
+          );
+        }
+        // Relationship checks only if Account Type is valid
+        if (atAll.has(at)) {
+          const allowedPK = pkAllowedByAcct[at];
+          if (allowedPK && !allowedPK.has(pk)) {
+            masterDataErrors.push(
+              `Entry ${line}: Posting Key '${entry.postingKey}' not allowed for Account Type '${entry.accountType}'`
+            );
+          }
+          const allowedSG = sgAllowedByAcct[at];
+          if (allowedSG && sg && !allowedSG.has(sg)) {
+            masterDataErrors.push(
+              `Entry ${line}: Special GL '${entry.specialGLIndication}' not allowed for Account Type '${entry.accountType}'`
+            );
+          }
+        }
+      });
+
+      if (masterDataErrors.length > 0) {
+        const maxShow = 15;
+        const msg =
+          masterDataErrors.slice(0, maxShow).join("\n") +
+          (masterDataErrors.length > maxShow
+            ? `\n...and ${masterDataErrors.length - maxShow} more.`
+            : "");
+        await swal({
+          title: "Master Data Validation Errors",
+          text: msg,
+          icon: "error",
+          button: "OK",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const items = data.map((entry) => ({
         slNo: parseInt(entry.slNo) || 0,
         documentType: entry.documentType,
         documentDate: new Date(entry.documentDate).toISOString(),
         businessArea: entry.businessArea,
         accountType: entry.accountType,
-        postingKey: entry.postingKey,
+        postingKey: String(entry.postingKey),
         vendorCustomerGLNumber: entry.vendorCustomerGLNumber,
         amount: parseFloat(entry.amount),
         type: entry.type,
@@ -172,6 +312,7 @@ export const useInitiateJV = () => {
         autoReversal: autoReversal === "Yes",
         reversalRemarks: autoReversal === "Yes" ? reversalRemarks : "",
         document: uploadedFileUrl,
+        supportingDocuments: supportingDocuments,
         items: items,
       };
 
@@ -265,12 +406,14 @@ export const useInitiateJV = () => {
     submitting,
     page,
     rowsPerPage,
+    supportingDocuments,
     
     // Setters
     setAutoReversal,
     setReversalRemarks,
     setPage,
     setRowsPerPage,
+    setSupportingDocuments,
     
     // Handlers
     handleModalSuccess,

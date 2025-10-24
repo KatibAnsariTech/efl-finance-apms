@@ -1,13 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { userRequest } from "src/requestMethod";
+import { useAccount } from "src/hooks/use-account";
 
 const JVMContext = createContext();
 
 export const JVMProvider = ({ children }) => {
+  const account = useAccount();
   const [jvmRequestCounts, setJvmRequestCounts] = useState({
     pendingWithMe: 0,
     active: 0
   });
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
 
   const fetchJVMRequestCounts = useCallback(async () => {
     try {
@@ -30,12 +34,24 @@ export const JVMProvider = ({ children }) => {
 
 
   const refreshJVMData = useCallback(async () => {
+    setIsManualRefresh(true);
     await fetchJVMRequestCounts();
+    setIsManualRefresh(false);
   }, [fetchJVMRequestCounts]);
 
   useEffect(() => {
-    refreshJVMData();
-  }, [refreshJVMData]);
+    if (account && account.displayName && account.displayName.trim() !== "" && !hasInitialized && !isManualRefresh) {
+      const hasJVMAccess = account.accessibleProjects && account.accessibleProjects.some(project => 
+        project === "JVM" || 
+        (typeof project === 'object' && (project.id === "JVM" || project.projectId === "JVM"))
+      );
+      
+      if (hasJVMAccess) {
+        fetchJVMRequestCounts();
+      }
+      setHasInitialized(true);
+    }
+  }, [account, hasInitialized, fetchJVMRequestCounts, isManualRefresh]);
 
   const value = {
     jvmRequestCounts,

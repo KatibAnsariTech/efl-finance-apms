@@ -19,6 +19,7 @@ import * as yup from "yup";
 import swal from "sweetalert";
 
 import { useAccount } from "src/hooks/use-account";
+import { useAccountContext } from "src/contexts/AccountContext";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 import { getUser } from "src/utils/userUtils";
@@ -28,14 +29,13 @@ import { getUser } from "src/utils/userUtils";
 const profileSchema = yup.object().shape({
   username: yup.string().required("Username is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
-  //   firstName: yup.string().required("First name is required"),
-  //   lastName: yup.string().required("Last name is required"),
   projectType: yup.string().optional(),
 });
 
 export default function Profile() {
   const navigate = useNavigate();
   const account = useAccount();
+  const { refreshAccount } = useAccountContext();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [profileImg, setProfileImg] = useState(null);
@@ -52,8 +52,6 @@ export default function Profile() {
     defaultValues: {
       username: "",
       email: "",
-      //   firstName: "",
-      //   lastName: "",
       projectType: "",
     },
   });
@@ -62,8 +60,6 @@ export default function Profile() {
     if (account) {
       setValue("username", account.username || "");
       setValue("email", account.email || "");
-      //   setValue("firstName", account.firstName || "");
-      //   setValue("lastName", account.lastName || "");
       setValue("projectType", account.projectType || "");
     }
   }, [account, setValue]);
@@ -83,20 +79,40 @@ export default function Profile() {
         });
 
         if (response.data.success) {
-          const imageUrl = response.data.data.url;
+          const imageUrl = response.data.data;
           setProfileImg(imageUrl);
           setImagePreview(imageUrl);
           
-          // Update localStorage immediately
-          const updatedUser = { ...account, profileImg: imageUrl };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-          
-          await swal({
-            title: "Success!",
-            text: "Profile photo updated successfully!",
-            icon: "success",
-            button: "OK"
-          });
+           try {
+             const profileData = {
+               profileImg: imageUrl
+             };
+            
+            const profileResponse = await userRequest.put("/admin/updateProfile", profileData);
+            
+            if (profileResponse.data.success) {
+              const token = localStorage.getItem("accessToken");
+              await getUser(token);
+              
+              refreshAccount();
+              
+              await swal({
+                title: "Success!",
+                text: "Profile photo updated successfully!",
+                icon: "success",
+                button: "OK"
+              });
+            } else {
+              throw new Error(profileResponse.data.message || "Failed to update profile");
+            }
+          } catch (profileError) {
+            await swal({
+              title: "Warning!",
+              text: "Image uploaded but profile update failed. Please try updating your profile again.",
+              icon: "warning",
+              button: "OK"
+            });
+          }
         } else {
           throw new Error(response.data.message || "Failed to upload image");
         }
@@ -117,11 +133,12 @@ export default function Profile() {
     setLoading(true);
 
     try {
-      const response = await userRequest.put("/user/profile", data);
+      const response = await userRequest.put("/admin/updateProfile", data);
       if (response.data.success) {
-        // Call getUser to fetch fresh user data from server
         const token = localStorage.getItem("accessToken");
         await getUser(token);
+        
+        refreshAccount();
         
         await swal({
           title: "Success!",
@@ -161,8 +178,7 @@ export default function Profile() {
           </Button>
         </Stack>
 
-        <Grid container spacing={3}>
-          {/* Profile Picture */}
+         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Card sx={{ p: 3, textAlign: "center" }}>
               <Avatar
@@ -233,32 +249,10 @@ export default function Profile() {
                       {...register("email")}
                       error={!!errors.email}
                       helperText={errors.email?.message}
-                      // disabled={loading}
                       disabled
                     />
                   </Grid>
 
-                  {/* <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="First Name"
-                      {...register("firstName")}
-                      error={!!errors.firstName}
-                      helperText={errors.firstName?.message}
-                      disabled={loading}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Last Name"
-                      {...register("lastName")}
-                      error={!!errors.lastName}
-                      helperText={errors.lastName?.message}
-                      disabled={loading}
-                    />
-                  </Grid> */}
 
                   <Grid item xs={12} sm={6}>
                     <TextField
@@ -271,29 +265,6 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  {/* <Grid item xs={12}>
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      justifyContent="flex-end"
-                    >
-                      <Button
-                        variant="outlined"
-                        onClick={() => navigate("/settings")}
-                        disabled={loading}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={loading}
-                        startIcon={loading && <CircularProgress size={20} />}
-                      >
-                        {loading ? "Updating..." : "Update Profile"}
-                      </Button>
-                    </Stack>
-                  </Grid> */}
                 </Grid>
               </Box>
             </Card>

@@ -176,7 +176,7 @@ export default function JVMDashboard() {
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
-                          ? chartData.map((data) => data?.totalRequests)
+                          ? chartData.map((data) => data?.totalRequests || 0)
                           : [],
                     },
                     {
@@ -185,7 +185,7 @@ export default function JVMDashboard() {
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
-                          ? chartData.map((data) => data?.completedRequests)
+                          ? chartData.map((data) => data?.completedRequests || 0)
                           : [],
                     },
                     {
@@ -194,7 +194,7 @@ export default function JVMDashboard() {
                       fill: 'gradient',
                       data:
                         chartData && chartData.length > 0
-                          ? chartData.map((data) => data?.pendingRequests)
+                          ? chartData.map((data) => data?.pendingRequests || 0)
                           : [],
                     },
                   ],
@@ -222,9 +222,9 @@ export default function JVMDashboard() {
                 setFilter={setPieFilter}
                 filter={pieFilter}
                 chart={{
-                  series: pieChartData.map((item) => ({
-                    label: item.label,
-                    value: Number(item.count),
+                  series: (pieChartData || []).map((item) => ({
+                    label: item?.label || 'Unknown',
+                    value: Number(item?.count || 0),
                   })),
                 }}
               />

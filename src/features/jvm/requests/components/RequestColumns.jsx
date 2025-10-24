@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { fDateTime } from "src/utils/format-time";
 
@@ -9,6 +9,15 @@ export const RequestColumns = ({ onRequestClick }) => {
   const handleStatusClick = (rowData) => {
     if (onRequestClick) {
       onRequestClick(rowData);
+    }
+  };
+
+  const handleViewDocuments = (documents) => {
+    if (documents && documents.length > 0) {
+      // Open each document in a new tab
+      documents.forEach((url) => {
+        window.open(url, '_blank');
+      });
     }
   };
 
@@ -98,6 +107,48 @@ export const RequestColumns = ({ onRequestClick }) => {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => `${params.value === true ? "Yes" : "No"}`,
+    },
+    {
+      field: "supportingDocuments",
+      headerName: "Supporting Documents",
+      flex: 1,
+      minWidth: 150,
+      align: "center",
+      headerAlign: "center",
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const documents = params.value;
+        const hasDocuments = documents && documents.length > 0;
+        
+        return (
+          <Typography
+            variant="body2"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (hasDocuments) {
+                handleViewDocuments(documents);
+              }
+            }}
+            sx={{
+              color: hasDocuments ? "#1976d2" : "#8c959f",
+              fontSize: "0.875rem",
+              fontWeight: hasDocuments ? 500 : 400,
+              fontStyle: hasDocuments ? "normal" : "italic",
+              cursor: hasDocuments ? "pointer" : "default",
+              textDecoration: hasDocuments ? "underline" : "none",
+              textDecorationThickness: hasDocuments ? "2px" : "none",
+              textUnderlineOffset: hasDocuments ? "4px" : "none",
+              "&:hover": hasDocuments ? {
+                color: "#1565c0",
+                textDecoration: "underline",
+              } : {},
+            }}
+          >
+            {hasDocuments ? "View" : "No documents"}
+          </Typography>
+        );
+      },
     },
   ];
 

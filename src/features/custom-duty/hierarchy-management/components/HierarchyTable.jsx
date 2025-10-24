@@ -19,26 +19,31 @@ import {
   CircularProgress,
   Fade,
 } from "@mui/material";
-import {
-  Update as UpdateIcon,
-} from "@mui/icons-material";
+import { Update as UpdateIcon } from "@mui/icons-material";
 import Iconify from "src/components/iconify";
 import { useTheme } from "@mui/material/styles";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function HierarchyTable({ companyId, getData, companiesLoaded = true }) {
+export default function HierarchyTable({
+  companyId,
+  getData,
+  companiesLoaded = true,
+}) {
   const theme = useTheme();
   const [hierarchyData, setHierarchyData] = useState([]);
   const [approvers, setApprovers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingLevel, setEditingLevel] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [approvalTypeId, setApprovalTypeId] = useState(null);
 
   const fetchApprovers = async () => {
     try {
-      const response = await userRequest.get(`/custom/getApproverByCompany/${companyId}`);
+      const response = await userRequest.get(
+        `/custom/getApproverByCompany/${companyId}`
+      );
       if (response?.data?.statusCode === 200 && response?.data?.data) {
         const approversData = response.data.data.approvers || [];
         setApprovers(approversData);
@@ -52,8 +57,9 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
   };
 
   const createDefaultLevels = () => {
-    return [1, 2, 3, 4].map(level => ({
+    return [1, 2, 3, 4].map((level) => ({
       id: `level-${level}`,
+      _id: `level-${level}`,
       level: level,
       approvers: [],
       status: true,
@@ -75,21 +81,30 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
       });
 
       const approvalTypesData = res?.data?.data || [];
-      const approvalType = approvalTypesData.find(item => item.companyId._id === companyId);
+      const approvalType = approvalTypesData.find(
+        (item) => item.companyId._id === companyId
+      );
       const result = approvalType?.steps || [];
       
-      const levels = [1, 2, 3, 4].map(level => {
-        const existingData = result.find(item => item.level === level);
-        if (existingData && existingData.status) {
-          const approversWithDetails = existingData.approverId.map(approver => ({
-            userRoleId: approver._id,
-            username: approver.user?.username || 'Unknown',
-            email: approver.user?.email || 'Unknown',
-            userId: approver.userId,
-            _id: approver._id
-          }));
+      if (approvalType && approvalType._id) {
+        setApprovalTypeId(approvalType._id);
+      }
+
+      const levels = [1, 2, 3, 4].map((level) => {
+        const existingData = result.find((item) => item.level === level);
+        if (existingData) {
+          const approversWithDetails = existingData.approverId.map(
+            (approver) => ({
+              userRoleId: approver._id,
+              username: approver.user?.username || "Unknown",
+              email: approver.user?.email || "Unknown",
+              userId: approver.userId,
+              _id: approver._id,
+            })
+          );
           return {
             id: `level-${level}`,
+            _id: existingData._id,
             level: level,
             approvers: approversWithDetails,
             status: existingData.status,
@@ -97,6 +112,7 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
         }
         return {
           id: `level-${level}`,
+          _id: `level-${level}`,
           level: level,
           approvers: [],
           status: true,
@@ -113,21 +129,24 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
   };
 
   useEffect(() => {
-    if (companyId) {
+    if (companyId && companyId.trim() !== "") {
       fetchApprovers();
+      fetchHierarchyData();
+    } else {
+      setHierarchyData(createDefaultLevels());
     }
-    setHierarchyData(createDefaultLevels());
   }, [companyId]);
 
   useEffect(() => {
-    if (approvers.length > 0 && companiesLoaded && companyId) {
+    if (companiesLoaded && companyId && companyId.trim() !== "") {
       fetchHierarchyData();
     }
-  }, [companyId, approvers, companiesLoaded]);
+  }, [companiesLoaded]);
 
   useEffect(() => {
     setEditingLevel(null);
     setHasChanges(false);
+    setApprovalTypeId(null);
   }, [companyId]);
 
   const handleEdit = (levelData) => {
@@ -138,15 +157,15 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
     }
   };
 
-
-
   const handleToggle = async (levelData) => {
     try {
       const newStatus = !levelData.status;
-      
+
       const result = await swal({
         title: "Are you sure?",
-        text: `Do you want to ${newStatus ? "activate" : "deactivate"} Level ${levelData.level}?`,
+        text: `Do you want to ${newStatus ? "activate" : "deactivate"} Level ${
+          levelData.level
+        }?`,
         icon: "warning",
         buttons: {
           cancel: "Cancel",
@@ -161,40 +180,58 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
       if (!result) return;
 
       const requestBody = {
+        _id: approvalTypeId,
         level: levelData.level,
         status: newStatus,
-        companyId: companyId
       };
 
-      await userRequest.put("/custom/updateHierarchyLevelStatus", requestBody);
+      await userRequest.put("/custom/updateApprovalStepStatus", requestBody);
 
       fetchHierarchyData();
-      swal("Success!", `Level ${levelData.level} ${newStatus ? "activated" : "deactivated"} successfully!`, "success");
+      swal(
+        "Success!",
+        `Level ${levelData.level} ${
+          newStatus ? "activated" : "deactivated"
+        } successfully!`,
+        "success"
+      );
     } catch (error) {
       console.error("Error toggling status:", error);
-      showErrorMessage(error, "Error updating status. Please try again later.", swal);
+      showErrorMessage(
+        error,
+        "Error updating status. Please try again later.",
+        swal
+      );
     }
   };
 
   const updateField = (level, field, value) => {
-    setHierarchyData(prev => prev.map(item => 
-      item.level === level ? { ...item, [field]: value } : item
-    ));
+    setHierarchyData((prev) =>
+      prev.map((item) =>
+        item.level === level ? { ...item, [field]: value } : item
+      )
+    );
     setHasChanges(true);
   };
 
   const handleUpdateAll = async () => {
     try {
       setLoading(true);
-      
+
       const requestBody = {
         companyId: companyId,
         steps: hierarchyData
-          .filter(levelData => levelData.status && levelData.approvers && levelData.approvers.length > 0)
-          .map(levelData => ({
+          .filter(
+            (levelData) =>
+              levelData.approvers &&
+              levelData.approvers.length > 0
+          )
+          .map((levelData) => ({
             level: levelData.level,
-            approverId: levelData.approvers.map(approver => approver._id || approver.userRoleId)
-          }))
+            approverId: levelData.approvers.map(
+              (approver) => approver._id || approver.userRoleId
+            ),
+          })),
       };
 
       await userRequest.put("/custom/updateApprovalType", requestBody);
@@ -205,7 +242,11 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
       swal("Success!", "Approval type updated successfully!", "success");
     } catch (error) {
       console.error("Error updating approval type:", error);
-      showErrorMessage(error, "Error updating approval type. Please try again later.", swal);
+      showErrorMessage(
+        error,
+        "Error updating approval type. Please try again later.",
+        swal
+      );
     } finally {
       setLoading(false);
     }
@@ -215,15 +256,17 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
     <Box>
       {loading ? (
         <Fade in={loading} timeout={300}>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '250px',
-            width: '100%',
-            gap: 2
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "250px",
+              width: "100%",
+              gap: 2,
+            }}
+          >
             <CircularProgress size={40} />
             <Typography variant="body2" color="text.secondary">
               Loading hierarchy data...
@@ -234,103 +277,143 @@ export default function HierarchyTable({ companyId, getData, companiesLoaded = t
         <Fade in={!loading} timeout={300}>
           <TableContainer component={Paper}>
             <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell align="center" sx={{ width: "120px" }}>Level</TableCell>
-              <TableCell align="center" sx={{ width: "400px" }}>Approvers</TableCell>
-              <TableCell align="center" sx={{ width: "150px" }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {hierarchyData.map((row) => (
-              <TableRow key={row.level}>
-                <TableCell align="center" sx={{ width: "120px" }}>
-                  <Typography variant="body1">{row.level}</Typography>
-                </TableCell>
-                
-                <TableCell align="center" sx={{ width: "400px" }}>
-                  {editingLevel === row.level ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
-                      <Autocomplete
-                        size="small"
-                        multiple
-                        options={approvers}
-                        getOptionLabel={(option) => `${option.username} (${option.email})`}
-                        value={row.approvers || []}
-                        onChange={(event, newValue) => updateField(row.level, 'approvers', newValue)}
-                        renderTags={(value, getTagProps) =>
-                          value.map((option, index) => (
-                            <Chip
-                              variant="filled"
-                              label={option.email}
-                              size="small"
-                              color="primary"
-                              {...getTagProps({ index })}
-                              key={option.userRoleId}
-                            />
-                          ))
-                        }
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder="Select approvers..."
-                            size="small"
-                          />
-                        )}
-                        sx={{ width: "70%" }}
-                      />
-                    </Box>
-                  ) : (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center" }}>
-                      {row.approvers && row.approvers.length > 0 ? (
-                        row.approvers.map((approver) => (
-                          <Chip
-                            key={approver.userRoleId || approver.email}
-                            label={approver.email}
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                          />
-                        ))
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          No approvers assigned
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-                </TableCell>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center" sx={{ width: "120px" }}>
+                    Level
+                  </TableCell>
+                  <TableCell align="center" sx={{ width: "400px" }}>
+                    Approvers
+                  </TableCell>
+                  <TableCell align="center" sx={{ width: "150px" }}>
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {hierarchyData.map((row) => (
+                  <TableRow key={row.level}>
+                    <TableCell align="center" sx={{ width: "120px" }}>
+                      <Typography variant="body1">{row.level}</Typography>
+                    </TableCell>
 
-                <TableCell align="center" sx={{ width: "150px" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
-                    <Tooltip title="Edit Approvers">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(row)}
+                    <TableCell align="center" sx={{ width: "400px" }}>
+                      {editingLevel === row.level ? (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            width: "100%",
+                          }}
+                        >
+                          <Autocomplete
+                            size="small"
+                            multiple
+                            options={approvers}
+                            getOptionLabel={(option) =>
+                              `${option.username} (${option.email})`
+                            }
+                            value={row.approvers || []}
+                            onChange={(event, newValue) =>
+                              updateField(row.level, "approvers", newValue)
+                            }
+                            renderTags={(value, getTagProps) =>
+                              value.map((option, index) => (
+                                <Chip
+                                  variant="filled"
+                                  label={option.email}
+                                  size="small"
+                                  color="primary"
+                                  {...getTagProps({ index })}
+                                  key={option.userRoleId}
+                                />
+                              ))
+                            }
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                placeholder="Select approvers..."
+                                size="small"
+                              />
+                            )}
+                            sx={{ width: "70%" }}
+                          />
+                        </Box>
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 1,
+                            justifyContent: "center",
+                          }}
+                        >
+                          {row.approvers && row.approvers.length > 0 ? (
+                            row.approvers.map((approver) => (
+                              <Chip
+                                key={approver.userRoleId || approver.email}
+                                label={approver.email}
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                              />
+                            ))
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              No approvers assigned
+                            </Typography>
+                          )}
+                        </Box>
+                      )}
+                    </TableCell>
+
+                    <TableCell align="center" sx={{ width: "150px" }}>
+                      <Box
                         sx={{
-                          color: theme.palette.primary.main,
-                          backgroundColor: editingLevel === row.level ? theme.palette.primary.lighter : "transparent",
-                          "&:hover": {
-                            backgroundColor: theme.palette.primary.lighter,
-                          },
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 1,
                         }}
                       >
-                        <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={row.status ? "Deactivate Level" : "Activate Level"}>
-                      <Switch
-                        checked={row.status}
-                        onChange={() => handleToggle(row)}
-                      />
-                    </Tooltip>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                        <Tooltip title="Edit Approvers">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(row)}
+                            sx={{
+                              color: theme.palette.primary.main,
+                              backgroundColor:
+                                editingLevel === row.level
+                                  ? theme.palette.primary.lighter
+                                  : "transparent",
+                              "&:hover": {
+                                backgroundColor: theme.palette.primary.lighter,
+                              },
+                            }}
+                          >
+                            <Iconify
+                              icon="eva:edit-fill"
+                              sx={{ color: "primary.main" }}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip
+                          title={
+                            row.status ? "Deactivate Level" : "Activate Level"
+                          }
+                        >
+                          <Switch
+                            checked={row.status}
+                            onChange={() => handleToggle(row)}
+                          />
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Fade>
       )}
 
