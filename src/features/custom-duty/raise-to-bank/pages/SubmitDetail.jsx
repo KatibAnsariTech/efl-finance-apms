@@ -27,12 +27,12 @@ export default function SubmitDetail() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-  const getData = async (pageNum = 1) => {
+  const getData = async (pageNum = 1, pageSize = rowsPerPage) => {
     try {
       setLoading(true);
 
       const page = pageNum;
-      const limit = rowsPerPage;
+      const limit = pageSize;
       
       const response = await userRequest.get(
         `custom/getRaisedToBankByFinalReqNo/${finalRequestNo}`,
@@ -88,15 +88,20 @@ export default function SubmitDetail() {
     getData(1);
   }, [finalRequestNo]);
 
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    getData(newPage + 1);
-  };
-
-  const handleRowsPerPageChange = (newRowsPerPage) => {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-    getData(1);
+  const handlePaginationModelChange = (newModel) => {
+    const { page: newPage, pageSize: newPageSize } = newModel;
+    
+    // Handle page size change
+    if (newPageSize !== rowsPerPage) {
+      setRowsPerPage(newPageSize);
+      setPage(0);
+      getData(1, newPageSize);
+    }
+    // Handle page change (only if page size hasn't changed)
+    else if (newPage !== page) {
+      setPage(newPage);
+      getData(newPage + 1, newPageSize);
+    }
   };
 
   const handleRequestClick = (rowData) => {
@@ -129,7 +134,6 @@ export default function SubmitDetail() {
         <Box
           sx={{
             width: "100%",
-            height: "calc(100vh - 160px)",
           }}
         >
           <DataGrid
@@ -142,11 +146,9 @@ export default function SubmitDetail() {
             paginationMode="server"
             rowCount={totalCount}
             paginationModel={{ page: page, pageSize: rowsPerPage }}
-            onPaginationModelChange={(newModel) => {
-              handlePageChange(newModel.page);
-              handleRowsPerPageChange(newModel.pageSize);
-            }}
+            onPaginationModelChange={handlePaginationModelChange}
             pageSizeOptions={[5, 10, 25, 50]}
+            autoHeight={true}
             sx={{
               "& .MuiDataGrid-cell": {
                 "&:focus": { outline: "none" },

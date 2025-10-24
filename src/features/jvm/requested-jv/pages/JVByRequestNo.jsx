@@ -127,14 +127,9 @@ export default function JVByRequestNo() {
               mb: 2,
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
             }}
           >
-            <FormTableToolbar
-              search={search}
-              onFilterChange={handleFilterChange}
-              placeholder="Search JVs..."
-            />
              <CloseButton
                onClick={() => router.back()}
                tooltip="Back to Requested JV"

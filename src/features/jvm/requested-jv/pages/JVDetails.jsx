@@ -159,20 +159,15 @@ export default function JVDetails() {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
               alignItems: "center",
               mb: 2,
             }}
           >
-            <FormTableToolbar
-              search={search}
-              onFilterChange={handleFilterChange}
-              placeholder="Search by JV No, document type, GL account, remarks, reference..."
+            <CloseButton
+              onClick={() => router.back()}
+              tooltip="Back to JVs by Group"
             />
-             <CloseButton
-               onClick={() => router.back()}
-               tooltip="Back to JVs by Group"
-             />
           </Box>
 
           <Box sx={{ width: "100%" }}>

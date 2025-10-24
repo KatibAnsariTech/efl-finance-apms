@@ -8,9 +8,11 @@ import { getComparator } from "src/utils/utils";
 import { userRequest } from "src/requestMethod";
 import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
 import { useRouter } from "src/routes/hooks";
-import { Box } from "@mui/material";
+import { Box, Button, IconButton } from "@mui/material";
+import { FilterList } from "@mui/icons-material";
 import RequestStatus from "../components/RequestStatus";
 import ColorIndicators from "../components/ColorIndicators";
+import FilterModal from "../components/FilterModal";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
@@ -34,6 +36,9 @@ export default function RequestedJV() {
   });
   const [openStatusModal, setOpenStatusModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
 
   const menuItems = [
     { label: "All", value: "all", count: statusCounts.all },
@@ -45,21 +50,24 @@ export default function RequestedJV() {
   const getData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get("jvm/getForms", {
-        params: {
-          page: page + 1,
-          limit: rowsPerPage,
-          status: selectedTab !== "all" ? selectedTab : undefined,
-        },
-      });
+      const params = {
+        page: page + 1,
+        limit: rowsPerPage,
+        status: selectedTab !== "all" ? selectedTab : undefined,
+      };
+      
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
+      
+      const response = await userRequest.get("jvm/getForms", { params });
 
       if (response.data.statusCode === 200) {
         const apiData = response.data.data.data;
         const pagination = response.data.data.pagination;
         const processedData = apiData.map((item, index) => ({
           ...item,
-          id: item.groupId || `${item.parentId}-${index}`,
-          groupId: item.groupId || `${item.parentId}-${index}`,
+          id: item.parentId || `temp-${index}`,
+          groupId: item.parentId || `temp-${index}`,
           createdAt: new Date(item.createdAt),
         }));
         setData(processedData);
@@ -87,7 +95,13 @@ export default function RequestedJV() {
 
   useEffect(() => {
     getData();
-  }, [page, rowsPerPage, selectedTab]);
+  }, [page, rowsPerPage, selectedTab, filterStartDate, filterEndDate]);
+
+  // Clear filters when tab changes
+  useEffect(() => {
+    setFilterStartDate('');
+    setFilterEndDate('');
+  }, [selectedTab]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === "search") {
@@ -108,6 +122,14 @@ export default function RequestedJV() {
     setSelectedRowData(null);
   };
 
+  const handleOpenFilterModal = () => {
+    setOpenFilterModal(true);
+  };
+
+  const handleCloseFilterModal = () => {
+    setOpenFilterModal(false);
+  };
+
   const handleDelete = async (row) => {
     // Only allow deletion if canDelete is true
     if (!row.canDelete) {
@@ -121,7 +143,9 @@ export default function RequestedJV() {
       icon: "warning",
       buttons: true,
       dangerMode: true,
+
     });
+    
 
     if (result) {
       try {
@@ -150,19 +174,44 @@ export default function RequestedJV() {
           menuItems={menuItems}
         />
         <Card sx={{ mt: 2, p: 2 }}>
-          <div
-            style={{
+          <Box
+            sx={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
+              alignItems: "center",
               marginRight: "20px",
+              mb: 1,
             }}
           >
-            <FormTableToolbar
-              search={search}
-              onFilterChange={handleFilterChange}
-              placeholder="Search JVs..."
-            />
-          </div>
+
+            <Button
+              variant="text"
+              size="small"
+              startIcon={<FilterList />}
+              onClick={handleOpenFilterModal}
+              sx={{ 
+                ml: 2,
+                backgroundColor: 'transparent',
+                minHeight: 'auto',
+                height: '32px',
+                py: 0.5,
+                px: 1,
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                  height: '32px',
+                  minHeight: 'auto',
+                },
+                '&:focus': {
+                  outline: 'none',
+                },
+                '&:focus-visible': {
+                  outline: 'none',
+                },
+              }}
+            >
+              Filter
+            </Button>
+          </Box>
 
           <Box sx={{ width: "100%" }}>
             <DataGrid
@@ -273,6 +322,13 @@ export default function RequestedJV() {
           rowData={selectedRowData}
           getRequestData={getData}
           selectedTab="jv-status"
+        />
+
+        <FilterModal
+          open={openFilterModal}
+          handleClose={handleCloseFilterModal}
+          setStartDate={setFilterStartDate}
+          setEndDate={setFilterEndDate}
         />
       </Container>
     </>

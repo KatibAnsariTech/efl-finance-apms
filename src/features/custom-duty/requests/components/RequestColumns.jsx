@@ -11,6 +11,7 @@ export const RequestColumns = ({
   handleSelectRow,
   onRequestClick,
   showCheckboxes = true,
+  selectedTab,
 }) => {
   const router = useRouter();
 
@@ -19,7 +20,14 @@ export const RequestColumns = ({
   if (showCheckboxes) {
     columns.push({
       field: "checkbox",
-      headerName: (
+      headerName: "Select",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      headerAlign: "center",
+      align: "center",
+      renderHeader: () => (
         <Box
           sx={{
             display: "flex",
@@ -38,13 +46,6 @@ export const RequestColumns = ({
           )}
         </Box>
       ),
-      width: 80,
-      sortable: false,
-      filterable: false,
-      resizable: false,
-      disableColumnMenu: true,
-      headerAlign: "center",
-      align: "center",
       renderCell: (params) => (
         <Checkbox
           checked={selectedRows.includes(params.row.id)}
@@ -147,13 +148,11 @@ export const RequestColumns = ({
       field: "icegateAckNo",
       headerName: "Icegate Ack. No.",
       width: 200,
-      resizable: true,
     },
     {
       field: "referenceId",
       headerName: "Reference ID",
-      width: 200,
-      resizable: true,
+      width: 250,
       renderCell: (params) => (
         <Box
           sx={{
@@ -168,14 +167,14 @@ export const RequestColumns = ({
         </Box>
       ),
     },
-    {
-      field: "finalRequestNo",
+    ...(selectedTab !== "pendingWithMe" ? [{
+      field: "finalReqNo",
       headerName: "Final Request No.",
       flex: 1,
-      minWidth: 150,
+      minWidth: 180,
       align: "center",
       headerAlign: "center",
-    }
+    }] : [])
   );
 
   return columns;

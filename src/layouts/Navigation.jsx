@@ -30,6 +30,7 @@ import Logo from "../../public/assets/logo-image.png";
 import EurekaForbes from "../../public/assets/eurekafobesimage2.png";
 import generateNavigationConfig from "./config/navConfig.jsx";
 import { useJVM } from "src/contexts/JVMContext";
+import { useCustomCount } from "src/contexts/CustomCountContext";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LockIcon from "@mui/icons-material/Lock";
@@ -116,6 +117,7 @@ const Sidebar = ({
   const router = useRouter();
   const pathname = usePathname();
   const { jvmRequestCounts } = useJVM();
+  const { customRequestCounts } = useCustomCount();
 
   const collapsed =
     externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
@@ -203,6 +205,10 @@ const Sidebar = ({
     }
     
     if (itemId === "auto-reversal" && jvmRequestCounts.active > 0) {
+      showRedDot = true;
+    }
+    
+    if (itemId === "custom-duty-requests" && customRequestCounts.pendingWithMe > 0) {
       showRedDot = true;
     }
 

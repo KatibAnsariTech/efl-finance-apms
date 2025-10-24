@@ -14,7 +14,7 @@ import { action } from "src/theme/palette";
 import { format } from "date-fns";
 import { useRouter } from "src/routes/hooks";
 import ColorIndicators from "./colorIndicator";
-import { useCounts } from "src/contexts/CountsContext";
+import { useCRDCount } from "src/contexts/CRDCountContext";
 import { Box } from "@mui/material";
 import RequestModal from "./RequestModal";
 import { fDateTime } from "src/utils/format-time";
@@ -43,7 +43,7 @@ export default function ApprovalPage() {
   const [openModal, setOpenModal] = useState(false);
 
   const [regionData, setRegionData] = React.useState();
-  const { approvalCount } = useCounts();
+  const { approvalCount } = useCRDCount();
 
   // Status color mapping
   const getStatusColor = (status) => {
