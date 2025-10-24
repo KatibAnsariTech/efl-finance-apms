@@ -75,7 +75,53 @@ export default function RaiseRequest() {
   //   return () => clearInterval(interval);
   // }, [checkTimeRestriction]);
 
+  const validateIECNumbers = (uploadedEntries) => {
+    if (!selectedCompany) {
+      return { isValid: false, message: "Please select a company first." };
+    }
+
+    const selectedCompanyIEC = selectedCompany.bank?.iecCode;
+    if (!selectedCompanyIEC) {
+      return { isValid: false, message: `Company "${selectedCompany.name}" does not have an IEC code configured.` };
+    }
+
+    const invalidEntries = [];
+    uploadedEntries.forEach((entry, index) => {
+      if (entry.IECNo) {
+        const entryIEC = String(entry.IECNo).trim();
+        const companyIEC = String(selectedCompanyIEC).trim();
+        
+        if (entryIEC !== companyIEC) {
+          invalidEntries.push({
+            row: index + 1,
+            iecNo: entryIEC,
+            expectedIEC: selectedCompanyIEC
+          });
+        }
+      }
+    });
+
+    if (invalidEntries.length > 0) {
+      const errorMessage = `IEC Number validation failed:\n\n` +
+        invalidEntries.map(entry => 
+          `Row ${entry.row}: Found "${entry.iecNo}"`
+        ).join('\n') +
+        `\n\nAll IEC numbers must match the selected company's IEC code.`;
+      
+      return { isValid: false, message: errorMessage };
+    }
+
+    return { isValid: true };
+  };
+
   const handleUploadSuccess = (uploadedEntries) => {
+    const validation = validateIECNumbers(uploadedEntries);
+    
+    if (!validation.isValid) {
+      swal("Validation Error", validation.message, "error");
+      return;
+    }
+
     const entriesWithIds = uploadedEntries.map((entry, index) => ({
       ...entry,
       id: `entry_${Date.now()}_${index}`,
@@ -96,6 +142,12 @@ export default function RaiseRequest() {
         "Please select a company before submitting the request.",
         "error"
       );
+      return;
+    }
+
+    const validation = validateIECNumbers(data);
+    if (!validation.isValid) {
+      swal("Validation Error", validation.message, "error");
       return;
     }
 
