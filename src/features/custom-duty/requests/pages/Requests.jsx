@@ -76,7 +76,6 @@ export default function Requests() {
         params: {
           page: page,
           limit: limit,
-          _t: Date.now(),
         },
       });
 
