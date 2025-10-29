@@ -111,7 +111,7 @@ function AddEditMeasurementUnit({ handleClose, open, editData: unitData, getData
             {...register("abbreviation", { required: true })}
             fullWidth
             required
-            helperText="e.g., Nos, Kg, L, ml, m, cm, mm, Dozen, Pack, Box, Set, Pair"
+            helperText="e.g., Nos, Kg, L"
           />
           <Button
             sx={{ marginTop: "20px", height: "50px" }}

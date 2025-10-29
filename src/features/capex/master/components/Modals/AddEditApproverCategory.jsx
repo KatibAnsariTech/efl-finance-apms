@@ -112,7 +112,7 @@ function AddEditApproverCategory({ handleClose, open, editData: categoryData, ge
             {...register("management", { required: true })}
             fullWidth
             required
-            helperText="e.g., CEO / MD, CFO, Respective Ex-com, Finance controller"
+            helperText="e.g., CEO / MD, CFO"
           />
           <TextField
             id="status"
