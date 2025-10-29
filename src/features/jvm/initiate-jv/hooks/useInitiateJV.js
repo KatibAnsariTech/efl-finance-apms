@@ -7,6 +7,7 @@ import {
   validateSlNoBalance,
   validateSlNoDateConsistency,
   validateAllJVEntries,
+  validatePostingKeyMatchesEntryType,
 } from "../utils";
 import { fExcelDate, parseExcelDate } from "src/utils/format-time";
 
@@ -267,6 +268,19 @@ export const useInitiateJV = () => {
             masterDataErrors.push(
               `Entry ${line}: Special GL '${entry.specialGLIndication}' not allowed for Account Type '${entry.accountType}'`
             );
+          }
+        }
+
+        // Validate posting key transaction type matches entry type
+        if (pk && entry.type) {
+          const validation = validatePostingKeyMatchesEntryType(
+            pk,
+            entry.type,
+            postingKeyMasters
+          );
+          
+          if (!validation.isValid) {
+            masterDataErrors.push(`Entry ${line}: ${validation.error}`);
           }
         }
       });
