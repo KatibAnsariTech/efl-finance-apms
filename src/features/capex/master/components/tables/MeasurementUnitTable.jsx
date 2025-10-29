@@ -36,7 +36,6 @@ export default function MeasurementUnitTable({ handleEdit: parentHandleEdit, han
         sno: (page * rowsPerPage) + index + 1,
         unitName: item.name || item.unitName || "-",
         abbreviation: item.abbreviation || item.abbr || "-",
-        createdAt: item.createdAt,
         ...item,
       }));
 
@@ -122,19 +121,6 @@ export default function MeasurementUnitTable({ handleEdit: parentHandleEdit, han
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {params.value || "-"}
-        </Typography>
-      ),
-    },
-    {
-      field: "createdAt",
-      headerName: "Created Date",
-      width: 150,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value ? fDate(params.value) : "-"}
         </Typography>
       ),
     },

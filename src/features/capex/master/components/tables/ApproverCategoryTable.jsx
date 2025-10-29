@@ -38,7 +38,6 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
         management: item.management || item.approver || "-",
         isActive: item.status === "ACTIVE",
         status: item.status || "INACTIVE",
-        createdAt: item.createdAt,
         ...item,
       }));
 
@@ -143,19 +142,6 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
         >
           {params.value ? "Active" : "Inactive"}
         </Box>
-      ),
-    },
-    {
-      field: "createdAt",
-      headerName: "Created Date",
-      width: 150,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value ? fDate(params.value) : "-"}
-        </Typography>
       ),
     },
     {

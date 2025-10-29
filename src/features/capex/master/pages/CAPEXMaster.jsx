@@ -5,14 +5,16 @@ import CircularIndeterminate from "src/utils/loader";
 import MasterTabs from "../components/MasterTabs";
 import AddEditMeasurementUnit from "../components/Modals/AddEditMeasurementUnit";
 import AddEditApproverCategory from "../components/Modals/AddEditApproverCategory";
+import AddEditApprovalAuthority from "../components/Modals/AddEditApprovalAuthority";
 import { Box } from "@mui/material";
-import { MeasurementUnitTable, ApproverCategoryTable } from "../components/tables";
+import { MeasurementUnitTable, ApproverCategoryTable, ApprovalAuthorityTable } from "../components/tables";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 
 const menuItems = [
   "Measurement Units",
-  "Approver Category"
+  "Approver Category",
+  "Approval Authority"
 ];
 
 export default function CAPEXMaster() {
@@ -52,7 +54,9 @@ export default function CAPEXMaster() {
         const itemType = selectedCategory.toLowerCase();
         const endpoint = selectedTab === 0 
           ? `/capex/deleteMeasurementUnit/${id}`
-          : `/capex/deleteApproverCategory/${id}`;
+          : selectedTab === 1
+          ? `/capex/deleteApproverCategory/${id}`
+          : `/capex/deleteApprovalAuthority/${id}`;
         
         await userRequest.delete(endpoint);
         
@@ -128,6 +132,17 @@ export default function CAPEXMaster() {
           </Suspense>
         )}
 
+        {open && selectedTab === 2 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditApprovalAuthority
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && (
             <MeasurementUnitTable 
@@ -140,6 +155,15 @@ export default function CAPEXMaster() {
           
           {selectedTab === 1 && (
             <ApproverCategoryTable 
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
+            />
+          )}
+
+          {selectedTab === 2 && (
+            <ApprovalAuthorityTable 
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
