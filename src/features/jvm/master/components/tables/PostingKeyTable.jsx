@@ -9,7 +9,11 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigger }) {
+export default function PostingKeyTable({
+  handleEdit,
+  handleDelete,
+  refreshTrigger,
+}) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,15 +27,25 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
     setLoading(true);
     try {
       const response = await userRequest.get(
-        `/jvm/getMasters?key=PostingKey&page=${paginationModel.page + 1}&limit=${
-          paginationModel.pageSize
-        }`
+        `/jvm/getMasters?key=PostingKey&page=${
+          paginationModel.page + 1
+        }&limit=${paginationModel.pageSize}`
       );
       if (response.data.success) {
         const mappedData = response.data.data.masters.map((item, index) => {
-          const otherItem = Array.isArray(item.other) ? item.other[0] : undefined;
-          const accountTypeLabel = otherItem && typeof otherItem === "object" ? (otherItem.value || "-") : (otherItem || "-");
-          const accountTypeId = otherItem && typeof otherItem === "object" ? otherItem._id : (typeof otherItem === "string" ? otherItem : undefined);
+          const otherItem = Array.isArray(item.other)
+            ? item.other[0]
+            : undefined;
+          const accountTypeLabel =
+            otherItem && typeof otherItem === "object"
+              ? otherItem.value || "-"
+              : otherItem || "-";
+          const accountTypeId =
+            otherItem && typeof otherItem === "object"
+              ? otherItem._id
+              : typeof otherItem === "string"
+              ? otherItem
+              : undefined;
           return {
             id: item._id,
             sno: paginationModel.page * paginationModel.pageSize + index + 1,
@@ -65,7 +79,7 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
   const handleEditClick = (event, id) => {
     event.preventDefault();
     event.stopPropagation();
-    const row = data.find(item => item.id === id);
+    const row = data.find((item) => item.id === id);
     if (row) {
       handleEdit(row);
     }
@@ -111,7 +125,25 @@ export default function PostingKeyTable({ handleEdit, handleDelete, refreshTrigg
       headerAlign: "center",
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value || (Array.isArray(params.row?.other) ? (params.row.other[0] || "-") : "-")}
+          {params.value ||
+            (Array.isArray(params.row?.other)
+              ? params.row.other[0] || "-"
+              : "-")}
+        </Typography>
+      ),
+    },
+    {
+      // field: "transactionType",
+      field: "label",
+      headerName: "Transaction Type",
+      minWidth: 200,
+      flex: 1,
+      sortable: false,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
         </Typography>
       ),
     },
