@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -12,16 +12,27 @@ import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getData }) {
-  const [loading, setLoading] = React.useState(false);
+function AddEditPostingKey({
+  handleClose,
+  open,
+  editData: postingKeyData,
+  getData,
+}) {
+  const [loading, setLoading] = useState(false);
   const { register, handleSubmit, reset, setValue } = useForm();
-  const [accountTypes, setAccountTypes] = React.useState([]);
-  const [selectedAccountType, setSelectedAccountType] = React.useState(null);
-
-  // Fetch Account Types from master data
+  const [accountTypes, setAccountTypes] = useState([]);
+  const [selectedAccountType, setSelectedAccountType] = useState(null);
+  const [selectedTransactionType, setSelectedTransactionType] = useState(null);
+  
+  const transactionTypeOptions = [
+    { id: 'C', label: 'C' },
+    { id: 'D', label: 'D' }
+  ];
   const fetchAccountTypes = async () => {
     try {
-      const res = await userRequest.get(`/jvm/getMasters?key=AccountType&page=1&limit=1000`);
+      const res = await userRequest.get(
+        `/jvm/getMasters?key=AccountType&page=1&limit=1000`
+      );
       if (res?.data?.success) {
         const list = res.data.data?.masters || [];
         setAccountTypes(list.map((m) => ({ id: m._id, label: m.value })));
@@ -32,30 +43,38 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       fetchAccountTypes();
     }
   }, [open]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (postingKeyData) {
       setValue("postingKey", postingKeyData.postingKey);
-      // other may be array of ids or array of objects {_id, value}
       let savedId = "";
       if (Array.isArray(postingKeyData.other) && postingKeyData.other[0]) {
         const first = postingKeyData.other[0];
-        savedId = typeof first === "object" ? (first._id || "") : first;
+        savedId = typeof first === "object" ? first._id || "" : first;
       }
       setValue("accountTypeId", savedId);
       if (savedId && accountTypes.length > 0) {
         const match = accountTypes.find((a) => a.id === savedId) || null;
         setSelectedAccountType(match);
       }
+      
+      const transactionType = postingKeyData.label;
+      setValue("transactionType", transactionType || "");
+      if (transactionType) {
+        const match = transactionTypeOptions.find((t) => t.id === transactionType) || null;
+        setSelectedTransactionType(match);
+      }
     } else {
       reset();
       setSelectedAccountType(null);
+      setSelectedTransactionType(null);
       setValue("accountTypeId", "");
+      setValue("transactionType", "");
     }
   }, [postingKeyData, setValue, reset, accountTypes]);
 
@@ -65,11 +84,14 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
       const formattedData = {
         key: "PostingKey",
         value: data.postingKey,
-        // Use `other` to store selected Account Type id
         other: data.accountTypeId ? [data.accountTypeId] : [],
+        label: data.transactionType || "",
       };
       if (postingKeyData?._id) {
-        await userRequest.put(`/jvm/updateMaster/${postingKeyData._id}`, formattedData);
+        await userRequest.put(
+          `/jvm/updateMaster/${postingKeyData._id}`,
+          formattedData
+        );
         getData();
         swal("Updated!", "Posting Key data updated successfully!", "success");
       } else {
@@ -82,7 +104,11 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
       handleClose();
     } catch (error) {
       console.error("Error saving data:", error);
-      showErrorMessage(error, "Error saving data. Please try again later.", swal);
+      showErrorMessage(
+        error,
+        "Error saving data. Please try again later.",
+        swal
+      );
     } finally {
       setLoading(false);
     }
@@ -143,7 +169,6 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
             disabled={loading}
             placeholder="e.g., 40, 50, 60"
           />
-          {/* Hidden field to store selected Account Type id */}
           <input type="hidden" {...register("accountTypeId")} />
           <Autocomplete
             options={accountTypes}
@@ -165,15 +190,45 @@ function AddEditPostingKey({ handleClose, open, editData: postingKeyData, getDat
             isOptionEqualToValue={(option, value) => option?.id === value?.id}
             disabled={loading}
           />
+          <input type="hidden" {...register("transactionType")} />
+          <Autocomplete
+            options={transactionTypeOptions}
+            getOptionLabel={(option) => option?.label || ""}
+            value={selectedTransactionType}
+            onChange={(_, newValue) => {
+              setSelectedTransactionType(newValue);
+              setValue("transactionType", newValue?.id || "");
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Transaction Type"
+                placeholder="Select Transaction Type"
+                fullWidth
+                disabled={loading}
+                required
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option?.id === value?.id}
+            disabled={loading}
+          />
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
             variant="contained"
             color="primary"
             type="submit"
             disabled={loading}
-            startIcon={loading && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading && <CircularProgress size={20} color="inherit" />
+            }
           >
-            {loading ? (postingKeyData ? "Updating..." : "Saving...") : (postingKeyData ? "Update" : "Save")}
+            {loading
+              ? postingKeyData
+                ? "Updating..."
+                : "Saving..."
+              : postingKeyData
+              ? "Update"
+              : "Save"}
           </Button>
         </Box>
       </Box>

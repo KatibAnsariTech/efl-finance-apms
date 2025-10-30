@@ -38,7 +38,7 @@ export const RequestColumns = ({ onRequestClick }) => {
       ),
     },
     {
-      field: "documentNo",
+      field: "docNumber",
       headerName: "Document No",
       flex: 1,
       minWidth: 120,
@@ -46,46 +46,53 @@ export const RequestColumns = ({ onRequestClick }) => {
       headerAlign: "center",
     },
     {
-      field: "challanNo",
-      headerName: "Challan number",
+      field: "locationCode",
+      headerName: "Location Code",
       flex: 1,
       minWidth: 140,
       align: "center",
       headerAlign: "center",
     },
     {
-      field: "typeOfTransaction",
-      headerName: "Type of transaction",
+      field: "docType",
+      headerName: "Document Type",
       flex: 1,
       minWidth: 150,
       align: "center",
       headerAlign: "center",
     },
     {
-      field: "transactionDate",
-      headerName: "Transaction Date",
+      field: "docDate",
+      headerName: "Document Date",
       flex: 1,
       minWidth: 180,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Typography
-          sx={{
-            fontSize: "0.875rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-            width: "100%",
-          }}
-        >
-          {fDateTime(params.value)}
-        </Typography>
-      ),
+      renderCell: (params) => {
+        const date = new Date(params.value);
+        return (
+          <Typography
+            sx={{
+              fontSize: "0.875rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            {date.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "2-digit",
+            })}
+          </Typography>
+        );
+      },
     },
     {
-      field: "transactionAmount",
-      headerName: "Transaction amount",
+      field: "dueAmount",
+      headerName: "Amount",
       flex: 1,
       minWidth: 150,
       align: "center",
@@ -101,9 +108,17 @@ export const RequestColumns = ({ onRequestClick }) => {
             width: "100%",
           }}
         >
-          {params.value?.toLocaleString()}
+          ₹{params.value?.toLocaleString()}
         </Typography>
       ),
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "companyId",
@@ -125,39 +140,6 @@ export const RequestColumns = ({ onRequestClick }) => {
         >
           {params.value?.name || "-"}
         </Typography>
-      ),
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      flex: 1,
-      minWidth: 150,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-      resizable: true,
-    },
-    {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
       ),
     },
   ];

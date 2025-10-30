@@ -5,7 +5,7 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import { getErrorMessage, showErrorMessage } from "src/utils/errorUtils";
 import * as XLSX from "xlsx";
-import { validateAllJVEntries } from "../../utils/validationUtils"; // Import validation utility
+import { validateAllJVEntries, validatePostingKeyMatchesEntryType } from "../../utils/validationUtils"; // Import validation utility
 
 export default function UploadJVModal({ open, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -314,6 +314,19 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
             errors.push(
               `Row ${line}: Special GL '${row.specialGLIndication}' not allowed for Account Type '${row.accountType}'`
             );
+          }
+        }
+
+        // Validate posting key transaction type matches row type
+        if (pk && row.type) {
+          const validation = validatePostingKeyMatchesEntryType(
+            pk,
+            row.type,
+            postingKeyMasters
+          );
+          
+          if (!validation.isValid) {
+            errors.push(`Row ${line}: ${validation.error}`);
           }
         }
       });

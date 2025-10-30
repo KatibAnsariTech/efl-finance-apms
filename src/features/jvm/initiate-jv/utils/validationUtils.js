@@ -114,6 +114,79 @@ export const validateSlNoDateConsistency = (data) => {
   return inconsistentGroups;
 };
 
+const normalizeTransactionType = (type) => {
+  if (!type) return null;
+  const normalized = String(type).trim();
+  if (
+    normalized.toLowerCase() === "credit" ||
+    normalized === "C" ||
+    normalized === "c"
+  ) {
+    return "C";
+  } else if (
+    normalized.toLowerCase() === "debit" ||
+    normalized === "D" ||
+    normalized === "d"
+  ) {
+    return "D";
+  }
+  return null;
+};
+
+export const validatePostingKeyMatchesEntryType = (postingKey, entryType, postingKeyMasters) => {
+  if (!postingKey || !entryType) {
+    return {
+      isValid: true,
+      error: null
+    };
+  }
+
+  const normalize = (v) => (v ?? "").toString().trim();
+  const normalizedPostingKey = normalize(postingKey);
+  
+  const entryTransactionType = normalizeTransactionType(entryType);
+
+  if (!entryTransactionType) {
+    return {
+      isValid: true,
+      error: null
+    };
+  }
+
+  const matchingMaster = postingKeyMasters.find(
+    (m) => normalize(m.value) === normalizedPostingKey && m.label === entryTransactionType
+  );
+
+  if (!matchingMaster) {
+    const existingTypesForThisKey = postingKeyMasters
+      .filter(m => normalize(m.value) === normalizedPostingKey)
+      .map(m => m.label)
+      .filter(Boolean);
+
+    if (existingTypesForThisKey.length === 0) {
+      return {
+        isValid: true,
+        error: null
+      };
+    }
+
+    const allowedTypesText = existingTypesForThisKey
+      .map(t => t === 'C' ? 'Credit' : 'Debit')
+      .join(' or ');
+    const actualType = entryTransactionType === 'C' ? 'Credit' : 'Debit';
+    
+    return {
+      isValid: false,
+      error: `Posting Key '${postingKey}' is configured for ${allowedTypesText} transactions, but entry has '${actualType}' type`
+    };
+  }
+
+  return {
+    isValid: true,
+    error: null
+  };
+};
+
 export const validateAllJVEntries = (data, options = {}) => {
   const {
     maxEntries = 950,

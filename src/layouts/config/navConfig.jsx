@@ -19,6 +19,7 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import SettingsIcon from "@mui/icons-material/Settings";
 import UndoIcon from "@mui/icons-material/Undo";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 const projectConfig = {
   CRD: {
@@ -217,6 +218,22 @@ const projectConfig = {
         path: "/petty-cash/request",
         icon: <AttachMoneyIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+    ],
+  },
+  CPX: {
+    id: "capex",
+    title: "CAPEX",
+    path: "/capex",
+    icon: <TrendingUpIcon />,
+    hasSubItems: true,
+    subItems: [
+      {
+        id: "capex-master",
+        title: "Master Data",
+        path: "/capex/master",
+        icon: <SettingsIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
       },
     ],
   },
