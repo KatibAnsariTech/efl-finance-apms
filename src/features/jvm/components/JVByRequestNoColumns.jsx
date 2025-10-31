@@ -71,22 +71,30 @@ export const JVByRequestNoColumns = ({
       align: "center",
       headerAlign: "center",
       renderCell: (params) => {
-        const statusValue = params.value?.toString().trim();
-        const hasStatus = statusValue && statusValue !== "" && statusValue !== "-";
+        const sapStatus = params.row.sapStatus?.toString().trim();
+        const hasStatus = sapStatus && sapStatus !== "" && sapStatus !== "-";
         
         if (!hasStatus) {
           return "-";
         }
         
+        const statusUpper = sapStatus.toUpperCase();
+        const isSuccess = statusUpper === "SUCCESS" || statusUpper === "S";
+        const statusColor = isSuccess ? "#1b5e20" : "#d32f2f";
+        
         return (
           <Box
             sx={{
               cursor: "pointer",
-              color: "#1976d2",
+              color: statusColor,
               textDecoration: "underline",
               textDecorationThickness: "1px",
               textUnderlineOffset: "2px",
-              "&:hover": { color: "#1565c0" },
+              fontWeight: 500,
+              "&:hover": { 
+                color: isSuccess ? "#0d4a14" : "#c62828",
+                opacity: 0.8,
+              },
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -95,7 +103,7 @@ export const JVByRequestNoColumns = ({
               }
             }}
           >
-            {params.value}
+            {sapStatus}
           </Box>
         );
       },

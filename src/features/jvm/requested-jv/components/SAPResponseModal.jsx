@@ -1,9 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Modal,
   Button,
   Box,
   Typography,
@@ -14,97 +11,119 @@ import {
   TableRow,
   Chip,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
+import { userRequest } from "src/requestMethod";
+import { showErrorMessage } from "src/utils/errorUtils";
+import swal from "sweetalert";
 
 const SAPResponseModal = ({ open, onClose, rowData }) => {
-  if (!rowData) return null;
+  const [sapData, setSapData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Extract SAP response fields - check for various possible field names
-  const sapFields = {
-    "EV_ACCOUNTING_DOCUMENT_NUMBER": rowData.EV_ACCOUNTING_DOCUMENT_NUMBER || rowData.evAccountingDocumentNumber || rowData.sapDocumentNumber || "",
-    "EV_MESSAGE": rowData.EV_MESSAGE || rowData.evMessage || rowData.sapMessage || "",
-    "EV_STATUS": rowData.EV_STATUS || rowData.evStatus || rowData.sapStatus || "",
-  };
+  useEffect(() => {
+    const fetchSapData = async () => {
+      if (!open || !rowData?.groupId) {
+        setSapData(null);
+        return;
+      }
 
-  // Get all SAP-related fields from rowData
-  const allSapFields = {};
-  Object.keys(rowData).forEach((key) => {
-    // Include fields that start with EV_, ev, SAP, sap, or are known SAP fields
-    if (
-      key.startsWith("EV_") ||
-      key.startsWith("ev") ||
-      key.startsWith("SAP_") ||
-      key.startsWith("sap") ||
-      key.toLowerCase().includes("sap") ||
-      key.toLowerCase().includes("ev_")
-    ) {
-      allSapFields[key] = rowData[key];
-    }
-  });
+      setLoading(true);
+      try {
+        const response = await userRequest.get(
+          `jvm/getSapApiLogByGroupId?groupId=${rowData.groupId}`
+        );
 
-  // If no specific EV fields found, use allSapFields
-  const displayFields = Object.keys(allSapFields).length > 0 
-    ? allSapFields 
-    : sapFields;
+        if (response.data.statusCode === 200 && response.data.data) {
+          setSapData(response.data.data);
+        } else {
+          setSapData(null);
+        }
+      } catch (error) {
+        console.error("Error fetching SAP API log:", error);
+        showErrorMessage(error, "Failed to fetch SAP response data", swal);
+        setSapData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSapData();
+  }, [open, rowData?.groupId]);
+
+  const sapFields = sapData ? {
+    "EV_ACCOUNTING_DOCUMENT_NUMBER": sapData.EV_ACCOUNTING_DOCUMENT_NUMBER || "",
+    "EV_MESSAGE": sapData.EV_MESSAGE || "",
+    "EV_STATUS": sapData.EV_STATUS || "",
+  } : {};
+
+  const displayFields = sapData ? Object.entries(sapFields) : [];
 
   const isError = (sapFields.EV_STATUS || "").toUpperCase() === "E";
 
-  // Filter out empty values and format field names
-  const filteredFields = Object.entries(displayFields).filter(
-    ([_, value]) => value !== null && value !== undefined && value !== ""
-  );
-
   const formatFieldName = (fieldName) => {
-    // Convert camelCase/PascalCase to readable format
     return fieldName
-      .replace(/([A-Z])/g, " $1")
       .replace(/_/g, " ")
-      .replace(/^./, (str) => str.toUpperCase())
-      .trim();
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          boxShadow: 3,
-        },
-      }}
-    >
-      <DialogTitle
+    <Modal open={open} onClose={onClose}>
+      <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          pb: 2,
-          borderBottom: "1px solid #e0e0e0",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 700,
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          borderRadius: 5,
+          p: 4,
+          outline: "none",
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: "1.25rem" }}>
-          SAP Response Details
-        </Typography>
-        <IconButton
-          onClick={onClose}
-          size="small"
+        <Box
           sx={{
-            color: "#B22222",
-            "&:hover": {
-              backgroundColor: "#ffebee",
-            },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 3,
           }}
         >
-          <RxCross2 style={{ fontSize: "20px" }} />
-        </IconButton>
-      </DialogTitle>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: "bold",
+              fontSize: "1.5rem",
+            }}
+          >
+            SAP Response Details
+          </Typography>
+          <IconButton
+            onClick={onClose}
+            sx={{ color: "#B22222" }}
+          >
+            <RxCross2 size={20} />
+          </IconButton>
+        </Box>
 
-      <DialogContent sx={{ p: 3 }}>
-        {filteredFields.length > 0 ? (
+        <Box sx={{ pb: 2 }}>
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              py: 4,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : displayFields.length > 0 ? (
           <Table sx={{ mb: isError ? 3 : 0 }}>
             <TableHead>
               <TableRow>
@@ -133,32 +152,40 @@ const SAPResponseModal = ({ open, onClose, rowData }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredFields.map(([fieldName, value], index) => {
+              {displayFields.map(([fieldName, value], index) => {
                 const isStatusField = fieldName.toUpperCase().includes("STATUS");
+                const isMessageField = fieldName.toUpperCase().includes("MESSAGE");
+                const isError = (sapFields.EV_STATUS || "").toUpperCase() === "E";
+                const displayValue = value || "-";
+                
                 return (
                   <TableRow key={fieldName}>
                     <TableCell
                       sx={{
                         fontWeight: 500,
-                        backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
                       }}
                     >
                       {formatFieldName(fieldName)}
                     </TableCell>
                     <TableCell
-                      sx={{
-                        backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
-                      }}
                     >
-                      {isStatusField && value ? (
-                        <Chip
-                          label={value}
-                          color={value.toUpperCase() === "E" ? "error" : "success"}
-                          size="small"
-                          sx={{ fontWeight: 600 }}
-                        />
+                      {isStatusField ? (
+                        displayValue !== "-" ? (
+                          <Chip
+                            label={displayValue}
+                            color={displayValue.toUpperCase() === "SUCCESS" || displayValue.toUpperCase() === "S" ? "success" : "error"}
+                            size="small"
+                            sx={{ fontWeight: 600 }}
+                          />
+                        ) : (
+                          <Typography variant="body2">-</Typography>
+                        )
+                      ) : isMessageField && isError && displayValue !== "-" ? (
+                        <Typography variant="body2" sx={{ color: "error.main", fontWeight: 500 }}>
+                          {displayValue}
+                        </Typography>
                       ) : (
-                        <Typography variant="body2">{value || "-"}</Typography>
+                        <Typography variant="body2">{displayValue}</Typography>
                       )}
                     </TableCell>
                   </TableRow>
@@ -198,40 +225,29 @@ const SAPResponseModal = ({ open, onClose, rowData }) => {
             </Typography>
           </Box>
         )}
-      </DialogContent>
 
-      <DialogActions
-        sx={{
-          px: 3,
-          pb: 3,
-          pt: 2,
-          borderTop: "1px solid #e0e0e0",
-        }}
-      >
-        <Button onClick={onClose} variant="outlined" sx={{ mr: 1 }}>
-          Close
-        </Button>
         {isError && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              // Retry functionality - to be implemented later
-              console.log("Retry clicked for row:", rowData);
-              // TODO: Implement retry logic
-            }}
-            sx={{
-              backgroundColor: "#4caf50",
-              "&:hover": {
-                backgroundColor: "#45a049",
-              },
-            }}
-          >
-            Retry
-          </Button>
+          <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                console.log("Retry clicked for row:", rowData);
+              }}
+              sx={{
+                backgroundColor: "#4caf50",
+                "&:hover": {
+                  backgroundColor: "#45a049",
+                },
+              }}
+            >
+              Retry
+            </Button>
+          </Box>
         )}
-      </DialogActions>
-    </Dialog>
+        </Box>
+      </Box>
+    </Modal>
   );
 };
 
