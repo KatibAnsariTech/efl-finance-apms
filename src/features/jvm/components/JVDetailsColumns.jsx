@@ -1,6 +1,8 @@
+import React from "react";
 import { fDateTime } from "src/utils/format-time";
 
-export const JVDetailsColumns = () => {
+export const JVDetailsColumns = (props = {}) => {
+  const { showCreditAmountInParentheses = false } = props;
   const columns = [
     {
       field: "type",
@@ -79,11 +81,10 @@ export const JVDetailsColumns = () => {
         const type = params.row.type;
         const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
         
-        if (type === 'Debit') {
-          return formattedAmount;
-        } else {
+        if (showCreditAmountInParentheses && type === 'Credit') {
           return `(${formattedAmount})`;
         }
+        return formattedAmount;
       },
     },
     {
@@ -155,3 +156,4 @@ export const JVDetailsColumns = () => {
 
   return columns;
 };
+

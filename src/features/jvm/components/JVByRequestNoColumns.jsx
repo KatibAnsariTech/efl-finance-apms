@@ -5,6 +5,8 @@ import { fDateTime } from "src/utils/format-time";
 export const JVByRequestNoColumns = ({
   router,
   parentId,
+  onStatusClick,
+  basePath = "requested-jvs",
 }) => {
   const columns = [
     {
@@ -27,7 +29,7 @@ export const JVByRequestNoColumns = ({
           }}
           onClick={() => {
             localStorage.setItem("jvDetailData", JSON.stringify(params.row));
-            router.push(`/jvm/requested-jvs/${parentId}/${params.row.groupId}`);
+            router.push(`/jvm/${basePath}/${parentId}/${params.row.groupId}`);
           }}
         >
           {params.value}
@@ -61,7 +63,45 @@ export const JVByRequestNoColumns = ({
       headerAlign: "center",
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
     },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const statusValue = params.value?.toString().trim();
+        const hasStatus = statusValue && statusValue !== "" && statusValue !== "-";
+        
+        if (!hasStatus) {
+          return "-";
+        }
+        
+        return (
+          <Box
+            sx={{
+              cursor: "pointer",
+              color: "#1976d2",
+              textDecoration: "underline",
+              textDecorationThickness: "1px",
+              textUnderlineOffset: "2px",
+              "&:hover": { color: "#1565c0" },
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onStatusClick) {
+                onStatusClick(params.row);
+              }
+            }}
+          >
+            {params.value}
+          </Box>
+        );
+      },
+    },
   ];
 
   return columns;
 };
+

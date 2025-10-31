@@ -86,6 +86,7 @@ export default function RequestStatus({
   open,
   onClose,
   rowData,
+  useGroupIdForTitle = false,
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -93,14 +94,17 @@ export default function RequestStatus({
   const getData = async () => {
     setLoading(true);
     try {
-      if (!rowData?.groupId) {
-        console.error("No groupId found in rowData");
+      const parentId = rowData?.parentId;
+      const groupId = rowData?.groupId;
+      
+      if (!parentId && !groupId) {
+        console.error("No parentId or groupId found in rowData");
         setData(null);
         return;
       }
 
       const response = await userRequest.get(
-        `jvm/getSteps?parentId=${rowData.parentId}`
+        `jvm/getSteps?parentId=${parentId || groupId}`
       );
 
       if (response.data.statusCode === 200) {
@@ -121,7 +125,6 @@ export default function RequestStatus({
       getData();
     }
   }, [open]);
-
 
   const formatStatus = (status) => {
     switch (status.toLowerCase()) {
@@ -145,8 +148,8 @@ export default function RequestStatus({
             "-",
           status: "Raised",
           comment: "-",
-          created: data?.steps[0].createdAt,
-          updatedAt: data?.steps[0].createdAt,
+          created: data?.steps[0]?.createdAt,
+          updatedAt: data?.steps[0]?.createdAt,
         }
       : null;
 
@@ -212,6 +215,8 @@ export default function RequestStatus({
     return [];
   };
 
+  const titleId = useGroupIdForTitle ? rowData?.groupId : rowData?.parentId;
+
   return (
     <Modal
       open={open}
@@ -222,7 +227,7 @@ export default function RequestStatus({
     >
       <ModalBox>
         <ModalTitleContainer>
-          <Typography variant="h5">Request No. #{rowData?.groupId}</Typography>
+          <Typography variant="h5">Request No. #{titleId}</Typography>
         </ModalTitleContainer>
         <Divider sx={{ borderStyle: "solid" }} />
         {loading ? (
@@ -251,3 +256,4 @@ export default function RequestStatus({
     </Modal>
   );
 }
+

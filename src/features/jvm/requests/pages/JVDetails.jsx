@@ -5,9 +5,9 @@ import { userRequest } from "src/requestMethod";
 import { useRouter } from "src/routes/hooks";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { RequestColumns } from "../components/RequestColumns";
-import { JVDetailsColumns } from "../components/JVDetailsColumns";
-import RequestStatus from "../components/RequestStatus";
-import ColorIndicators from "../components/ColorIndicators";
+import { JVDetailsColumns } from "../../components/JVDetailsColumns";
+import RequestStatus from "../../components/RequestStatus";
+import ColorIndicators from "../../components/ColorIndicators";
 import CloseButton from "src/routes/components/CloseButton";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "src/routes/hooks";
@@ -125,7 +125,7 @@ export default function JVDetails() {
     setSelectedRowData(null);
   };
 
-  const columns = JVDetailsColumns();
+  const columns = JVDetailsColumns({ showCreditAmountInParentheses: true });
 
   return (
     <>
@@ -259,8 +259,6 @@ export default function JVDetails() {
           open={openModal}
           onClose={handleCloseModal}
           rowData={selectedRowData}
-          getRequestData={getData}
-          selectedTab="requests"
         />
       </Container>
     </>

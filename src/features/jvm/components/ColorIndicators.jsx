@@ -1,4 +1,4 @@
-import { ColorIndicatorGroup } from "../../../../components/ColorIndicator";
+import { ColorIndicatorGroup } from "../../../components/ColorIndicator";
 
 const ColorIndicators = () => (
   <ColorIndicatorGroup 
@@ -7,3 +7,4 @@ const ColorIndicators = () => (
 );
 
 export default ColorIndicators;
+

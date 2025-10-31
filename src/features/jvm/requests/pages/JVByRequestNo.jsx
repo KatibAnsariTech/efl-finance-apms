@@ -17,8 +17,9 @@ import {
 import CloseButton from "src/routes/components/CloseButton";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
-import { JVByRequestNoColumns } from "../components/JVByRequestNoColumns";
-import JVCurrentStatus from "../components/JVCurrentStatus";
+import { JVByRequestNoColumns } from "../../components/JVByRequestNoColumns";
+import JVCurrentStatus from "../../components/JVCurrentStatus";
+import SAPResponseModal from "../../requested-jv/components/SAPResponseModal";
 import swal from "sweetalert";
 import { useJVM } from "src/contexts/JVMContext";
 
@@ -38,6 +39,8 @@ export default function JVByRequestNo() {
   const [approveLoading, setApproveLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
   const [assigned, setAssigned] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
   const getData = async () => {
     setLoading(true);
@@ -119,6 +122,16 @@ export default function JVByRequestNo() {
     }
   };
 
+  const handleStatusClick = (rowData) => {
+    setSelectedRowData(rowData);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedRowData(null);
+  };
+
   const handleApprovalAction = async (action) => {
     if (action === "rejected" && !comment.trim()) {
       swal("Warning", "Please provide a comment for rejection", "warning");
@@ -169,6 +182,8 @@ export default function JVByRequestNo() {
   const columns = JVByRequestNoColumns({
     router,
     parentId,
+    onStatusClick: handleStatusClick,
+    basePath: "requests",
   });
 
   return (
@@ -321,6 +336,11 @@ export default function JVByRequestNo() {
           )}
         </Card>
       </Container>
+      <SAPResponseModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        rowData={selectedRowData}
+      />
     </>
   );
 }
