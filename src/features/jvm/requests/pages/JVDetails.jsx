@@ -125,7 +125,7 @@ export default function JVDetails() {
     setSelectedRowData(null);
   };
 
-  const columns = JVDetailsColumns({ showCreditAmountInParentheses: true });
+  const columns = JVDetailsColumns();
 
   return (
     <>
