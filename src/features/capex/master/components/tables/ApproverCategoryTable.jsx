@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
 import { IconButton, Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
-import { fDate } from "src/utils/format-time";
-import { fCurrency } from "src/utils/format-number";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import CircularIndeterminate from "src/utils/loader";
 
 export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
   const theme = useTheme();
@@ -21,23 +18,21 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get("/capex/getApproverCategories", {
+      const response = await userRequest.get("cpx/getApproverCategories", {
         params: {
-          page: page + 1, // API uses 1-based pagination
+          page: page + 1,
           limit: rowsPerPage,
         },
       });
 
-      const apiData = response.data.data.approverCategories || [];
-      const totalCount = response.data.data.pagination?.total || 0;
+      const apiData = response.data.data?.items || response.data.data?.approverCategories || response.data.data || [];
+      const totalCount = response.data.data?.pagination?.total || 0;
 
       const mappedData = apiData.map((item, index) => ({
         id: item._id,
         sno: (page * rowsPerPage) + index + 1,
         category: item.category || item.name || "-",
         management: item.management || item.approver || "-",
-        isActive: item.status === "ACTIVE",
-        status: item.status || "INACTIVE",
         ...item,
       }));
 
@@ -124,24 +119,6 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {params.value || "-"}
         </Typography>
-      ),
-    },
-    {
-      field: "isActive",
-      headerName: "Status",
-      width: 120,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            color: params.value ? "success.main" : "error.main",
-            fontWeight: "bold",
-          }}
-        >
-          {params.value ? "Active" : "Inactive"}
-        </Box>
       ),
     },
     {

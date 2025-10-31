@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
 import { IconButton, Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
-import { fDate } from "src/utils/format-time";
-import { fCurrency } from "src/utils/format-number";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import CircularIndeterminate from "src/utils/loader";
 
 export default function MeasurementUnitTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
   const theme = useTheme();
@@ -21,21 +18,21 @@ export default function MeasurementUnitTable({ handleEdit: parentHandleEdit, han
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get("/capex/getMeasurementUnits", {
+      const response = await userRequest.get("cpx/getMeasurementUnits", {
         params: {
-          page: page + 1, // API uses 1-based pagination
+          page: page + 1,
           limit: rowsPerPage,
         },
       });
 
-      const apiData = response.data.data.measurementUnits || [];
-      const totalCount = response.data.data.pagination?.total || 0;
+      const apiData = response.data.data?.items || response.data.data?.measurementUnits || response.data.data || [];
+      const totalCount = response.data.data?.pagination?.total || 0;
 
       const mappedData = apiData.map((item, index) => ({
         id: item._id,
         sno: (page * rowsPerPage) + index + 1,
-        unitName: item.name || item.unitName || "-",
-        abbreviation: item.abbreviation || item.abbr || "-",
+        unitName: item.unit || item.unitName || item.name || "-",
+        abbreviation: item.abbr || item.abbreviation || "-",
         ...item,
       }));
 
@@ -162,7 +159,7 @@ export default function MeasurementUnitTable({ handleEdit: parentHandleEdit, han
   ];
 
   return (
-      <DataGrid
+    <DataGrid
         key={`measurement-unit-table-${tabChangeTrigger}`}
         rows={data}
         columns={columns}

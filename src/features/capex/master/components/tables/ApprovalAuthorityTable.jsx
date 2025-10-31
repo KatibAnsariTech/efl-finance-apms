@@ -31,33 +31,65 @@ export default function ApprovalAuthorityTable({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [rowCount, setRowCount] = useState(0);
+  const [approverCategories, setApproverCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  const fetchApproverCategories = async () => {
+    setCategoriesLoading(true);
+    try {
+      const response = await userRequest.get("/cpx/getApproverCategories", {
+        params: {
+          page: 1,
+          limit: 100, // Fetch all categories
+        },
+      });
+
+      const categories = response.data.data.items || response.data.data.approverCategories || [];
+      // Filter only active categories if needed, or show all
+      setApproverCategories(categories);
+    } catch (error) {
+      console.error("Error fetching Approver Categories:", error);
+      showErrorMessage(error, "Error fetching Approver Categories", swal);
+      setApproverCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get("/capex/getApprovalAuthority", {
+      const response = await userRequest.get("/cpx/getApproverAuthorities", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
         },
       });
 
-      const apiData = response.data.data.approvalAuthority || [];
+      const apiData = response.data.data.items || response.data.data.approvalAuthority || [];
       const totalCount = response.data.data.pagination?.total || 0;
 
-      const mappedData = apiData.map((item, index) => ({
-        id: item._id,
-        sno: (page * rowsPerPage) + index + 1,
-        valueFrom: item.valueFrom || 0,
-        valueTo: item.valueTo || null,
-        functionalSpoc: item.functionalSpoc || false,
-        exCom: item.exCom || false,
-        headOfFinanceOps: item.headOfFinanceOps || false,
-        financeController: item.financeController || false,
-        cfo: item.cfo || false,
-        ceoMd: item.ceoMd || false,
-        ...item,
-      }));
+      const mappedData = apiData.map((item, index) => {
+        const rowData = {
+          id: item._id,
+          limitFrom: item.limitFrom || item.valueFrom || 0,
+          limitTo: item.limitTo || item.valueTo || null,
+          ...item,
+        };
+
+        // Map approvers to row data based on category IDs
+        if (item.approvers && Array.isArray(item.approvers)) {
+          item.approvers.forEach((approver) => {
+            const categoryId = approver.approverCategory?._id;
+            if (categoryId) {
+              // Store the willApprove status using category ID as key
+              rowData[`approver_${categoryId}`] = approver.willApprove || false;
+            }
+          });
+        }
+
+        return rowData;
+      });
 
       setData(mappedData);
       setRowCount(totalCount);
@@ -68,6 +100,10 @@ export default function ApprovalAuthorityTable({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchApproverCategories();
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -106,9 +142,9 @@ export default function ApprovalAuthorityTable({
     }
   };
 
-  const getValueRangeText = (valueFrom, valueTo) => {
-    const fromText = formatCurrency(valueFrom);
-    const toText = valueTo ? formatCurrency(valueTo) : "Above";
+  const getValueRangeText = (limitFrom, limitTo) => {
+    const fromText = formatCurrency(limitFrom);
+    const toText = limitTo ? formatCurrency(limitTo) : "Above";
     return `${fromText} - ${toText}`;
   };
 
@@ -127,89 +163,64 @@ export default function ApprovalAuthorityTable({
     />
   );
 
-  const columns = [
-    {
-      field: "sno",
-      headerName: "S.No.",
-      width: 90,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "valueRange",
-      headerName: "Project Value Range (INR)",
-      minWidth: 200,
-      flex: 1,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
-            {getValueRangeText(params.row.valueFrom, params.row.valueTo)}
-          </Typography>
-          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            {params.row.valueFrom.toLocaleString()} - {params.row.valueTo ? params.row.valueTo.toLocaleString() : "∞"}
-          </Typography>
-        </Box>
-      ),
-    },
-    {
-      field: "functionalSpoc",
-      headerName: "Functional SPOC",
-      width: 130,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => <ApprovalChip approved={params.value} label="Functional SPOC" />,
-    },
-    {
-      field: "exCom",
-      headerName: "Ex-com",
-      width: 100,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => <ApprovalChip approved={params.value} label="Ex-com" />,
-    },
-    {
-      field: "headOfFinanceOps",
-      headerName: "Head of Finance Ops",
-      width: 150,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => <ApprovalChip approved={params.value} label="Head of Finance Ops" />,
-    },
-    {
-      field: "financeController",
-      headerName: "Finance Controller",
-      width: 150,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => <ApprovalChip approved={params.value} label="Finance Controller" />,
-    },
-    {
-      field: "cfo",
-      headerName: "CFO",
-      width: 80,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => <ApprovalChip approved={params.value} label="CFO" />,
-    },
-    {
-      field: "ceoMd",
-      headerName: "CEO / MD",
-      width: 100,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => <ApprovalChip approved={params.value} label="CEO / MD" />,
-    },
-    {
+  // Build dynamic columns based on approver categories
+  const buildColumns = () => {
+    const baseColumns = [
+      {
+        field: "valueRange",
+        headerName: "Project Value Range (INR)",
+        minWidth: 200,
+        flex: 1,
+        sortable: false,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => (
+          <Box sx={{ 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center",
+            height: "100%",
+            textAlign: "center" 
+          }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
+              {getValueRangeText(params.row.limitFrom, params.row.limitTo)}
+            </Typography>
+          </Box>
+        ),
+      },
+    ];
+
+    // Sort approver categories: A (topmost hierarchy) should show last
+    // Sort in reverse alphabetical order so A appears last
+    const sortedCategories = [...approverCategories].sort((a, b) => {
+      const categoryA = (a.category || a.name || "").toUpperCase();
+      const categoryB = (b.category || b.name || "").toUpperCase();
+      return categoryB.localeCompare(categoryA);
+    });
+
+    // Add dynamic columns for each approver category
+    const dynamicColumns = sortedCategories.map((category) => {
+      const categoryId = category._id;
+      const headerName = category.category || category.name || "Unknown";
+      const management = category.management || "";
+      const fullHeaderName = management ? `${headerName} (${management})` : headerName;
+
+      return {
+        field: `approver_${categoryId}`,
+        headerName: fullHeaderName,
+        width: 150,
+        sortable: false,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => {
+          const willApprove = params.value || false;
+          return <ApprovalChip approved={willApprove} label={headerName} />;
+        },
+      };
+    });
+
+    // Add actions column
+    const actionsColumn = {
       field: "actions",
       headerName: "Actions",
       width: 120,
@@ -242,10 +253,14 @@ export default function ApprovalAuthorityTable({
           onClick={() => handleDelete(params.id)}
         />,
       ],
-    },
-  ];
+    };
 
-  if (loading) {
+    return [...baseColumns, ...dynamicColumns, actionsColumn];
+  };
+
+  const columns = buildColumns();
+
+  if (loading || categoriesLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 400 }}>
         <CircularIndeterminate />
@@ -256,7 +271,7 @@ export default function ApprovalAuthorityTable({
   return (
     <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
       <CardContent sx={{ p: 0 }}>
-        <Box sx={{ height: 600, width: "100%" }}>
+        <Box sx={{ width: "100%" }}>
           <DataGrid
             rows={data}
             columns={columns}
@@ -271,6 +286,7 @@ export default function ApprovalAuthorityTable({
             rowCount={rowCount}
             paginationMode="server"
             loading={loading}
+            autoHeight
             disableSelectionOnClick
             sx={{
               border: "none",
