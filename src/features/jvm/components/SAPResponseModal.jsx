@@ -41,8 +41,13 @@ const SAPResponseModal = ({ open, onClose, rowData }) => {
           setSapData(null);
         }
       } catch (error) {
-        console.error("Error fetching SAP API log:", error);
-        showErrorMessage(error, "Failed to fetch SAP response data", swal);
+        const isNotFound = error.response?.data?.statusCode === 404 || 
+                          error.response?.data?.message?.toLowerCase().includes("no sap api log found");
+        
+        if (!isNotFound) {
+          console.error("Error fetching SAP API log:", error);
+          showErrorMessage(error, "Failed to fetch SAP response data", swal);
+        }
         setSapData(null);
       } finally {
         setLoading(false);

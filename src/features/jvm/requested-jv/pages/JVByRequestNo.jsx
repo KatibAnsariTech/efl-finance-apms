@@ -12,7 +12,7 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
 import { JVByRequestNoColumns } from "../../components/JVByRequestNoColumns";
 import JVCurrentStatus from "../../components/JVCurrentStatus";
-import SAPResponseModal from "../components/SAPResponseModal";
+import SAPResponseModal from "../../components/SAPResponseModal";
 
 export default function JVByRequestNo() {
   const router = useRouter();

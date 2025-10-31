@@ -80,7 +80,18 @@ export const JVByRequestNoColumns = ({
         
         const statusUpper = sapStatus.toUpperCase();
         const isSuccess = statusUpper === "SUCCESS" || statusUpper === "S";
-        const statusColor = isSuccess ? "#1b5e20" : "#d32f2f";
+        const isPending = statusUpper === "PENDING" || statusUpper === "P";
+        
+        let statusColor = "#d32f2f";
+        let hoverColor = "#c62828";
+        
+        if (isSuccess) {
+          statusColor = "#1b5e20";
+          hoverColor = "#0d4a14";
+        } else if (isPending) {
+          statusColor = "#ed6c02";
+          hoverColor = "#e65100";
+        }
         
         return (
           <Box
@@ -89,10 +100,10 @@ export const JVByRequestNoColumns = ({
               color: statusColor,
               textDecoration: "underline",
               textDecorationThickness: "1px",
-              textUnderlineOffset: "2px",
+              textUnderlineOffset: "4px",
               fontWeight: 500,
               "&:hover": { 
-                color: isSuccess ? "#0d4a14" : "#c62828",
+                color: hoverColor,
                 opacity: 0.8,
               },
             }}
