@@ -1,92 +1,53 @@
-import React from "react";
-import { Box } from "@mui/material";
+import { formatDate } from "src/utils/format-time";
 
 export const RaiseRequestColumns = () => {
   const columns = [
     {
-      field: "srNo",
-      headerName: "Sr.no.",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
+      field: "IECNo",
+      headerName: "IEC",
+      width: 120,
       resizable: true,
     },
     {
-      field: "challanNo",
-      headerName: "Challan No.",
+      field: "locationCode",
+      headerName: "Location Code",
       width: 150,
       resizable: true,
     },
     {
-      field: "documentNo",
-      headerName: "Document No",
+      field: "docType",
+      headerName: "Doc type",
+      width: 120,
+      resizable: true,
+    },
+    {
+      field: "docNumber",
+      headerName: "Doc no.",
       width: 150,
       resizable: true,
     },
     {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 200,
+      field: "docDate",
+      headerName: "Doc date",
+      width: 150,
       resizable: true,
       renderCell: (params) => {
         if (!params.value) return "";
-        const date = new Date(params.value);
-        return isNaN(date.getTime())
-          ? params.value
-          : date.toLocaleString("en-GB", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              fractionalSecondDigits: 3,
-            });
+        return formatDate(params.value, 'dd MMM yyyy');
       },
     },
     {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 200,
-      resizable: true,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    {
-      field: "description",
-      headerName: "Description",
+      field: "challanNo",
+      headerName: "Challan no.",
       width: 150,
       resizable: true,
     },
     {
-      field: "typeOfTransaction",
-      headerName: "Type of Transaction",
-      width: 180,
-      resizable: true,
-    },
-    {
-      field: "transactionAmount",
-      headerName: "Transaction Amount",
-      width: 180,
+      field: "dueAmount",
+      headerName: "Due Amount",
+      width: 150,
       resizable: true,
       renderCell: (params) => `₹${params.value?.toLocaleString() || "0"}`,
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-      resizable: true,
     },
   ];
 

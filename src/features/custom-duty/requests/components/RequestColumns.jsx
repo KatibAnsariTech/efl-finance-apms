@@ -83,46 +83,46 @@ export const RequestColumns = ({
       ),
     },
     {
-      field: "requestedDate",
+      field: "createdAt",
       headerName: "Requested Date",
       flex: 1,
       minWidth: 180,
       renderCell: (params) => {
-        const dateValue = params.value || params.row.createdAt;
+        const dateValue = params.value;
         return dateValue ? fDateTime(dateValue) : "-";
       },
     },
     {
-      field: "documentNo",
+      field: "docNumber",
       headerName: "Document No",
       flex: 1,
       minWidth: 120,
     },
     {
-      field: "challanNo",
-      headerName: "Challan No",
+      field: "locationCode",
+      headerName: "Location Code",
       flex: 1,
       minWidth: 140,
     },
     {
-      field: "typeOfTransaction",
-      headerName: "Type of transaction",
+      field: "docType",
+      headerName: "Document Type",
       flex: 1,
       minWidth: 150,
     },
     {
-      field: "transactionDate",
-      headerName: "Transaction Date",
+      field: "docDate",
+      headerName: "Document Date",
       flex: 1,
       minWidth: 180,
       renderCell: (params) => fDateTime(params.value),
     },
     {
-      field: "transactionAmount",
-      headerName: "Transaction amount",
+      field: "dueAmount",
+      headerName: "Due Amount",
       flex: 1,
       minWidth: 150,
-      renderCell: (params) => params.value?.toLocaleString(),
+      renderCell: (params) => `₹${params.value?.toLocaleString()}`,
     },
     {
       field: "status",
@@ -136,36 +136,6 @@ export const RequestColumns = ({
       flex: 1,
       minWidth: 100,
       renderCell: (params) => params.value?.name || "-",
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params) => params.value || "-",
-    },
-    {
-      field: "icegateAckNo",
-      headerName: "Icegate Ack. No.",
-      width: 200,
-    },
-    {
-      field: "referenceId",
-      headerName: "Reference ID",
-      width: 250,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </Box>
-      ),
     },
     ...(selectedTab !== "pendingWithMe" ? [{
       field: "finalReqNo",

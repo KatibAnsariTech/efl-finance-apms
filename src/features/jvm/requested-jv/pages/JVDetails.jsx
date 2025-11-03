@@ -12,7 +12,7 @@ import CloseButton from "src/routes/components/CloseButton";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "src/routes/hooks";
 import { userRequest } from "src/requestMethod";
-import { JVDetailsColumns } from "../components/JVDetailsColumns";
+import { JVDetailsColumns } from "../../components/JVDetailsColumns";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 

@@ -74,6 +74,16 @@ const applications = [
     route: "/petty-cash",
     projectType: "PC",
   },
+  {
+    id: "capex",
+    title: "CAPEX",
+    description:
+      "Manage Capital Expenditure requests and approvals for infrastructure and equipment investments.",
+    status: "active",
+    color: "#FF6B35",
+    route: "/capex",
+    projectType: "CPX",
+  },
 ];
 
 export default function ApplicationsDashboard() {

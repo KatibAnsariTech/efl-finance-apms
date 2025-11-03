@@ -7,7 +7,9 @@ import {
   validateSlNoBalance,
   validateSlNoDateConsistency,
   validateAllJVEntries,
+  validatePostingKeyMatchesEntryType,
 } from "../utils";
+import { fExcelDate, parseExcelDate } from "src/utils/format-time";
 
 export const useInitiateJV = () => {
   const [data, setData] = useState([]);
@@ -268,6 +270,19 @@ export const useInitiateJV = () => {
             );
           }
         }
+
+        // Validate posting key transaction type matches entry type
+        if (pk && entry.type) {
+          const validation = validatePostingKeyMatchesEntryType(
+            pk,
+            entry.type,
+            postingKeyMasters
+          );
+          
+          if (!validation.isValid) {
+            masterDataErrors.push(`Entry ${line}: ${validation.error}`);
+          }
+        }
       });
 
       if (masterDataErrors.length > 0) {
@@ -290,7 +305,8 @@ export const useInitiateJV = () => {
       const items = data.map((entry) => ({
         slNo: parseInt(entry.slNo) || 0,
         documentType: entry.documentType,
-        documentDate: new Date(entry.documentDate).toISOString(),
+        // documentDate: new Date(entry.documentDate).toISOString(),
+        documentDate: parseExcelDate(entry.documentDate),
         businessArea: entry.businessArea,
         accountType: entry.accountType,
         postingKey: String(entry.postingKey),
@@ -302,7 +318,8 @@ export const useInitiateJV = () => {
         specialGLIndication: entry.specialGLIndication,
         referenceNumber: entry.referenceNumber,
         remarks: entry.remarks,
-        postingDate: new Date(entry.postingDate).toISOString(),
+        // postingDate: new Date(entry.postingDate).toISOString(),
+        postingDate: parseExcelDate(entry.postingDate),
         vendorCustomerGLName: entry.vendorCustomerGLName,
         costCenter: entry.costCenter,
         personalNumber: entry.personalNumber,

@@ -5,62 +5,45 @@ import { useTheme } from "@mui/material/styles";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 import { fDate } from "src/utils/format-time";
+import { fCurrency } from "src/utils/format-number";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import CircularIndeterminate from "src/utils/loader";
 
-export default function PostingKeyTable({
-  handleEdit,
-  handleDelete,
-  refreshTrigger,
-}) {
+export default function MeasurementUnitTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [rowCount, setRowCount] = useState(0);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get(
-        `/jvm/getMasters?key=PostingKey&page=${
-          paginationModel.page + 1
-        }&limit=${paginationModel.pageSize}`
-      );
-      if (response.data.success) {
-        const mappedData = response.data.data.masters.map((item, index) => {
-          const otherItem = Array.isArray(item.other)
-            ? item.other[0]
-            : undefined;
-          const accountTypeLabel =
-            otherItem && typeof otherItem === "object"
-              ? otherItem.value || "-"
-              : otherItem || "-";
-          const accountTypeId =
-            otherItem && typeof otherItem === "object"
-              ? otherItem._id
-              : typeof otherItem === "string"
-              ? otherItem
-              : undefined;
-          return {
-            id: item._id,
-            sno: paginationModel.page * paginationModel.pageSize + index + 1,
-            postingKey: item.value || "-",
-            accountType: accountTypeLabel,
-            accountTypeId,
-            ...item,
-          };
-        });
-        setData(mappedData);
-        setRowCount(response.data.data.total);
-      }
+      const response = await userRequest.get("/capex/getMeasurementUnits", {
+        params: {
+          page: page + 1, // API uses 1-based pagination
+          limit: rowsPerPage,
+        },
+      });
+
+      const apiData = response.data.data.measurementUnits || [];
+      const totalCount = response.data.data.pagination?.total || 0;
+
+      const mappedData = apiData.map((item, index) => ({
+        id: item._id,
+        sno: (page * rowsPerPage) + index + 1,
+        unitName: item.name || item.unitName || "-",
+        abbreviation: item.abbreviation || item.abbr || "-",
+        ...item,
+      }));
+
+      setData(mappedData);
+      setRowCount(totalCount);
     } catch (error) {
-      console.error("Error fetching Posting Key data:", error);
-      showErrorMessage(error, "Error fetching Posting Key data", swal);
+      console.error("Error fetching Measurement Unit data:", error);
+      showErrorMessage(error, "Error fetching Measurement Unit data", swal);
     } finally {
       setLoading(false);
     }
@@ -68,27 +51,38 @@ export default function PostingKeyTable({
 
   useEffect(() => {
     fetchData();
-  }, [paginationModel]);
+  }, [page, rowsPerPage, refreshTrigger]);
 
   useEffect(() => {
-    if (refreshTrigger) {
-      fetchData();
+    if (tabChangeTrigger > 0 || refreshTrigger > 0) {
+      setPage(0);
     }
-  }, [refreshTrigger]);
+  }, [tabChangeTrigger, refreshTrigger]);
 
-  const handleEditClick = (event, id) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const row = data.find((item) => item.id === id);
-    if (row) {
-      handleEdit(row);
+  const handleEdit = (id) => {
+    if (parentHandleEdit) {
+      const rowData = data.find(item => item.id === id);
+      parentHandleEdit(rowData);
+    } else {
+      alert(`Edit Measurement Unit: ${id}`);
     }
   };
 
-  const handleDeleteClick = (event, id) => {
-    event.preventDefault();
-    event.stopPropagation();
-    handleDelete(id);
+  const handleDelete = (id) => {
+    if (parentHandleDelete) {
+      parentHandleDelete(id);
+    } else {
+      alert(`Delete Measurement Unit: ${id}`);
+    }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const columns = [
@@ -101,8 +95,8 @@ export default function PostingKeyTable({
       headerAlign: "center",
     },
     {
-      field: "postingKey",
-      headerName: "Posting Key",
+      field: "unitName",
+      headerName: "Unit Name",
       minWidth: 200,
       flex: 1,
       sortable: true,
@@ -116,31 +110,14 @@ export default function PostingKeyTable({
       ),
     },
     {
-      field: "accountType",
-      headerName: "Account Type",
-      minWidth: 200,
+      field: "abbreviation",
+      headerName: "Abbreviation",
+      minWidth: 150,
       flex: 1,
-      sortable: false,
+      sortable: true,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value ||
-            (Array.isArray(params.row?.other)
-              ? params.row.other[0] || "-"
-              : "-")}
-        </Typography>
-      ),
-    },
-    {
-      // field: "transactionType",
-      field: "label",
-      headerName: "Transaction Type",
-      minWidth: 200,
-      flex: 1,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
+      resizable: true,
       renderCell: (params) => (
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {params.value || "-"}
@@ -166,7 +143,10 @@ export default function PostingKeyTable({
         >
           <IconButton
             size="small"
-            onClick={(event) => handleEditClick(event, params.row.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleEdit(params.row.id);
+            }}
             sx={{
               color: theme.palette.primary.main,
               "&:hover": {
@@ -176,41 +156,34 @@ export default function PostingKeyTable({
           >
             <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
           </IconButton>
-          <IconButton
-            size="small"
-            onClick={(event) => handleDeleteClick(event, params.row.id)}
-            sx={{
-              color: theme.palette.error.main,
-              "&:hover": {
-                backgroundColor: theme.palette.error.lighter,
-              },
-            }}
-          >
-            <Iconify icon="solar:trash-bin-trash-bold" />
-          </IconButton>
         </Box>
       ),
     },
   ];
 
   return (
-    <DataGrid
-      rows={data}
-      columns={columns}
-      loading={loading}
-      paginationMode="server"
-      rowCount={rowCount}
-      paginationModel={paginationModel}
-      onPaginationModelChange={setPaginationModel}
-      pageSizeOptions={[5, 10, 25, 50]}
-      disableRowSelectionOnClick
-      disableColumnResize={false}
-      autoHeight
-      sx={{
+      <DataGrid
+        key={`measurement-unit-table-${tabChangeTrigger}`}
+        rows={data}
+        columns={columns}
+        loading={loading}
+        pagination
+        paginationMode="server"
+        rowCount={rowCount}
+        paginationModel={{ page: page, pageSize: rowsPerPage }}
+        onPaginationModelChange={(newModel) => {
+          handleChangePage(null, newModel.page);
+          handleChangeRowsPerPage({ target: { value: newModel.pageSize } });
+        }}
+        pageSizeOptions={[5, 10, 25, 50]}
+        disableRowSelectionOnClick
+        disableColumnResize={false}
+        autoHeight
+        sx={{
         "& .MuiDataGrid-root": {
           tableLayout: "fixed",
         },
-        "& .MuiDataGrid-cell": {
+          "& .MuiDataGrid-cell": {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -245,9 +218,9 @@ export default function PostingKeyTable({
         "& .MuiDataGrid-columnHeader:hover .MuiDataGrid-columnSeparator": {
           display: "block",
           opacity: 0.3,
-          color: "#637381",
-        },
-      }}
-    />
+            color: "#637381",
+          },
+        }}
+      />
   );
 }

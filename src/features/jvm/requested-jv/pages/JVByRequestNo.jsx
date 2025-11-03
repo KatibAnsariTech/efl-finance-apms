@@ -10,8 +10,9 @@ import { Box } from "@mui/material";
 import CloseButton from "src/routes/components/CloseButton";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
-import { JVByRequestNoColumns } from "../components/JVByRequestNoColumns";
-import JVCurrentStatus from "../components/JVCurrentStatus";
+import { JVByRequestNoColumns } from "../../components/JVByRequestNoColumns";
+import JVCurrentStatus from "../../components/JVCurrentStatus";
+import SAPResponseModal from "../../components/SAPResponseModal";
 
 export default function JVByRequestNo() {
   const router = useRouter();
@@ -24,6 +25,8 @@ export default function JVByRequestNo() {
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
   const [jvData, setJvData] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
   const getData = async () => {
     setLoading(true);
@@ -109,9 +112,21 @@ export default function JVByRequestNo() {
     }
   };
 
+  const handleStatusClick = (rowData) => {
+    setSelectedRowData(rowData);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedRowData(null);
+  };
+
   const columns = JVByRequestNoColumns({
     router,
     parentId,
+    onStatusClick: handleStatusClick,
+    basePath: "requested-jvs",
   });
 
   return (
@@ -227,6 +242,11 @@ export default function JVByRequestNo() {
           )}
         </Card>
       </Container>
+      <SAPResponseModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        rowData={selectedRowData}
+      />
     </>
   );
 }

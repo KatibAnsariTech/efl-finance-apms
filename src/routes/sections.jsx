@@ -114,6 +114,16 @@ const PettyCashRequestPage = lazy(() =>
   import("src/features/petty-cash/request/pages/PettyCashRequest")
 );
 
+const CAPEXPage = lazy(() =>
+  import("src/features/capex/dashboard/pages/CAPEX")
+);
+const CAPEXDashboard = lazy(() =>
+  import("src/features/capex/dashboard/components/CAPEXDashboard")
+);
+const CAPEXMasterPage = lazy(() =>
+  import("src/features/capex/master/pages/CAPEXMaster")
+);
+
 const SettingsPage = lazy(() => import("src/features/settings/pages/Settings"));
 const ProfilePage = lazy(() => import("src/features/settings/pages/Profile"));
 const AddUserPage = lazy(() => import("src/features/settings/pages/AddUser"));
@@ -245,6 +255,10 @@ export default function Router() {
           element: <ProtectedRoute path="/petty-cash" element={<PettyCashPage />} />,
         },
         {
+          path: "/capex",
+          element: <ProtectedRoute path="/capex" element={<CAPEXPage />} />,
+        },
+        {
           path: "/credit-deviation",
           element: (
             <ProtectedRoute
@@ -292,6 +306,15 @@ export default function Router() {
             <ProtectedRoute
               path="/petty-cash/dashboard"
               element={<PettyCashDashboard />}
+            />
+          ),
+        },
+        {
+          path: "/capex/dashboard",
+          element: (
+            <ProtectedRoute
+              path="/capex/dashboard"
+              element={<CAPEXDashboard />}
             />
           ),
         },
@@ -550,6 +573,16 @@ export default function Router() {
             <ProtectedRoute
               path="/petty-cash/request"
               element={<PettyCashRequestPage />}
+            />
+          ),
+        },
+        // CAPEX subpages
+        {
+          path: "/capex/master",
+          element: (
+            <ProtectedRoute
+              path="/capex/master"
+              element={<CAPEXMasterPage />}
             />
           ),
         },

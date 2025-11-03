@@ -77,14 +77,8 @@ export const JVDetailsColumns = () => {
       headerAlign: "center",
       renderCell: (params) => {
         const amount = params.value;
-        const type = params.row.type;
         const formattedAmount = `₹${Math.abs(amount)?.toLocaleString()}`;
-        
-        if (type === 'Debit') {
-          return formattedAmount;
-        } else {
-          return `(${formattedAmount})`;
-        }
+        return formattedAmount;
       },
     },
     {
@@ -156,3 +150,4 @@ export const JVDetailsColumns = () => {
 
   return columns;
 };
+
