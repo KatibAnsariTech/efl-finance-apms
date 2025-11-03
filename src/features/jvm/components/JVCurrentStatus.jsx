@@ -10,7 +10,6 @@ function JVCurrentStatus({ steps = [], data }) {
         width: "100%",
         maxWidth: "100%",
         pl: 3,
-        // mt: 2,
         overflow: "hidden",
         backgroundColor: "transparent",
       }}
@@ -74,7 +73,6 @@ function JVCurrentStatus({ steps = [], data }) {
                 direction="row"
                 spacing={3}
                 sx={{
-                  // backgroundColor: "#f5f5f5",
                   borderRadius: 1,
                   px: 2,
                   py: 1,
@@ -137,7 +135,6 @@ function JVCurrentStatus({ steps = [], data }) {
                   direction="row"
                   spacing={3}
                   sx={{
-                    // backgroundColor: "#f5f5f5",
                     borderRadius: 1,
                     px: 2,
                     py: 1,
@@ -164,3 +161,4 @@ function JVCurrentStatus({ steps = [], data }) {
 }
 
 export default JVCurrentStatus;
+

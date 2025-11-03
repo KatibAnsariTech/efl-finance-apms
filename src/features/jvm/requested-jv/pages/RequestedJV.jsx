@@ -10,8 +10,8 @@ import FormRequestTabs from "src/features/credit-deviation/approvals/components/
 import { useRouter } from "src/routes/hooks";
 import { Box, Button, IconButton } from "@mui/material";
 import { FilterList } from "@mui/icons-material";
-import RequestStatus from "../components/RequestStatus";
-import ColorIndicators from "../components/ColorIndicators";
+import RequestStatus from "../../components/RequestStatus";
+import ColorIndicators from "../../components/ColorIndicators";
 import FilterModal from "../components/FilterModal";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
@@ -320,8 +320,7 @@ export default function RequestedJV() {
           open={openStatusModal}
           onClose={handleCloseStatusModal}
           rowData={selectedRowData}
-          getRequestData={getData}
-          selectedTab="jv-status"
+          useGroupIdForTitle={true}
         />
 
         <FilterModal
