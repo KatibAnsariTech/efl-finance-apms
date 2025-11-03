@@ -123,6 +123,9 @@ const CAPEXDashboard = lazy(() =>
 const CAPEXMasterPage = lazy(() =>
   import("src/features/capex/master/pages/CAPEXMaster")
 );
+const RaiseRequestPage = lazy(() =>
+  import("src/features/capex/raise-request/pages/RaiseRequest")
+);
 
 const SettingsPage = lazy(() => import("src/features/settings/pages/Settings"));
 const ProfilePage = lazy(() => import("src/features/settings/pages/Profile"));
@@ -583,6 +586,15 @@ export default function Router() {
             <ProtectedRoute
               path="/capex/master"
               element={<CAPEXMasterPage />}
+            />
+          ),
+        },
+        {
+          path: "/capex/raise-request",
+          element: (
+            <ProtectedRoute
+              path="/capex/raise-request"
+              element={<RaiseRequestPage />}
             />
           ),
         },
