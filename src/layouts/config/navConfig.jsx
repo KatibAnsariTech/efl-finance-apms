@@ -20,6 +20,7 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import SettingsIcon from "@mui/icons-material/Settings";
 import UndoIcon from "@mui/icons-material/Undo";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 
 const projectConfig = {
   CRD: {
@@ -114,6 +115,13 @@ const projectConfig = {
         path: "/jvm/auto-reversal",
         icon: <UndoIcon />,
         roles: ["REQUESTER"],
+      },
+      {
+        id: "jvm-report",
+        title: "Report",
+        path: "/jvm/report",
+        icon: <AssessmentIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "jvm-master",
