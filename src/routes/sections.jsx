@@ -60,6 +60,9 @@ const JVRequestDetailPage = lazy(() =>
 const JVRequestByRequestNoPage = lazy(() =>
   import("src/features/jvm/requests/pages/JVByRequestNo")
 );
+const JVMReportPage = lazy(() =>
+  import("src/features/jvm/report/pages/JVMReport")
+);
 
 const ImportPaymentPage = lazy(() =>
   import("src/features/import-payment/dashboard/pages/ImportPayment")
@@ -480,6 +483,12 @@ export default function Router() {
               path="/jvm/requested-jvs"
               element={<JVDetailPage />}
             />
+          ),
+        },
+        {
+          path: "/jvm/report",
+          element: (
+            <ProtectedRoute path="/jvm/report" element={<JVMReportPage />} />
           ),
         },
         {
