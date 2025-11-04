@@ -121,7 +121,7 @@ const projectConfig = {
         title: "Report",
         path: "/jvm/report",
         icon: <AssessmentIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "jvm-master",
