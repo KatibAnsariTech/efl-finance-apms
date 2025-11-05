@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -8,14 +8,15 @@ import {
   Tooltip,
   InputAdornment,
   CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import { HelpOutline } from "@mui/icons-material";
 import { RxCross2 } from "react-icons/rx";
 import { useForm, Controller } from "react-hook-form";
-import { CustomTextField } from "./CustomFields";
+import { CustomTextField, CustomSelect } from "./CustomFields";
 
-export default function CapexItemModal({ open, handleClose, onSave, editItem, index }) {
-  const [loading, setLoading] = React.useState(false);
+export default function CapexItemModal({ open, handleClose, onSave, editItem, index, measurementUnits = [] }) {
+  const [loading, setLoading] = useState(false);
   const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
     defaultValues: editItem || {
       description: "",
@@ -27,7 +28,7 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (editItem) {
       reset(editItem);
     } else {
@@ -42,10 +43,11 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
     }
   }, [editItem, reset]);
 
+
   const quantity = watch("quantity");
   const costPerUnit = watch("costPerUnit");
 
-  React.useEffect(() => {
+  useEffect(() => {
     const qty = parseFloat(quantity) || 0;
     const cost = parseFloat(costPerUnit) || 0;
     const total = (qty * cost).toFixed(2);
@@ -190,13 +192,23 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
               <Controller
                 name="uom"
                 control={control}
-                render={({ field }) => (
-                  <CustomTextField
+                rules={{ required: "UOM is required" }}
+                render={({ field, fieldState: { error } }) => (
+                  <CustomSelect
                     {...field}
-                    label="UOM"
-                    fullWidth
-                    variant="outlined"
-                  />
+                    label="UOM *"
+                    error={!!error}
+                    helperText={error?.message}
+                  >
+                    <MenuItem value="">
+                      <em>Select UOM</em>
+                    </MenuItem>
+                    {measurementUnits.map((unit) => (
+                      <MenuItem key={unit._id} value={unit._id}>
+                        {unit.unit} ({unit.abbr})
+                      </MenuItem>
+                    ))}
+                  </CustomSelect>
                 )}
               />
             </Grid>

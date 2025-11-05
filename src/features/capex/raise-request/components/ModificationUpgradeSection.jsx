@@ -22,12 +22,12 @@ export default function ModificationUpgradeSection({ control, errors, watch }) {
           <Controller
             name="modificationOrUpgrade"
             control={control}
-            rules={{ required: "Modification or Upgrade is required" }}
-            render={({ field }) => (
+            render={({ field, fieldState: { error } }) => (
               <CustomSelect
                 {...field}
                 label="Modification or Upgrade *"
-                error={!!errors.modificationOrUpgrade}
+                error={!!error}
+                helperText={error?.message}
               >
                 <MenuItem value="">Select Option</MenuItem>
                 <MenuItem value="Yes">Yes</MenuItem>
@@ -44,14 +44,16 @@ export default function ModificationUpgradeSection({ control, errors, watch }) {
               <Controller
                 name="challengesInPresentSystem"
                 control={control}
-                render={({ field }) => (
+                render={({ field, fieldState: { error } }) => (
                   <CustomTextField
                     {...field}
-                    label="Challenges in Present System"
+                    label="Challenges in Present System *"
                     fullWidth
                     variant="outlined"
                     multiline
                     rows={2}
+                    error={!!error}
+                    helperText={error?.message}
                   />
                 )}
               />
@@ -60,14 +62,16 @@ export default function ModificationUpgradeSection({ control, errors, watch }) {
               <Controller
                 name="previousModificationHistory"
                 control={control}
-                render={({ field }) => (
+                render={({ field, fieldState: { error } }) => (
                   <CustomTextField
                     {...field}
-                    label="Previous Modification History"
+                    label="Previous Modification History *"
                     fullWidth
                     variant="outlined"
                     multiline
                     rows={2}
+                    error={!!error}
+                    helperText={error?.message}
                   />
                 )}
               />
@@ -77,12 +81,14 @@ export default function ModificationUpgradeSection({ control, errors, watch }) {
               <Controller
                 name="vendorOEM"
                 control={control}
-                render={({ field }) => (
+                render={({ field, fieldState: { error } }) => (
                   <CustomTextField
                     {...field}
-                    label="Vendor - OEM"
+                    label="Vendor - OEM *"
                     fullWidth
                     variant="outlined"
+                    error={!!error}
+                    helperText={error?.message}
                   />
                 )}
               />
@@ -92,12 +98,14 @@ export default function ModificationUpgradeSection({ control, errors, watch }) {
               <Controller
                 name="oldPOReference"
                 control={control}
-                render={({ field }) => (
+                render={({ field, fieldState: { error } }) => (
                   <CustomTextField
                     {...field}
-                    label="OLD PO Reference"
+                    label="OLD PO Reference *"
                     fullWidth
                     variant="outlined"
+                    error={!!error}
+                    helperText={error?.message}
                   />
                 )}
               />
@@ -107,12 +115,14 @@ export default function ModificationUpgradeSection({ control, errors, watch }) {
               <Controller
                 name="oldAssetCode"
                 control={control}
-                render={({ field }) => (
+                render={({ field, fieldState: { error } }) => (
                   <CustomTextField
                     {...field}
-                    label="OLD Asset Code"
+                    label="OLD Asset Code *"
                     fullWidth
                     variant="outlined"
+                    error={!!error}
+                    helperText={error?.message}
                   />
                 )}
               />

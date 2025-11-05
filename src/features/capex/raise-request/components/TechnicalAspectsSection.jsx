@@ -13,6 +13,7 @@ import {
   Paper,
   IconButton,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Controller } from "react-hook-form";
@@ -25,6 +26,9 @@ export default function TechnicalAspectsSection({
   setValue,
   watch,
   errors,
+  trigger,
+  measurementUnits = [],
+  unitsMap = {},
 }) {
   const capexItems = watch("capexItems") || [];
   const totalCost = watch("totalCost") || 0;
@@ -51,13 +55,15 @@ export default function TechnicalAspectsSection({
     setModalOpen(true);
   };
 
-  const handleDeleteClick = (index) => {
+  const handleDeleteClick = async (index) => {
     const newItems = capexItems.filter((_, i) => i !== index);
     setValue("capexItems", newItems);
     calculateTotal(newItems);
+    // Trigger validation to clear errors if items are valid
+    await trigger("capexItems");
   };
 
-  const handleModalSave = (itemData, index) => {
+  const handleModalSave = async (itemData, index) => {
     const newItems = [...capexItems];
     if (index !== null && index !== undefined) {
       newItems[index] = itemData;
@@ -66,6 +72,8 @@ export default function TechnicalAspectsSection({
     }
     setValue("capexItems", newItems);
     calculateTotal(newItems);
+    // Trigger validation to clear errors if items are valid
+    await trigger("capexItems");
     setModalOpen(false);
     setEditingIndex(null);
     setEditingItem(null);
@@ -93,7 +101,7 @@ export default function TechnicalAspectsSection({
           }}
         >
           <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-            CAPEX Details
+            CAPEX Details *
           </Typography>
           <Button
             variant="contained"
@@ -105,7 +113,25 @@ export default function TechnicalAspectsSection({
           </Button>
         </Box>
 
-        <TableContainer component={Paper} variant="outlined">
+        {errors.capexItems && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errors.capexItems.message || "At least one CAPEX item is required"}
+          </Alert>
+        )}
+
+        {capexItems.length > 0 && errors.capexItems && typeof errors.capexItems === 'object' && !errors.capexItems.message && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            Please check all CAPEX items for missing required fields
+          </Alert>
+        )}
+
+        <TableContainer 
+          component={Paper} 
+          variant="outlined"
+          sx={{
+            border: errors.capexItems ? '2px solid #d32f2f' : '1px solid rgba(0, 0, 0, 0.23)',
+          }}
+        >
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: "grey.100" }}>
@@ -175,8 +201,23 @@ export default function TechnicalAspectsSection({
               </TableRow>
             </TableHead>
             <TableBody>
-              {capexItems.map((item, index) => (
-                <TableRow key={index}>
+              {capexItems.map((item, index) => {
+                const itemErrors = errors.capexItems?.[index];
+                const hasItemError = itemErrors && (
+                  itemErrors.description || 
+                  itemErrors.quantity || 
+                  itemErrors.uom ||
+                  itemErrors.costPerUnit ||
+                  itemErrors.totalCost
+                );
+                
+                return (
+                <TableRow 
+                  key={index}
+                  sx={{
+                    backgroundColor: hasItemError ? 'rgba(211, 47, 47, 0.08)' : 'inherit',
+                  }}
+                >
                   <TableCell>
                     <Tooltip
                       title={item.description || "-"}
@@ -191,19 +232,43 @@ export default function TechnicalAspectsSection({
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
                           cursor: "help",
+                          color: itemErrors?.description ? '#d32f2f' : 'inherit',
                         }}
                       >
                         {item.description || "-"}
                       </Typography>
+                      {itemErrors?.description && (
+                        <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                          {itemErrors.description.message}
+                        </Typography>
+                      )}
                     </Tooltip>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">
+                    <Typography 
+                      variant="body2"
+                      sx={{ color: itemErrors?.quantity ? '#d32f2f' : 'inherit' }}
+                    >
                       {item.quantity || "-"}
                     </Typography>
+                    {itemErrors?.quantity && (
+                      <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                        {itemErrors.quantity.message}
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">{item.uom || "-"}</Typography>
+                    <Typography 
+                      variant="body2"
+                      sx={{ color: itemErrors?.uom ? '#d32f2f' : 'inherit' }}
+                    >
+                      {item.uom && unitsMap[item.uom] ? unitsMap[item.uom].abbr : (item.uom || "-")}
+                    </Typography>
+                    {itemErrors?.uom && (
+                      <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                        {itemErrors.uom.message}
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Tooltip
@@ -226,14 +291,28 @@ export default function TechnicalAspectsSection({
                     </Tooltip>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">
+                    <Typography 
+                      variant="body2"
+                      sx={{ color: itemErrors?.costPerUnit ? '#d32f2f' : 'inherit' }}
+                    >
                       {item.costPerUnit
                         ? parseFloat(item.costPerUnit).toLocaleString()
                         : "-"}
                     </Typography>
+                    {itemErrors?.costPerUnit && (
+                      <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                        {itemErrors.costPerUnit.message}
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontWeight: 500,
+                        color: itemErrors?.totalCost ? '#d32f2f' : 'inherit'
+                      }}
+                    >
                       {item.totalCost
                         ? parseFloat(item.totalCost).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
@@ -241,6 +320,11 @@ export default function TechnicalAspectsSection({
                           })
                         : "-"}
                     </Typography>
+                    {itemErrors?.totalCost && (
+                      <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                        {itemErrors.totalCost.message}
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -265,12 +349,25 @@ export default function TechnicalAspectsSection({
                     </Box>
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
               {capexItems.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Click "ADD" to add
+                  <TableCell 
+                    colSpan={7} 
+                    align="center" 
+                    sx={{ 
+                      py: 3,
+                      backgroundColor: errors.capexItems ? 'rgba(211, 47, 47, 0.08)' : 'inherit',
+                    }}
+                  >
+                    <Typography 
+                      variant="body2" 
+                      color={errors.capexItems ? 'error' : 'text.secondary'}
+                      sx={{ fontWeight: errors.capexItems ? 'bold' : 'normal' }}
+                    >
+                      {errors.capexItems 
+                        ? errors.capexItems.message || "At least one CAPEX item is required. Click 'ADD' to add an item."
+                        : "Click 'ADD' to add an item"}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -295,6 +392,7 @@ export default function TechnicalAspectsSection({
         onSave={handleModalSave}
         editItem={editingItem}
         index={editingIndex}
+        measurementUnits={measurementUnits}
       />
 
       <Grid container spacing={3}>

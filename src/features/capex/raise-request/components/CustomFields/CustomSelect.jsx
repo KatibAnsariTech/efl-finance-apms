@@ -1,7 +1,7 @@
 import React from "react";
-import { FormControl, InputLabel, Select } from "@mui/material";
+import { FormControl, InputLabel, Select, FormHelperText } from "@mui/material";
 
-const CustomSelect = ({ label, children, sx = {}, error, fullWidth = true, ...props }) => {
+const CustomSelect = ({ label, children, sx = {}, error, helperText, fullWidth = true, ...props }) => {
   return (
     <FormControl
       fullWidth={fullWidth}
@@ -17,6 +17,7 @@ const CustomSelect = ({ label, children, sx = {}, error, fullWidth = true, ...pr
       <Select {...props} label={label}>
         {children}
       </Select>
+      {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
   );
 };

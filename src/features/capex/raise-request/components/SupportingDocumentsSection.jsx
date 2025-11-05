@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -17,6 +17,7 @@ import {
   Chip,
   Tooltip,
   Link,
+  Alert,
 } from "@mui/material";
 import { Upload, Delete, Description, Image, PictureAsPdf, AttachFile, CloudUpload, OpenInNew, DeleteSweep } from "@mui/icons-material";
 import { Controller } from "react-hook-form";
@@ -25,8 +26,24 @@ import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function SupportingDocumentsSection({ control, setValue, watch, errors }) {
-  const documents = watch("documents") || {};
+export default function SupportingDocumentsSection({ control, setValue, watch, errors, trigger }) {
+  const documentsRaw = watch("documents") || {};
+  // Normalize documents to ensure all fields are arrays, never strings
+  const documents = useMemo(() => {
+    const normalized = {};
+    const fields = ['rfq', 'drawings', 'layout', 'catalogue', 'offer1', 'offer2', 'offer3', 'previousHistory'];
+    fields.forEach(field => {
+      if (Array.isArray(documentsRaw[field])) {
+        normalized[field] = documentsRaw[field];
+      } else if (documentsRaw[field] && typeof documentsRaw[field] === 'string') {
+        normalized[field] = [documentsRaw[field]];
+      } else {
+        normalized[field] = [];
+      }
+    });
+    return normalized;
+  }, [documentsRaw]);
+
   const [uploading, setUploading] = useState({});
   const fileInputRefs = useRef({});
   const documentsRef = useRef(documents);
@@ -34,7 +51,14 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
   
   useEffect(() => {
     documentsRef.current = documents;
-  }, [documents]);
+    // Ensure form always has arrays, not strings
+    const needsUpdate = Object.keys(documentsRaw).some(key => 
+      documentsRaw[key] === "" || (typeof documentsRaw[key] === 'string' && !Array.isArray(documentsRaw[key]))
+    );
+    if (needsUpdate) {
+      setValue("documents", documents, { shouldValidate: false });
+    }
+  }, [documents, documentsRaw, setValue]);
 
   const getFileIcon = (fileUrl) => {
     if (!fileUrl) return <AttachFile />;
@@ -97,11 +121,10 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
         
         updateLockRef.current = updateLockRef.current.then(async () => {
           const currentDocuments = documentsRef.current || {};
+          // Ensure we always work with arrays
           const currentFiles = Array.isArray(currentDocuments[fieldName]) 
             ? currentDocuments[fieldName] 
-            : currentDocuments[fieldName] 
-              ? [currentDocuments[fieldName]] 
-              : [];
+            : [];
           
           const updatedDocuments = {
             ...currentDocuments,
@@ -110,6 +133,10 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
           
           documentsRef.current = updatedDocuments;
           setValue("documents", updatedDocuments, { shouldDirty: true });
+          // Trigger validation to clear errors if field becomes valid
+          if (trigger) {
+            await trigger(`documents.${fieldName}`);
+          }
         }).catch((error) => {
           console.error("Error updating documents:", error);
         });
@@ -142,28 +169,35 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
     }
   };
 
-  const handleRemoveFile = (fieldName, index) => {
+  const handleRemoveFile = async (fieldName, index) => {
+    // Ensure we always work with arrays
     const currentFiles = Array.isArray(documents[fieldName]) 
       ? documents[fieldName] 
-      : documents[fieldName] 
-        ? [documents[fieldName]] 
-        : [];
+      : [];
     
     const updatedFiles = currentFiles.filter((_, i) => i !== index);
     
     const updatedDocuments = {
       ...documents,
-      [fieldName]: updatedFiles.length > 0 ? updatedFiles : "",
+      [fieldName]: updatedFiles, // Always keep as array, even if empty
     };
     setValue("documents", updatedDocuments);
+    // Trigger validation to clear errors if field becomes valid
+    if (trigger) {
+      await trigger(`documents.${fieldName}`);
+    }
   };
 
-  const handleClearAll = (fieldName) => {
+  const handleClearAll = async (fieldName) => {
     const updatedDocuments = {
       ...documents,
-      [fieldName]: "",
+      [fieldName]: [],
     };
     setValue("documents", updatedDocuments);
+    // Trigger validation to show errors if field is required
+    if (trigger) {
+      await trigger(`documents.${fieldName}`);
+    }
   };
 
   const getFileExtension = (fileUrl) => {
@@ -185,12 +219,13 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
   };
 
   const renderFileUpload = (fieldName, label, required = false) => {
+    // Always ensure we're working with an array
     const fileUrls = Array.isArray(documents[fieldName]) 
       ? documents[fieldName] 
-      : documents[fieldName] 
-        ? [documents[fieldName]] 
-        : [];
+      : [];
     const uploadingFiles = Object.keys(uploading).filter(key => key.startsWith(fieldName));
+    const fieldError = errors.documents?.[fieldName];
+    const hasError = !!fieldError;
 
     return (
       <Grid item xs={12} md={6}>
@@ -202,7 +237,7 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: hasError ? 'error.main' : 'inherit' }}>
               {label} {required && <span style={{ color: "red" }}>*</span>}
             </Typography>
             {fileUrls.length > 0 && (
@@ -238,8 +273,8 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
               display: "flex",
               flexDirection: "column",
               backgroundColor: fileUrls.length > 0 ? "background.paper" : "action.hover",
-              border: fileUrls.length > 0 ? "1px solid" : "2px dashed",
-              borderColor: fileUrls.length > 0 ? "divider" : "divider",
+              border: hasError ? "2px solid" : fileUrls.length > 0 ? "1px solid" : "2px dashed",
+              borderColor: hasError ? "error.main" : fileUrls.length > 0 ? "divider" : "divider",
             }}
           >
             {fileUrls.length > 0 ? (
@@ -410,6 +445,12 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
                 Uploading {uploadingFiles.length} file{uploadingFiles.length > 1 ? 's' : ''}...
               </Typography>
             </Box>
+          )}
+
+          {hasError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {fieldError.message || `${label} is required`}
+            </Alert>
           )}
 
           <Button
