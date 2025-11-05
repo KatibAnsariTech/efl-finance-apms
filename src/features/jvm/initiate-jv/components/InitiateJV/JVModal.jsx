@@ -512,7 +512,7 @@ export default function JVModal({
                       {...field}
                       fullWidth
                       size="small"
-                      label="Vendor/Customer/GL Name *"
+                      label="Vendor/Customer/GL Name"
                       error={!!error}
                       helperText={error?.message}
                     />
@@ -616,10 +616,10 @@ export default function JVModal({
                       error={!!error}
                       size="small"
                     >
-                      <InputLabel>Special GL Indication *</InputLabel>
+                      <InputLabel>Special GL Indication</InputLabel>
                       <Select
                         {...field}
-                        label="Special GL Indication *"
+                        label="Special GL Indication"
                         disabled={masterDataLoading}
                       >
                         {masterDataLoading ? (
@@ -666,10 +666,10 @@ export default function JVModal({
                       {...field}
                       fullWidth
                       size="small"
-                      label="Personal Number *"
+                      label="Personal Number"
                       inputProps={{ maxLength: 7, pattern: "[0-9]*" }}
                       error={!!error}
-                      helperText={error?.message || "Exactly 7 digits required"}
+                      helperText={error?.message || "Exactly 7 digits when provided"}
                     />
                   )}
                 />

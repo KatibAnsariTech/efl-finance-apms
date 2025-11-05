@@ -5,7 +5,10 @@ import Iconify from "src/components/iconify/iconify";
 import { userRequest } from "src/requestMethod";
 import { getErrorMessage, showErrorMessage } from "src/utils/errorUtils";
 import * as XLSX from "xlsx";
-import { validateAllJVEntries, validatePostingKeyMatchesEntryType } from "../../utils/validationUtils"; // Import validation utility
+import {
+  validateAllJVEntries,
+  validatePostingKeyMatchesEntryType,
+} from "../../utils/validationUtils"; // Import validation utility
 
 export default function UploadJVModal({ open, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -217,23 +220,21 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
           return {
             ...entry,
             slNo: entry.slNo || "",
-            documentType: entry.documentType || "DR",
-            documentDate:
-              entry.documentDate || new Date().toISOString().split("T")[0],
-            postingDate:
-              entry.postingDate || new Date().toISOString().split("T")[0],
-            businessArea: entry.businessArea || "1000",
-            accountType: entry.accountType || "S",
-            postingKey: String(entry.postingKey || "40"),
-            type: entry.type || "Debit",
+            documentType: entry.documentType || "",
+            documentDate: entry.documentDate || "",
+            postingDate: entry.postingDate || "",
+            businessArea: entry.businessArea || "",
+            accountType: entry.accountType || "",
+            postingKey: String(entry.postingKey || ""),
+            type: entry.type || "",
             amount: parseFloat(entry.amount) || 0,
             assignment: entry.assignment || "",
-            profitCenter: entry.profitCenter || "1000",
+            profitCenter: entry.profitCenter || "",
             specialGLIndication: entry.specialGLIndication || "",
             referenceNumber: entry.referenceNumber || "",
             remarks: entry.remarks || "",
             vendorCustomerGLName: entry.vendorCustomerGLName || "",
-            costCenter: entry.costCenter || "1000",
+            costCenter: entry.costCenter || "",
             personalNumber: entry.personalNumber || "",
           };
         })
@@ -284,23 +285,88 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
         const pk = normalize(row.postingKey);
         const sg = normalize(row.specialGLIndication);
 
-        if (!dtAll.has(dt)) {
+        // Required field validations
+        if (!row.slNo || row.slNo.toString().trim() === "") {
+          errors.push(`Row ${line}: Serial Number is required`);
+        }
+        if (!dt || !dtAll.has(dt)) {
           errors.push(
-            `Row ${line}: Invalid Document Type '${row.documentType}'`
+            `Row ${line}: Invalid or missing Document Type '${
+              row.documentType || "empty"
+            }'`
           );
         }
-        if (!atAll.has(at)) {
-          errors.push(`Row ${line}: Invalid Account Type '${row.accountType}'`);
+        if (!row.documentDate) {
+          errors.push(`Row ${line}: Document Date is required`);
         }
-        if (!pkAll.has(pk)) {
-          errors.push(`Row ${line}: Invalid Posting Key '${row.postingKey}'`);
+        if (!at || !atAll.has(at)) {
+          errors.push(
+            `Row ${line}: Invalid or missing Account Type '${
+              row.accountType || "empty"
+            }'`
+          );
         }
-        // Only validate specialGLIndication if it's not empty
+        if (!pk || !pkAll.has(pk)) {
+          errors.push(
+            `Row ${line}: Invalid or missing Posting Key '${
+              row.postingKey || "empty"
+            }'`
+          );
+        }
+        if (!row.type) {
+          errors.push(`Row ${line}: Type is required`);
+        }
+        if (
+          !row.vendorCustomerGLNumber ||
+          row.vendorCustomerGLNumber.toString().trim() === ""
+        ) {
+          errors.push(`Row ${line}: Vendor/Customer/GL Number is required`);
+        }
+        if (!row.amount || parseFloat(row.amount) <= 0) {
+          errors.push(
+            `Row ${line}: Amount is required and must be greater than 0`
+          );
+        }
+        if (!row.assignment || row.assignment.toString().trim() === "") {
+          errors.push(`Row ${line}: Assignment is required`);
+        }
+        if (!row.profitCenter || row.profitCenter.toString().trim() === "") {
+          errors.push(`Row ${line}: Profit Center is required`);
+        }
+        if (
+          !row.referenceNumber ||
+          row.referenceNumber.toString().trim() === ""
+        ) {
+          errors.push(`Row ${line}: Reference Number is required`);
+        }
+        if (!row.remarks || row.remarks.toString().trim() === "") {
+          errors.push(`Row ${line}: Remarks is required`);
+        }
+        if (!row.postingDate) {
+          errors.push(`Row ${line}: Posting Date is required`);
+        }
+        if (!row.costCenter || row.costCenter.toString().trim() === "") {
+          errors.push(`Row ${line}: Cost Center is required`);
+        }
+
+        // Optional field validations (only validate format if provided)
+        // personalNumber is optional - validate format if provided
+        if (row.personalNumber && row.personalNumber.toString().trim() !== "") {
+          const personalNum = row.personalNumber.toString().trim();
+          if (!/^\d{7}$/.test(personalNum)) {
+            errors.push(
+              `Row ${line}: Personal Number must be exactly 7 digits when provided`
+            );
+          }
+        }
+        // vendorCustomerGLName is optional - no validation needed
+        // specialGLIndication is optional - validate format and master data if provided
         if (sg && !sgAll.has(sg)) {
           errors.push(
             `Row ${line}: Invalid Special GL Indication '${row.specialGLIndication}'`
           );
         }
+
         // Relationship checks only if Account Type is valid
         if (atAll.has(at)) {
           const allowedPK = pkAllowedByAcct[at];
@@ -324,7 +390,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
             row.type,
             postingKeyMasters
           );
-          
+
           if (!validation.isValid) {
             errors.push(`Row ${line}: ${validation.error}`);
           }

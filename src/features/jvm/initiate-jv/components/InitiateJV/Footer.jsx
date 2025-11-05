@@ -158,9 +158,10 @@ const Footer = ({
                 fontWeight: 500,
               }}
             >
-              Auto-reversal this transaction:
+              Auto-reversal this transaction: <span style={{ color: "red" }}>*</span>
             </Typography>
             <FormControl
+              required
               sx={{
                 minWidth: 80,
                 "& .MuiOutlinedInput-root": {
@@ -175,7 +176,16 @@ const Footer = ({
                 sx={{
                   fontSize: { xs: "0.8rem", sm: "0.875rem" },
                 }}
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return <em style={{ color: "#9e9e9e" }}>Select</em>;
+                  }
+                  return selected;
+                }}
               >
+                <MenuItem value="" disabled>
+                  <em>Select</em>
+                </MenuItem>
                 <MenuItem value="Yes">Yes</MenuItem>
                 <MenuItem value="No">No</MenuItem>
               </Select>

@@ -18,7 +18,7 @@ export const useInitiateJV = () => {
   const [modalMode, setModalMode] = useState("add");
   const [editData, setEditData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [autoReversal, setAutoReversal] = useState("No");
+  const [autoReversal, setAutoReversal] = useState("");
   const [reversalRemarks, setReversalRemarks] = useState("");
   const [showInfoText, setShowInfoText] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -133,6 +133,18 @@ export const useInitiateJV = () => {
     try {
       setSubmitting(true);
 
+      // Validate autoReversal is selected
+      if (!autoReversal || autoReversal.trim() === "") {
+        await swal({
+          title: "Validation Error",
+          text: "Please select Auto-reversal option before submitting.",
+          icon: "error",
+          button: "OK",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const validationResults = validateAllJVEntries(data);
       if (!validationResults.isValid) {
         const errorMessages = validationResults.errors.map((error) => {
@@ -229,7 +241,7 @@ export const useInitiateJV = () => {
       const dtAll = new Set(docTypes);
       const atAll = new Set(accountTypes);
 
-      // Validate each entry against master data
+      // Validate each entry against master data and required fields
       const masterDataErrors = [];
       data.forEach((entry, idx) => {
         const line = idx + 1;
@@ -238,23 +250,68 @@ export const useInitiateJV = () => {
         const pk = normalize(entry.postingKey);
         const sg = normalize(entry.specialGLIndication);
 
-        if (!dtAll.has(dt)) {
+        // Required field validations
+        if (!entry.slNo || entry.slNo.toString().trim() === "") {
+          masterDataErrors.push(`Entry ${line}: Serial Number is required`);
+        }
+        if (!dt || !dtAll.has(dt)) {
           masterDataErrors.push(
-            `Entry ${line}: Invalid Document Type '${entry.documentType}'`
+            `Entry ${line}: Invalid or missing Document Type '${entry.documentType || 'empty'}'`
           );
         }
-        if (!atAll.has(at)) {
-          masterDataErrors.push(`Entry ${line}: Invalid Account Type '${entry.accountType}'`);
+        if (!entry.documentDate) {
+          masterDataErrors.push(`Entry ${line}: Document Date is required`);
         }
-        if (!pkAll.has(pk)) {
-          masterDataErrors.push(`Entry ${line}: Invalid Posting Key '${entry.postingKey}'`);
+        if (!at || !atAll.has(at)) {
+          masterDataErrors.push(`Entry ${line}: Invalid or missing Account Type '${entry.accountType || 'empty'}'`);
         }
-        // Only validate specialGLIndication if it's not empty
+        if (!pk || !pkAll.has(pk)) {
+          masterDataErrors.push(`Entry ${line}: Invalid or missing Posting Key '${entry.postingKey || 'empty'}'`);
+        }
+        if (!entry.type) {
+          masterDataErrors.push(`Entry ${line}: Type is required`);
+        }
+        if (!entry.vendorCustomerGLNumber || entry.vendorCustomerGLNumber.toString().trim() === "") {
+          masterDataErrors.push(`Entry ${line}: Vendor/Customer/GL Number is required`);
+        }
+        if (!entry.amount || parseFloat(entry.amount) <= 0) {
+          masterDataErrors.push(`Entry ${line}: Amount is required and must be greater than 0`);
+        }
+        if (!entry.assignment || entry.assignment.toString().trim() === "") {
+          masterDataErrors.push(`Entry ${line}: Assignment is required`);
+        }
+        if (!entry.profitCenter || entry.profitCenter.toString().trim() === "") {
+          masterDataErrors.push(`Entry ${line}: Profit Center is required`);
+        }
+        if (!entry.referenceNumber || entry.referenceNumber.toString().trim() === "") {
+          masterDataErrors.push(`Entry ${line}: Reference Number is required`);
+        }
+        if (!entry.remarks || entry.remarks.toString().trim() === "") {
+          masterDataErrors.push(`Entry ${line}: Remarks is required`);
+        }
+        if (!entry.postingDate) {
+          masterDataErrors.push(`Entry ${line}: Posting Date is required`);
+        }
+        if (!entry.costCenter || entry.costCenter.toString().trim() === "") {
+          masterDataErrors.push(`Entry ${line}: Cost Center is required`);
+        }
+
+        // Optional field validations (only validate format if provided)
+        // personalNumber is optional - validate format if provided
+        if (entry.personalNumber && entry.personalNumber.toString().trim() !== "") {
+          const personalNum = entry.personalNumber.toString().trim();
+          if (!/^\d{7}$/.test(personalNum)) {
+            masterDataErrors.push(`Entry ${line}: Personal Number must be exactly 7 digits when provided`);
+          }
+        }
+        // vendorCustomerGLName is optional - no validation needed
+        // specialGLIndication is optional - validate format and master data if provided
         if (sg && !sgAll.has(sg)) {
           masterDataErrors.push(
             `Entry ${line}: Invalid Special GL Indication '${entry.specialGLIndication}'`
           );
         }
+
         // Relationship checks only if Account Type is valid
         if (atAll.has(at)) {
           const allowedPK = pkAllowedByAcct[at];
@@ -344,7 +401,7 @@ export const useInitiateJV = () => {
       // Reset form
       setData([]);
       setUploadedFileUrl("");
-      setAutoReversal("No");
+      setAutoReversal("");
       setConfirmModalOpen(false);
     } catch (error) {
       console.error("Submit error:", error);

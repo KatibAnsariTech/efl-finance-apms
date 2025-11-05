@@ -145,15 +145,7 @@ export const InitiateJVColumns = ({
           {params.value}
         </Box>
       ),
-    },
-    {
-      field: "autoReversal",
-      headerName: "Auto Reversal",
-      width: 130,
-      resizable: true,
-      renderCell: (params) =>
-        params.value === "Y" ? "Yes" : "No",
-    },
+    },  
     {
       field: "createdAt",
       headerName: "Created At",
