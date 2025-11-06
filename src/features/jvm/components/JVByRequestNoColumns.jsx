@@ -73,18 +73,18 @@ export const JVByRequestNoColumns = ({
       renderCell: (params) => {
         const sapStatus = params.row.sapStatus?.toString().trim();
         const hasStatus = sapStatus && sapStatus !== "" && sapStatus !== "-";
-        
+
         if (!hasStatus) {
           return "-";
         }
-        
+
         const statusUpper = sapStatus.toUpperCase();
         const isSuccess = statusUpper === "SUCCESS" || statusUpper === "S";
         const isPending = statusUpper === "PENDING" || statusUpper === "P";
-        
+
         let statusColor = "#d32f2f";
         let hoverColor = "#c62828";
-        
+
         if (isSuccess) {
           statusColor = "#1b5e20";
           hoverColor = "#0d4a14";
@@ -92,7 +92,7 @@ export const JVByRequestNoColumns = ({
           statusColor = "#ed6c02";
           hoverColor = "#e65100";
         }
-        
+
         return (
           <Box
             sx={{
@@ -102,7 +102,7 @@ export const JVByRequestNoColumns = ({
               textDecorationThickness: "1px",
               textUnderlineOffset: "4px",
               fontWeight: 500,
-              "&:hover": { 
+              "&:hover": {
                 color: hoverColor,
                 opacity: 0.8,
               },
@@ -119,8 +119,16 @@ export const JVByRequestNoColumns = ({
         );
       },
     },
+    {
+      field: "sapDocumentNumber",
+      headerName: "Sap Document No.",
+      flex: 1,
+      minWidth: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value || "-",
+    },
   ];
 
   return columns;
 };
-

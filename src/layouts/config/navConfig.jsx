@@ -237,6 +237,13 @@ const projectConfig = {
     hasSubItems: true,
     subItems: [
       {
+        id: "capex-raise-request",
+        title: "Raise Request",
+        path: "/capex/raise-request",
+        icon: <RequestPageIcon />,
+        roles: ["REQUESTER","SUPER_ADMIN"],
+      },
+      {
         id: "capex-master",
         title: "Master Data",
         path: "/capex/master",

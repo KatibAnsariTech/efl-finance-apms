@@ -53,10 +53,10 @@ export default function CAPEXMaster() {
       if (result) {
         const itemType = selectedCategory.toLowerCase();
         const endpoint = selectedTab === 0 
-          ? `/capex/deleteMeasurementUnit/${id}`
+          ? `cpx/deleteMeasurementUnit/${id}`
           : selectedTab === 1
-          ? `/capex/deleteApproverCategory/${id}`
-          : `/capex/deleteApprovalAuthority/${id}`;
+          ? `cpx/deleteApproverCategory/${id}`
+          : `cpx/deleteApprovalAuthority/${id}`;
         
         await userRequest.delete(endpoint);
         
@@ -87,28 +87,27 @@ export default function CAPEXMaster() {
         menuItems={menuItems}
       />
       <Card sx={{ p: 3 }}>
-        <div
-          style={{
+        <Box
+          sx={{
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
-            marginBottom: "20px",
-            marginRight: "0.5%",
+            mb: 2.5,
           }}
         >
-          <div
-            style={{
+          <Box
+            component="span"
+            onClick={handleOpen}
+            sx={{
               fontSize: "0.8rem",
               fontWeight: "bold",
               cursor: "pointer",
-              gap: "8px",
+              color: "#167beb",
             }}
           >
-            <span onClick={handleOpen} style={{ color: "#167beb" }}>
-              Add {menuItems[selectedTab]}
-            </span>
-          </div>
-        </div>
+            Add {menuItems[selectedTab]}
+          </Box>
+        </Box>
 
         {open && selectedTab === 0 && (
           <Suspense fallback={<CircularIndeterminate />}>

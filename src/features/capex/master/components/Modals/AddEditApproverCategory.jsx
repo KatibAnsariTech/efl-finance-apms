@@ -1,55 +1,52 @@
 import React, { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
 function AddEditApproverCategory({ handleClose, open, editData: categoryData, getData }) {
-  const { register, handleSubmit, reset, setValue, control } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (categoryData) {
-      setValue("category", categoryData.category || categoryData.name);
-      setValue("management", categoryData.management || categoryData.approver);
-      setValue("status", categoryData.status || (categoryData.isActive ? "ACTIVE" : "INACTIVE"));
+      setValue("category", categoryData.category || categoryData.name || "");
+      setValue("management", categoryData.management || categoryData.approver || "");
     } else {
       reset();
     }
   }, [categoryData, setValue, reset]);
 
   const handleSaveData = async (data) => {
+    setLoading(true);
     try {
       const formattedData = {
         category: data.category,
         management: data.management,
-        status: data.status,
       };
       
       if (categoryData?._id) {
-        // Update existing approver category
-        await userRequest.put(`/capex/updateApproverCategory/${categoryData._id}`, formattedData);
-        getData();
+        await userRequest.put(`cpx/updateApproverCategory/${categoryData._id}`, formattedData);
         swal("Updated!", "Approver Category data updated successfully!", "success");
       } else {
-        // Create new approver category
-        await userRequest.post("/capex/createApproverCategory", formattedData);
-        getData();
+        await userRequest.post("cpx/createApproverCategory", formattedData);
         swal("Success!", "Approver Category data saved successfully!", "success");
       }
 
       reset();
       handleClose();
+      getData();
     } catch (error) {
       console.error("Error saving data:", error);
       showErrorMessage(error, "Error saving data. Please try again later.", swal);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,29 +109,16 @@ function AddEditApproverCategory({ handleClose, open, editData: categoryData, ge
             {...register("management", { required: true })}
             fullWidth
             required
-            helperText="e.g., CEO / MD, CFO"
+            helperText="e.g., Admin, CEO / MD, CFO"
           />
-          <TextField
-            id="status"
-            label="Status"
-            {...register("status", { required: true })}
-            select
-            fullWidth
-            required
-            SelectProps={{
-              native: true,
-            }}
-          >
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-          </TextField>
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
             variant="contained"
             color="primary"
             type="submit"
+            disabled={loading}
           >
-            {categoryData ? "Update" : "Save"}
+            {loading ? "Saving..." : categoryData ? "Update" : "Save"}
           </Button>
         </Box>
       </Box>

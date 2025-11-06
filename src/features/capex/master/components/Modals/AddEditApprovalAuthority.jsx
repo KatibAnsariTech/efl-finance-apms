@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
@@ -14,44 +14,102 @@ import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
 function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, getData }) {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, control } = useForm();
   const [loading, setLoading] = useState(false);
+  const [approverCategories, setApproverCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // Fetch approver categories
+  useEffect(() => {
+    const fetchApproverCategories = async () => {
+      setCategoriesLoading(true);
+      try {
+        const response = await userRequest.get("/cpx/getApproverCategories", {
+          params: {
+            page: 1,
+            limit: 100,
+          },
+        });
+
+        const categories = response.data.data.items || response.data.data.approverCategories || [];
+        // Sort categories: A (topmost hierarchy) should show last
+        const sortedCategories = [...categories].sort((a, b) => {
+          const categoryA = (a.category || a.name || "").toUpperCase();
+          const categoryB = (b.category || b.name || "").toUpperCase();
+          return categoryB.localeCompare(categoryA);
+        });
+        setApproverCategories(sortedCategories);
+      } catch (error) {
+        console.error("Error fetching Approver Categories:", error);
+        showErrorMessage(error, "Error fetching Approver Categories", swal);
+        setApproverCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    if (open) {
+      fetchApproverCategories();
+    }
+  }, [open]);
 
   useEffect(() => {
-    if (authorityData) {
-      setValue("valueFrom", authorityData.valueFrom || 0);
-      setValue("valueTo", authorityData.valueTo || "");
-      setValue("functionalSpoc", authorityData.functionalSpoc || false);
-      setValue("exCom", authorityData.exCom || false);
-      setValue("headOfFinanceOps", authorityData.headOfFinanceOps || false);
-      setValue("financeController", authorityData.financeController || false);
-      setValue("cfo", authorityData.cfo || false);
-      setValue("ceoMd", authorityData.ceoMd || false);
-    } else {
+    if (authorityData && approverCategories.length > 0 && !categoriesLoading) {
+      setValue("limitFrom", authorityData.limitFrom || authorityData.valueFrom || 0);
+      setValue("limitTo", authorityData.limitTo || authorityData.valueTo || "");
+      
+      // Initialize all checkboxes to false first
+      approverCategories.forEach((category) => {
+        setValue(`approver_${category._id}`, false);
+      });
+      
+      // Map approvers to form fields
+      if (authorityData.approvers && Array.isArray(authorityData.approvers)) {
+        authorityData.approvers.forEach((approver) => {
+          const categoryId = approver.approverCategory?._id || approver.approverCategory;
+          if (categoryId) {
+            setValue(`approver_${categoryId}`, approver.willApprove === true);
+          }
+        });
+      }
+    } else if (!authorityData) {
+      // Reset form when not editing
       reset();
+      // Initialize all checkboxes to false for new entries
+      if (approverCategories.length > 0) {
+        approverCategories.forEach((category) => {
+          setValue(`approver_${category._id}`, false);
+        });
+      }
     }
-  }, [authorityData, setValue, reset]);
+  }, [authorityData, approverCategories, categoriesLoading, setValue, reset]);
 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
+      // Build approvers array from form data
+      const approvers = approverCategories.map((category) => {
+        const categoryId = category._id;
+        const willApprove = data[`approver_${categoryId}`] || false;
+        
+        return {
+          approverCategory: categoryId,
+          willApprove: willApprove,
+        };
+      });
+
       const formattedData = {
-        valueFrom: parseInt(data.valueFrom) || 0,
-        valueTo: data.valueTo ? parseInt(data.valueTo) : null,
-        functionalSpoc: data.functionalSpoc || false,
-        exCom: data.exCom || false,
-        headOfFinanceOps: data.headOfFinanceOps || false,
-        financeController: data.financeController || false,
-        cfo: data.cfo || false,
-        ceoMd: data.ceoMd || false,
+        limitFrom: parseInt(data.limitFrom) || 0,
+        limitTo: data.limitTo ? parseInt(data.limitTo) : null,
+        approvers: approvers,
       };
       
       if (authorityData?._id) {
-        await userRequest.put(`/capex/updateApprovalAuthority/${authorityData._id}`, formattedData);
+        await userRequest.put(`/cpx/updateApproverAuthority/${authorityData._id}`, formattedData);
         getData();
         swal("Updated!", "Approval Authority updated successfully!", "success");
       } else {
-        await userRequest.post("/capex/createApprovalAuthority", formattedData);
+        await userRequest.post("/cpx/createApproverAuthority", formattedData);
         getData();
         swal("Success!", "Approval Authority saved successfully!", "success");
       }
@@ -132,14 +190,17 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
             </Typography>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 1 }}>
               <TextField
-                id="valueFrom"
+                id="limitFrom"
                 label="From Amount"
-                {...register("valueFrom", { required: true })}
+                {...register("limitFrom", { required: true })}
                 type="number"
                 fullWidth
                 required
-                disabled={loading}
+                disabled={loading || categoriesLoading}
                 helperText="Enter minimum project value"
+                InputLabelProps={{
+                  shrink: true,
+                }}
                 sx={{ 
                   flex: 1,
                   "& .MuiInputBase-input": { fontSize: "0.875rem" },
@@ -151,13 +212,16 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
                 to
               </Typography>
               <TextField
-                id="valueTo"
+                id="limitTo"
                 label="To Amount (Optional)"
-                {...register("valueTo")}
+                {...register("limitTo")}
                 type="number"
                 fullWidth
-                disabled={loading}
+                disabled={loading || categoriesLoading}
                 helperText="Leave empty for 'and above'"
+                InputLabelProps={{
+                  shrink: true,
+                }}
                 sx={{ 
                   flex: 1,
                   "& .MuiInputBase-input": { fontSize: "0.875rem" },
@@ -170,98 +234,47 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
             <Typography variant="subtitle1" sx={{ mt: 2, mb: 0.5, fontWeight: 600, fontSize: "0.95rem" }}>
               Required Approvals
             </Typography>
-            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 0 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...register("functionalSpoc")}
-                    color="primary"
-                    disabled={loading}
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                    Functional SPOC
-                  </Typography>
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...register("exCom")}
-                    color="primary"
-                    disabled={loading}
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                    Executive Committee
-                  </Typography>
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...register("headOfFinanceOps")}
-                    color="primary"
-                    disabled={loading}
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                    Head of Finance Operations
-                  </Typography>
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...register("financeController")}
-                    color="primary"
-                    disabled={loading}
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                    Finance Controller
-                  </Typography>
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...register("cfo")}
-                    color="primary"
-                    disabled={loading}
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                    Chief Financial Officer
-                  </Typography>
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...register("ceoMd")}
-                    color="primary"
-                    disabled={loading}
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                    CEO / Managing Director
-                  </Typography>
-                }
-              />
-            </Box>
+            {categoriesLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 0 }}>
+                {approverCategories.map((category) => {
+                  const categoryId = category._id;
+                  const headerName = category.category || category.name || "Unknown";
+                  const management = category.management || "";
+                  const fullLabel = management ? `${headerName} (${management})` : headerName;
+                  
+                  return (
+                    <FormControlLabel
+                      key={categoryId}
+                      control={
+                        <Controller
+                          name={`approver_${categoryId}`}
+                          control={control}
+                          defaultValue={false}
+                          render={({ field }) => (
+                            <Checkbox
+                              {...field}
+                              checked={field.value || false}
+                              color="primary"
+                              disabled={loading || categoriesLoading}
+                              sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
+                            />
+                          )}
+                        />
+                      }
+                      label={
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
+                          {fullLabel}
+                        </Typography>
+                      }
+                    />
+                  );
+                })}
+              </Box>
+            )}
           </Box>
 
           <Box sx={{ px: 4, pt: 2.5, pb: 4, flexShrink: 0 }}>
@@ -270,7 +283,7 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
               variant="contained"
               color="primary"
               type="submit"
-              disabled={loading}
+              disabled={loading || categoriesLoading}
               startIcon={
                 loading && <CircularProgress size={20} color="inherit" />
               }

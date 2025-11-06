@@ -17,37 +17,37 @@ function AddEditMeasurementUnit({ handleClose, open, editData: unitData, getData
 
   useEffect(() => {
     if (unitData) {
-      setValue("name", unitData.unitName || unitData.name);
-      setValue("abbreviation", unitData.abbreviation || unitData.abbr);
+      setValue("unit", unitData.unit || unitData.unitName || unitData.name || "");
+      setValue("abbr", unitData.abbr || unitData.abbreviation || "");
     } else {
       reset();
     }
   }, [unitData, setValue, reset]);
 
   const handleSaveData = async (data) => {
+    setLoading(true);
     try {
       const formattedData = {
-        name: data.name,
-        abbreviation: data.abbreviation,
+        unit: data.unit,
+        abbr: data.abbr,
       };
       
       if (unitData?._id) {
-        // Update existing measurement unit
-        await userRequest.put(`/capex/updateMeasurementUnit/${unitData._id}`, formattedData);
-        getData();
+        await userRequest.put(`cpx/updateMeasurementUnit/${unitData._id}`, formattedData);
         swal("Updated!", "Measurement Unit data updated successfully!", "success");
       } else {
-        // Create new measurement unit
-        await userRequest.post("/capex/createMeasurementUnit", formattedData);
-        getData();
+        await userRequest.post("cpx/createMeasurementUnit", formattedData);
         swal("Success!", "Measurement Unit data saved successfully!", "success");
       }
 
       reset();
       handleClose();
+      getData();
     } catch (error) {
       console.error("Error saving data:", error);
       showErrorMessage(error, "Error saving data. Please try again later.", swal);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,17 +98,17 @@ function AddEditMeasurementUnit({ handleClose, open, editData: unitData, getData
           onSubmit={handleSubmit(handleSaveData)}
         >
           <TextField
-            id="name"
+            id="unit"
             label="Unit Name"
-            {...register("name", { required: true })}
+            {...register("unit", { required: true })}
             fullWidth
             required
             helperText="e.g., Kilogram, Meter, Liter"
           />
           <TextField
-            id="abbreviation"
+            id="abbr"
             label="Abbreviation"
-            {...register("abbreviation", { required: true })}
+            {...register("abbr", { required: true })}
             fullWidth
             required
             helperText="e.g., Nos, Kg, L"
@@ -118,8 +118,9 @@ function AddEditMeasurementUnit({ handleClose, open, editData: unitData, getData
             variant="contained"
             color="primary"
             type="submit"
+            disabled={loading}
           >
-            {unitData ? "Update" : "Save"}
+            {loading ? "Saving..." : unitData ? "Update" : "Save"}
           </Button>
         </Box>
       </Box>

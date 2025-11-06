@@ -63,15 +63,21 @@ export const jvEntrySchema = yup.object().shape({
     .required("Remarks is required")
     .max(50, "Remarks must not exceed 50 characters"),
   postingDate: yup.date().required("Posting Date is required"),
-  vendorCustomerGLName: yup.string().required("Vendor/Customer/GL Name is required"),
+  vendorCustomerGLName: yup
+    .string()
+    .test('vendorCustomerGLName', 'Vendor/Customer/GL Name is optional', function(value) {
+      return true; // Always allow empty values
+    }),
   costCenter: yup
     .string()
     .required("Cost Center is required")
     .matches(/^[A-Za-z0-9]{0,10}$/, "Cost Center must be up to 10 alphanumeric characters"),
   personalNumber: yup
     .string()
-    .required("Personal Number is required")
-    .matches(/^\d{7}$/, "Personal Number must be exactly 7 digits"),
+    .test('personalNumber', 'Personal Number must be exactly 7 digits when provided', function(value) {
+      if (!value || value.trim() === '') return true; // Allow empty values
+      return /^\d{7}$/.test(value);
+    }),
 });
 
 // Initiate JV request validation schema
