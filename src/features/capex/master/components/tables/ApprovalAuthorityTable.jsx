@@ -21,6 +21,7 @@ export default function ApprovalAuthorityTable({
   handleDelete: parentHandleDelete,
   refreshTrigger,
   tabChangeTrigger,
+  selectedDepartment,
 }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
@@ -53,12 +54,22 @@ export default function ApprovalAuthorityTable({
   };
 
   const fetchData = async () => {
+    // Don't fetch if no department is selected
+    if (!selectedDepartment) {
+      setData([]);
+      setRowCount(0);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
+      const departmentId = selectedDepartment._id || selectedDepartment;
       const response = await userRequest.get("/cpx/getApproverAuthorities", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
+          department: departmentId,
         },
       });
 
@@ -102,7 +113,7 @@ export default function ApprovalAuthorityTable({
 
   useEffect(() => {
     fetchData();
-  }, [page, rowsPerPage, refreshTrigger]);
+  }, [page, rowsPerPage, refreshTrigger, selectedDepartment]);
 
   useEffect(() => {
     if (tabChangeTrigger > 0 || refreshTrigger > 0) {
@@ -226,7 +237,7 @@ export default function ApprovalAuthorityTable({
               <Iconify icon="eva:edit-fill" />
             </IconButton>
           </Tooltip>
-          {/* <Tooltip title="Delete">
+          <Tooltip title="Delete">
             <IconButton
               color="error"
               size="small"
@@ -234,7 +245,7 @@ export default function ApprovalAuthorityTable({
             >
               <Iconify icon="eva:trash-2-fill" />
             </IconButton>
-          </Tooltip> */}
+          </Tooltip>
         </Box>
       ),
     };
@@ -256,6 +267,28 @@ export default function ApprovalAuthorityTable({
       >
         <CircularIndeterminate />
       </Box>
+    );
+  }
+
+  // Show message if no department is selected
+  if (!selectedDepartment) {
+    return (
+      <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: 200,
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "text.secondary" }}>
+              Please select a department to view Approval Authority
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
     );
   }
 

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { lazy, Suspense, useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
@@ -10,7 +10,8 @@ import AddEditBusinessVertical from "../components/Modals/AddEditBusinessVertica
 import AddEditFunction from "../components/Modals/AddEditFunction";
 import AddEditMajorPosition from "../components/Modals/AddEditMajorPosition";
 import AddEditDepartment from "../components/Modals/AddEditDepartment";
-import { Box } from "@mui/material";
+import { Box, Autocomplete, TextField, CircularProgress, Paper } from "@mui/material";
+import { userRequest } from "src/requestMethod";
 import {
   MeasurementUnitTable,
   ApproverPositionTable,
@@ -21,7 +22,6 @@ import {
   DepartmentTable,
 } from "../components/tables";
 import swal from "sweetalert";
-import { userRequest } from "src/requestMethod";
 
 const menuItems = [
   "Department",
@@ -39,7 +39,38 @@ export default function CAPEXMaster() {
   const [open, setOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [tabChangeTrigger, setTabChangeTrigger] = useState(0);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
   const selectedCategory = menuItems[selectedTab];
+
+  // Fetch departments when Approval Authority tab is selected
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      if (selectedTab === 3) {
+        // Approval Authority tab
+        setDepartmentsLoading(true);
+        try {
+          const response = await userRequest.get("cpx/getDepartments", {
+            params: {
+              page: 1,
+              limit: 100,
+            },
+          });
+
+          const depts = response.data.data?.items || response.data.data || [];
+          setDepartments(depts);
+        } catch (error) {
+          console.error("Error fetching Departments:", error);
+          setDepartments([]);
+        } finally {
+          setDepartmentsLoading(false);
+        }
+      }
+    };
+
+    fetchDepartments();
+  }, [selectedTab]);
 
   const handleEdit = (row) => {
     setEditData(row);
@@ -76,7 +107,7 @@ export default function CAPEXMaster() {
             : selectedTab === 2
             ? `cpx/deleteApproverPosition/${id}`
             : selectedTab === 3
-            ? `cpx/deleteApprovalAuthority/${id}`
+            ? `cpx/deleteApproverAuthority/${id}`
             : selectedTab === 4
             ? `cpx/deleteBusinessVertical/${id}`
             : selectedTab === 5
@@ -123,11 +154,73 @@ export default function CAPEXMaster() {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: selectedTab === 3 ? "space-between" : "flex-end",
             alignItems: "center",
             mb: 2.5,
           }}
         >
+          {selectedTab === 3 && (
+            <Autocomplete
+              options={departments}
+              getOptionLabel={(option) => option?.name || ""}
+              isOptionEqualToValue={(option, value) =>
+                option?._id === value?._id
+              }
+              value={selectedDepartment || null}
+              onChange={(event, newValue) => {
+                setSelectedDepartment(newValue);
+              }}
+              loading={departmentsLoading}
+              sx={{ width: 300 }}
+              ListboxProps={{
+                sx: {
+                  "& .MuiAutocomplete-option": {
+                    backgroundColor: "#ffffff !important",
+                    "&:hover": {
+                      backgroundColor: "#e3f2fd !important",
+                    },
+                    "&[aria-selected='true']": {
+                      backgroundColor: "#bbdefb !important",
+                      "&:hover": {
+                        backgroundColor: "#90caf9 !important",
+                      },
+                    },
+                  },
+                },
+              }}
+              PaperComponent={({ children, ...other }) => (
+                <Paper
+                  {...other}
+                  sx={{
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e0e0e0",
+                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "4px",
+                    mt: 0.5,
+                  }}
+                >
+                  {children}
+                </Paper>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select Department"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {departmentsLoading ? (
+                          <CircularProgress size={20} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
+          )}
           <Box
             component="span"
             onClick={handleOpen}
@@ -136,6 +229,7 @@ export default function CAPEXMaster() {
               fontWeight: "bold",
               cursor: "pointer",
               color: "#167beb",
+              ml: selectedTab === 3 ? "auto" : 0,
             }}
           >
             Add {menuItems[selectedTab]}
@@ -182,6 +276,7 @@ export default function CAPEXMaster() {
               open={open}
               getData={getData}
               editData={editData}
+              selectedDepartment={selectedDepartment}
             />
           </Suspense>
         )}
@@ -248,12 +343,15 @@ export default function CAPEXMaster() {
           )}
 
           {selectedTab === 3 && (
-            <ApprovalAuthorityTable
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              refreshTrigger={refreshTrigger}
-              tabChangeTrigger={tabChangeTrigger}
-            />
+            <Box sx={{ mt: 3 }}>
+              <ApprovalAuthorityTable
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+                refreshTrigger={refreshTrigger}
+                tabChangeTrigger={tabChangeTrigger}
+                selectedDepartment={selectedDepartment}
+              />
+            </Box>
           )}
 
           {selectedTab === 4 && (

@@ -13,7 +13,7 @@ import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, getData }) {
+function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, getData, selectedDepartment }) {
   const { register, handleSubmit, reset, setValue, control } = useForm();
   const [loading, setLoading] = useState(false);
   const [approverCategories, setApproverCategories] = useState([]);
@@ -98,7 +98,11 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
         };
       });
 
+      // Use selectedDepartment from props, or from editData if editing
+      const departmentId = authorityData?.department?._id || authorityData?.department || selectedDepartment?._id || selectedDepartment || "";
+      
       const formattedData = {
+        department: departmentId,
         limitFrom: parseInt(data.limitFrom) || 0,
         limitTo: data.limitTo ? parseInt(data.limitTo) : null,
         approvers: approvers,
