@@ -10,33 +10,31 @@ import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditApproverCategory({ handleClose, open, editData: categoryData, getData }) {
+function AddEditDepartment({ handleClose, open, editData: departmentData, getData }) {
   const { register, handleSubmit, reset, setValue } = useForm();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (categoryData) {
-      setValue("category", categoryData.category || categoryData.name || "");
-      setValue("management", categoryData.management || categoryData.approver || "");
+    if (departmentData) {
+      setValue("name", departmentData.name || "");
     } else {
       reset();
     }
-  }, [categoryData, setValue, reset]);
+  }, [departmentData, setValue, reset]);
 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
       const formattedData = {
-        category: data.category,
-        management: data.management,
+        name: data.name,
       };
       
-      if (categoryData?._id) {
-        await userRequest.put(`cpx/updateApproverCategory/${categoryData._id}`, formattedData);
-        swal("Updated!", "Approver Category data updated successfully!", "success");
+      if (departmentData?._id) {
+        await userRequest.put(`cpx/updateDepartment/${departmentData._id}`, formattedData);
+        swal("Updated!", "Department data updated successfully!", "success");
       } else {
-        await userRequest.post("cpx/createApproverCategory", formattedData);
-        swal("Success!", "Approver Category data saved successfully!", "success");
+        await userRequest.post("cpx/createDepartment", formattedData);
+        swal("Success!", "Department data saved successfully!", "success");
       }
 
       reset();
@@ -72,7 +70,7 @@ function AddEditApproverCategory({ handleClose, open, editData: categoryData, ge
           }}
         >
           <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
-            {categoryData ? "Edit Approver Category" : "Add Approver Category"}
+            {departmentData ? "Edit Department" : "Add Department"}
           </span>
           <RxCross2
             onClick={handleClose}
@@ -97,19 +95,11 @@ function AddEditApproverCategory({ handleClose, open, editData: categoryData, ge
           onSubmit={handleSubmit(handleSaveData)}
         >
           <TextField
-            id="category"
-            label="Category"
-            {...register("category", { required: true })}
+            id="name"
+            label="Department"
+            {...register("name", { required: true })}
             fullWidth
             required
-          />
-          <TextField
-            id="management"
-            label="Management"
-            {...register("management", { required: true })}
-            fullWidth
-            required
-            helperText="e.g., Admin, CEO / MD, CFO"
           />
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
@@ -118,7 +108,7 @@ function AddEditApproverCategory({ handleClose, open, editData: categoryData, ge
             type="submit"
             disabled={loading}
           >
-            {loading ? "Saving..." : categoryData ? "Update" : "Save"}
+            {loading ? "Saving..." : departmentData ? "Update" : "Save"}
           </Button>
         </Box>
       </Box>
@@ -126,4 +116,5 @@ function AddEditApproverCategory({ handleClose, open, editData: categoryData, ge
   );
 }
 
-export default AddEditApproverCategory;
+export default AddEditDepartment;
+

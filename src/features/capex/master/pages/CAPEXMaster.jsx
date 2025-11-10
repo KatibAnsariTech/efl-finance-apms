@@ -4,21 +4,33 @@ import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import MasterTabs from "../components/MasterTabs";
 import AddEditMeasurementUnit from "../components/Modals/AddEditMeasurementUnit";
-import AddEditApproverCategory from "../components/Modals/AddEditApproverCategory";
+import AddEditApproverPosition from "../components/Modals/AddEditApproverPosition";
 import AddEditApprovalAuthority from "../components/Modals/AddEditApprovalAuthority";
 import AddEditBusinessVertical from "../components/Modals/AddEditBusinessVertical";
 import AddEditFunction from "../components/Modals/AddEditFunction";
+import AddEditMajorPosition from "../components/Modals/AddEditMajorPosition";
+import AddEditDepartment from "../components/Modals/AddEditDepartment";
 import { Box } from "@mui/material";
-import { MeasurementUnitTable, ApproverCategoryTable, ApprovalAuthorityTable, BusinessVerticalTable, FunctionTable } from "../components/tables";
+import {
+  MeasurementUnitTable,
+  ApproverPositionTable,
+  ApprovalAuthorityTable,
+  BusinessVerticalTable,
+  FunctionTable,
+  MajorPositionTable,
+  DepartmentTable,
+} from "../components/tables";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 
 const menuItems = [
-  "Measurement Units",
-  "Approver Category",
+  "Department",
+  "Major Position",
+  "Approver Position",
   "Approval Authority",
   "Business Vertical",
-  "Function"
+  "Function",
+  "Measurement Units",
 ];
 
 export default function CAPEXMaster() {
@@ -56,35 +68,48 @@ export default function CAPEXMaster() {
 
       if (result) {
         const itemType = selectedCategory.toLowerCase();
-        const endpoint = selectedTab === 0 
-          ? `cpx/deleteMeasurementUnit/${id}`
-          : selectedTab === 1
-          ? `cpx/deleteApproverCategory/${id}`
-          : selectedTab === 2
-          ? `cpx/deleteApprovalAuthority/${id}`
-          : selectedTab === 3
-          ? `cpx/deleteBusinessVertical/${id}`
-          : `cpx/deleteBusinessFunction/${id}`;
-        
+        const endpoint =
+          selectedTab === 0
+            ? `cpx/deleteDepartment/${id}`
+            : selectedTab === 1
+            ? `cpx/deleteMajorPosition/${id}`
+            : selectedTab === 2
+            ? `cpx/deleteApproverPosition/${id}`
+            : selectedTab === 3
+            ? `cpx/deleteApprovalAuthority/${id}`
+            : selectedTab === 4
+            ? `cpx/deleteBusinessVertical/${id}`
+            : selectedTab === 5
+            ? `cpx/deleteBusinessFunction/${id}`
+            : `cpx/deleteMeasurementUnit/${id}`;
+
         await userRequest.delete(endpoint);
-        
-        swal("Deleted!", `${selectedCategory} has been deleted successfully.`, "success");
-        
+
+        swal(
+          "Deleted!",
+          `${selectedCategory} has been deleted successfully.`,
+          "success"
+        );
+
         getData();
       }
     } catch (error) {
       console.error(`Error deleting ${selectedCategory.toLowerCase()}:`, error);
-      swal("Error!", `Failed to delete ${selectedCategory.toLowerCase()}. Please try again.`, "error");
+      swal(
+        "Error!",
+        `Failed to delete ${selectedCategory.toLowerCase()}. Please try again.`,
+        "error"
+      );
     }
   };
 
   const getData = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleTabChange = (newTab) => {
     setSelectedTab(newTab);
-    setTabChangeTrigger(prev => prev + 1);
+    setTabChangeTrigger((prev) => prev + 1);
   };
 
   return (
@@ -119,7 +144,7 @@ export default function CAPEXMaster() {
 
         {open && selectedTab === 0 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditMeasurementUnit
+            <AddEditDepartment
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -130,7 +155,7 @@ export default function CAPEXMaster() {
 
         {open && selectedTab === 1 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditApproverCategory
+            <AddEditMajorPosition
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -141,7 +166,7 @@ export default function CAPEXMaster() {
 
         {open && selectedTab === 2 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditApprovalAuthority
+            <AddEditApproverPosition
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -152,7 +177,7 @@ export default function CAPEXMaster() {
 
         {open && selectedTab === 3 && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddEditBusinessVertical
+            <AddEditApprovalAuthority
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -163,7 +188,29 @@ export default function CAPEXMaster() {
 
         {open && selectedTab === 4 && (
           <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditBusinessVertical
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
+        {open && selectedTab === 5 && (
+          <Suspense fallback={<CircularIndeterminate />}>
             <AddEditFunction
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
+        {open && selectedTab === 6 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditMeasurementUnit
               handleClose={handleClose}
               open={open}
               getData={getData}
@@ -174,16 +221,16 @@ export default function CAPEXMaster() {
 
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && (
-            <MeasurementUnitTable 
+            <DepartmentTable
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
               tabChangeTrigger={tabChangeTrigger}
             />
           )}
-          
+
           {selectedTab === 1 && (
-            <ApproverCategoryTable 
+            <MajorPositionTable
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
@@ -192,7 +239,7 @@ export default function CAPEXMaster() {
           )}
 
           {selectedTab === 2 && (
-            <ApprovalAuthorityTable 
+            <ApproverPositionTable
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
@@ -201,7 +248,7 @@ export default function CAPEXMaster() {
           )}
 
           {selectedTab === 3 && (
-            <BusinessVerticalTable 
+            <ApprovalAuthorityTable
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
@@ -210,7 +257,25 @@ export default function CAPEXMaster() {
           )}
 
           {selectedTab === 4 && (
-            <FunctionTable 
+            <BusinessVerticalTable
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
+            />
+          )}
+
+          {selectedTab === 5 && (
+            <FunctionTable
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
+            />
+          )}
+
+          {selectedTab === 6 && (
+            <MeasurementUnitTable
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
