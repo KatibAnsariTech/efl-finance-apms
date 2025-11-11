@@ -231,7 +231,7 @@ const SAPResponseModal = ({ open, onClose, rowData }) => {
           </Box>
         )}
 
-        {isError && (
+        {/* {isError && (
           <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
             <Button
               variant="contained"
@@ -249,7 +249,7 @@ const SAPResponseModal = ({ open, onClose, rowData }) => {
               Retry
             </Button>
           </Box>
-        )}
+        )} */}
         </Box>
       </Box>
     </Modal>
