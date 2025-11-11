@@ -212,7 +212,7 @@ const SAPResponseModal = ({ open, onClose, rowData }) => {
           </Box>
         )}
 
-        {isError && (
+        {/* {isError && (
           <Box
             sx={{
               mt: 3,
@@ -229,7 +229,7 @@ const SAPResponseModal = ({ open, onClose, rowData }) => {
               This transaction has an error status. Please review the details above and retry if necessary.
             </Typography>
           </Box>
-        )}
+        )} */}
 
         {/* {isError && (
           <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
