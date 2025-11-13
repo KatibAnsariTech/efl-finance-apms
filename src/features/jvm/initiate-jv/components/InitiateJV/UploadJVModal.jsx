@@ -443,6 +443,13 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
                 return message;
               })
               .join("\n\n");
+          } else if (error.type === "costCenterBusinessArea") {
+            return error.details
+              .map(
+                (entry) =>
+                  `Row ${entry.index}${entry.slNo ? ` (Serial Number ${entry.slNo})` : ''}: Cost Center first 4 digits '${entry.costCenterFirst4}' do not match Business Area '${entry.businessArea}'`
+              )
+              .join("\n");
           }
         });
 
