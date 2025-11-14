@@ -6,3 +6,4 @@ export { default as FunctionTable } from "./FunctionTable";
 export { default as MajorPositionTable } from "./MajorPositionTable";
 export { default as DepartmentTable } from "./DepartmentTable";
 export { default as LocationTable } from "./LocationTable";
+export { default as PlantCodeTable } from "./PlantCodeTable";

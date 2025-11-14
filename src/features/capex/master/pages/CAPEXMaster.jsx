@@ -11,6 +11,7 @@ import AddEditFunction from "../components/Modals/AddEditFunction";
 import AddEditMajorPosition from "../components/Modals/AddEditMajorPosition";
 import AddEditDepartment from "../components/Modals/AddEditDepartment";
 import AddEditLocation from "../components/Modals/AddEditLocation";
+import AddEditPlantCode from "../components/Modals/AddEditPlantCode";
 import { Box, Autocomplete, TextField, CircularProgress, Paper } from "@mui/material";
 import { userRequest } from "src/requestMethod";
 import {
@@ -22,6 +23,7 @@ import {
   MajorPositionTable,
   DepartmentTable,
   LocationTable,
+  PlantCodeTable,
 } from "../components/tables";
 import swal from "sweetalert";
 
@@ -34,6 +36,7 @@ const menuItems = [
   "Function",
   "Measurement Units",
   "Location",
+  "Plant Code",
 ];
 
 export default function CAPEXMaster() {
@@ -117,7 +120,9 @@ export default function CAPEXMaster() {
             ? `cpx/deleteBusinessFunction/${id}`
             : selectedTab === 6
             ? `cpx/deleteMeasurementUnit/${id}`
-            : `cpx/deleteLocation/${id}`;
+            : selectedTab === 7
+            ? `cpx/deleteLocation/${id}`
+            : `cpx/deletePlantCode/${id}`;
 
         await userRequest.delete(endpoint);
 
@@ -330,6 +335,17 @@ export default function CAPEXMaster() {
           </Suspense>
         )}
 
+        {open && selectedTab === 8 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditPlantCode
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && (
             <DepartmentTable
@@ -399,6 +415,15 @@ export default function CAPEXMaster() {
 
           {selectedTab === 7 && (
             <LocationTable
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
+            />
+          )}
+
+          {selectedTab === 8 && (
+            <PlantCodeTable
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
