@@ -77,6 +77,7 @@ export default function BasicInformationSection({ control, errors }) {
                 label="Proposed SPOC"
                 fullWidth
                 variant="outlined"
+                disabled
               />
             )}
           />
@@ -93,6 +94,7 @@ export default function BasicInformationSection({ control, errors }) {
                 fullWidth
                 variant="outlined"
                 type="datetime-local"
+                disabled
               />
             )}
           />

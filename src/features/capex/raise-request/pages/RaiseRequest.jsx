@@ -22,8 +22,22 @@ import SupportingDocumentsSection from "../components/SupportingDocumentsSection
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
+import { useAccount } from "src/hooks/use-account";
 
 export default function RaiseRequest() {
+  const account = useAccount();
+  
+  // Helper function to format current date for datetime-local input
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const {
     control,
     handleSubmit,
@@ -36,8 +50,8 @@ export default function RaiseRequest() {
     resolver: yupResolver(capexFormSchema),
     mode: "onChange",
     defaultValues: {
-      proposedSpoc: "",
-      date: new Date(),
+      proposedSpoc: account?.displayName || account?.username || "",
+      date: getCurrentDateTime(),
       businessVertical: "",
       location: "",
       function: "",
@@ -197,8 +211,8 @@ export default function RaiseRequest() {
         swal("Success!", "CAPEX request submitted successfully!", "success");
         // Reset form to default values
         reset({
-          proposedSpoc: "",
-          date: new Date(),
+          proposedSpoc: account?.displayName || account?.username || "",
+          date: getCurrentDateTime(),
           businessVertical: "",
           location: "",
           function: "",
@@ -329,8 +343,8 @@ export default function RaiseRequest() {
         swal("Success!", "Request saved as draft!", "success");
         // Reset form to default values
         reset({
-          proposedSpoc: "",
-          date: new Date(),
+          proposedSpoc: account?.displayName || account?.username || "",
+          date: getCurrentDateTime(),
           businessVertical: "",
           location: "",
           function: "",
