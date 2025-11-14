@@ -236,6 +236,13 @@ const projectConfig = {
         roles: ["REQUESTER","SUPER_ADMIN"],
       },
       {
+        id: "capex-my-requests",
+        title: "My Requests",
+        path: "/capex/my-requests",
+        icon: <ListAltIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+      {
         id: "capex-master",
         title: "Master Data",
         path: "/capex/master",
