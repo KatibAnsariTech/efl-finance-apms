@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Grid,
-  MenuItem,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
 import { CustomTextField, CustomSelect } from "./CustomFields";
@@ -19,20 +18,24 @@ export default function ModificationUpgradeSection({ control, errors, watch }) {
       </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          <Controller
+            <Controller
             name="modificationOrUpgrade"
             control={control}
             render={({ field, fieldState: { error } }) => (
               <CustomSelect
-                {...field}
+                value={field.value || null}
+                onChange={(event, newValue) => {
+                  field.onChange(newValue || "");
+                }}
                 label="Modification or Upgrade *"
                 error={!!error}
                 helperText={error?.message}
-              >
-                <MenuItem value="">Select Option</MenuItem>
-                <MenuItem value="Yes">Yes</MenuItem>
-                <MenuItem value="No">No</MenuItem>
-              </CustomSelect>
+                options={["", "Yes", "No"]}
+                getOptionLabel={(option) => {
+                  if (option === "") return "Select Option";
+                  return option;
+                }}
+              />
             )}
           />
         </Grid>

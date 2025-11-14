@@ -4,7 +4,6 @@ import {
   Typography,
   Grid,
   Button,
-  MenuItem,
   LinearProgress,
   IconButton,
   List,
@@ -497,16 +496,22 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
             <Controller
               name="projectStatus"
               control={control}
-              render={({ field }) => (
+              rules={{ required: "Project Status is required" }}
+              render={({ field, fieldState: { error } }) => (
                 <CustomSelect
-                  {...field}
-                  label="Project Status"
-                >
-                  <MenuItem value="Active">Active</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
-                  <MenuItem value="On Hold">On Hold</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                </CustomSelect>
+                  value={field.value || null}
+                  onChange={(event, newValue) => {
+                    field.onChange(newValue || "");
+                  }}
+                  label="Project Status *"
+                  error={!!error}
+                  helperText={error?.message}
+                  options={["", "Active", "Inactive", "On Hold", "Completed"]}
+                  getOptionLabel={(option) => {
+                    if (option === "") return "Select";
+                    return option;
+                  }}
+                />
               )}
             />
           </Grid>
@@ -515,17 +520,34 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
             <Controller
               name="submitCheckBox"
               control={control}
-              render={({ field }) => (
-                <CustomSelect
-                  {...field}
-                  value={field.value ? "True" : "False"}
-                  onChange={(e) => field.onChange(e.target.value === "True")}
-                  label="Submit Check Box"
-                >
-                  <MenuItem value="False">False</MenuItem>
-                  <MenuItem value="True">True</MenuItem>
-                </CustomSelect>
-              )}
+              rules={{ required: "You must confirm the submission" }}
+              render={({ field, fieldState: { error } }) => {
+                const options = ["", "False", "True"];
+                const selectedValue = field.value === undefined || field.value === null 
+                  ? "" 
+                  : (field.value ? "True" : "False");
+
+                return (
+                  <CustomSelect
+                    value={selectedValue}
+                    onChange={(event, newValue) => {
+                      if (newValue === "" || newValue === null) {
+                        field.onChange(undefined);
+                      } else {
+                        field.onChange(newValue === "True");
+                      }
+                    }}
+                    label="Submit Check Box *"
+                    error={!!error}
+                    helperText={error?.message}
+                    options={options}
+                    getOptionLabel={(option) => {
+                      if (option === "") return "Select";
+                      return option;
+                    }}
+                  />
+                );
+              }}
             />
           </Grid>
         </Grid>

@@ -397,93 +397,121 @@ export default function TechnicalAspectsSection({
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          <CustomTextField
+          <Controller
             name="applicationDetails"
-            label="Application Details *"
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            error={!!errors.applicationDetails}
-            helperText={errors.applicationDetails?.message}
-            onChange={(e) => setValue("applicationDetails", e.target.value)}
-            value={watch("applicationDetails") || ""}
+            control={control}
+            rules={{ required: "Application Details is required" }}
+            render={({ field, fieldState: { error } }) => (
+              <CustomTextField
+                {...field}
+                label="Application Details *"
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
           />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <CustomTextField
+          <Controller
             name="acceptanceCriteria"
-            label="Acceptance Criteria *"
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            error={!!errors.acceptanceCriteria}
-            helperText={errors.acceptanceCriteria?.message}
-            onChange={(e) => setValue("acceptanceCriteria", e.target.value)}
-            value={watch("acceptanceCriteria") || ""}
+            control={control}
+            rules={{ required: "Acceptance Criteria is required" }}
+            render={({ field, fieldState: { error } }) => (
+              <CustomTextField
+                {...field}
+                label="Acceptance Criteria *"
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
           />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <CustomTextField
+          <Controller
             name="currentScenario"
-            label="Current Scenario *"
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            error={!!errors.currentScenario}
-            helperText={errors.currentScenario?.message}
-            onChange={(e) => setValue("currentScenario", e.target.value)}
-            value={watch("currentScenario") || ""}
+            control={control}
+            rules={{ required: "Current Scenario is required" }}
+            render={({ field, fieldState: { error } }) => (
+              <CustomTextField
+                {...field}
+                label="Current Scenario *"
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
           />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <CustomTextField
+          <Controller
             name="proposedAfterScenario"
-            label="Proposed / After Scenario *"
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            error={!!errors.proposedAfterScenario}
-            helperText={errors.proposedAfterScenario?.message}
-            onChange={(e) => setValue("proposedAfterScenario", e.target.value)}
-            value={watch("proposedAfterScenario") || ""}
+            control={control}
+            rules={{ required: "Proposed / After Scenario is required" }}
+            render={({ field, fieldState: { error } }) => (
+              <CustomTextField
+                {...field}
+                label="Proposed / After Scenario *"
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <CustomTextField
+          <Controller
             name="capacityAlignment"
-            label="Capacity Alignment with Current Production Target and Future Plan *"
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            error={!!errors.capacityAlignment}
-            helperText={errors.capacityAlignment?.message}
-            onChange={(e) => setValue("capacityAlignment", e.target.value)}
-            value={watch("capacityAlignment") || ""}
+            control={control}
+            rules={{ required: "Capacity Alignment is required" }}
+            render={({ field, fieldState: { error } }) => (
+              <CustomTextField
+                {...field}
+                label="Capacity Alignment with Current Production Target and Future Plan *"
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
           />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <CustomTextField
+          <Controller
             name="alternateMakeTechnology"
-            label="Alternate Make / Technology Evaluation *"
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            error={!!errors.alternateMakeTechnology}
-            helperText={errors.alternateMakeTechnology?.message}
-            onChange={(e) =>
-              setValue("alternateMakeTechnology", e.target.value)
-            }
-            value={watch("alternateMakeTechnology") || ""}
+            control={control}
+            rules={{ required: "Technology Evaluation is required" }}
+            render={({ field, fieldState: { error } }) => (
+              <CustomTextField
+                {...field}
+                label="Alternate Make / Technology Evaluation *"
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
           />
         </Grid>
 
