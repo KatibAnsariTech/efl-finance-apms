@@ -5,3 +5,4 @@ export { default as BusinessVerticalTable } from "./BusinessVerticalTable";
 export { default as FunctionTable } from "./FunctionTable";
 export { default as MajorPositionTable } from "./MajorPositionTable";
 export { default as DepartmentTable } from "./DepartmentTable";
+export { default as LocationTable } from "./LocationTable";

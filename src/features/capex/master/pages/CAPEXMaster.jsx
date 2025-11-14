@@ -10,6 +10,7 @@ import AddEditBusinessVertical from "../components/Modals/AddEditBusinessVertica
 import AddEditFunction from "../components/Modals/AddEditFunction";
 import AddEditMajorPosition from "../components/Modals/AddEditMajorPosition";
 import AddEditDepartment from "../components/Modals/AddEditDepartment";
+import AddEditLocation from "../components/Modals/AddEditLocation";
 import { Box, Autocomplete, TextField, CircularProgress, Paper } from "@mui/material";
 import { userRequest } from "src/requestMethod";
 import {
@@ -20,6 +21,7 @@ import {
   FunctionTable,
   MajorPositionTable,
   DepartmentTable,
+  LocationTable,
 } from "../components/tables";
 import swal from "sweetalert";
 
@@ -31,6 +33,7 @@ const menuItems = [
   "Business Vertical",
   "Function",
   "Measurement Units",
+  "Location",
 ];
 
 export default function CAPEXMaster() {
@@ -112,7 +115,9 @@ export default function CAPEXMaster() {
             ? `cpx/deleteBusinessVertical/${id}`
             : selectedTab === 5
             ? `cpx/deleteBusinessFunction/${id}`
-            : `cpx/deleteMeasurementUnit/${id}`;
+            : selectedTab === 6
+            ? `cpx/deleteMeasurementUnit/${id}`
+            : `cpx/deleteLocation/${id}`;
 
         await userRequest.delete(endpoint);
 
@@ -314,6 +319,17 @@ export default function CAPEXMaster() {
           </Suspense>
         )}
 
+        {open && selectedTab === 7 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditLocation
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
         <Box sx={{ width: "100%" }}>
           {selectedTab === 0 && (
             <DepartmentTable
@@ -374,6 +390,15 @@ export default function CAPEXMaster() {
 
           {selectedTab === 6 && (
             <MeasurementUnitTable
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              refreshTrigger={refreshTrigger}
+              tabChangeTrigger={tabChangeTrigger}
+            />
+          )}
+
+          {selectedTab === 7 && (
+            <LocationTable
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
