@@ -8,7 +8,6 @@ import {
   Tooltip,
   InputAdornment,
   CircularProgress,
-  MenuItem,
 } from "@mui/material";
 import { HelpOutline } from "@mui/icons-material";
 import { RxCross2 } from "react-icons/rx";
@@ -193,23 +192,30 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
                 name="uom"
                 control={control}
                 rules={{ required: "UOM is required" }}
-                render={({ field, fieldState: { error } }) => (
-                  <CustomSelect
-                    {...field}
-                    label="UOM *"
-                    error={!!error}
-                    helperText={error?.message}
-                  >
-                    <MenuItem value="">
-                      <em>Select UOM</em>
-                    </MenuItem>
-                    {measurementUnits.map((unit) => (
-                      <MenuItem key={unit._id} value={unit._id}>
-                        {unit.unit} ({unit.abbr})
-                      </MenuItem>
-                    ))}
-                  </CustomSelect>
-                )}
+                render={({ field, fieldState: { error } }) => {
+                  // Find the selected option if value is a string (ID)
+                  const selectedValue = typeof field.value === "string" && field.value
+                    ? measurementUnits.find((unit) => unit._id === field.value) || null
+                    : field.value || null;
+
+                  return (
+                    <CustomSelect
+                      value={selectedValue}
+                      options={measurementUnits}
+                      onChange={(event, newValue) => {
+                        field.onChange(newValue?._id || newValue || "");
+                      }}
+                      label="UOM *"
+                      error={!!error}
+                      helperText={error?.message}
+                      getOptionLabel={(option) => {
+                        if (!option) return "";
+                        if (typeof option === "string") return option;
+                        return `${option.unit} (${option.abbr})`;
+                      }}
+                    />
+                  );
+                }}
               />
             </Grid>
 

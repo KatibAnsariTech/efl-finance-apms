@@ -114,6 +114,34 @@ export const validateSlNoDateConsistency = (data) => {
   return inconsistentGroups;
 };
 
+export const validateCostCenterBusinessArea = (data) => {
+  const mismatchedEntries = [];
+  
+  data.forEach((entry, idx) => {
+    if (entry.costCenter && entry.businessArea) {
+      const costCenterStr = entry.costCenter.toString().trim();
+      const businessAreaStr = entry.businessArea.toString().trim();
+      
+      if (costCenterStr.length >= 4 && businessAreaStr.length > 0) {
+        const costCenterFirst4 = costCenterStr.substring(0, 4).toUpperCase();
+        const businessAreaUpper = businessAreaStr.toUpperCase();
+        
+        if (costCenterFirst4 !== businessAreaUpper) {
+          mismatchedEntries.push({
+            index: idx + 1,
+            slNo: entry.slNo || '',
+            costCenter: costCenterStr,
+            costCenterFirst4,
+            businessArea: businessAreaStr
+          });
+        }
+      }
+    }
+  });
+
+  return mismatchedEntries;
+};
+
 const normalizeTransactionType = (type) => {
   if (!type) return null;
   const normalized = String(type).trim();
@@ -192,7 +220,8 @@ export const validateAllJVEntries = (data, options = {}) => {
     maxEntries = 950,
     checkEntryLimit = true,
     checkBalance = true,
-    checkDateConsistency = true
+    checkDateConsistency = true,
+    checkCostCenterBusinessArea = true
   } = options;
 
   const results = {
@@ -233,6 +262,18 @@ export const validateAllJVEntries = (data, options = {}) => {
         type: 'dateConsistency',
         message: 'Serial numbers have inconsistent Document and Posting dates',
         details: inconsistentDateGroups
+      });
+    }
+  }
+
+  if (checkCostCenterBusinessArea) {
+    const mismatchedEntries = validateCostCenterBusinessArea(data);
+    if (mismatchedEntries.length > 0) {
+      results.isValid = false;
+      results.errors.push({
+        type: 'costCenterBusinessArea',
+        message: 'Cost Center first 4 digits do not match Business Area',
+        details: mismatchedEntries
       });
     }
   }

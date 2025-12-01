@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
-import { fDateTime } from "src/utils/format-time";
+import { fDate, fDateTime } from "src/utils/format-time";
 import Iconify from "src/components/iconify/iconify";
 
 export const AutoReversalColumns = ({ navigate, handleDelete }) => {
@@ -55,7 +55,7 @@ export const AutoReversalColumns = ({ navigate, handleDelete }) => {
       minWidth: 180,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => params.value ? fDateTime(params.value) : "-",
+      renderCell: (params) => params.value ? fDate(params.value) : "-",
     },
     {
       field: "postingDate",
@@ -64,7 +64,7 @@ export const AutoReversalColumns = ({ navigate, handleDelete }) => {
       minWidth: 180,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => params.value ? fDateTime(params.value) : "-",
+      renderCell: (params) => params.value ? fDate(params.value) : "-",
     },
     {
       field: "status",

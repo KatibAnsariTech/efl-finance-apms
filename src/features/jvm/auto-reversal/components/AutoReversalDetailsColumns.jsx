@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "@mui/material";
-import { fDateTime } from "src/utils/format-time";
+import { fDate, fDateTime } from "src/utils/format-time";
 
 export const AutoReversalDetailsColumns = () => {
   const columns = [
@@ -26,7 +26,7 @@ export const AutoReversalDetailsColumns = () => {
       field: "initiatedDate",
       headerName: "Initiated Date",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
@@ -38,7 +38,7 @@ export const AutoReversalDetailsColumns = () => {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
+      renderCell: (params) => (params.value ? fDate(params.value) : "-"),
     },
     {
       field: "businessArea",
@@ -69,16 +69,16 @@ export const AutoReversalDetailsColumns = () => {
     },
     {
       field: "vendorCustomerGLNumber",
-      headerName: "GL Number",
+      headerName: "Vendor/Customer/GL Number",
       flex: 1,
-      minWidth: 120,
+      minWidth: 210,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => params.value || "-",
     },
     {
       field: "vendorCustomerGLName",
-      headerName: "GL Name",
+      headerName: "Vendor/Customer/GL Name",
       flex: 2,
       minWidth: 200,
       align: "left",
@@ -119,18 +119,18 @@ export const AutoReversalDetailsColumns = () => {
     },
     {
       field: "specialGLIndication",
-      headerName: "Special GL",
+      headerName: "Special GL Indication",
       flex: 1,
-      minWidth: 100,
+      minWidth: 200,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => params.value || "-",
     },
     {
       field: "referenceNumber",
-      headerName: "Reference",
+      headerName: "Reference Number",
       flex: 1,
-      minWidth: 120,
+      minWidth: 160,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => params.value || "-",
@@ -151,7 +151,7 @@ export const AutoReversalDetailsColumns = () => {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (params.value ? fDateTime(params.value) : "-"),
+      renderCell: (params) => (params.value ? fDate(params.value) : "-"),
     },
     {
       field: "costCenter",

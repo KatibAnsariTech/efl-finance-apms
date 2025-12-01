@@ -148,6 +148,10 @@ export const capexFormSchema = yup.object().shape({
       })
       .nullable(),
   }).required("Documents are required"),
+  projectStatus: yup
+    .string()
+    .required("Project Status is required")
+    .notOneOf([""], "Project Status is required"),
   submitCheckBox: yup
     .boolean()
     .oneOf([true], "You must confirm the submission"),

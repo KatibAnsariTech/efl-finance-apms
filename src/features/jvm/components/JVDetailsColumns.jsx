@@ -1,5 +1,5 @@
 import React from "react";
-import { fDateTime } from "src/utils/format-time";
+import { fDate, fDateTime } from "src/utils/format-time";
 
 export const JVDetailsColumns = () => {
   const columns = [
@@ -26,7 +26,7 @@ export const JVDetailsColumns = () => {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => fDate(params.value),
     },
     {
       field: "businessArea",
@@ -54,7 +54,7 @@ export const JVDetailsColumns = () => {
     },
     {
       field: "vendorCustomerGLNumber",
-      headerName: "GL Number",
+      headerName: "Vendor/Customer/GL Number",
       flex: 1,
       minWidth: 120,
       align: "center",
@@ -62,7 +62,7 @@ export const JVDetailsColumns = () => {
     },
     {
       field: "vendorCustomerGLName",
-      headerName: "GL Name",
+      headerName: "Vendor/Customer/GL Name",
       flex: 2,
       minWidth: 200,
       align: "left",
@@ -99,7 +99,7 @@ export const JVDetailsColumns = () => {
     },
     {
       field: "specialGLIndication",
-      headerName: "Special GL",
+      headerName: "Special GL Indication",
       flex: 1,
       minWidth: 100,
       align: "center",
@@ -107,7 +107,7 @@ export const JVDetailsColumns = () => {
     },
     {
       field: "referenceNumber",
-      headerName: "Reference",
+      headerName: "Reference Number",
       flex: 1,
       minWidth: 120,
       align: "center",
@@ -128,7 +128,7 @@ export const JVDetailsColumns = () => {
       minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => fDateTime(params.value),
+      renderCell: (params) => fDate(params.value),
     },
     {
       field: "costCenter",

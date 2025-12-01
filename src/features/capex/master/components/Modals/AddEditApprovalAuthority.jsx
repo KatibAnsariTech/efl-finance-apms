@@ -13,7 +13,7 @@ import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, getData }) {
+function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, getData, selectedDepartment }) {
   const { register, handleSubmit, reset, setValue, control } = useForm();
   const [loading, setLoading] = useState(false);
   const [approverCategories, setApproverCategories] = useState([]);
@@ -24,7 +24,7 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
     const fetchApproverCategories = async () => {
       setCategoriesLoading(true);
       try {
-        const response = await userRequest.get("/cpx/getApproverCategories", {
+        const response = await userRequest.get("/cpx/getApproverPositions", {
           params: {
             page: 1,
             limit: 100,
@@ -32,11 +32,11 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
         });
 
         const categories = response.data.data.items || response.data.data.approverCategories || [];
-        // Sort categories: A (topmost hierarchy) should show last
+        // Sort categories by ranking - lowest number will be shown last (descending order)
         const sortedCategories = [...categories].sort((a, b) => {
-          const categoryA = (a.category || a.name || "").toUpperCase();
-          const categoryB = (b.category || b.name || "").toUpperCase();
-          return categoryB.localeCompare(categoryA);
+          const rankingA = typeof a.ranking === 'number' ? a.ranking : (parseInt(a.ranking) || 0);
+          const rankingB = typeof b.ranking === 'number' ? b.ranking : (parseInt(b.ranking) || 0);
+          return rankingB - rankingA; // Descending order (highest first, lowest last)
         });
         setApproverCategories(sortedCategories);
       } catch (error) {
@@ -66,7 +66,7 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
       // Map approvers to form fields
       if (authorityData.approvers && Array.isArray(authorityData.approvers)) {
         authorityData.approvers.forEach((approver) => {
-          const categoryId = approver.approverCategory?._id || approver.approverCategory;
+          const categoryId = approver.approverPosition?._id || approver.approverPosition || approver.approverCategory?._id || approver.approverCategory;
           if (categoryId) {
             setValue(`approver_${categoryId}`, approver.willApprove === true);
           }
@@ -93,12 +93,16 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
         const willApprove = data[`approver_${categoryId}`] || false;
         
         return {
-          approverCategory: categoryId,
+          approverPosition: categoryId,
           willApprove: willApprove,
         };
       });
 
+      // Use selectedDepartment from props, or from editData if editing
+      const departmentId = authorityData?.department?._id || authorityData?.department || selectedDepartment?._id || selectedDepartment || "";
+      
       const formattedData = {
+        department: departmentId,
         limitFrom: parseInt(data.limitFrom) || 0,
         limitTo: data.limitTo ? parseInt(data.limitTo) : null,
         approvers: approvers,
@@ -242,9 +246,8 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
               <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 0 }}>
                 {approverCategories.map((category) => {
                   const categoryId = category._id;
-                  const headerName = category.category || category.name || "Unknown";
-                  const management = category.management || "";
-                  const fullLabel = management ? `${headerName} (${management})` : headerName;
+                  const majorPosition = category.majorPosition?.name || (typeof category.majorPosition === 'string' ? category.majorPosition : category.management || "");
+                  const fullLabel = majorPosition || "Unknown";
                   
                   return (
                     <FormControlLabel

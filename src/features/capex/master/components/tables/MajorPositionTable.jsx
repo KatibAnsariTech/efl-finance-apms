@@ -7,7 +7,7 @@ import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
+export default function MajorPositionTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,29 +18,28 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await userRequest.get("cpx/getApproverCategories", {
+      const response = await userRequest.get("cpx/getMajorPositions", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
         },
       });
 
-      const apiData = response.data.data?.items || response.data.data?.approverCategories || response.data.data || [];
+      const apiData = response.data.data?.items || response.data.data || [];
       const totalCount = response.data.data?.pagination?.total || 0;
 
       const mappedData = apiData.map((item, index) => ({
         id: item._id,
         sno: (page * rowsPerPage) + index + 1,
-        category: item.category || item.name || "-",
-        management: item.management || item.approver || "-",
+        name: item.name || "-",
         ...item,
       }));
 
       setData(mappedData);
       setRowCount(totalCount);
     } catch (error) {
-      console.error("Error fetching Approver Category data:", error);
-      showErrorMessage(error, "Error fetching Approver Category data", swal);
+      console.error("Error fetching Major Position data:", error);
+      showErrorMessage(error, "Error fetching Major Position data", swal);
     } finally {
       setLoading(false);
     }
@@ -61,7 +60,7 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
       const rowData = data.find(item => item.id === id);
       parentHandleEdit(rowData);
     } else {
-      alert(`Edit Approver Category: ${id}`);
+      alert(`Edit Major Position: ${id}`);
     }
   };
 
@@ -69,7 +68,7 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
     if (parentHandleDelete) {
       parentHandleDelete(id);
     } else {
-      alert(`Delete Approver Category: ${id}`);
+      alert(`Delete Major Position: ${id}`);
     }
   };
 
@@ -92,23 +91,8 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
       headerAlign: "center",
     },
     {
-      field: "category",
-      headerName: "Category",
-      minWidth: 150,
-      flex: 1,
-      sortable: true,
-      align: "center",
-      headerAlign: "center",
-      resizable: true,
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {params.value || "-"}
-        </Typography>
-      ),
-    },
-    {
-      field: "management",
-      headerName: "Management",
+      field: "name",
+      headerName: "Major Position",
       minWidth: 200,
       flex: 1,
       sortable: true,
@@ -159,8 +143,8 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
   ];
 
   return (
-      <DataGrid
-        key={`approver-category-table-${tabChangeTrigger}`}
+    <DataGrid
+        key={`major-position-table-${tabChangeTrigger}`}
         rows={data}
         columns={columns}
         loading={loading}
@@ -221,3 +205,4 @@ export default function ApproverCategoryTable({ handleEdit: parentHandleEdit, ha
       />
   );
 }
+

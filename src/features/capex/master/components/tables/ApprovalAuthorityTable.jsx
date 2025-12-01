@@ -21,6 +21,7 @@ export default function ApprovalAuthorityTable({
   handleDelete: parentHandleDelete,
   refreshTrigger,
   tabChangeTrigger,
+  selectedDepartment,
 }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
@@ -34,7 +35,7 @@ export default function ApprovalAuthorityTable({
   const fetchApproverCategories = async () => {
     setCategoriesLoading(true);
     try {
-      const response = await userRequest.get("/cpx/getApproverCategories", {
+      const response = await userRequest.get("/cpx/getApproverPositions", {
         params: { page: 1, limit: 100 },
       });
 
@@ -53,12 +54,22 @@ export default function ApprovalAuthorityTable({
   };
 
   const fetchData = async () => {
+    // Don't fetch if no department is selected
+    if (!selectedDepartment) {
+      setData([]);
+      setRowCount(0);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
+      const departmentId = selectedDepartment._id || selectedDepartment;
       const response = await userRequest.get("/cpx/getApproverAuthorities", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
+          department: departmentId,
         },
       });
 
@@ -76,7 +87,7 @@ export default function ApprovalAuthorityTable({
 
         if (item.approvers && Array.isArray(item.approvers)) {
           item.approvers.forEach((approver) => {
-            const categoryId = approver.approverCategory?._id;
+            const categoryId = approver.approverPosition?._id || approver.approverPosition || approver.approverCategory?._id || approver.approverCategory;
             if (categoryId) {
               rowData[`approver_${categoryId}`] = approver.willApprove || false;
             }
@@ -102,7 +113,7 @@ export default function ApprovalAuthorityTable({
 
   useEffect(() => {
     fetchData();
-  }, [page, rowsPerPage, refreshTrigger]);
+  }, [page, rowsPerPage, refreshTrigger, selectedDepartment]);
 
   useEffect(() => {
     if (tabChangeTrigger > 0 || refreshTrigger > 0) {
@@ -181,22 +192,20 @@ export default function ApprovalAuthorityTable({
     ];
 
     const sortedCategories = [...approverCategories].sort((a, b) => {
-      const categoryA = (a.category || a.name || "").toUpperCase();
-      const categoryB = (b.category || b.name || "").toUpperCase();
-      return categoryB.localeCompare(categoryA);
+      // Sort by ranking number - lowest number will be shown last (descending order)
+      const rankingA = typeof a.ranking === 'number' ? a.ranking : (parseInt(a.ranking) || 0);
+      const rankingB = typeof b.ranking === 'number' ? b.ranking : (parseInt(b.ranking) || 0);
+      return rankingB - rankingA; // Descending order (highest first, lowest last)
     });
 
     const dynamicColumns = sortedCategories.map((category) => {
       const categoryId = category._id;
-      const headerName = category.category || category.name || "Unknown";
-      const management = category.management || "";
-      const fullHeaderName = management
-        ? `${headerName} (${management})`
-        : headerName;
+      const majorPosition = category.majorPosition?.name || (typeof category.majorPosition === 'string' ? category.majorPosition : category.management || "");
+      const headerName = majorPosition || "Unknown";
 
       return {
         field: `approver_${categoryId}`,
-        headerName: fullHeaderName,
+        headerName: headerName,
         width: 150,
         sortable: false,
         align: "center",
@@ -228,7 +237,7 @@ export default function ApprovalAuthorityTable({
               <Iconify icon="eva:edit-fill" />
             </IconButton>
           </Tooltip>
-          {/* <Tooltip title="Delete">
+          <Tooltip title="Delete">
             <IconButton
               color="error"
               size="small"
@@ -236,7 +245,7 @@ export default function ApprovalAuthorityTable({
             >
               <Iconify icon="eva:trash-2-fill" />
             </IconButton>
-          </Tooltip> */}
+          </Tooltip>
         </Box>
       ),
     };
@@ -258,6 +267,28 @@ export default function ApprovalAuthorityTable({
       >
         <CircularIndeterminate />
       </Box>
+    );
+  }
+
+  // Show message if no department is selected
+  if (!selectedDepartment) {
+    return (
+      <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: 200,
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "text.secondary" }}>
+              Please select a department to view Approval Authority
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
     );
   }
 

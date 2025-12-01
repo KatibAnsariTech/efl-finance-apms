@@ -209,9 +209,10 @@ const Footer = ({
                   fontWeight: 500,
                 }}
               >
-                Reversal Reason:
+                Reversal Reason: <span style={{ color: "red" }}>*</span>
               </Typography>
               <FormControl
+                required
                 sx={{
                   minWidth: 120,
                   "& .MuiOutlinedInput-root": {

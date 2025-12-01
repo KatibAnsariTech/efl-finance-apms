@@ -101,6 +101,13 @@ export const useInitiateJV = () => {
                 return message;
               })
               .join("\n\n");
+          } else if (error.type === "costCenterBusinessArea") {
+            return error.details
+              .map(
+                (entry) =>
+                  `Entry ${entry.index}${entry.slNo ? ` (Serial Number ${entry.slNo})` : ''}: Cost Center first 4 digits '${entry.costCenterFirst4}' do not match Business Area '${entry.businessArea}'`
+              )
+              .join("\n");
           }
         });
 
@@ -145,6 +152,18 @@ export const useInitiateJV = () => {
         return;
       }
 
+      // Validate reversal remarks is required when auto reversal is Yes
+      if (autoReversal === "Yes" && (!reversalRemarks || reversalRemarks.trim() === "")) {
+        await swal({
+          title: "Validation Error",
+          text: "Please select Reversal Reason when Auto-reversal is Yes.",
+          icon: "error",
+          button: "OK",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const validationResults = validateAllJVEntries(data);
       if (!validationResults.isValid) {
         const errorMessages = validationResults.errors.map((error) => {
@@ -177,6 +196,13 @@ export const useInitiateJV = () => {
                 return message;
               })
               .join("\n\n");
+          } else if (error.type === "costCenterBusinessArea") {
+            return error.details
+              .map(
+                (entry) =>
+                  `Entry ${entry.index}${entry.slNo ? ` (Serial Number ${entry.slNo})` : ''}: Cost Center first 4 digits '${entry.costCenterFirst4}' do not match Business Area '${entry.businessArea}'`
+              )
+              .join("\n");
           }
         });
 

@@ -22,21 +22,36 @@ import SupportingDocumentsSection from "../components/SupportingDocumentsSection
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
+import { useAccount } from "src/hooks/use-account";
 
 export default function RaiseRequest() {
+  const account = useAccount();
+  
+  // Helper function to format current date for datetime-local input
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const {
     control,
     handleSubmit,
     watch,
     setValue,
     trigger,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(capexFormSchema),
     mode: "onChange",
     defaultValues: {
-      proposedSpoc: "",
-      date: new Date(),
+      proposedSpoc: account?.displayName || account?.username || "",
+      date: getCurrentDateTime(),
       businessVertical: "",
       location: "",
       function: "",
@@ -68,7 +83,7 @@ export default function RaiseRequest() {
       impactOnBusiness: "",
       newAssetCode: "",
       businessCaseROI: "",
-      projectStatus: "Active",
+      projectStatus: "",
       submitCheckBox: false,
       documents: {
         rfq: [],
@@ -123,11 +138,19 @@ export default function RaiseRequest() {
     setLoading(true);
     try {
       // Map form data to API payload structure
+      // Extract IDs from dropdown values (handle both string IDs and objects)
+      const getFieldId = (value) => {
+        if (!value) return "";
+        if (typeof value === "string") return value;
+        if (typeof value === "object" && value._id) return value._id;
+        return "";
+      };
+
       const formattedData = {
-        businessVertical: data.businessVertical || "",
-        location: data.location || "",
-        function: data.function || "",
-        plantCode: data.businessPlantCode || "",
+        businessVertical: getFieldId(data.businessVertical),
+        location: getFieldId(data.location),
+        function: getFieldId(data.function),
+        plantCode: getFieldId(data.businessPlantCode),
         technicalAspect: {
           items: (data.capexItems || []).map((item) => ({
             capexDescription: item.description || "",
@@ -186,6 +209,54 @@ export default function RaiseRequest() {
 
       if (response.data.success) {
         swal("Success!", "CAPEX request submitted successfully!", "success");
+        // Reset form to default values
+        reset({
+          proposedSpoc: account?.displayName || account?.username || "",
+          date: getCurrentDateTime(),
+          businessVertical: "",
+          location: "",
+          function: "",
+          businessPlantCode: "",
+          contactPersonName: "",
+          contactPersonNumber: "",
+          deliveryAddress: "",
+          state: "",
+          postalCode: "",
+          country: "INDIA",
+          capexItems: [],
+          totalCost: 0,
+          applicationDetails: "",
+          acceptanceCriteria: "",
+          currentScenario: "",
+          proposedAfterScenario: "",
+          expectedImplementationDate: null,
+          capacityAlignment: "",
+          alternateMakeTechnology: "",
+          modificationOrUpgrade: "",
+          previousModificationHistory: "",
+          challengesInPresentSystem: "",
+          vendorOEM: "",
+          oldPOReference: "",
+          oldAssetCode: "",
+          reasonForNeed: "",
+          benefitsOnInvestment: "",
+          budgetBasicCost: "",
+          impactOnBusiness: "",
+          newAssetCode: "",
+          businessCaseROI: "",
+          projectStatus: "",
+          submitCheckBox: false,
+          documents: {
+            rfq: [],
+            drawings: [],
+            layout: [],
+            catalogue: [],
+            offer1: [],
+            offer2: [],
+            offer3: [],
+            previousHistory: [],
+          },
+        });
       } else {
         throw new Error(response.data.message || "Failed to submit request");
       }
@@ -197,20 +268,130 @@ export default function RaiseRequest() {
     }
   };
 
-  const onSaveDraft = async (data) => {
+  const onSaveDraft = async () => {
     setLoading(true);
     try {
-      const formattedData = {
-        ...data,
-        status: "Draft",
+      // Get current form values without validation
+      const formValues = watch();
+      
+      // Extract IDs from dropdown values (handle both string IDs and objects)
+      const getFieldId = (value) => {
+        if (!value) return "";
+        if (typeof value === "string") return value;
+        if (typeof value === "object" && value._id) return value._id;
+        return "";
       };
 
-      // const response = await userRequest.post("/cpx/saveDraft", formattedData);
+      const formattedData = {
+        businessVertical: getFieldId(formValues.businessVertical),
+        location: getFieldId(formValues.location),
+        function: getFieldId(formValues.function),
+        plantCode: getFieldId(formValues.businessPlantCode),
+        technicalAspect: {
+          items: (formValues.capexItems || []).map((item) => ({
+            capexDescription: item.description || "",
+            quantity: item.quantity ? parseFloat(item.quantity) : 0,
+            uom: item.uom || null,
+            specificationDetails: item.specification || "",
+            cpu: item.costPerUnit ? parseFloat(item.costPerUnit) : 0,
+            totalItemCost: item.totalCost ? parseFloat(item.totalCost) : 0,
+          })),
+          totalCost: calculateTotalCost(formValues.capexItems || []),
+          applicationDetails: formValues.applicationDetails || "",
+          acceptanceCriteria: formValues.acceptanceCriteria || "",
+          currentScenario: formValues.currentScenario || "",
+          proposedScenario: formValues.proposedAfterScenario || "",
+          dateOfImplementation: formValues.expectedImplementationDate 
+            ? new Date(formValues.expectedImplementationDate).toISOString()
+            : null,
+          capacityAlignment: formValues.capacityAlignment || "",
+          technologyEvaluation: formValues.alternateMakeTechnology || "",
+        },
+        modification: {
+          modification: formValues.modificationOrUpgrade === "Modification" || formValues.modificationOrUpgrade === "Upgrade",
+          challenges: formValues.challengesInPresentSystem || "",
+          vendorOEM: formValues.vendorOEM || "",
+          previousHistory: formValues.previousModificationHistory || "",
+          oldPO: formValues.oldPOReference || "",
+          oldAssetCode: formValues.oldAssetCode || "",
+        },
+        financeAspect: {
+          reason: formValues.reasonForNeed || "",
+          benefits: formValues.benefitsOnInvestment || "",
+          budget: formValues.budgetBasicCost ? parseFloat(formValues.budgetBasicCost) : 0,
+          impact: formValues.impactOnBusiness || "",
+          newAssetCode: formValues.newAssetCode || "",
+          roiPayback: formValues.businessCaseROI || "",
+        },
+        supportingDocuments: {
+          rfq: formValues.documents?.rfq ? (Array.isArray(formValues.documents.rfq) ? formValues.documents.rfq : [formValues.documents.rfq]) : [],
+          drawings: formValues.documents?.drawings ? (Array.isArray(formValues.documents.drawings) ? formValues.documents.drawings : [formValues.documents.drawings]) : [],
+          layout: formValues.documents?.layout ? (Array.isArray(formValues.documents.layout) ? formValues.documents.layout : [formValues.documents.layout]) : [],
+          catalogue: formValues.documents?.catalogue ? (Array.isArray(formValues.documents.catalogue) ? formValues.documents.catalogue : [formValues.documents.catalogue]) : [],
+          offer1: formValues.documents?.offer1 ? (Array.isArray(formValues.documents.offer1) ? formValues.documents.offer1 : [formValues.documents.offer1]) : [],
+          offer2: formValues.documents?.offer2 ? (Array.isArray(formValues.documents.offer2) ? formValues.documents.offer2 : [formValues.documents.offer2]) : [],
+          offer3: formValues.documents?.offer3 ? (Array.isArray(formValues.documents.offer3) ? formValues.documents.offer3 : [formValues.documents.offer3]) : [],
+          previousHistoryPresentStatus: formValues.documents?.previousHistory ? (Array.isArray(formValues.documents.previousHistory) ? formValues.documents.previousHistory : [formValues.documents.previousHistory]) : [],
+        },
+        projectStatus: formValues.projectStatus === "Active" || formValues.projectStatus === true,
+        submitCheckBox: formValues.submitCheckBox || false,
+      };
 
-      // if (response.data.success) {
-      //   swal("Success!", "Request saved as draft!", "success");
-      // }
-      swal("Success!", "Request saved as draft!", "success");
+      const response = await userRequest.post("/cpx/saveDraft", formattedData);
+
+      if (response.data.success) {
+        swal("Success!", "Request saved as draft!", "success");
+        // Reset form to default values
+        reset({
+          proposedSpoc: account?.displayName || account?.username || "",
+          date: getCurrentDateTime(),
+          businessVertical: "",
+          location: "",
+          function: "",
+          businessPlantCode: "",
+          contactPersonName: "",
+          contactPersonNumber: "",
+          deliveryAddress: "",
+          state: "",
+          postalCode: "",
+          country: "INDIA",
+          capexItems: [],
+          totalCost: 0,
+          applicationDetails: "",
+          acceptanceCriteria: "",
+          currentScenario: "",
+          proposedAfterScenario: "",
+          expectedImplementationDate: null,
+          capacityAlignment: "",
+          alternateMakeTechnology: "",
+          modificationOrUpgrade: "",
+          previousModificationHistory: "",
+          challengesInPresentSystem: "",
+          vendorOEM: "",
+          oldPOReference: "",
+          oldAssetCode: "",
+          reasonForNeed: "",
+          benefitsOnInvestment: "",
+          budgetBasicCost: "",
+          impactOnBusiness: "",
+          newAssetCode: "",
+          businessCaseROI: "",
+          projectStatus: "",
+          submitCheckBox: false,
+          documents: {
+            rfq: [],
+            drawings: [],
+            layout: [],
+            catalogue: [],
+            offer1: [],
+            offer2: [],
+            offer3: [],
+            previousHistory: [],
+          },
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to save draft");
+      }
     } catch (error) {
       console.error("Error saving draft:", error);
       showErrorMessage(error, "Error saving draft", swal);
@@ -259,7 +440,7 @@ export default function RaiseRequest() {
 
               <Divider sx={{ my: 4 }} />
 
-              <FinanceAspectSection control={control} errors={errors} />
+              <FinanceAspectSection control={control} />
 
               <Divider sx={{ my: 4 }} />
 
@@ -284,7 +465,7 @@ export default function RaiseRequest() {
                   color="primary"
                   size="large"
                   // startIcon={<Save />}
-                  onClick={handleSubmit(onSaveDraft)}
+                  onClick={onSaveDraft}
                   disabled={loading}
                 >
                   Save as draft
