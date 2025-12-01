@@ -21,6 +21,21 @@ export const JVMReportColumns = () => {
       headerAlign: "center",
     },
     {
+      field: "companyId",
+      headerName: "Company",
+      flex: 1,
+      minWidth: 150,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const company = params.value;
+        if (typeof company === "object" && company?.value) {
+          return company.value;
+        }
+        return typeof company === "string" ? company : "-";
+      },
+    },
+    {
       field: "createdAt",
       headerName: "Created Date",
       flex: 1,

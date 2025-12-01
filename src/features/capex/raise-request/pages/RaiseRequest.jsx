@@ -340,7 +340,7 @@ export default function RaiseRequest() {
       const response = await userRequest.post("/cpx/saveDraft", formattedData);
 
       if (response.data.success) {
-        swal("Success!", "Request saved as draft!", "success");
+      swal("Success!", "Request saved as draft!", "success");
         // Reset form to default values
         reset({
           proposedSpoc: account?.displayName || account?.username || "",

@@ -49,6 +49,27 @@ export const RequestColumns = ({ onRequestClick }) => {
       ),
     },
     {
+      field: "companyId",
+      headerName: "Company",
+      flex: 1,
+      minWidth: 150,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const company = params.value;
+        const companyName = typeof company === "object" && company?.value 
+          ? company.value 
+          : typeof company === "string" 
+          ? company 
+          : "-";
+        return (
+          <Typography variant="body2">
+            {companyName}
+          </Typography>
+        );
+      },
+    },
+    {
       field: "createdAt",
       headerName: "Created Date",
       flex: 1,

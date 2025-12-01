@@ -59,12 +59,20 @@ export default function JVByRequestNo() {
       if (response.data.statusCode === 200) {
         const apiData = response.data.data.data;
         const pagination = response.data.data.pagination;
-        const processedData = apiData.map((item, index) => ({
-          ...item,
-          id: item.groupId || `group-${index}`,
-          groupId: item.groupId || `group-${index}`,
-          createdAt: new Date(item.createdAt),
-        }));
+        const processedData = apiData.map((item, index) => {
+          // Extract companyId from items array if available
+          let companyId = item.companyId;
+          if (!companyId && item.items && Array.isArray(item.items) && item.items.length > 0) {
+            companyId = item.items[0]?.companyId;
+          }
+          return {
+            ...item,
+            id: item.groupId || `group-${index}`,
+            groupId: item.groupId || `group-${index}`,
+            createdAt: new Date(item.createdAt),
+            companyId: companyId, // Ensure companyId is at group level
+          };
+        });
         setData(processedData);
         setTotalCount(pagination.totalCount);
       } else {

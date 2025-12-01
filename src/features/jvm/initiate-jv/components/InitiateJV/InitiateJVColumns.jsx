@@ -19,6 +19,15 @@ export const InitiateJVColumns = ({
       renderCell: (params) => params.row.slNo || params.value || "",
     },
     {
+      field: "company",
+      headerName: "Company",
+      width: 150,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => params.value || "-",
+    },
+    {
       field: "documentType",
       headerName: "Document Type",
       width: 140,

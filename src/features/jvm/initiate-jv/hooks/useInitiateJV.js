@@ -25,6 +25,7 @@ export const useInitiateJV = () => {
   const [submitting, setSubmitting] = useState(false);
   const [uploadedFileUrl, setUploadedFileUrl] = useState("");
   const [supportingDocuments, setSupportingDocuments] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null); // Store company object with _id
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -55,11 +56,18 @@ export const useInitiateJV = () => {
   };
 
   const handleModalSuccess = (entry) => {
+    // Add company to entry
+    const entryWithCompany = {
+      ...entry,
+      company: selectedCompany?.value || "",
+      companyId: selectedCompany?._id || "",
+    };
+    
     if (modalMode === "add") {
-      addJVEntry(entry);
+      addJVEntry(entryWithCompany);
       swal("Success!", "Journal voucher added successfully!", "success");
     } else {
-      updateJVEntry(entry);
+      updateJVEntry(entryWithCompany);
       setEditData(null);
       swal("Success!", "Journal voucher updated successfully!", "success");
     }
@@ -68,8 +76,15 @@ export const useInitiateJV = () => {
 
   const handleUploadSuccess = async (uploadedEntries, fileUrl) => {
     try {
+      // Add company to all uploaded entries
+      const entriesWithCompany = uploadedEntries.map(entry => ({
+        ...entry,
+        company: selectedCompany?.value || "",
+        companyId: selectedCompany?._id || "",
+      }));
+
       // Validate the new uploaded entries only (since we're resetting data)
-      const validationResults = validateAllJVEntries(uploadedEntries);
+      const validationResults = validateAllJVEntries(entriesWithCompany);
       if (!validationResults.isValid) {
         const errorMessages = validationResults.errors.map((error) => {
           if (error.type === "entryLimit") {
@@ -122,7 +137,7 @@ export const useInitiateJV = () => {
 
       // If all validations pass, reset existing data and add new entries
       setData([]); // Clear all existing data
-      uploadedEntries.forEach((entry) => addJVEntry(entry));
+      entriesWithCompany.forEach((entry) => addJVEntry(entry));
       setUploadedFileUrl(fileUrl);
       setUploadModalOpen(false);
       swal("Success!", "Journal vouchers uploaded successfully!", "success");
@@ -385,6 +400,20 @@ export const useInitiateJV = () => {
         return;
       }
 
+      // Ensure companyId is available
+      const currentCompanyId = selectedCompany?._id || "";
+      
+      if (!currentCompanyId) {
+        await swal({
+          title: "Validation Error",
+          text: "Please select a Company before submitting.",
+          icon: "error",
+          button: "OK",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const items = data.map((entry) => ({
         slNo: parseInt(entry.slNo) || 0,
         documentType: entry.documentType,
@@ -406,6 +435,7 @@ export const useInitiateJV = () => {
         vendorCustomerGLName: entry.vendorCustomerGLName,
         costCenter: entry.costCenter,
         personalNumber: entry.personalNumber,
+        companyId: currentCompanyId, // Always use the selected company ID
       }));
 
       const requestData = {
@@ -428,6 +458,7 @@ export const useInitiateJV = () => {
       setData([]);
       setUploadedFileUrl("");
       setAutoReversal("");
+      setSelectedCompany(null);
       setConfirmModalOpen(false);
     } catch (error) {
       console.error("Submit error:", error);
@@ -507,6 +538,7 @@ export const useInitiateJV = () => {
     page,
     rowsPerPage,
     supportingDocuments,
+    selectedCompany,
     
     // Setters
     setAutoReversal,
@@ -514,6 +546,7 @@ export const useInitiateJV = () => {
     setPage,
     setRowsPerPage,
     setSupportingDocuments,
+    setSelectedCompany,
     
     // Handlers
     handleModalSuccess,
