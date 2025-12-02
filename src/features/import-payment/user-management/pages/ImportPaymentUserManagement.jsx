@@ -18,7 +18,7 @@ const AddRequester = lazy(() => import("../components/Modals/AddRequester"));
 const AddAdmin = lazy(() => import("../components/Modals/AddAdmin"));
 const AddApprover = lazy(() => import("../components/Modals/AddApprover"));
 
-const menuItems = ["Requester", "Approver", "Admin"];
+const menuItems = ["Requester", "Approver", "Admin", "Super Admin"];
 
 export default function ImportPaymentUserManagement() {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -61,6 +61,8 @@ export default function ImportPaymentUserManagement() {
         return "/imt/getAllUsersWithRoles?userType=APPROVER";
       case 2:
         return "/imt/getAllUsersWithRoles?userType=ADMIN";
+      case 3:
+        return "/imt/getAllUsersWithRoles?userType=SUPER_ADMIN";  
       default:
         return "/imt/getAllUsersWithRoles?userType=REQUESTER";
     }
