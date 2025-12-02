@@ -6,7 +6,6 @@ import { Outlet, Navigate, useRoutes } from "react-router-dom";
 import Layout from "src/layouts";
 import navConfig from "src/layouts/config/navConfig.jsx";
 import { hasAccessToPath, getFirstAccessiblePath } from "src/layouts/config/accessControl";
-import ImportPaymentUserManagement from "src/features/import-payment/user-management/pages/ImportPaymentUserManagement";
 
 // Lazy load all feature components
 const IndexPage = lazy(() => import("src/features/app/pages/App"));
@@ -83,6 +82,22 @@ const ImportPaymentMasterPage = lazy(() =>
 
 const IMTRaiseRequest = lazy(() =>
   import("src/features/import-payment/raise-request/pages/RaiseRequest")
+);
+
+const ImportPaymentUserManagement = lazy(() =>
+  import("src/features/import-payment/user-management/pages/ImportPaymentUserManagement")
+);
+
+const ImportPaymentAccessPointPage = lazy(() =>
+  import("src/features/import-payment/access-point/pages/ImportPaymentAccessPoint")
+);
+
+const ImportPaymentHierarchyManagementPage = lazy(() =>
+  import("src/features/import-payment/hierachy-management/pages/ImportPaymentHierarchy")
+)
+
+const ImportPaymentReportPage = lazy(() =>
+  import("src/features/import-payment/report/pages/ImportPaymentReport")
 );
 
 const CustomDutyPage = lazy(() =>
@@ -547,6 +562,33 @@ export default function Router() {
             <ProtectedRoute
               path="/import-payment/request"
               element={<IMTRaiseRequest />}
+            />
+          ),
+        },
+        {
+          path: "/import-payment/access-point",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/access-point"
+              element={<ImportPaymentAccessPointPage />}
+            />
+          ),
+        },
+         {
+          path: "/import-payment/hierarchy-flow",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/hierarchy-flow"
+              element={<ImportPaymentHierarchyManagementPage />}
+            />
+          ),
+        },
+         {
+          path: "/import-payment/report",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/report"
+              element={<ImportPaymentReportPage />}
             />
           ),
         },

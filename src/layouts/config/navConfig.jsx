@@ -21,6 +21,8 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import UndoIcon from "@mui/icons-material/Undo";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ReportIcon from '@mui/icons-material/Report';
 
 const projectConfig = {
   CRD: {
@@ -146,6 +148,13 @@ const projectConfig = {
     icon: <FileUploadIcon />,
     hasSubItems: true,
     subItems: [
+      {
+        id: "report",
+        title: "Report",
+        path: "/import-payment/report",
+        icon: <ReportIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
        {
         id: "master",
         title: "Master Data",
@@ -171,14 +180,14 @@ const projectConfig = {
         id: "access-point",
         title: "Access Point",
         path: "/import-payment/access-point",
-        icon: <FileUploadIcon />,
+        icon: <AccessTimeIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
         id: "hierarchy-flow",
         title: "Hierarchy Flow",
         path: "/import-payment/hierarchy-flow",
-        icon: <FileUploadIcon />,
+        icon: <AccountTreeIcon />,
         roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
       {
