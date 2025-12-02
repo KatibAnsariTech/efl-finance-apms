@@ -8,8 +8,9 @@ import AddEditPostingKey from "../components/Modals/AddEditPostingKey";
 import AddEditHierarchy from "../components/Modals/AddEditHierarchy";
 import AddEditAccountType from "../components/Modals/AddEditAccountType";
 import AddEditSpecialGL from "../components/Modals/AddEditSpecialGL";
+import AddEditCompany from "../components/Modals/AddEditCompany";
 import { Box } from "@mui/material";
-import { DocumentTypeTable, PostingKeyTable, HierarchyTable, AccountTypeTable, SpecialGLTable } from "../components/tables";
+import { DocumentTypeTable, PostingKeyTable, HierarchyTable, AccountTypeTable, SpecialGLTable, CompanyTable } from "../components/tables";
 import JVMLogTable from "../components/JVMLogTable";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
@@ -20,7 +21,8 @@ const menuItems = [
   "Account Type",
   "Posting Key",
   "Special GL Indication",
-  "Hierarchy"
+  "Hierarchy",
+  "Company"
 ];
 
 export default function JVMMaster() {
@@ -230,6 +232,17 @@ export default function JVMMaster() {
           </Suspense>
         )}
 
+        {open && selectedTab === 5 && (
+          <Suspense fallback={<CircularIndeterminate />}>
+            <AddEditCompany
+              handleClose={handleClose}
+              open={open}
+              getData={getData}
+              editData={editData}
+            />
+          </Suspense>
+        )}
+
         <Box sx={{ width: "100%" }}>
           {showLogTable && selectedTab === 4 ? (
             <JVMLogTable
@@ -272,6 +285,13 @@ export default function JVMMaster() {
                   handleDelete={handleDelete}
                   refreshTrigger={refreshTrigger}
                   onDataUpdate={setLatestData}
+                />
+              )}
+              {selectedTab === 5 && (
+                <CompanyTable 
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  refreshTrigger={refreshTrigger}
                 />
               )}
             </>

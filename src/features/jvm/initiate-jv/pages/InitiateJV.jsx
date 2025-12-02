@@ -26,6 +26,7 @@ export default function InitiateJV() {
     page,
     rowsPerPage,
     supportingDocuments,
+    selectedCompany,
     
     // Setters
     setAutoReversal,
@@ -33,6 +34,7 @@ export default function InitiateJV() {
     setPage,
     setRowsPerPage,
     setSupportingDocuments,
+    setSelectedCompany,
     
     // Handlers
     handleModalSuccess,
@@ -67,6 +69,8 @@ export default function InitiateJV() {
           onToggleInfoText={toggleInfoText}
           onAddManual={handleAdd}
           onUploadFile={openUploadModal}
+          selectedCompany={selectedCompany}
+          setSelectedCompany={setSelectedCompany}
         />
 
         <Card>
