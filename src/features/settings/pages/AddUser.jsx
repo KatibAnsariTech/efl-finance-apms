@@ -262,13 +262,15 @@ export default function AddUser() {
                             sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}
                           >
                             {selected.map((value) => {
-                              const label =
+                             const label =
                                 value === "CRD"
                                   ? "Credit Deviation"
                                   : value === "JVM"
                                   ? "JVM"
                                   : value === "CUSTOM"
                                   ? "Custom Duty"
+                                  : value === "IMT"
+                                  ? "Import Payment"
                                   : value;
                               return (
                                 <Chip
@@ -294,7 +296,7 @@ export default function AddUser() {
                         <MenuItem value="CRD">Credit Deviation</MenuItem>
                         <MenuItem value="JVM">JVM</MenuItem>
                         <MenuItem value="CUSTOM">Custom Duty</MenuItem>
-                        {/* <MenuItem value="IP">Import Payment</MenuItem> */}
+                        <MenuItem value="IMT">Import Payment</MenuItem>
                         {/* <MenuItem value="PC">Petty Cash</MenuItem> */}
                       </Select>
                       {errors.projectType && (

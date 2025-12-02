@@ -33,6 +33,9 @@ export const getCurrentTitle = (path) => {
 
   // Import Payment routes
   if (path.startsWith("/import-payment/upload")) return "Upload";
+  if (path.startsWith("/import-payment/master")) return "Master Data";
+  if (path.startsWith("/import-payment/usermanagement")) return "User Management";
+  if (path.startsWith("/import-payment/raise-request")) return "Raise Request";
 
   // Custom Duty routes
   if (path.startsWith("/custom-duty/raise-to-bank/submit-detail/")) return "Submit Detail";
