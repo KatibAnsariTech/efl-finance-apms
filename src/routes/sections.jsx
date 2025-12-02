@@ -6,6 +6,7 @@ import { Outlet, Navigate, useRoutes } from "react-router-dom";
 import Layout from "src/layouts";
 import navConfig from "src/layouts/config/navConfig.jsx";
 import { hasAccessToPath, getFirstAccessiblePath } from "src/layouts/config/accessControl";
+import ImportPaymentUserManagement from "src/features/import-payment/user-management/pages/ImportPaymentUserManagement";
 
 // Lazy load all feature components
 const IndexPage = lazy(() => import("src/features/app/pages/App"));
@@ -74,6 +75,14 @@ const ImportPaymentDashboard = lazy(() =>
 );
 const ImportPaymentUploadPage = lazy(() =>
   import("src/features/import-payment/upload/pages/ImportPaymentUpload")
+);
+
+const ImportPaymentMasterPage = lazy(() =>
+  import("src/features/import-payment/master/pages/ImportPaymentMaster")
+);
+
+const IMTRaiseRequest = lazy(() =>
+  import("src/features/import-payment/raise-request/pages/RaiseRequest")
 );
 
 const CustomDutyPage = lazy(() =>
@@ -511,6 +520,33 @@ export default function Router() {
             <ProtectedRoute
               path="/import-payment/upload"
               element={<ImportPaymentUploadPage />}
+            />
+          ),
+        },
+         {
+          path: "/import-payment/master",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/master"
+              element={<ImportPaymentMasterPage />}
+            />
+          ),
+        },
+         {
+          path: "/import-payment/usermanagement",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/usermanagement"
+              element={<ImportPaymentUserManagement />}
+            />
+          ),
+        },
+        {
+          path: "/import-payment/request",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/request"
+              element={<IMTRaiseRequest />}
             />
           ),
         },

@@ -30,7 +30,7 @@ const applications = [
     status: "active",
     color: "#2E7D32",
     route: "/import-payment",
-    projectType: "IP",
+    projectType: "IMT",
   },
   {
     id: "journal-voucher-manager",

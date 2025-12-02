@@ -139,13 +139,48 @@ const projectConfig = {
       },
     ],
   },
-  IP: {
+  IMT: {
     id: "import-payment",
     title: "Import Payment",
     path: "/import-payment",
     icon: <FileUploadIcon />,
     hasSubItems: true,
     subItems: [
+       {
+        id: "master",
+        title: "Master Data",
+        path: "/import-payment/master",
+        icon: <AssignmentIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+       {
+        id: "usermanagement",
+        title: "User Management",
+        path: "/import-payment/usermanagement",
+        icon: <ManageAccountsIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+       {
+        id: "request",
+        title: "Raise Request",
+        path: "/import-payment/request",
+        icon: <RequestPageIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: "access-point",
+        title: "Access Point",
+        path: "/import-payment/access-point",
+        icon: <FileUploadIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: "hierarchy-flow",
+        title: "Hierarchy Flow",
+        path: "/import-payment/hierarchy-flow",
+        icon: <FileUploadIcon />,
+        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+      },
       {
         id: "import-payment-upload",
         title: "Upload Payment",
