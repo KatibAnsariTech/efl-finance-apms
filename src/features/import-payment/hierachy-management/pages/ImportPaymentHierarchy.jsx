@@ -1,18 +1,13 @@
-import { Container, Typography, Box, Paper } from '@mui/material';
+import { Helmet } from 'react-helmet-async';
+import HierarchyManagementView from '../components/HierarchyManagementView';
 
-export default function ImportPaymentHierarchyPage() {
+export default function HierarchyManagementPage() {
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          Hierarchy Flow
-        </Typography>
-        <Paper sx={{ p: 3, mt: 2 }}>
-          <Typography variant="body1">
-            Welcome to the Hierarchy Flow page.
-          </Typography>
-        </Paper>
-      </Box>
-    </Container>
+    <>
+      <Helmet>
+        <title>Import Payment Hierarchy Management</title>
+      </Helmet>
+      <HierarchyManagementView />
+    </>
   );
 }
