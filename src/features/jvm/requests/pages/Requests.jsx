@@ -21,6 +21,7 @@ import RequestStatus from "../../components/RequestStatus";
 import ColorIndicators from "../../components/ColorIndicators";
 import JVMRequestTabs from "../components/JVMRequestTabs";
 import FilterModal from "../../requested-jv/components/FilterModal";
+import SAPStatusModal from "../components/SAPStatusModal";
 import { useJVM } from "src/contexts/JVMContext";
 
 export default function Requests() {
@@ -36,6 +37,8 @@ export default function Requests() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [openSAPStatusModal, setOpenSAPStatusModal] = useState(false);
+  const [selectedSAPStatuses, setSelectedSAPStatuses] = useState([]);
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
 
@@ -44,15 +47,9 @@ export default function Requests() {
     { label: "All Requests", value: "allRequests" },
   ];
 
-  const getData = async (pageNum = 1) => {
+  const getData = useCallback(async () => {
     try {
       setLoading(true);
-
-      const page = pageNum;
-      const limit = rowsPerPage;
-
-      let apiData;
-      let totalCount;
 
       // Choose API endpoint based on selected tab
       const apiEndpoint = selectedTab === "pendingWithMe" 
@@ -60,16 +57,16 @@ export default function Requests() {
         : "jvm/getMyWorkflowForms";
 
       const params = {
-        page: page,
-        limit: limit,
+        page: page + 1, // API uses 1-based pagination
+        limit: rowsPerPage,
       };
       
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
       
       const response = await userRequest.get(apiEndpoint, { params });
-      apiData = response.data.data.data || [];
-      totalCount = response.data.data.pagination?.totalCount || 0;
+      const apiData = response.data.data.data || [];
+      const totalCount = response.data.data.pagination?.totalCount || 0;
 
       // Ensure each row has an id field for DataGrid
       const dataWithIds = apiData.map((item, index) => ({
@@ -81,19 +78,21 @@ export default function Requests() {
       setTotalCount(totalCount);
     } catch (err) {
       console.error("Error in getData:", err);
+      showErrorMessage(err, "Failed to fetch requests data", swal);
       setData([]);
       setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  };
-
+  }, [page, rowsPerPage, selectedTab, filterStartDate, filterEndDate]);
 
   useEffect(() => {
+    getData();
+  }, [getData]);
+
+  // Reset to first page when tab or filters change
+  useEffect(() => {
     setPage(0);
-    setData([]);
-    setLoading(true);
-    getData(1);
   }, [selectedTab, filterStartDate, filterEndDate]);
 
   // Clear filters when tab changes
@@ -104,18 +103,6 @@ export default function Requests() {
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
-  };
-
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    getData(newPage + 1); // API uses 1-based pagination
-  };
-
-  const handleRowsPerPageChange = (newRowsPerPage) => {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-    getData(1);
   };
 
   const handleRequestClick = (rowData) => {
@@ -136,8 +123,19 @@ export default function Requests() {
     setOpenFilterModal(false);
   };
 
+  const handleSAPStatusClick = (sapStatuses) => {
+    setSelectedSAPStatuses(sapStatuses);
+    setOpenSAPStatusModal(true);
+  };
+
+  const handleCloseSAPStatusModal = () => {
+    setOpenSAPStatusModal(false);
+    setSelectedSAPStatuses([]);
+  };
+
   const columns = RequestColumns({
     onRequestClick: handleRequestClick,
+    onSAPStatusClick: handleSAPStatusClick,
   });
 
   return (
@@ -202,8 +200,8 @@ export default function Requests() {
             rowCount={totalCount}
             paginationModel={{ page: page, pageSize: rowsPerPage }}
             onPaginationModelChange={(newModel) => {
-              handlePageChange(newModel.page);
-              handleRowsPerPageChange(newModel.pageSize);
+              setPage(newModel.page);
+              setRowsPerPage(newModel.pageSize);
             }}
             pageSizeOptions={[5, 10, 25, 50]}
             getRowClassName={(params) => {
@@ -300,6 +298,12 @@ export default function Requests() {
         handleClose={handleCloseFilterModal}
         setStartDate={setFilterStartDate}
         setEndDate={setFilterEndDate}
+      />
+
+      <SAPStatusModal
+        open={openSAPStatusModal}
+        onClose={handleCloseSAPStatusModal}
+        sapStatuses={selectedSAPStatuses}
       />
     </Container>
   );
