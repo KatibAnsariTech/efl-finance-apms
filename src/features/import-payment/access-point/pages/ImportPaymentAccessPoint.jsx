@@ -6,21 +6,18 @@ import Container from "@mui/material/Container";
 import CircularIndeterminate from "src/utils/loader";
 import { FormTableToolbar } from "src/components/table";
 import { userRequest } from "src/requestMethod";
-import UserManagementTabs from "../components/UserManagementTabs";
+import ImportPaymentRrportTabs from "../components/ImportPaymentAccessPointTab";
 import { headLabel } from "../components/getHeadLabel";
 import { Box, IconButton, Tooltip, Chip } from "@mui/material";
 import Iconify from "src/components/iconify";
 import { fDateTime } from "src/utils/format-time";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
+const AddReportAccess = lazy(() => import("../components/Modals/AddAccessReport"));
+const AddUserManagementAccess = lazy(()=> import("../components/Modals/AddUserMangementtAccess"));
+const menuItems = ["Report","User Management"];
 
-const AddRequester = lazy(() => import("../components/Modals/AddRequester"));
-const AddAdmin = lazy(() => import("../components/Modals/AddAdmin"));
-const AddApprover = lazy(() => import("../components/Modals/AddApprover"));
-
-const menuItems = ["Requester", "Approver", "Admin", "Super Admin"];
-
-export default function ImportPaymentUserManagement() {
+export default function ImportPaymentAccessPoint() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
@@ -53,25 +50,10 @@ export default function ImportPaymentUserManagement() {
     setEditData(null);
   };
 
-  const getAPIURL = useCallback(() => {
-    switch (selectedTab) {
-      case 0:
-        return "/imt/getAllUsersWithRoles?userType=REQUESTER";
-      case 1:
-        return "/imt/getAllUsersWithRoles?userType=APPROVER";
-      case 2:
-        return "/imt/getAllUsersWithRoles?userType=ADMIN";
-      case 3:
-        return "/imt/getAllUsersWithRoles?userType=SUPER_ADMIN";  
-      default:
-        return "/imt/getAllUsersWithRoles?userType=REQUESTER";
-    }
-  }, [selectedTab]);
-
   const getData = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await userRequest.get(getAPIURL(), {
+      const res = await userRequest.get("/imt/getAllUsersWithRoles", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
@@ -86,7 +68,7 @@ export default function ImportPaymentUserManagement() {
     } catch (err) {
       setLoading(false);
     }
-  }, [getAPIURL, page, rowsPerPage, debouncedSearch]);
+  }, [ page, rowsPerPage, debouncedSearch]);
 
   const handleDelete = async (userRoleId) => {
     try {
@@ -312,7 +294,7 @@ export default function ImportPaymentUserManagement() {
 
   return (
     <Container maxWidth="xl">
-      <UserManagementTabs
+      <ImportPaymentRrportTabs
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
         menuItems={menuItems}
@@ -339,43 +321,32 @@ export default function ImportPaymentUserManagement() {
               color: "#167beb",
             }}
           >
-            <span onClick={handleOpen}>Add {selectedCategory}</span>
+            <span onClick={handleOpen}>Add Access</span>
           </div>
         </div>
 
-        {/* Conditionally render modals based on selected tab */}
-        {open && selectedTab === 0 && (
-          <Suspense fallback={<CircularIndeterminate />}>
-            <AddRequester
-              handleClose={handleClose}
-              open={open}
-              getData={getData}
-              editData={editData}
-            />
-          </Suspense>
-        )}
+         {/* Conditionally render modals based on selected tab */}
+          {open && selectedTab === 0 && (
+            <Suspense fallback={<CircularIndeterminate />}>
+              <AddReportAccess
+                handleClose={handleClose}
+                open={open}
+                getData={getData}
+                editData={editData}
+              />
+            </Suspense>
+          )}
 
-        {open && selectedTab === 1 && (
-          <Suspense fallback={<CircularIndeterminate />}>
-            <AddApprover
-              handleClose={handleClose}
-              open={open}
-              getData={getData}
-              editData={editData}
-            />
-          </Suspense>
-        )}
-
-        {open && selectedTab === 2 && (
-          <Suspense fallback={<CircularIndeterminate />}>
-            <AddAdmin
-              handleClose={handleClose}
-              open={open}
-              getData={getData}
-              editData={editData}
-            />
-          </Suspense>
-        )}
+          {open && selectedTab === 1 && (
+            <Suspense fallback={<CircularIndeterminate />}>
+              <AddUserManagementAccess
+                handleClose={handleClose}
+                open={open}
+                getData={getData}
+                editData={editData}
+              />
+            </Suspense>
+          )}
 
         <Box sx={{ width: "100%" }}>
           <DataGrid

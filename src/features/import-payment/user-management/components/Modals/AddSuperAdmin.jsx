@@ -21,7 +21,7 @@ const customDutyPermissions = [
   { value: "reportManagement", label: "Report Management" },
 ];
 
-function AddAdmin({ handleClose, open, editData, getData }) {
+function AddSuperAdmin({ handleClose, open, editData, getData }) {
   const {
     register,
     handleSubmit,
@@ -91,7 +91,7 @@ function AddAdmin({ handleClose, open, editData, getData }) {
         const updateData = {
           userRoleId: editData.userRoleId,
           // companyIds: data.companies || [],
-          userType: "ADMIN",
+          userType: "SUPER_ADMIN",
           // customDutyPermissions: selectedPermissions,
         };
         await userRequest.put("/imt/updateUserRole", updateData);
@@ -290,4 +290,4 @@ function AddAdmin({ handleClose, open, editData, getData }) {
   );
 }
 
-export default AddAdmin;
+export default AddSuperAdmin;

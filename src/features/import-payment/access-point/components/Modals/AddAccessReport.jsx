@@ -13,15 +13,8 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { useState, useEffect } from "react";
 import { FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput, Autocomplete, ListItemText } from "@mui/material";
 
-// Custom Duty permissions
-const customDutyPermissions = [
-  { value: "companyManagement", label: "Company Management" },
-  { value: "requestManagement", label: "Request Management" },
-  { value: "approvalManagement", label: "Approval Management" },
-  { value: "reportManagement", label: "Report Management" },
-];
 
-function AddAdmin({ handleClose, open, editData, getData }) {
+function AddReportAccess({ handleClose, open, editData, getData }) {
   const {
     register,
     handleSubmit,
@@ -148,7 +141,7 @@ function AddAdmin({ handleClose, open, editData, getData }) {
           }}
         >
           <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
-            {editData ? "Edit Admin" : "Add Admin"}
+            {editData ? "Edit Report Access" : "Add Report Access"}
           </span>
           <RxCross2
             onClick={handleClose}
@@ -172,108 +165,22 @@ function AddAdmin({ handleClose, open, editData, getData }) {
           }}
           onSubmit={handleSubmit(handleSaveData)}
         >
-          <Autocomplete
-            options={editData ? [selectedUser].filter(Boolean) : unassignedUsers}
-            getOptionLabel={(option) => `${option.username} (${option.email})`}
-            value={selectedUser}
-            onChange={(event, newValue) => {
-              setSelectedUser(newValue);
-              if (newValue) {
-                setValue("username", newValue.username);
-                setValue("email", newValue.email);
-              }
-            }}
-            loading={loading}
+         <TextField
+            label="Enter Email Address"
+            fullWidth
+            required
             disabled={!!editData}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Select User"
-                required
-              />
-            )}
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Enter a valid email address",
+              },
+            })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
           />
-          {/* <FormControl fullWidth>
-            <InputLabel id="permissions-label">Custom Duty Permissions</InputLabel>
-            <Select
-              labelId="permissions-label"
-              id="customDutyPermissions"
-              multiple
-              value={selectedPermissions}
-              onChange={handlePermissionChange}
-              input={<OutlinedInput label="Custom Duty Permissions" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => {
-                    const permission = customDutyPermissions.find(p => p.value === value);
-                    return (
-                      <Chip
-                        key={value}
-                        label={permission ? permission.label : value}
-                        size="small"
-                      />
-                    );
-                  })}
-                </Box>
-              )}
-            >
-              {customDutyPermissions.map((permission) => (
-                <MenuItem key={permission.value} value={permission.value}>
-                  {permission.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="companies-label">Companies</InputLabel>
-            <Controller
-              name="companies"
-              control={control}
-              defaultValue={[]}
-              render={({ field }) => (
-                <Select
-                  labelId="companies-label"
-                  multiple
-                  input={<OutlinedInput label="Companies" />}
-                  open={openCompanySelect}
-                  onOpen={() => setOpenCompanySelect(true)}
-                  onClose={() => setOpenCompanySelect(false)}
-                  value={field.value || []}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setOpenCompanySelect(false);
-                  }}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {selected.map((value) => {
-                        const company = companies.find((c) => c._id === value);
-                        const companyLabel = company?.name || value;
-                        return (
-                          <Chip
-                            key={value}
-                            label={companyLabel}
-                            onDelete={() =>
-                              field.onChange(
-                                field.value.filter((v) => v !== value)
-                              )
-                            }
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                        );
-                      })}
-                    </Box>
-                  )}
-                >
-                  {companies.map((company) => (
-                    <MenuItem key={company._id} value={company._id}>
-                      <ListItemText primary={company.name} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl> */}
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
             variant="contained"
@@ -290,4 +197,4 @@ function AddAdmin({ handleClose, open, editData, getData }) {
   );
 }
 
-export default AddAdmin;
+export default AddReportAccess;
