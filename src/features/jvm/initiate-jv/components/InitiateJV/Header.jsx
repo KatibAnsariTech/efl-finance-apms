@@ -9,7 +9,8 @@ const Header = ({
   onAddManual, 
   onUploadFile,
   selectedCompany,
-  setSelectedCompany
+  setSelectedCompany,
+  onCompanyChange
 }) => {
   const [companies, setCompanies] = useState([]);
   const [companiesLoading, setCompaniesLoading] = useState(false);
@@ -31,6 +32,15 @@ const Header = ({
     fetchCompanies();
   }, []);
 
+  const handleCompanyChange = (e) => {
+    const selected = companies.find(c => c._id === e.target.value);
+    if (onCompanyChange) {
+      onCompanyChange(selected || null);
+    } else {
+      setSelectedCompany(selected || null);
+    }
+  };
+
   return (
     <Box sx={{ mb: 2 }}>
       <Box
@@ -45,10 +55,7 @@ const Header = ({
           <InputLabel sx={{ fontSize: "0.875rem" }}>Company *</InputLabel>
           <Select
             value={selectedCompany?._id || ""}
-            onChange={(e) => {
-              const selected = companies.find(c => c._id === e.target.value);
-              setSelectedCompany(selected || null);
-            }}
+            onChange={handleCompanyChange}
             label="Company *"
             disabled={companiesLoading}
             sx={{

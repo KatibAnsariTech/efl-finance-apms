@@ -52,6 +52,9 @@ export default function InitiateJV() {
     
     // Helpers
     updateJVEntry,
+    
+    // Company change handler
+    handleCompanyChange,
   } = useInitiateJV();
 
   // Get columns from separate file
@@ -71,6 +74,7 @@ export default function InitiateJV() {
           onUploadFile={openUploadModal}
           selectedCompany={selectedCompany}
           setSelectedCompany={setSelectedCompany}
+          onCompanyChange={handleCompanyChange}
         />
 
         <Card>
