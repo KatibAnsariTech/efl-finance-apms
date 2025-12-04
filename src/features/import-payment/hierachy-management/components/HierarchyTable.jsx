@@ -28,6 +28,8 @@ import { showErrorMessage } from "src/utils/errorUtils";
 
 export default function HierarchyTable({
   companyId,
+  importTypeId,
+  scopeId,
   getData,
   companiesLoaded = true,
 }) {
@@ -42,7 +44,7 @@ export default function HierarchyTable({
   const fetchApprovers = async () => {
     try {
       const response = await userRequest.get(
-        `/custom/getApproverByCompany/${companyId}`
+        `/imt/getApproversByImportTypeAndScope?importTypeId=${importTypeId}&scopeId=${scopeId}&page=1&limit=10&search=`
       );
       if (response?.data?.statusCode === 200 && response?.data?.data) {
         const approversData = response.data.data.approvers || [];
@@ -67,25 +69,26 @@ export default function HierarchyTable({
   };
 
   const fetchHierarchyData = async () => {
-    if (!companyId) {
+    if (!importTypeId && !scopeId) {
       setHierarchyData(createDefaultLevels());
       return;
     }
 
     try {
       setLoading(true);
-      const res = await userRequest.get("/custom/getApprovalTypesByCompany", {
+      const res = await userRequest.get("/imt/getHierarchiesByImportTypeAndScope", {
         params: {
-          companyId: companyId,
+          importTypeId: importTypeId,
+          scopeId: scopeId,
         },
       });
 
       const approvalTypesData = res?.data?.data || [];
       const approvalType = approvalTypesData.find(
-        (item) => item.companyId._id === companyId
+        (item) => item.importTypeId._id === importTypeId && item.scopeId._id === scopeId
       );
       const result = approvalType?.steps || [];
-      
+      console.log("approvalTypesData:", approvalType); 
       if (approvalType && approvalType._id) {
         setApprovalTypeId(approvalType._id);
       }
@@ -129,16 +132,16 @@ export default function HierarchyTable({
   };
 
   useEffect(() => {
-    if (companyId && companyId.trim() !== "") {
+    if (importTypeId && scopeId && scopeId.trim() !== "" && importTypeId.trim() !== "") {
       fetchApprovers();
       fetchHierarchyData();
     } else {
       setHierarchyData(createDefaultLevels());
     }
-  }, [companyId]);
+  }, [importTypeId, scopeId]);
 
   useEffect(() => {
-    if (companiesLoaded && companyId && companyId.trim() !== "") {
+    if (companiesLoaded && importTypeId && scopeId.trim() !== "") {
       fetchHierarchyData();
     }
   }, [companiesLoaded]);
@@ -185,7 +188,7 @@ export default function HierarchyTable({
         status: newStatus,
       };
 
-      await userRequest.put("/custom/updateApprovalStepStatus", requestBody);
+      await userRequest.put("/imt/updateHierarchyStepStatus", requestBody);
 
       fetchHierarchyData();
       swal(
@@ -219,7 +222,8 @@ export default function HierarchyTable({
       setLoading(true);
 
       const requestBody = {
-        companyId: companyId,
+        importTypeId: importTypeId,
+        scopeId: scopeId,
         steps: hierarchyData
           .filter(
             (levelData) =>
@@ -234,7 +238,7 @@ export default function HierarchyTable({
           })),
       };
 
-      await userRequest.put("/custom/updateApprovalType", requestBody);
+      await userRequest.put(`/imt/updateHierarchy?id=${approvalTypeId}`, requestBody);
 
       setHasChanges(false);
       setEditingLevel(null);

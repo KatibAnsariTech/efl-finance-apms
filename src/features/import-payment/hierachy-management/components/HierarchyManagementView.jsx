@@ -83,10 +83,10 @@ export default function HierarchyManagementView() {
       setTableLoading(true);
 
       const res = await userRequest.get(
-        `/imt/getHierarchy?importType=${importTypeId}&scope=${scopeId}`
+        `/imt/getHierarchies?importTypeId=${importTypeId}&scopeId=${scopeId}`
       );
-
-      const data = res?.data?.data || [];
+      console.log("Hierarchy Table Data Response:", res.data.data.hierarchies);
+      const data = res?.data?.data.hierarchies || [];
       setTableData(data);
     } catch (err) {
       console.error("Error fetching table:", err);
