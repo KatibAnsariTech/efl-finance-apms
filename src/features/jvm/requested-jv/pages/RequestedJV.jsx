@@ -13,6 +13,7 @@ import { FilterList } from "@mui/icons-material";
 import RequestStatus from "../../components/RequestStatus";
 import ColorIndicators from "../../components/ColorIndicators";
 import FilterModal from "../components/FilterModal";
+import SAPStatusModal from "../../requests/components/SAPStatusModal";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 import { Helmet } from "react-helmet-async";
@@ -37,6 +38,8 @@ export default function RequestedJV() {
   const [openStatusModal, setOpenStatusModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [openSAPStatusModal, setOpenSAPStatusModal] = useState(false);
+  const [selectedSAPStatuses, setSelectedSAPStatuses] = useState([]);
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
 
@@ -130,6 +133,16 @@ export default function RequestedJV() {
     setOpenFilterModal(false);
   };
 
+  const handleSAPStatusClick = (sapStatuses) => {
+    setSelectedSAPStatuses(sapStatuses);
+    setOpenSAPStatusModal(true);
+  };
+
+  const handleCloseSAPStatusModal = () => {
+    setOpenSAPStatusModal(false);
+    setSelectedSAPStatuses([]);
+  };
+
   const handleDelete = async (row) => {
     // Only allow deletion if canDelete is true
     if (!row.canDelete) {
@@ -159,7 +172,12 @@ export default function RequestedJV() {
     }
   };
 
-  const columns = RequestedJVColumns({ handleStatusClick, router, handleDelete });
+  const columns = RequestedJVColumns({ 
+    handleStatusClick, 
+    router, 
+    handleDelete,
+    onSAPStatusClick: handleSAPStatusClick,
+  });
 
   return (
     <>
@@ -328,6 +346,12 @@ export default function RequestedJV() {
           handleClose={handleCloseFilterModal}
           setStartDate={setFilterStartDate}
           setEndDate={setFilterEndDate}
+        />
+
+        <SAPStatusModal
+          open={openSAPStatusModal}
+          onClose={handleCloseSAPStatusModal}
+          sapStatuses={selectedSAPStatuses}
         />
       </Container>
     </>
