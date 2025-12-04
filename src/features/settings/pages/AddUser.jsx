@@ -66,6 +66,7 @@ export default function AddUser() {
       try {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("project", "fcm");
 
         const response = await userRequest.post("/util/upload", formData, {
           headers: {

@@ -61,6 +61,7 @@ const Footer = ({
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("project", "jvm");
 
         const response = await userRequest.post("/util/upload", formData, {
           headers: {

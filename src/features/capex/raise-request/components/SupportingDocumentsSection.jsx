@@ -108,6 +108,7 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("project", "capex");
 
       const response = await userRequest.post("/util/upload", formData, {
         headers: {
