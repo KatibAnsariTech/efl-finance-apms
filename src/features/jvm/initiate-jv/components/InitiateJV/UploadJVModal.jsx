@@ -468,6 +468,7 @@ export default function UploadJVModal({ open, onClose, onSuccess }) {
       // 3) Only now upload file to server
       const formData = new FormData();
       formData.append("file", selectedFile);
+      formData.append("project", "jvm");
 
       const uploadResponse = await userRequest.post("/util/upload", formData, {
         headers: {

@@ -7,7 +7,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Iconify from 'src/components/iconify';
 import { userRequest } from 'src/requestMethod';
 
-const UploadFile = ({ onFileUpload }) => {
+const UploadFile = ({ onFileUpload, project = "custom" }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadSuccessful, setIsUploadSuccessful] = useState(false);
@@ -26,6 +26,7 @@ const UploadFile = ({ onFileUpload }) => {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('project', project);
 
     try {
       const response = await userRequest.post('/util/upload', formData, {

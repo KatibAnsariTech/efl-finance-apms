@@ -124,3 +124,4 @@ function AddEditCompany({ handleClose, open, editData: companyData, getData }) {
 
 export default AddEditCompany;
 
+

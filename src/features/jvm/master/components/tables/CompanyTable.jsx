@@ -197,3 +197,4 @@ export default function CompanyTable({ handleEdit, handleDelete, refreshTrigger 
   );
 }
 
+
