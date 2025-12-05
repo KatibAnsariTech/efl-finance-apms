@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
@@ -26,6 +26,14 @@ export const useInitiateJV = () => {
   const [uploadedFileUrl, setUploadedFileUrl] = useState("");
   const [supportingDocuments, setSupportingDocuments] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null); // Store company object with _id
+  const [previousCompany, setPreviousCompany] = useState(null); // Track previous company to detect changes
+
+  // Track company changes to update previousCompany when selectedCompany is set directly
+  useEffect(() => {
+    if (selectedCompany && (!previousCompany || previousCompany._id !== selectedCompany._id)) {
+      setPreviousCompany(selectedCompany);
+    }
+  }, [selectedCompany]);
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -521,6 +529,50 @@ export const useInitiateJV = () => {
     setConfirmModalOpen(false);
   };
 
+  const handleCompanyChange = async (newCompany) => {
+    // If there's existing data and company is changing (or being cleared)
+    if (data.length > 0) {
+      // Check if company is actually changing
+      const isChanging = previousCompany && newCompany && previousCompany._id !== newCompany._id;
+      const isClearing = previousCompany && !newCompany;
+      
+      if (isChanging || isClearing) {
+        const result = await swal({
+          title: "Change Company?",
+          text: "Changing the company will clear all existing journal voucher entries. You will need to add new data. Do you want to continue?",
+          icon: "warning",
+          buttons: {
+            cancel: {
+              text: "Cancel",
+              value: false,
+              visible: true,
+            },
+            confirm: {
+              text: "Yes, Clear Data",
+              value: true,
+            },
+          },
+          dangerMode: true,
+        });
+
+        if (!result) {
+          // User cancelled, don't change company - revert to previous selection
+          return;
+        }
+
+        // Clear all data
+        setData([]);
+        setUploadedFileUrl("");
+        setSupportingDocuments([]);
+        setAutoReversal("");
+        setReversalRemarks("");
+      }
+    }
+
+    // Update company
+    setPreviousCompany(newCompany);
+    setSelectedCompany(newCompany);
+  };
 
   return {
     // State
@@ -564,5 +616,8 @@ export const useInitiateJV = () => {
     
     // Helpers
     updateJVEntry,
+    
+    // Company change handler
+    handleCompanyChange,
   };
 };
