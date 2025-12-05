@@ -12,7 +12,6 @@ import {
   ListItemSecondaryAction,
   Paper,
   Divider,
-  Badge,
   Chip,
   Tooltip,
   Link,
@@ -108,7 +107,7 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("project", "capex");
+      formData.append("project", "cpx");
 
       const response = await userRequest.post("/util/upload", formData, {
         headers: {
@@ -244,45 +243,21 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
               flexDirection: "column",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1, minWidth: 0 }}>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
-                    fontWeight: 600, 
-                    color: hasError ? 'error.main' : 'text.primary',
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {label}
-                </Typography>
-                {required && (
-                  <Chip
-                    label="*"
-                    size="small"
-                    color="error"
-                    sx={{ height: "18px", minWidth: "18px", fontSize: "0.7rem", fontWeight: 700, p: 0 }}
-                  />
-                )}
-              </Box>
-              {fileUrls.length > 0 && (
-                <Badge
-                  badgeContent={fileUrls.length}
-                  color="primary"
-                  sx={{
-                    "& .MuiBadge-badge": {
-                      fontSize: "0.7rem",
-                      minWidth: "20px",
-                      height: "20px",
-                      fontWeight: 600,
-                    },
-                  }}
-                >
-                  <Description sx={{ fontSize: 20, color: "primary.main" }} />
-                </Badge>
-              )}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  fontWeight: 600, 
+                  color: hasError ? 'error.main' : 'text.primary',
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                {label}
+              </Typography>
             </Box>
 
             {fileUrls.length > 0 ? (
@@ -418,19 +393,6 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
             <Typography variant="body2" sx={{ fontWeight: 500, color: hasError ? 'error.main' : 'inherit' }}>
               {label} {required && <span style={{ color: "red" }}>*</span>}
             </Typography>
-            {fileUrls.length > 0 && (
-              <Badge
-                badgeContent={fileUrls.length}
-                color="primary"
-                sx={{
-                  "& .MuiBadge-badge": {
-                    fontSize: "0.7rem",
-                    minWidth: "20px",
-                    height: "20px",
-                  },
-                }}
-              />
-            )}
           </Box>
           {!readOnly && (
             <input
