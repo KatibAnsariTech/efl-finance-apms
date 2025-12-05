@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   Box,
@@ -21,109 +21,97 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { importPaymentRequestSchema } from "../utils/validationSchemas";
 import swal from "sweetalert";
+import { userRequest } from "src/requestMethod";
 
-const departmentOptions = ["Operations", "Finance", "Supply Chain", "Commercial"];
-const scopeOptions = ["Advance Payment", "Balance Payment"];
-const importTypeOptions = ["Advance Payment", "Standard Import", "LC Payment"];
-const purchaseTypeOptions = ["Goods", "Services"];
-const currencyOptions = [
-  { value: "USD", label: "USD - US Dollar" },
-  { value: "INR", label: "INR - Indian Rupee" },
-  { value: "EUR", label: "EUR - Euro" },
-];
-const vendorOptions = ["Select Vendor from Master", "Vendor One", "Vendor Two"];
+import { importPaymentRequestSchema } from "../utils/validationSchemas";
 
-const formatFileSize = (size) => {
-  if (!size && size !== 0) return "";
-  const kb = size / 1024;
-  if (kb < 1024) return `${kb.toFixed(1)} KB`;
-  return `${(kb / 1024).toFixed(2)} MB`;
+// ------------------- FILE UPLOAD FUNCTION ------------------------
+const uploadFilesToServer = async (files) => {
+  const uploadedURLs = [];
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await userRequest.post("/util/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    // 👍 Using A option → file URL from res.data.data
+    uploadedURLs.push(res.data.data);
+  }
+
+  return uploadedURLs;
 };
 
+// ------------------- REUSABLE DROPZONE COMPONENT ------------------------
 const UploadDropZone = ({ label, helperText, value = [], error, onChange }) => {
   const inputRef = useRef(null);
 
   const handleFiles = useCallback(
-    (files) => {
-      const normalized = Array.from(files || []);
-      onChange(normalized);
+    async (files) => {
+      const fileArray = Array.from(files || []);
+
+      const uploadedUrls = await uploadFilesToServer(fileArray);
+
+      onChange(uploadedUrls);
     },
     [onChange]
   );
 
-  const onDrop = useCallback(
-    (event) => {
-      event.preventDefault();
-      handleFiles(event.dataTransfer.files);
-    },
-    [handleFiles]
-  );
+  const onDrop = (event) => {
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  };
 
-  const onFileInputChange = useCallback(
-    (event) => {
-      handleFiles(event.target.files);
-    },
-    [handleFiles]
-  );
-
-  const removeFile = (index) => {
-    const updated = value.filter((_, fileIndex) => fileIndex !== index);
-    onChange(updated);
+  const onFileInputChange = (event) => {
+    handleFiles(event.target.files);
   };
 
   return (
     <Box
       onDrop={onDrop}
-      onDragOver={(event) => event.preventDefault()}
+      onDragOver={(e) => e.preventDefault()}
       sx={{
         border: "1px dashed",
         borderColor: error ? "error.main" : "divider",
         borderRadius: 3,
         p: 4,
-        textAlign: "center",
         backgroundColor: "#F9FAFC",
+        textAlign: "center",
       }}
     >
-      <input
-        ref={inputRef}
-        type="file"
-        multiple
-        hidden
-        onChange={onFileInputChange}
-      />
+      <input ref={inputRef} type="file" multiple hidden onChange={onFileInputChange} />
+
       <CloudUploadOutlinedIcon color="primary" fontSize="large" />
+
       <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 600 }}>
         {label} *
       </Typography>
+
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
         Upload files or drag and drop
       </Typography>
-      <Typography variant="caption" color="text.secondary">
-        {helperText}
-      </Typography>
-      <Box sx={{ mt: 2 }}>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => inputRef.current?.click()}
-        >
-          Upload files
-        </Button>
-      </Box>
+
+      <Button
+        variant="outlined"
+        size="small"
+        sx={{ mt: 2 }}
+        onClick={() => inputRef.current?.click()}
+      >
+        Upload Files
+      </Button>
+
       {value?.length > 0 && (
         <Stack spacing={1.5} sx={{ mt: 3 }}>
-          {value.map((file, index) => (
-            <Chip
-              key={`${file.name}-${index}`}
-              label={`${file.name} • ${formatFileSize(file.size)}`}
-              onDelete={() => removeFile(index)}
-              variant="outlined"
-            />
-          ))}
+          {value.map((url, index) => {
+            const fileName = url.split("/").pop();
+            return <Chip key={index} label={fileName} variant="outlined" />;
+          })}
         </Stack>
       )}
+
       {error && (
         <Typography variant="caption" color="error" display="block" sx={{ mt: 1 }}>
           {error}
@@ -133,44 +121,112 @@ const UploadDropZone = ({ label, helperText, value = [], error, onChange }) => {
   );
 };
 
+// ===================================================================
 export default function IMTRaiseRequest() {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(importPaymentRequestSchema),
-    mode: "onBlur",
-    defaultValues: {
-      assignedDepartment: "",
-      typeOfImport: "Advance Payment",
-      department: "Operations",
-      scope: "Advance Payment",
-      selectType: "Goods",
-      poDate: null,
-      poNumber: "",
-      partyName: "",
-      grnDate: null,
-      poAmount: 0,
-      currencyType: "USD",
-      advanceAmount: 0,
-      advancePercentage: 0,
-      paymentTerms: "",
-      poUpload: [],
-      piUpload: [],
-    },
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [scopeOptions, setScopesOptions] = useState([]);
+  const [importTypeOptions, setImportTypesOptions] = useState([]);
+  const [vendorOptions, setVendorsOptions] = useState([]);
+  const [currencyOptions, setCurrencyOptions] = useState([]);
+  const [purchaseTypeOptions, setPurchaseTypeOptions] = useState([]);
+
+  const [loadingDropdowns, setLoadingDropdowns] = useState(true);
+
+  // ------------------- FETCH ALL DROPDOWNS IN PARALLEL ------------------------
+  useEffect(() => {
+  const fetchData = async () => {
+  try {
+    const [
+      dept,
+      impType,
+      scope,
+      type,
+      vendors,
+      currencies,
+    ] = await Promise.all([
+      userRequest.get("/imt/getMasters?key=Department&page=1&limit=100"),
+      userRequest.get("/imt/getMasters?key=importtype&page=1&limit=100"),
+      userRequest.get("/imt/getMasters?key=Scope&page=1&limit=100"),
+      userRequest.get("/imt/getMasters?key=Type&page=1&limit=100"),
+      userRequest.get("/imt/getVendors?page=1&limit=100"),
+      userRequest.get("/imt/getCurrencies?page=1&limit=100"),
+    ]);
+
+    // store entire objects so we have _id for payload
+    setDepartmentOptions(dept.data.data.masters);        // [{ _id, key, value }, ...]
+    setImportTypesOptions(impType.data.data.masters);
+    setScopesOptions(scope.data.data.masters);
+    setPurchaseTypeOptions(type.data.data.masters);
+    // setVendorsOptions(vendors.data.data.vendors);        // [{ _id, name, ... }, ... ]
+    setVendorsOptions(vendors.data.data.vendors.map((i) => i.name));
+    
+    setCurrencyOptions(
+      currencies.data.data.currencies.map((item) => ({
+        value: item._id,
+        label: item.name,
+        rate: item.exchangeRate,
+      }))
+    );
+  } catch (error) {
+    swal("Error", "Failed to load dropdown values!", "error");
+  } finally {
+    setLoadingDropdowns(false);
+  }
+};
+  fetchData();
+  }, []);
+
+
+  // ------------------- FORM HOOK ------------------------
+  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+  resolver: yupResolver(importPaymentRequestSchema),
+  mode: "onBlur",
+  defaultValues: {
+    department: "",
+    importType: "",
+    type: "",
+    scope: "",
+    poDate: null,
+    poNumber: "",
+    vendorId: "",
+    grnDate: null,
+    poAmount: 0,
+    currencyId: "",
+    advAmount: 0,
+    advPercentage: 0,
+    paymentTerms: "",
+    poDocument: [],
+    piDocument: [],
+  },
   });
 
-  const onSubmit = (data) => {
-    console.table(data);
-    swal("Success!", "Import payment request submitted successfully!", "success");
-  };
 
+  // ------------------- FINAL SUBMIT ------------------------
+ const onSubmit = async (data) => {
+  console.log("Final Submit Payload:", data);
+
+  try {
+    const res = await userRequest.post("/imt/createRequest", data);
+
+    if (res.data.success === true) {
+      swal("Success!", "Import payment request submitted successfully!", "success");
+
+      // RESET FORM AFTER SUCCESS
+      reset();
+    }
+  } catch (error) {
+    console.error("Submit Error:", error);
+  }
+};
+
+
+  // ===================================================================
   return (
     <>
       <Helmet>
         <title>Import Payment | Raise Request</title>
       </Helmet>
+
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Box sx={{ backgroundColor: "#F4F6F8", minHeight: "100vh", py: 4 }}>
           <Container maxWidth="lg">
@@ -185,22 +241,17 @@ export default function IMTRaiseRequest() {
                   backgroundColor: "#fff",
                 }}
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "space-between",
-                    gap: 2,
-                  }}
-                >
+                {/* HEADER */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                   <Box>
                     <Typography variant="h5" fontWeight={600}>
                       Import / Advance Request
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
                       Fill the required details below to proceed with the request.
                     </Typography>
                   </Box>
+
                   <Button type="submit" variant="contained" size="large">
                     Submit Request
                   </Button>
@@ -208,54 +259,10 @@ export default function IMTRaiseRequest() {
 
                 <Divider sx={{ my: 3 }} />
 
+                {/* ALL FORM FIELDS */}
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Controller
-                      name="assignedDepartment"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          select
-                          fullWidth
-                          label="Assigned Department"
-                          placeholder="Select Department"
-                          error={!!errors.assignedDepartment}
-                          helperText={errors.assignedDepartment?.message}
-                        >
-                          {departmentOptions.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      )}
-                    />
-                  </Grid>
 
-                  <Grid item xs={12} md={6}>
-                    <Controller
-                      name="typeOfImport"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          select
-                          fullWidth
-                          label="Type of Import"
-                          error={!!errors.typeOfImport}
-                          helperText={errors.typeOfImport?.message}
-                        >
-                          {importTypeOptions.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      )}
-                    />
-                  </Grid>
-
+                  {/* Assigned Department */}
                   <Grid item xs={12} md={6}>
                     <Controller
                       name="department"
@@ -263,22 +270,57 @@ export default function IMTRaiseRequest() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          select
-                          fullWidth
-                          label="Department"
-                          disabled
-                          helperText="Auto-selected based on your role"
+                          select fullWidth label="Assigned Department"
+                          error={!!errors.department}
+                          helperText={errors.department?.message}
                         >
-                          {departmentOptions.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
+                          {departmentOptions.map((o) => (
+                            <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
                           ))}
                         </TextField>
                       )}
                     />
                   </Grid>
 
+                  {/* Type of Import */}
+                  <Grid item xs={12} md={6}>
+                    <Controller
+                      name="importType"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          select fullWidth label="Type of Import"
+                          error={!!errors.importType}
+                          helperText={errors.importType?.message}
+                        >
+                          {importTypeOptions.map((o) => (
+                            <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
+                          ))}
+                        </TextField>
+                      )}
+                    />
+                  </Grid>
+
+                  {/* Department (disabled) */}
+                  <Grid item xs={12} md={6}>
+                    <Controller
+                      name="department"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          select disabled fullWidth label="Department"
+                        >
+                          {departmentOptions.map((o) => (
+                            <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
+                          ))}
+                        </TextField>
+                      )}
+                    />
+                  </Grid>
+
+                  {/* Scope */}
                   <Grid item xs={12} md={6}>
                     <Controller
                       name="scope"
@@ -286,45 +328,39 @@ export default function IMTRaiseRequest() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          select
-                          fullWidth
-                          label="Scope (Dependent on Type)"
+                          select fullWidth label="Scope"
                           error={!!errors.scope}
                           helperText={errors.scope?.message}
                         >
-                          {scopeOptions.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
+                          {scopeOptions.map((o) => (
+                            <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
                           ))}
                         </TextField>
                       )}
                     />
                   </Grid>
 
+                  {/* Select Type */}
                   <Grid item xs={12}>
                     <Controller
-                      name="selectType"
+                      name="type"
                       control={control}
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          select
-                          fullWidth
-                          label="Select Type"
-                          error={!!errors.selectType}
-                          helperText={errors.selectType?.message}
+                          select fullWidth label="Select Type"
+                          error={!!errors.type}
+                          helperText={errors.type?.message}
                         >
-                          {purchaseTypeOptions.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
+                          {purchaseTypeOptions.map((o) => (
+                            <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
                           ))}
                         </TextField>
                       )}
                     />
                   </Grid>
 
+                  {/* PO Date */}
                   <Grid item xs={12} md={6}>
                     <Controller
                       name="poDate"
@@ -346,16 +382,14 @@ export default function IMTRaiseRequest() {
                     />
                   </Grid>
 
+                  {/* PO Number */}
                   <Grid item xs={12} md={6}>
                     <Controller
                       name="poNumber"
                       control={control}
                       render={({ field }) => (
                         <TextField
-                          {...field}
-                          fullWidth
-                          label="PO Number"
-                          placeholder="e.g. PO-2024-8892"
+                          {...field} fullWidth label="PO Number"
                           error={!!errors.poNumber}
                           helperText={errors.poNumber?.message}
                         />
@@ -363,29 +397,27 @@ export default function IMTRaiseRequest() {
                     />
                   </Grid>
 
+                  {/* Party / Vendor */}
                   <Grid item xs={12} md={6}>
                     <Controller
-                      name="partyName"
+                      name="vendorId"
                       control={control}
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          select
-                          fullWidth
-                          label="Party Name (Vendor)"
-                          error={!!errors.partyName}
-                          helperText={errors.partyName?.message}
+                          select fullWidth label="Party Name (Vendor)"
+                          error={!!errors.vendorId}
+                          helperText={errors.vendorId?.message}
                         >
-                          {vendorOptions.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
+                          {vendorOptions.map((o) => (
+                            <MenuItem key={o} value={o}>{o}</MenuItem>
                           ))}
                         </TextField>
                       )}
                     />
                   </Grid>
 
+                  {/* GRN Date */}
                   <Grid item xs={12} md={6}>
                     <Controller
                       name="grnDate"
@@ -407,16 +439,14 @@ export default function IMTRaiseRequest() {
                     />
                   </Grid>
 
+                  {/* PO Amount */}
                   <Grid item xs={12} md={6}>
                     <Controller
                       name="poAmount"
                       control={control}
                       render={({ field }) => (
                         <TextField
-                          {...field}
-                          fullWidth
-                          type="number"
-                          label="PO Amount"
+                          {...field} fullWidth type="number" label="PO Amount"
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -431,22 +461,21 @@ export default function IMTRaiseRequest() {
                     />
                   </Grid>
 
+                  {/* Currency */}
                   <Grid item xs={12} md={6}>
                     <Controller
-                      name="currencyType"
+                      name="currencyId"
                       control={control}
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          select
-                          fullWidth
-                          label="Currency Type"
-                          error={!!errors.currencyType}
-                          helperText={errors.currencyType?.message}
+                          select fullWidth label="Currency Type"
+                          error={!!errors.currencyId}
+                          helperText={errors.currencyId?.message}
                         >
-                          {currencyOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
+                          {currencyOptions.map((o) => (
+                            <MenuItem key={o.value} value={o.value}>
+                              {o.label}
                             </MenuItem>
                           ))}
                         </TextField>
@@ -454,16 +483,15 @@ export default function IMTRaiseRequest() {
                     />
                   </Grid>
 
+                  {/* Advance Amount */}
                   <Grid item xs={12} md={6}>
                     <Controller
-                      name="advanceAmount"
+                      name="advAmount"
                       control={control}
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          fullWidth
-                          type="number"
-                          label="Advance Amount"
+                          fullWidth type="number" label="Advance Amount"
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -471,37 +499,34 @@ export default function IMTRaiseRequest() {
                               </InputAdornment>
                             ),
                           }}
-                          error={!!errors.advanceAmount}
-                          helperText={errors.advanceAmount?.message}
+                          error={!!errors.advAmount}
+                          helperText={errors.advAmount?.message}
                         />
                       )}
                     />
                   </Grid>
 
+                  {/* Advance Percentage */}
                   <Grid item xs={12} md={6}>
                     <Controller
-                      name="advancePercentage"
+                      name="advPercentage"
                       control={control}
                       render={({ field }) => (
                         <TextField
-                          {...field}
-                          fullWidth
-                          type="number"
-                          label="Advance Percentage"
+                          {...field} fullWidth type="number" label="Advance Percentage"
                           InputProps={{
                             endAdornment: (
-                              <InputAdornment position="end">
-                                Percent %
-                              </InputAdornment>
+                              <InputAdornment position="end">%</InputAdornment>
                             ),
                           }}
-                          error={!!errors.advancePercentage}
-                          helperText={errors.advancePercentage?.message}
+                          error={!!errors.advPercentage}
+                          helperText={errors.advPercentage?.message}
                         />
                       )}
                     />
                   </Grid>
 
+                  {/* Payment Terms */}
                   <Grid item xs={12}>
                     <Controller
                       name="paymentTerms"
@@ -509,11 +534,8 @@ export default function IMTRaiseRequest() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          multiline
-                          minRows={4}
-                          fullWidth
+                          multiline minRows={4} fullWidth
                           label="Payment Terms"
-                          placeholder="Write text"
                           error={!!errors.paymentTerms}
                           helperText={errors.paymentTerms?.message}
                         />
@@ -521,37 +543,40 @@ export default function IMTRaiseRequest() {
                     />
                   </Grid>
 
+                  {/* PO UPLOAD */}
                   <Grid item xs={12} md={6}>
                     <Controller
-                      name="poUpload"
+                      name="poDocument"
                       control={control}
                       render={({ field }) => (
                         <UploadDropZone
                           label="PO Upload"
-                          helperText="PDF, PNG, JPG up to 10MB (PO required)"
+                          helperText="PDF, PNG, JPG up to 10MB"
                           value={field.value}
                           onChange={field.onChange}
-                          error={errors.poUpload?.message}
+                          error={errors.poDocument?.message}
                         />
                       )}
                     />
                   </Grid>
 
+                  {/* PI UPLOAD */}
                   <Grid item xs={12} md={6}>
                     <Controller
-                      name="piUpload"
+                      name="piDocument"
                       control={control}
                       render={({ field }) => (
                         <UploadDropZone
                           label="PI Upload"
-                          helperText="PDF, PNG, JPG up to 10MB (PI required)"
+                          helperText="PDF, PNG, JPG up to 10MB"
                           value={field.value}
                           onChange={field.onChange}
-                          error={errors.piUpload?.message}
+                          error={errors.piDocument?.message}
                         />
                       )}
                     />
                   </Grid>
+
                 </Grid>
               </Paper>
             </Box>
@@ -561,3 +586,4 @@ export default function IMTRaiseRequest() {
     </>
   );
 }
+
