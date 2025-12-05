@@ -461,7 +461,7 @@ export default function RequestDetail() {
             </Box>
 
             <Box component="form">
-              <BasicInformationSection control={control} errors={errors} />
+              <BasicInformationSection control={control} errors={errors} readOnly={true} />
 
               <Divider sx={{ my: 4 }} />
 

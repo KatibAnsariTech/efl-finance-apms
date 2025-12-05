@@ -14,6 +14,7 @@ const CustomSelect = ({
   loading = false,
   onChange,
   value,
+  disabled = false,
   ...props 
 }) => {
   // Default getOptionLabel - handles both string and object options
@@ -77,12 +78,14 @@ const CustomSelect = ({
       renderOption={renderOption}
       loading={loading}
       fullWidth={fullWidth}
+      disabled={disabled}
       renderInput={(params) => (
         <TextField
           {...params}
           label={label}
           error={error}
           helperText={helperText}
+          disabled={disabled}
           InputProps={{
             ...params.InputProps,
             endAdornment: (

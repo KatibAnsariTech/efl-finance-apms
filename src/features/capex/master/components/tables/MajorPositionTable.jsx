@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { IconButton, Box, Typography } from "@mui/material";
+import { IconButton, Box, Typography, Card, CardContent } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function MajorPositionTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
+export default function MajorPositionTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger, selectedDepartment }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,30 +16,44 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
   const [rowCount, setRowCount] = useState(0);
 
   const fetchData = async () => {
+    // Don't fetch if no department is selected
+    if (!selectedDepartment) {
+      setData([]);
+      setRowCount(0);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
+      const departmentId = selectedDepartment._id || selectedDepartment;
       const response = await userRequest.get("cpx/getMajorPositions", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
+          department: departmentId,
         },
       });
 
       const apiData = response.data.data?.items || response.data.data || [];
       const totalCount = response.data.data?.pagination?.total || 0;
 
-      const mappedData = apiData.map((item, index) => ({
-        id: item._id,
-        sno: (page * rowsPerPage) + index + 1,
-        name: item.name || "-",
-        ...item,
-      }));
+      const mappedData = apiData.map((item, index) => {
+        const departmentValue = item.department?.name || (typeof item.department === 'string' ? item.department : "-");
+        return {
+          id: item._id,
+          sno: (page * rowsPerPage) + index + 1,
+          name: item.name || "-",
+          department: departmentValue,
+          ...item,
+        };
+      });
 
       setData(mappedData);
       setRowCount(totalCount);
     } catch (error) {
-      console.error("Error fetching Major Position data:", error);
-      showErrorMessage(error, "Error fetching Major Position data", swal);
+      console.error("Error fetching Position data:", error);
+      showErrorMessage(error, "Error fetching Position data", swal);
     } finally {
       setLoading(false);
     }
@@ -47,7 +61,7 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
 
   useEffect(() => {
     fetchData();
-  }, [page, rowsPerPage, refreshTrigger]);
+  }, [page, rowsPerPage, refreshTrigger, selectedDepartment]);
 
   useEffect(() => {
     if (tabChangeTrigger > 0 || refreshTrigger > 0) {
@@ -60,7 +74,7 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
       const rowData = data.find(item => item.id === id);
       parentHandleEdit(rowData);
     } else {
-      alert(`Edit Major Position: ${id}`);
+      alert(`Edit Position: ${id}`);
     }
   };
 
@@ -68,7 +82,7 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
     if (parentHandleDelete) {
       parentHandleDelete(id);
     } else {
-      alert(`Delete Major Position: ${id}`);
+      alert(`Delete Position: ${id}`);
     }
   };
 
@@ -92,7 +106,22 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
     },
     {
       field: "name",
-      headerName: "Major Position",
+      headerName: "Position",
+      minWidth: 200,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "department",
+      headerName: "Department",
       minWidth: 200,
       flex: 1,
       sortable: true,
@@ -141,6 +170,28 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
       ),
     },
   ];
+
+  // Show message if no department is selected
+  if (!selectedDepartment) {
+    return (
+      <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: 200,
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "text.secondary" }}>
+              Please select a department to view Position
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <DataGrid

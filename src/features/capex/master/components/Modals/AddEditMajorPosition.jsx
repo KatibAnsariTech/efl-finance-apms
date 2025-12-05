@@ -1,40 +1,93 @@
 import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { Autocomplete, CircularProgress } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
 function AddEditMajorPosition({ handleClose, open, editData: positionData, getData }) {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, control } = useForm();
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
+
+  // Fetch departments
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setDepartmentsLoading(true);
+      try {
+        const response = await userRequest.get("cpx/getDepartments", {
+          params: {
+            page: 1,
+            limit: 100,
+          },
+        });
+
+        const depts = response.data.data?.items || response.data.data || [];
+        setDepartments(depts);
+      } catch (error) {
+        console.error("Error fetching Departments:", error);
+        showErrorMessage(error, "Error fetching Departments", swal);
+        setDepartments([]);
+      } finally {
+        setDepartmentsLoading(false);
+      }
+    };
+
+    if (open) {
+      fetchDepartments();
+    }
+  }, [open]);
 
   useEffect(() => {
-    if (positionData) {
+    if (positionData && departments.length > 0 && !departmentsLoading) {
       setValue("name", positionData.name || "");
-    } else {
+      // Handle department - it can be an object with _id and name, or just an _id
+      if (positionData.department) {
+        if (typeof positionData.department === 'object' && positionData.department._id) {
+          // It's already an object, find the matching department
+          const foundDepartment = departments.find(
+            (dept) => dept._id === positionData.department._id
+          );
+          setValue("department", foundDepartment || null);
+        } else if (typeof positionData.department === 'string') {
+          // It's an ID string, find the matching department
+          const foundDepartment = departments.find(
+            (dept) => dept._id === positionData.department || dept.name === positionData.department
+          );
+          setValue("department", foundDepartment || null);
+        }
+      } else {
+        setValue("department", null);
+      }
+    } else if (positionData && departments.length === 0 && !departmentsLoading) {
+      setValue("name", positionData.name || "");
+      setValue("department", null);
+    } else if (!positionData) {
       reset();
     }
-  }, [positionData, setValue, reset]);
+  }, [positionData, departments, departmentsLoading, setValue, reset]);
 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
       const formattedData = {
         name: data.name,
+        department: data.department?._id || data.department || "",
       };
       
       if (positionData?._id) {
         await userRequest.put(`cpx/updateMajorPosition/${positionData._id}`, formattedData);
-        swal("Updated!", "Major Position data updated successfully!", "success");
+        swal("Updated!", "Position data updated successfully!", "success");
       } else {
         await userRequest.post("cpx/createMajorPosition", formattedData);
-        swal("Success!", "Major Position data saved successfully!", "success");
+        swal("Success!", "Position data saved successfully!", "success");
       }
 
       reset();
@@ -70,7 +123,7 @@ function AddEditMajorPosition({ handleClose, open, editData: positionData, getDa
           }}
         >
           <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
-            {positionData ? "Edit Major Position" : "Add Major Position"}
+            {positionData ? "Edit Position" : "Add Position"}
           </span>
           <RxCross2
             onClick={handleClose}
@@ -96,17 +149,52 @@ function AddEditMajorPosition({ handleClose, open, editData: positionData, getDa
         >
           <TextField
             id="name"
-            label="Major Position"
+            label="Position"
             {...register("name", { required: true })}
             fullWidth
             required
+          />
+          <Controller
+            name="department"
+            control={control}
+            rules={{ required: "Department is required" }}
+            render={({ field: { onChange, value, ...field } }) => (
+              <Autocomplete
+                {...field}
+                options={departments}
+                getOptionLabel={(option) => option?.name || ""}
+                isOptionEqualToValue={(option, value) => option?._id === value?._id}
+                value={value || null}
+                onChange={(event, newValue) => {
+                  onChange(newValue);
+                }}
+                loading={departmentsLoading}
+                disabled={loading || departmentsLoading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Department"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {departmentsLoading ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            )}
           />
           <Button
             sx={{ marginTop: "20px", height: "50px" }}
             variant="contained"
             color="primary"
             type="submit"
-            disabled={loading}
+            disabled={loading || departmentsLoading}
           >
             {loading ? "Saving..." : positionData ? "Update" : "Save"}
           </Button>

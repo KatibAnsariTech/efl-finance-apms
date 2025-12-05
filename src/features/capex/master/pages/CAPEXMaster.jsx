@@ -29,8 +29,8 @@ import swal from "sweetalert";
 
 const menuItems = [
   "Department",
-  "Major Position",
-  "Approver Position",
+  "Position",
+  "Position Ranking",
   "Approval Authority",
   "Business Vertical",
   "Function",
@@ -50,11 +50,11 @@ export default function CAPEXMaster() {
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
   const selectedCategory = menuItems[selectedTab];
 
-  // Fetch departments when Approval Authority tab is selected
+  // Fetch departments when Position, Position Ranking, or Approval Authority tab is selected
   useEffect(() => {
     const fetchDepartments = async () => {
-      if (selectedTab === 3) {
-        // Approval Authority tab
+      if (selectedTab === 1 || selectedTab === 2 || selectedTab === 3) {
+        // Position (1), Position Ranking (2), or Approval Authority (3) tab
         setDepartmentsLoading(true);
         try {
           const response = await userRequest.get("cpx/getDepartments", {
@@ -72,6 +72,9 @@ export default function CAPEXMaster() {
         } finally {
           setDepartmentsLoading(false);
         }
+      } else {
+        // Clear selected department when switching to other tabs
+        setSelectedDepartment(null);
       }
     };
 
@@ -164,12 +167,12 @@ export default function CAPEXMaster() {
         <Box
           sx={{
             display: "flex",
-            justifyContent: selectedTab === 3 ? "space-between" : "flex-end",
+            justifyContent: (selectedTab === 1 || selectedTab === 2 || selectedTab === 3) ? "space-between" : "flex-end",
             alignItems: "center",
             mb: 2.5,
           }}
         >
-          {selectedTab === 3 && (
+          {(selectedTab === 1 || selectedTab === 2 || selectedTab === 3) && (
             <Autocomplete
               options={departments}
               getOptionLabel={(option) => option?.name || ""}
@@ -239,7 +242,7 @@ export default function CAPEXMaster() {
               fontWeight: "bold",
               cursor: "pointer",
               color: "#167beb",
-              ml: selectedTab === 3 ? "auto" : 0,
+              ml: (selectedTab === 1 || selectedTab === 2 || selectedTab === 3) ? "auto" : 0,
             }}
           >
             Add {menuItems[selectedTab]}
@@ -362,6 +365,7 @@ export default function CAPEXMaster() {
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
               tabChangeTrigger={tabChangeTrigger}
+              selectedDepartment={selectedDepartment}
             />
           )}
 
@@ -371,6 +375,7 @@ export default function CAPEXMaster() {
               handleDelete={handleDelete}
               refreshTrigger={refreshTrigger}
               tabChangeTrigger={tabChangeTrigger}
+              selectedDepartment={selectedDepartment}
             />
           )}
 

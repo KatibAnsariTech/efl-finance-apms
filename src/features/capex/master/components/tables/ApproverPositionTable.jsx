@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { IconButton, Box, Typography } from "@mui/material";
+import { IconButton, Box, Typography, Card, CardContent } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function ApproverPositionTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger }) {
+export default function ApproverPositionTable({ handleEdit: parentHandleEdit, handleDelete: parentHandleDelete, refreshTrigger, tabChangeTrigger, selectedDepartment }) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,12 +16,22 @@ export default function ApproverPositionTable({ handleEdit: parentHandleEdit, ha
   const [rowCount, setRowCount] = useState(0);
 
   const fetchData = async () => {
+    // Don't fetch if no department is selected
+    if (!selectedDepartment) {
+      setData([]);
+      setRowCount(0);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
+      const departmentId = selectedDepartment._id || selectedDepartment;
       const response = await userRequest.get("cpx/getApproverPositions", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
+          department: departmentId,
         },
       });
 
@@ -30,20 +40,22 @@ export default function ApproverPositionTable({ handleEdit: parentHandleEdit, ha
 
       const mappedData = apiData.map((item, index) => {
         const majorPositionValue = item.majorPosition?.name || (typeof item.majorPosition === 'string' ? item.majorPosition : "-");
+        const departmentValue = item.department?.name || (typeof item.department === 'string' ? item.department : "-");
         return {
           ...item,
           id: item._id,
           sno: (page * rowsPerPage) + index + 1,
           ranking: item.ranking || "-",
           majorPosition: majorPositionValue,
+          department: departmentValue,
         };
       });
 
       setData(mappedData);
       setRowCount(totalCount);
     } catch (error) {
-      console.error("Error fetching Approver Position data:", error);
-      showErrorMessage(error, "Error fetching Approver Position data", swal);
+      console.error("Error fetching Position Ranking data:", error);
+      showErrorMessage(error, "Error fetching Position Ranking data", swal);
     } finally {
       setLoading(false);
     }
@@ -51,7 +63,7 @@ export default function ApproverPositionTable({ handleEdit: parentHandleEdit, ha
 
   useEffect(() => {
     fetchData();
-  }, [page, rowsPerPage, refreshTrigger]);
+  }, [page, rowsPerPage, refreshTrigger, selectedDepartment]);
 
   useEffect(() => {
     if (tabChangeTrigger > 0 || refreshTrigger > 0) {
@@ -64,7 +76,7 @@ export default function ApproverPositionTable({ handleEdit: parentHandleEdit, ha
       const rowData = data.find(item => item.id === id);
       parentHandleEdit(rowData);
     } else {
-      alert(`Edit Approver Position: ${id}`);
+      alert(`Edit Position Ranking: ${id}`);
     }
   };
 
@@ -72,7 +84,7 @@ export default function ApproverPositionTable({ handleEdit: parentHandleEdit, ha
     if (parentHandleDelete) {
       parentHandleDelete(id);
     } else {
-      alert(`Delete Approver Position: ${id}`);
+      alert(`Delete Position Ranking: ${id}`);
     }
   };
 
@@ -111,7 +123,22 @@ export default function ApproverPositionTable({ handleEdit: parentHandleEdit, ha
     },
     {
       field: "majorPosition",
-      headerName: "Major Position",
+      headerName: "Position",
+      minWidth: 200,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "department",
+      headerName: "Department",
       minWidth: 200,
       flex: 1,
       sortable: true,
@@ -160,6 +187,28 @@ export default function ApproverPositionTable({ handleEdit: parentHandleEdit, ha
       ),
     },
   ];
+
+  // Show message if no department is selected
+  if (!selectedDepartment) {
+    return (
+      <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: 200,
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "text.secondary" }}>
+              Please select a department to view Position Ranking
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
       <DataGrid

@@ -16,8 +16,10 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
   const [loading, setLoading] = useState(false);
   const [majorPositions, setMajorPositions] = useState([]);
   const [positionsLoading, setPositionsLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
 
-  // Fetch major positions
+  // Fetch major positions and departments
   useEffect(() => {
     const fetchMajorPositions = async () => {
       setPositionsLoading(true);
@@ -32,21 +34,43 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
         const positions = response.data.data?.items || response.data.data || [];
         setMajorPositions(positions);
       } catch (error) {
-        console.error("Error fetching Major Positions:", error);
-        showErrorMessage(error, "Error fetching Major Positions", swal);
+        console.error("Error fetching Positions:", error);
+        showErrorMessage(error, "Error fetching Positions", swal);
         setMajorPositions([]);
       } finally {
         setPositionsLoading(false);
       }
     };
 
+    const fetchDepartments = async () => {
+      setDepartmentsLoading(true);
+      try {
+        const response = await userRequest.get("cpx/getDepartments", {
+          params: {
+            page: 1,
+            limit: 100,
+          },
+        });
+
+        const depts = response.data.data?.items || response.data.data || [];
+        setDepartments(depts);
+      } catch (error) {
+        console.error("Error fetching Departments:", error);
+        showErrorMessage(error, "Error fetching Departments", swal);
+        setDepartments([]);
+      } finally {
+        setDepartmentsLoading(false);
+      }
+    };
+
     if (open) {
       fetchMajorPositions();
+      fetchDepartments();
     }
   }, [open]);
 
   useEffect(() => {
-    if (positionData && majorPositions.length > 0 && !positionsLoading) {
+    if (positionData && majorPositions.length > 0 && departments.length > 0 && !positionsLoading && !departmentsLoading) {
       setValue("ranking", positionData.ranking || "");
       // Handle majorPosition - it can be an object with _id and name, or just an _id
       if (positionData.majorPosition) {
@@ -66,26 +90,45 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
       } else {
         setValue("majorPosition", null);
       }
+      // Handle department - it can be an object with _id and name, or just an _id
+      if (positionData.department) {
+        if (typeof positionData.department === 'object' && positionData.department._id) {
+          // It's already an object, find the matching department
+          const foundDepartment = departments.find(
+            (dept) => dept._id === positionData.department._id
+          );
+          setValue("department", foundDepartment || null);
+        } else if (typeof positionData.department === 'string') {
+          // It's an ID string, find the matching department
+          const foundDepartment = departments.find(
+            (dept) => dept._id === positionData.department || dept.name === positionData.department
+          );
+          setValue("department", foundDepartment || null);
+        }
+      } else {
+        setValue("department", null);
+      }
     } else if (!positionData) {
       reset();
     }
-  }, [positionData, majorPositions, positionsLoading, setValue, reset]);
+  }, [positionData, majorPositions, departments, positionsLoading, departmentsLoading, setValue, reset]);
 
   const handleSaveData = async (data) => {
     setLoading(true);
     try {
-      // Get the major position _id from the selected object
+      // Get the major position and department _id from the selected objects
       const formattedData = {
         ranking: data.ranking,
         majorPosition: data.majorPosition?._id || data.majorPosition || "",
+        department: data.department?._id || data.department || "",
       };
       
       if (positionData?._id) {
         await userRequest.put(`cpx/updateApproverPosition/${positionData._id}`, formattedData);
-        swal("Updated!", "Approver Position data updated successfully!", "success");
+        swal("Updated!", "Position Ranking data updated successfully!", "success");
       } else {
         await userRequest.post("cpx/createApproverPosition", formattedData);
-        swal("Success!", "Approver Position data saved successfully!", "success");
+        swal("Success!", "Position Ranking data saved successfully!", "success");
       }
 
       reset();
@@ -121,7 +164,7 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
           }}
         >
           <span style={{ fontSize: "24px", fontWeight: "bolder" }}>
-            {positionData ? "Edit Approver Position" : "Add Approver Position"}
+            {positionData ? "Edit Position Ranking" : "Add Position Ranking"}
           </span>
           <RxCross2
             onClick={handleClose}
@@ -155,7 +198,7 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
           <Controller
             name="majorPosition"
             control={control}
-            rules={{ required: "Major Position is required" }}
+            rules={{ required: "Position is required" }}
             render={({ field: { onChange, value, ...field } }) => (
               <Autocomplete
                 {...field}
@@ -171,13 +214,48 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Major Position"
+                    label="Position"
                     required
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
                         <>
                           {positionsLoading ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            )}
+          />
+          <Controller
+            name="department"
+            control={control}
+            rules={{ required: "Department is required" }}
+            render={({ field: { onChange, value, ...field } }) => (
+              <Autocomplete
+                {...field}
+                options={departments}
+                getOptionLabel={(option) => option?.name || ""}
+                isOptionEqualToValue={(option, value) => option?._id === value?._id}
+                value={value || null}
+                onChange={(event, newValue) => {
+                  onChange(newValue);
+                }}
+                loading={departmentsLoading}
+                disabled={loading || departmentsLoading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Department"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {departmentsLoading ? <CircularProgress size={20} /> : null}
                           {params.InputProps.endAdornment}
                         </>
                       ),

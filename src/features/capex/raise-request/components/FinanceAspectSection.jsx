@@ -30,6 +30,7 @@ export default function FinanceAspectSection({ control, readOnly = false }) {
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -48,6 +49,7 @@ export default function FinanceAspectSection({ control, readOnly = false }) {
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -66,6 +68,7 @@ export default function FinanceAspectSection({ control, readOnly = false }) {
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -93,6 +96,7 @@ export default function FinanceAspectSection({ control, readOnly = false }) {
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -108,6 +112,7 @@ export default function FinanceAspectSection({ control, readOnly = false }) {
                 label="New Asset Code"
                 fullWidth
                 variant="outlined"
+                disabled={readOnly}
               />
             )}
           />
@@ -132,6 +137,7 @@ export default function FinanceAspectSection({ control, readOnly = false }) {
                   if (option === "") return "Select Option";
                   return option;
                 }}
+                disabled={readOnly}
               />
             )}
           />

@@ -35,6 +35,7 @@ export default function ModificationUpgradeSection({ control, errors, watch, rea
                   if (option === "") return "Select Option";
                   return option;
                 }}
+                disabled={readOnly}
               />
             )}
           />
@@ -57,6 +58,7 @@ export default function ModificationUpgradeSection({ control, errors, watch, rea
                     rows={2}
                     error={!!error}
                     helperText={error?.message}
+                    disabled={readOnly}
                   />
                 )}
               />
@@ -75,6 +77,7 @@ export default function ModificationUpgradeSection({ control, errors, watch, rea
                     rows={2}
                     error={!!error}
                     helperText={error?.message}
+                    disabled={readOnly}
                   />
                 )}
               />
@@ -92,6 +95,7 @@ export default function ModificationUpgradeSection({ control, errors, watch, rea
                     variant="outlined"
                     error={!!error}
                     helperText={error?.message}
+                    disabled={readOnly}
                   />
                 )}
               />
@@ -109,6 +113,7 @@ export default function ModificationUpgradeSection({ control, errors, watch, rea
                     variant="outlined"
                     error={!!error}
                     helperText={error?.message}
+                    disabled={readOnly}
                   />
                 )}
               />
@@ -126,6 +131,7 @@ export default function ModificationUpgradeSection({ control, errors, watch, rea
                     variant="outlined"
                     error={!!error}
                     helperText={error?.message}
+                    disabled={readOnly}
                   />
                 )}
               />

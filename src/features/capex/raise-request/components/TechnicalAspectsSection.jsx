@@ -416,6 +416,7 @@ export default function TechnicalAspectsSection({
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -436,6 +437,7 @@ export default function TechnicalAspectsSection({
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -456,6 +458,7 @@ export default function TechnicalAspectsSection({
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -476,6 +479,7 @@ export default function TechnicalAspectsSection({
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -495,6 +499,7 @@ export default function TechnicalAspectsSection({
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -515,6 +520,7 @@ export default function TechnicalAspectsSection({
                 variant="outlined"
                 error={!!error}
                 helperText={error?.message}
+                disabled={readOnly}
               />
             )}
           />
@@ -528,10 +534,12 @@ export default function TechnicalAspectsSection({
               <DatePicker
                 {...field}
                 label="Expected Date of Implementation"
+                disabled={readOnly}
                 slotProps={{
                   textField: {
                     fullWidth: true,
                     variant: "outlined",
+                    disabled: readOnly,
                     sx: {
                       "& .MuiInputLabel-root": {
                         fontSize: "0.875rem",

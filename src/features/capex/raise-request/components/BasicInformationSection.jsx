@@ -8,7 +8,7 @@ import { Controller } from "react-hook-form";
 import { CustomTextField, CustomSelect } from "./CustomFields";
 import { userRequest } from "src/requestMethod";
 
-export default function BasicInformationSection({ control, errors }) {
+export default function BasicInformationSection({ control, errors, readOnly = false }) {
   const [plantCodes, setPlantCodes] = useState([]);
   const [plantCodesLoading, setPlantCodesLoading] = useState(false);
   const [businessVerticals, setBusinessVerticals] = useState([]);
@@ -123,6 +123,7 @@ export default function BasicInformationSection({ control, errors }) {
                   label="Business Vertical *"
                   error={!!error}
                   helperText={error?.message}
+                  disabled={readOnly}
                 />
               );
             }}
@@ -166,6 +167,7 @@ export default function BasicInformationSection({ control, errors }) {
                   label="Location *"
                   error={!!error}
                   helperText={error?.message}
+                  disabled={readOnly}
                 />
               );
             }}
@@ -194,6 +196,7 @@ export default function BasicInformationSection({ control, errors }) {
                   label="Function *"
                   error={!!error}
                   helperText={error?.message}
+                  disabled={readOnly}
                 />
               );
             }}
@@ -223,6 +226,7 @@ export default function BasicInformationSection({ control, errors }) {
                   label="Business / Plant Code *"
                   error={!!error}
                   helperText={error?.message}
+                  disabled={readOnly}
                 />
               );
             }}
@@ -239,6 +243,7 @@ export default function BasicInformationSection({ control, errors }) {
                 label="Contact Person Name"
                 fullWidth
                 variant="outlined"
+                disabled={readOnly}
               />
             )}
           />
@@ -254,6 +259,7 @@ export default function BasicInformationSection({ control, errors }) {
                 label="Contact Person Number"
                 fullWidth
                 variant="outlined"
+                disabled={readOnly}
               />
             )}
           />
@@ -269,6 +275,7 @@ export default function BasicInformationSection({ control, errors }) {
                 label="Delivery Address"
                 fullWidth
                 variant="outlined"
+                disabled={readOnly}
               />
             )}
           />
@@ -284,6 +291,7 @@ export default function BasicInformationSection({ control, errors }) {
                 label="State"
                 fullWidth
                 variant="outlined"
+                disabled={readOnly}
               />
             )}
           />
@@ -299,6 +307,7 @@ export default function BasicInformationSection({ control, errors }) {
                 label="Postal Code"
                 fullWidth
                 variant="outlined"
+                disabled={readOnly}
               />
             )}
           />
