@@ -12,8 +12,10 @@ import { Helmet } from "react-helmet-async";
 import { FormTableToolbar } from "src/components/table";
 import { MyRequestsColumns } from "../components/MyRequestsColumns";
 import ColorIndicators from "../../../custom-duty/my-requests/components/ColorIndicators";
+import { useRouter } from "src/routes/hooks";
 
 export default function MyRequests() {
+  const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -104,8 +106,10 @@ export default function MyRequests() {
   };
 
   const handleRequestClick = (rowData) => {
-    // TODO: Implement view/edit modal or navigation
-    console.log("Request clicked:", rowData);
+    const requestNo = rowData.requestNo || rowData._id;
+    if (requestNo) {
+      router.push(`/capex/my-requests/${requestNo}`);
+    }
   };
 
   const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });

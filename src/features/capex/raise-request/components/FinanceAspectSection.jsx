@@ -10,7 +10,7 @@ import { HelpOutline } from "@mui/icons-material";
 import { Controller } from "react-hook-form";
 import { CustomTextField, CustomSelect } from "./CustomFields";
 
-export default function FinanceAspectSection({ control }) {
+export default function FinanceAspectSection({ control, readOnly = false }) {
   return (
     <Box>
       <Typography variant="h6" sx={{ mb: 3, fontWeight: "bold" }}>

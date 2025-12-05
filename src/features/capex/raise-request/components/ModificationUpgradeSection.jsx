@@ -7,7 +7,7 @@ import {
 import { Controller } from "react-hook-form";
 import { CustomTextField, CustomSelect } from "./CustomFields";
 
-export default function ModificationUpgradeSection({ control, errors, watch }) {
+export default function ModificationUpgradeSection({ control, errors, watch, readOnly = false }) {
   const modificationOrUpgrade = watch("modificationOrUpgrade");
   const showAdditionalFields = modificationOrUpgrade === "Yes";
 

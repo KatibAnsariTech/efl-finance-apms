@@ -25,7 +25,7 @@ import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-export default function SupportingDocumentsSection({ control, setValue, watch, errors, trigger }) {
+export default function SupportingDocumentsSection({ control, setValue, watch, errors, trigger, readOnly = false }) {
   const documentsRaw = watch("documents") || {};
   // Normalize documents to ensure all fields are arrays, never strings
   const documents = useMemo(() => {
@@ -227,6 +227,184 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
     const fieldError = errors.documents?.[fieldName];
     const hasError = !!fieldError;
 
+    // For readOnly mode (approver view), use a compact horizontal layout
+    if (readOnly) {
+      return (
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={1}
+            sx={{
+              p: 2,
+              borderRadius: 1.5,
+              border: hasError ? "2px solid" : "1px solid",
+              borderColor: hasError ? "error.main" : "divider",
+              backgroundColor: fileUrls.length > 0 ? "background.paper" : "grey.50",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1, minWidth: 0 }}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    fontWeight: 600, 
+                    color: hasError ? 'error.main' : 'text.primary',
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {label}
+                </Typography>
+                {required && (
+                  <Chip
+                    label="*"
+                    size="small"
+                    color="error"
+                    sx={{ height: "18px", minWidth: "18px", fontSize: "0.7rem", fontWeight: 700, p: 0 }}
+                  />
+                )}
+              </Box>
+              {fileUrls.length > 0 && (
+                <Badge
+                  badgeContent={fileUrls.length}
+                  color="primary"
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      fontSize: "0.7rem",
+                      minWidth: "20px",
+                      height: "20px",
+                      fontWeight: 600,
+                    },
+                  }}
+                >
+                  <Description sx={{ fontSize: 20, color: "primary.main" }} />
+                </Badge>
+              )}
+            </Box>
+
+            {fileUrls.length > 0 ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1, flex: 1, overflow: "auto" }}>
+                {fileUrls.map((fileUrl, index) => (
+                  <Paper
+                    key={index}
+                    variant="outlined"
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 1,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      backgroundColor: "background.paper",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      transition: "all 0.15s ease-in-out",
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: "action.hover",
+                        borderColor: "primary.main",
+                        boxShadow: 1,
+                      },
+                    }}
+                    onClick={() => window.open(fileUrl, '_blank')}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1,
+                        backgroundColor: "primary.lighter",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {getFileIcon(fileUrl)}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 500,
+                          color: "text.primary",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          mb: 0.25,
+                        }}
+                      >
+                        {getFileName(fileUrl)}
+                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        {getFileExtension(fileUrl) && (
+                          <Chip
+                            label={getFileExtension(fileUrl)}
+                            size="small"
+                            sx={{
+                              height: "18px",
+                              fontSize: "0.65rem",
+                              fontWeight: 600,
+                              backgroundColor: "action.selected",
+                              color: "text.secondary",
+                            }}
+                          />
+                        )}
+                        <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.7rem" }}>
+                          #{index + 1}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Tooltip title="Open in new tab">
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(fileUrl, '_blank');
+                        }}
+                        sx={{
+                          color: "primary.main",
+                          flexShrink: 0,
+                          "&:hover": {
+                            backgroundColor: "primary.lighter",
+                          },
+                        }}
+                      >
+                        <OpenInNew fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  py: 3,
+                  gap: 1,
+                  border: "1px dashed",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  backgroundColor: "grey.50",
+                  flex: 1,
+                }}
+              >
+                <CloudUpload sx={{ fontSize: 32, color: "text.disabled", opacity: 0.4 }} />
+                <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.75rem" }}>
+                  {required ? "Required - Not provided" : "No documents"}
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+      );
+    }
+
+    // Original layout for non-readOnly mode (form submission)
     return (
       <Grid item xs={12} md={6}>
         <Box
@@ -254,14 +432,16 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
               />
             )}
           </Box>
-          <input
-            ref={(el) => (fileInputRefs.current[fieldName] = el)}
-            type="file"
-            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            multiple
-            onChange={handleFileSelect(fieldName)}
-            style={{ display: "none" }}
-          />
+          {!readOnly && (
+            <input
+              ref={(el) => (fileInputRefs.current[fieldName] = el)}
+              type="file"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              multiple
+              onChange={handleFileSelect(fieldName)}
+              style={{ display: "none" }}
+            />
+          )}
           
           <Paper
             variant="outlined"
@@ -295,20 +475,22 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
                     <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
                       {fileUrls.length} file{fileUrls.length > 1 ? "s" : ""}
                     </Typography>
-                    <Tooltip title="Clear All">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleClearAll(fieldName)}
-                        sx={{
-                          color: "error.main",
-                          "&:hover": {
-                            backgroundColor: "error.lighter",
-                          },
-                        }}
-                      >
-                        <DeleteSweep fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {!readOnly && (
+                      <Tooltip title="Clear All">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleClearAll(fieldName)}
+                          sx={{
+                            color: "error.main",
+                            "&:hover": {
+                              backgroundColor: "error.lighter",
+                            },
+                          }}
+                        >
+                          <DeleteSweep fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
                 )}
                 <Box sx={{ flex: 1, overflow: "auto" }}>
@@ -453,23 +635,25 @@ export default function SupportingDocumentsSection({ control, setValue, watch, e
             </Alert>
           )}
 
-          <Button
-            variant={fileUrls.length > 0 ? "outlined" : "contained"}
-            startIcon={<Upload />}
-            onClick={() => fileInputRefs.current[fieldName]?.click()}
-            fullWidth
-            sx={{
-              ...(fileUrls.length > 0 && {
-                borderColor: "primary.main",
-                "&:hover": {
-                  borderColor: "primary.dark",
-                  backgroundColor: "primary.lighter",
-                },
-              }),
-            }}
-          >
-            {fileUrls.length > 0 ? `Upload More (${fileUrls.length} uploaded)` : "Upload Files"}
-          </Button>
+          {!readOnly && (
+            <Button
+              variant={fileUrls.length > 0 ? "outlined" : "contained"}
+              startIcon={<Upload />}
+              onClick={() => fileInputRefs.current[fieldName]?.click()}
+              fullWidth
+              sx={{
+                ...(fileUrls.length > 0 && {
+                  borderColor: "primary.main",
+                  "&:hover": {
+                    borderColor: "primary.dark",
+                    backgroundColor: "primary.lighter",
+                  },
+                }),
+              }}
+            >
+              {fileUrls.length > 0 ? `Upload More (${fileUrls.length} uploaded)` : "Upload Files"}
+            </Button>
+          )}
         </Box>
       </Grid>
     );

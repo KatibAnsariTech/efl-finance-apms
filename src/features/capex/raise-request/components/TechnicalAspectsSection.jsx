@@ -29,6 +29,7 @@ export default function TechnicalAspectsSection({
   trigger,
   measurementUnits = [],
   unitsMap = {},
+  readOnly = false,
 }) {
   const capexItems = watch("capexItems") || [];
   const totalCost = watch("totalCost") || 0;
@@ -103,14 +104,16 @@ export default function TechnicalAspectsSection({
           <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
             CAPEX Details *
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddClick}
-            size="small"
-          >
-            ADD
-          </Button>
+          {!readOnly && (
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={handleAddClick}
+              size="small"
+            >
+              ADD
+            </Button>
+          )}
         </Box>
 
         {errors.capexItems && (
@@ -327,26 +330,28 @@ export default function TechnicalAspectsSection({
                     )}
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: "flex", gap: 0.5 }}>
-                      <Tooltip title="Edit">
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleEditClick(index)}
-                          size="small"
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton
-                          color="error"
-                          onClick={() => handleDeleteClick(index)}
-                          size="small"
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
+                    {!readOnly && (
+                      <Box sx={{ display: "flex", gap: 0.5 }}>
+                        <Tooltip title="Edit">
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleEditClick(index)}
+                            size="small"
+                          >
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton
+                            color="error"
+                            onClick={() => handleDeleteClick(index)}
+                            size="small"
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    )}
                   </TableCell>
                 </TableRow>
               )})}

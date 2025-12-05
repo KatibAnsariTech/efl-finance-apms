@@ -20,6 +20,7 @@ import { Helmet } from "react-helmet-async";
 import { JVByRequestNoColumns } from "../../components/JVByRequestNoColumns";
 import JVCurrentStatus from "../../components/JVCurrentStatus";
 import SAPResponseModal from "../../components/SAPResponseModal";
+import RequestStatus from "../../components/RequestStatus";
 import swal from "sweetalert";
 import { useJVM } from "src/contexts/JVMContext";
 
@@ -41,6 +42,7 @@ export default function JVByRequestNo() {
   const [assigned, setAssigned] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [openStatusModal, setOpenStatusModal] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -282,6 +284,24 @@ export default function JVByRequestNo() {
           </Box>
           {jvData && (
             <Box sx={{ mt: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  Approval History
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={() => setOpenStatusModal(true)}
+                >
+                  View Full History
+                </Button>
+              </Box>
               <JVCurrentStatus steps={jvData.steps || []} data={jvData} />
             </Box>
           )}
@@ -348,6 +368,11 @@ export default function JVByRequestNo() {
         open={modalOpen}
         onClose={handleCloseModal}
         rowData={selectedRowData}
+      />
+      <RequestStatus
+        open={openStatusModal}
+        onClose={() => setOpenStatusModal(false)}
+        rowData={{ parentId: parentId }}
       />
     </>
   );
