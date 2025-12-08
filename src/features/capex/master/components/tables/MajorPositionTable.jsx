@@ -41,11 +41,12 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
       const mappedData = apiData.map((item, index) => {
         const departmentValue = item.department?.name || (typeof item.department === 'string' ? item.department : "-");
         return {
+          ...item,
           id: item._id,
           sno: (page * rowsPerPage) + index + 1,
           name: item.name || "-",
-          department: departmentValue,
-          ...item,
+          departmentDisplay: departmentValue, // String value for display in DataGrid
+          department: item.department, // Keep original object for editing
         };
       });
 
@@ -120,7 +121,7 @@ export default function MajorPositionTable({ handleEdit: parentHandleEdit, handl
       ),
     },
     {
-      field: "department",
+      field: "departmentDisplay",
       headerName: "Department",
       minWidth: 200,
       flex: 1,

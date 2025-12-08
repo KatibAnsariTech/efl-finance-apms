@@ -50,6 +50,13 @@ export default function CAPEXMaster() {
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
   const selectedCategory = menuItems[selectedTab];
 
+  // Reset state when tab changes
+  useEffect(() => {
+    setSelectedDepartment(null);
+    setEditData(null);
+    setOpen(false);
+  }, [selectedTab]);
+
   // Fetch departments when Position, Position Ranking, or Approval Authority tab is selected
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -72,9 +79,6 @@ export default function CAPEXMaster() {
         } finally {
           setDepartmentsLoading(false);
         }
-      } else {
-        // Clear selected department when switching to other tabs
-        setSelectedDepartment(null);
       }
     };
 
@@ -267,6 +271,8 @@ export default function CAPEXMaster() {
               open={open}
               getData={getData}
               editData={editData}
+              departments={departments}
+              departmentsLoading={departmentsLoading}
             />
           </Suspense>
         )}
@@ -278,6 +284,8 @@ export default function CAPEXMaster() {
               open={open}
               getData={getData}
               editData={editData}
+              departments={departments}
+              departmentsLoading={departmentsLoading}
             />
           </Suspense>
         )}
