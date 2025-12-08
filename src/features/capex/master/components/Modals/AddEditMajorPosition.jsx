@@ -9,6 +9,7 @@ import { Autocomplete, CircularProgress } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
+import { userRequest } from "src/requestMethod";
 
 function AddEditMajorPosition({ handleClose, open, editData: positionData, getData, departments = [], departmentsLoading = false }) {
   const { register, handleSubmit, reset, setValue, control } = useForm();
