@@ -1,94 +1,32 @@
-import React, { lazy, Suspense, useCallback } from "react";
-import { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Box,
+  Card,
+  Tabs,
+  Tab,
+} from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import Container from "@mui/material/Container";
-import CircularIndeterminate from "src/utils/loader";
-import { FormTableToolbar } from "src/components/table";
 import { userRequest } from "src/requestMethod";
-import ImportPaymentRrportTabs from "../components/ImportPaymentReportTab";
-import { headLabel } from "../components/getHeadLabel";
-import { Box, IconButton, Tooltip, Chip } from "@mui/material";
-import Iconify from "src/components/iconify";
-import { fDateTime } from "src/utils/format-time";
-import swal from "sweetalert";
-import { showErrorMessage } from "src/utils/errorUtils";
+import { Helmet } from "react-helmet-async";
+import { FormTableToolbar } from "src/components/table";
+import { MyRequestsColumns } from "../components/MyRequestsColumns";
+import ColorIndicators from "../components/ColorIndicators";
 
-const menuItems = ["Submitted Reports"];
-
-export default function ImportPaymentUserManagement() {
-  const [selectedTab, setSelectedTab] = useState(0);
+export default function ImportPaymentReport() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  const [editData, setEditData] = useState(null);
-  const [open, setOpen] = useState(false);
-  const selectedCategory = menuItems[selectedTab];
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedTab, setSelectedTab] = useState("submitted");
 
-
-  const handleEdit = (row, event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    setEditData(row);
-    setOpen(true);
-  };
-
-  const handleOpen = () => {
-    setEditData(null);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setEditData(null);
-  };
-
-  const getData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await userRequest.get("/imt/getAllUsersWithRoles", {
-        params: {
-          page: page + 1,
-          limit: rowsPerPage,
-          search: debouncedSearch,
-          _t: Date.now(),
-        },
-      });
-
-      setData(res?.data?.data?.users || []);
-      setTotalCount(res?.data?.data?.pagination?.total || 0);
-      setLoading(false);
-    } catch (err) {
-      setLoading(false);
-    }
-  }, [ page, rowsPerPage, debouncedSearch]);
-
-  const handleDelete = async (userRoleId) => {
-    try {
-      const result = await swal({
-        title: "Are you sure?",
-        text: "You won't be able to revert this action!",
-        icon: "warning",
-        buttons: true,
-        dangerMode: true,
-      });
-
-      if (result) {
-        await userRequest.delete(`/custom/deleteUser/${userRoleId}`);
-        swal("Deleted!", "User has been deleted successfully.", "success");
-        getData();
-      }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      swal("Error!", "Failed to delete user. Please try again.", "error");
-    }
-  };
+  const menuItems = [
+    // { label: "Pending with Me", value: "pendingWithMe" },
+    { label: "Submitted", value: "submitted" },
+  ];
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -98,292 +36,204 @@ export default function ImportPaymentUserManagement() {
     return () => clearTimeout(handler);
   }, [search]);
 
+  const getData = async () => {
+    try {
+      setLoading(true);
+
+      const queryParams = new URLSearchParams({
+        page: (page + 1).toString(),
+        limit: rowsPerPage.toString(),
+      });
+
+      if (debouncedSearch) {
+        queryParams.append("search", debouncedSearch);
+      }
+
+      // Choose API endpoint based on selected tab
+      const apiEndpoint =
+        selectedTab === "pendingWithMe"
+          ? "/cpx/getPendingRequestForms"
+          : "/cpx/getRequestsForApprover";
+
+      const response = await userRequest.get('/imt/getForms?action=all', {
+        params: {
+          page: page + 1,
+          limit: rowsPerPage,
+          search: debouncedSearch || undefined,
+        },
+      });
+
+      if (response.data && response.data.data) {
+        const {
+          forms,
+          items,
+          totalForms,
+          total,
+          totalRequests,
+          pagination,
+        } = response.data.data;
+
+        const formsData = forms || items || [];
+        const totalCountValue =
+          totalForms || total || totalRequests || pagination?.total || 0;
+
+        setData(formsData);
+        setTotalCount(totalCountValue);
+      } else {
+        setData([]);
+        setTotalCount(0);
+      }
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      setData([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    getData();
+  }, [page, rowsPerPage, selectedTab, debouncedSearch]);
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
+    setPage(0);
     setData([]);
     setTotalCount(0);
-    setSearch("");
-    setPage(0);
     setLoading(true);
-    getData();
-  }, [selectedTab]);
-
-  useEffect(() => {
-    getData();
-  }, [debouncedSearch, page, rowsPerPage]);
-
-
-  const sortableColumns = ["username", "email"];
-
-  const handleSort = (event, id) => {
-    if (sortableColumns.includes(id)) {
-      const isAsc = orderBy === id && order === "asc";
-      setOrder(isAsc ? "desc" : "asc");
-      setOrderBy(id);
-    }
   };
 
-
-  const handleFilterChange = (filterType, value) => {
-    if (filterType === 'search') {
-      setPage(0);
-      setSearch(value);
-    }
+  const handleFilterChange = (field, value) => {
+    setPage(0);
+    setSearch(value);
   };
 
-  const columns = headLabel(selectedTab)
-    .filter((col) => col.id !== "action")
-    .map((col) => ({
-      field: col.name || col.id,
-      headerName: col.label,
-      width: col.minWidth || 150,
-      minWidth: col.minWidth || 100,
-      sortable: col.sortable !== false,
-      align: col.align || "center",
-      headerAlign: col.align || "center",
-      cellClassName: col.id === "department" ? "company-cell" : "",
-      // renderCell: (params) => {
-      //   if (col.id === "sno") {
-      //     return page * rowsPerPage + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
-      //   }
-      //   if (col.id === "createdAt") {
-      //     return fDateTime(params.value);
-      //   }
-      //   if (col.id === "userType") {
-      //     return (
-      //       <Chip
-      //         label={params.value}
-      //         color={
-      //           params.value === "ADMIN"
-      //             ? "error"
-      //             : params.value === "APPROVER"
-      //             ? "warning"
-      //             : params.value === "REQUESTER"
-      //             ? "info"
-      //             : "default"
-      //         }
-      //         size="small"
-      //       />
-      //     );
-      //   }
-      //   if (col.id === "name") {
-      //     return params.row.username || "-";
-      //   }
-      //   if (col.id === "mastersheetPermissions") {
-      //     return Array.isArray(params.value) && params.value.length > 0
-      //       ? params.value.join(", ")
-      //       : "-";
-      //   }
-      //   if (col.id === "Department") {
-      //     const companies = params.row.companies;
-      //     if (Array.isArray(companies) && companies.length > 0) {
-      //       return companies.map(company => company.name).join(',\n');
-      //     }
-      //     return "-";
-      //   }
-      //   return params.value || "-";
-      // },
-   renderCell: (params) => {
-  const col = columns.find((c) => c.id === params.field);
+  const handleRequestClick = (rowData) => {
+    // TODO: Implement view/edit modal or navigation
+    console.log("Request clicked:", rowData);
+  };
 
-  // S.No
-  if (params.field === "sno") {
-      return page * rowsPerPage + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
-  }
-
-  // CreatedAt formatting
-  if (params.field === "createdAt") {
-    return fDateTime(params.value);
-  }
-
-  // Username fallback
-  if (params.field === "name") {
-    return params.row.username || "-";
-  }
-
-  // 🔥 Department (Array)
-  if (params.field === "departmentId") {
-    return Array.isArray(params.row.departmentId)
-      ? params.row.departmentId.map((d) => d.value).join(", ")
-      : "-";
-  }
-
-  // 🔥 Import Type (Array)
-  if (params.field === "importType") {
-    return Array.isArray(params.row.importType)
-      ? params.row.importType.map((d) => d.value).join(", ")
-      : "-";
-  }
-
-  // 🔥 Scope (Array)
-  if (params.field === "scope") {
-    return Array.isArray(params.row.scope)
-      ? params.row.scope.map((d) => d.value).join(", ")
-      : "-";
-  }
-
-  // 🔥 Select Type (Single Object)
-  if (params.field === "selectType") {
-    return params.row.selectType?.value || "-";
-  }
-
-  // Default value or "-"
-  return params.value || "-";
-}
-
-
-
-    }));
-
-  columns.push({
-    field: "actions",
-    headerName: "Actions",
-    width: 120,
-    sortable: false,
-    align: "center",
-    headerAlign: "center",
-    cellClassName: "actions-cell",
-    renderCell: (params) => (
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 1,
-          height: "100%",
-        }}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <Tooltip title="Edit">
-          <IconButton
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleEdit(params.row, event);
-            }}
-            sx={{
-              color: "primary.main",
-              "&:hover": {
-                backgroundColor: "primary.lighter",
-              },
-            }}
-          >
-            <Iconify icon="eva:edit-fill" />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete">
-          <IconButton
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleDelete(params.row.userRoleId);
-            }}
-            sx={{
-              color: "error.main",
-              "&:hover": {
-                backgroundColor: "error.lighter",
-              },
-            }}
-          >
-            <Iconify icon="eva:trash-2-fill" />
-          </IconButton>
-        </Tooltip>
-      </Box>
-    ),
-  });
+  const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
 
   return (
-    <Container maxWidth="xl">
-      <ImportPaymentRrportTabs
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
-        menuItems={menuItems}
-      />
-      <Card sx={{ p: 3 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-          }}
-        >
-          <FormTableToolbar
-            search={search}
-            onFilterChange={handleFilterChange}
-            placeholder={`Search ${selectedCategory.toLowerCase()}s...`}
-          />
-          <div
-            style={{
-              fontSize: "0.8rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              color: "#167beb",
+    <>
+      <Helmet>
+        <title>Import Payment Reports</title>
+      </Helmet>
+
+      <Container>
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              "& .MuiTabs-indicator": { backgroundColor: "#1877F2" },
+              "& .MuiTab-root": { fontWeight: "bold" },
             }}
           >
-            {/* <span onClick={handleOpen}>Add {selectedCategory}</span> */}
-          </div>
-        </div>
-
-        <Box sx={{ width: "100%" }}>
-          <DataGrid
-            rows={data}
-            columns={columns}
-            getRowId={(row) => row.userRoleId}
-            loading={loading}
-            pagination
-            paginationMode="server"
-            rowCount={totalCount}
-            paginationModel={{ page: page, pageSize: rowsPerPage }}
-            onPaginationModelChange={(newModel) => {
-              setPage(newModel.page);
-              setRowsPerPage(newModel.pageSize);
-            }}
-            pageSizeOptions={[5, 10, 25, 50]}
-            disableRowSelectionOnClick
-            disableColumnResize={false}
-            autoHeight
-            sx={{
-              "& .MuiDataGrid-root": {
-                tableLayout: "fixed",
-              },
-              "& .MuiDataGrid-cell": {
-                "&:focus": { outline: "none" },
-                "&:focus-visible": { outline: "none" },
-              },
-              "& .MuiDataGrid-row": {
-                "&:focus": { outline: "none" },
-                "&:focus-visible": { outline: "none" },
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f5f6f8",
-                fontWeight: "bold",
-                color: "#637381",
-              },
-              "& .MuiDataGrid-columnSeparator": {
-                display: "none",
-              },
-              "& .MuiDataGrid-columnHeader:hover .MuiDataGrid-columnSeparator": {
-                display: "block",
-                opacity: 0.3,
-                color: "#637381",
-              },
-              "& .actions-cell": {
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "8px 0",
-              },
-              "& .company-cell": {
-                whiteSpace: "pre-line",
-                lineHeight: 1.4,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              },
-            }}
-          />
+            {menuItems.map((item) => (
+              <Tab key={item.value} label={item.label} value={item.value} />
+            ))}
+          </Tabs>
         </Box>
-      </Card>
-    </Container>
+
+        <Card sx={{ mt: 2, p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 2,
+            }}
+          >
+            <FormTableToolbar
+              search={search}
+              onFilterChange={handleFilterChange}
+              placeholder="Search requests..."
+            />
+          </Box>
+          <Box sx={{ width: "100%" }}>
+            <DataGrid
+              rows={data || []}
+              columns={columns}
+              getRowId={(row) => row._id || row.id}
+              autoHeight
+              disableSelectionOnClick
+              loading={loading}
+              pagination
+              paginationMode="server"
+              rowCount={totalCount}
+              paginationModel={{ page: page, pageSize: rowsPerPage }}
+              onPaginationModelChange={(newModel) => {
+                setPage(newModel.page);
+                setRowsPerPage(newModel.pageSize);
+              }}
+              pageSizeOptions={[5, 10, 25, 50]}
+              getRowClassName={(params) => {
+                const status = params.row.status?.toLowerCase();
+                console.log("status",status)
+                if (status === "inprocess") return "row-inprocess";
+                if (status === "submitted") return "row-submitted";
+                if (status === "clarification need" || status === "clarificationneed")
+                  return "row-clarification";
+                if (status === "approved") return "row-approved";
+                if (status === "rejected" || status === "declined")
+                  return "row-rejected";
+                return "";
+              }}
+              disableRowSelectionOnClick
+              sx={{
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor: "#f5f6f8",
+                  fontWeight: "bold",
+                  color: "#637381",
+                },
+                "& .MuiDataGrid-cell:focus": {
+                  outline: "none",
+                },
+                "& .MuiDataGrid-row:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                },
+                "& .row-inprocess": {
+                  backgroundColor: "#f4f5ba !important",
+                },
+                "& .row-submitted": {
+                  backgroundColor: "#e3f2fd !important",
+                },
+                "& .row-clarification": {
+                  backgroundColor: "#9be7fa !important",
+                },
+                "& .row-approved": {
+                  backgroundColor: "#baf5c2 !important",
+                },
+                "& .row-rejected": {
+                  backgroundColor: "#e6b2aa !important",
+                },
+              }}
+            />
+          </Box>
+          <Box
+            sx={{
+              position: "relative",
+              height: "52px",
+              marginTop: "-52px",
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "16px",
+              zIndex: 0,
+              pointerEvents: "none",
+            }}
+          >
+            <Box sx={{ pointerEvents: "auto" }}>
+              <ColorIndicators />
+            </Box>
+          </Box>
+        </Card>
+      </Container>
+    </>
   );
 }
+
+
