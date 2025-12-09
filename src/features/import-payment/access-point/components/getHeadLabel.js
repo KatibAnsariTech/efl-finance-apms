@@ -12,7 +12,7 @@ export const headLabel = (selectedTab) => {
         },
         {
           id: "Date&Time",
-          name: "departmentId",
+          name: "createdAt",
           label: "Date And Time",
           minWidth: 300,
           sortable: true,
@@ -31,14 +31,14 @@ export const headLabel = (selectedTab) => {
         },
         {
           id: "Date&Time",
-          name: "departmentId",
+          name: "createdAt",
           label: "Date And Time",
           minWidth: 300,
           sortable: true,
         },
         {
           id: "sub-tab",
-          name: "SubTab",
+          name: "tabs",
           label: "Sub Tab",
           minWidth: 300,
           sortable: true,
