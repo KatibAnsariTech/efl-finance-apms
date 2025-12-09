@@ -1,3 +1,5 @@
+import { colors } from "@mui/material";
+
   export const STATUS_COLORS = {
   // Approval Status Colors
   approved: '#baf5c2',
@@ -22,6 +24,11 @@
   customDutyPending: '#f4f5ba',
   customDutyApproved: '#baf5c2',
   customDutyRejected: '#e6b2aa',
+
+   // Import Payment Status Colors
+  importPaymentInProcess: '#f4f5ba',
+  importPaymentApproved: '#baf5c2',
+  importPaymentRejected: '#e6b2aa',
   
   // Auto Reversal Status Colors
   active: '#bbdefb',
@@ -53,6 +60,12 @@ export const STATUS_LABELS = {
   customDutyPending: 'Pending',
   customDutyApproved: 'Approved',
   customDutyRejected: 'Rejected',
+
+  // Import Payment Status Labels
+  importPaymentInProcess: 'InProcess',
+  importPaymentApproved: 'Approved',
+  importPaymentRejected: 'Rejected',
+
   
   // Auto Reversal Status Labels
   active: 'Active',
@@ -72,6 +85,10 @@ export const COLOR_GROUPS = {
   customDuty: {
     colors: ['customDutyPending', 'customDutyApproved', 'customDutyRejected'],
     labels: ['Pending', 'Approved', 'Rejected']
+  },
+  importPayment: {
+    colors: ['importPaymentInProcess', 'importPaymentApproved', 'importPaymentRejected'],
+    labels: ['InProcess', 'Approved', 'Rejected']
   },
   alerts: {
     colors: ['success', 'warning', 'fail'],
