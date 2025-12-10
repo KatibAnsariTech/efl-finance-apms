@@ -50,10 +50,16 @@ export default function ImportPaymentAccessPoint() {
     setEditData(null);
   };
 
+  // Choose API endpoint based on selected tab
+      const apiEndpoint =
+        selectedCategory === 'Report'
+          ? "/imt/getAccessPoints?place=report"
+          : "/imt/getAccessPoints?place=usermanagement";
+
   const getData = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await userRequest.get("/imt/getAccessPoints", {
+      const res = await userRequest.get(apiEndpoint, {
         params: {
           page: page + 1,
           limit: rowsPerPage,
@@ -66,10 +72,11 @@ export default function ImportPaymentAccessPoint() {
     } catch (err) {
       setLoading(false);
     }
-  }, [ page, rowsPerPage, debouncedSearch]);
+  }, [ apiEndpoint, page, rowsPerPage, debouncedSearch]);
 
-  const handleDelete = async (userRoleId) => {
+  const handleDelete = async (row,event) => {
     try {
+      // console.log("row",row);
       const result = await swal({
         title: "Are you sure?",
         text: "You won't be able to revert this action!",
@@ -79,7 +86,7 @@ export default function ImportPaymentAccessPoint() {
       });
 
       if (result) {
-        await userRequest.delete(`/custom/deleteUser/${userRoleId}`);
+        await userRequest.delete(`/imt/deleteAccessPoint?id=${row._id}`);
         swal("Deleted!", "User has been deleted successfully.", "success");
         getData();
       }
@@ -230,7 +237,7 @@ export default function ImportPaymentAccessPoint() {
             size="small"
             onClick={(event) => {
               event.stopPropagation();
-              handleDelete(params.row.userRoleId);
+              handleDelete(params.row,event);
             }}
             sx={{
               color: "error.main",

@@ -315,7 +315,7 @@ function AddReportAccess({ handleClose, open, editData, getData }) {
             label="Enter Email Address"
             fullWidth
             required
-            disabled={!!editData}
+            disabled={false}
             {...register("email", {
               required: "Email is required",
               pattern: {

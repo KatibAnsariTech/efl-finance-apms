@@ -32,72 +32,60 @@ function AddUserManagementAccess({ handleClose, open, editData, getData }) {
     formState: { errors },
   } = useForm();
 
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const defaultTabs = ["Requester", "Approver"];
+  const [tabOptions, setTabOptions] = useState(defaultTabs);
 
-  useEffect(() => {
-    if (editData) {
-      setValue(
-        "customDutyPermissions",
-        Array.isArray(editData.customDutyPermissions)
-          ? editData.customDutyPermissions
-          : []
-      );
-      setValue("companies", editData.companyIds || []);
+ useEffect(() => {
+  if (editData) {
+    console.log("editData",editData)
+    // If editData contains tabs → use them, else use default
+    const tabsToShow = Array.isArray(editData.tabs) && editData.tabs.length > 0
+      ? editData.tabs
+      : defaultTabs;
+    console.log("tabsToShow",tabsToShow)
+    // setTabOptions(tabsToShow);   // <-- update dropdown items
+    setValue("subTabs", editData.tabs || []); // selected tabs
+    setValue("email", editData.email);
 
-      const currentUser = {
-        userRoleId: editData.userRoleId,
-        username: editData.username,
-        email: editData.email,
-      };
-      setSelectedUser(currentUser);
-      setValue("username", editData.username);
-      setValue("email", editData.email);
-    } else {
-      reset();
-      setSelectedUser(null);
-    }
-  }, [editData, setValue, reset, open]);
-
+  } else {
+    reset();
+    setSelectedUser(null);
+    setTabOptions(defaultTabs);  // reset back to static tabs
+  }
+}, [editData, setValue, reset, open]);
 
   const handleSaveData = async (data) => {
-    try {
-      setSaveLoading(true);
+  try {
+    setSaveLoading(true);
 
-      if (editData?.userRoleId) {
-        const updateData = {
-          userRoleId: editData.userRoleId,
-          userType: "ADMIN",
-        };
-        await userRequest.put("/imt/updateUserRole", updateData);
-        getData();
-        swal("Updated!", "Admin updated successfully!", "success");
-      } else {
-        if (!selectedUser) {
-          swal("Error!", "Please select a user to assign the role.", "error");
-          return;
-        }
+    const payload = {
+      email: data.email,
+      place: data.place || "usermanagement",   // if you need place static or from a field
+      tabs: data.subTabs || [],  // subTabs from multi select
+    };
 
-        const assignData = {
-          userRoleId: selectedUser.userRoleId,
-          userType: "ADMIN",
-        };
-        await userRequest.put("/imt/updateUserRole", assignData);
-        getData();
-        swal("Success!", "Admin role assigned successfully!", "success");
-      }
-
-      reset();
-      setSelectedUser(null);
-      handleClose();
-    } catch (error) {
-      console.error("Error saving data:", error);
-      showErrorMessage(error, "Error saving data. Please try again later.", swal);
-    } finally {
-      setSaveLoading(false);
+    if (editData) {
+      // 👉 Update Access API
+      await userRequest.put(`/imt/updateAccessPoint?id=${editData?._id}`, payload);
+      swal("Updated!", "Access updated successfully!", "success");
+    } else {
+      // 👉 Create Access API
+      await userRequest.post("/imt/createAccessPoint", payload);
+      swal("Success!", "Access created successfully!", "success");
     }
-  };
+
+    getData();
+    reset();
+    handleClose();
+  } catch (error) {
+    console.error("Error saving data:", error);
+    showErrorMessage(error, "Error saving data. Please try again later.", swal);
+  } finally {
+    setSaveLoading(false);
+  }
+};
+
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -150,7 +138,7 @@ function AddUserManagementAccess({ handleClose, open, editData, getData }) {
             label="Enter Email Address"
             fullWidth
             required
-            disabled={!!editData}
+            disabled={false}
             {...register("email", {
               required: "Email is required",
               pattern: {
@@ -177,7 +165,7 @@ function AddUserManagementAccess({ handleClose, open, editData, getData }) {
                   labelId="sub-tab-label"
                   label="Select Tabs"
                   multiple
-                  disabled={!!editData}
+                  disabled={false}
                   input={<OutlinedInput label="Select Tabs" />}
                   value={field.value || []}
                   onChange={(e) => field.onChange(e.target.value)}
@@ -210,7 +198,7 @@ function AddUserManagementAccess({ handleClose, open, editData, getData }) {
                     </Box>
                   )}
                 >
-                  {["Mahesh", "Ramesh", "Suresh", "Nikesh"].map((name) => (
+                  {tabOptions.map((name) => (
                     <MenuItem key={name} value={name}>
                       <ListItemText primary={name} />
                     </MenuItem>
