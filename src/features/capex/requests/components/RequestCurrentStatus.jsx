@@ -101,26 +101,39 @@ function RequestCurrentStatus({ steps = [], data }) {
               </Typography>
             )}
             {steps.map((step, idx) => {
-              // Handle both single approver and array of approvers
-              const approver =
-                Array.isArray(step.approverId) && step.approverId.length > 0
+              // Handle both old structure (approverId) and new structure (approverPositionId.approvers)
+              let approver;
+              if (step.approverPositionId?.approvers) {
+                approver = Array.isArray(step.approverPositionId.approvers) && step.approverPositionId.approvers.length > 0
+                  ? step.approverPositionId.approvers[0]
+                  : step.approverPositionId.approvers;
+              } else if (step.approverId) {
+                approver = Array.isArray(step.approverId) && step.approverId.length > 0
                   ? step.approverId[0]
                   : step.approverId;
+              }
+
+              // Check if this is a clarification step
+              const isClarification = step.isClarification || step.status === "Clarification_Needed" || step.status === "Clarification_Responded";
+              const statusDisplay = step.status?.replace("_", " ");
 
               return (
-                <Box key={idx} mb={2}>
+                <Box key={step._id || idx} mb={2}>
                   <Typography variant="subtitle1" fontWeight={600}>
-                    {`Step ${idx + 2}`}
+                    Step {idx + 2}
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography fontWeight="bold" color="text.primary">
-                      {step.status}
+                    <Typography 
+                      fontWeight="bold" 
+                      color={step.status === "Approved" ? "success.main" : step.status === "Pending" ? "warning.main" : "text.primary"}
+                    >
+                      {statusDisplay}
                     </Typography>
                     {approver?.username && (
                       <Typography>
                         {step.status === "Approved"
                           ? "by"
-                          : step.status === "Submit Response"
+                          : step.status === "Submit Response" || step.status === "Clarification_Responded"
                           ? "by"
                           : "at"}
                       </Typography>
@@ -128,7 +141,7 @@ function RequestCurrentStatus({ steps = [], data }) {
                     {approver?.username && (
                       <Typography>
                         {approver?.username}
-                        {approver?.email ? `(${approver?.email})` : ""}
+                        {approver?.email ? ` (${approver?.email})` : ""}
                       </Typography>
                     )}
                     {step.comment && <Typography>with comment:</Typography>}
@@ -148,6 +161,21 @@ function RequestCurrentStatus({ steps = [], data }) {
                       <Typography>{step.comment}</Typography>
                     </Box>
                   )}
+                  {step.responseComment && (
+                    <Box
+                      sx={{
+                        borderLeft: "6px solid green",
+                        px: 2,
+                        my: 1,
+                        ml: 2,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      <Typography><strong>Response:</strong> {step.responseComment}</Typography>
+                    </Box>
+                  )}
                   <Divider sx={{ my: 1 }} />
                   <Stack
                     direction="row"
@@ -161,11 +189,11 @@ function RequestCurrentStatus({ steps = [], data }) {
                     }}
                   >
                     <Typography variant="body2" color="text.secondary">
-                      <strong>Assigned On:</strong> {fDateTime(step.createdAt)}
+                      <strong>Assigned On:</strong> {fDateTime(step.assignedAt || step.createdAt)}
                     </Typography>
-                    {step?.status !== "Pending" && step?.updatedAt && (
+                    {step?.status !== "Pending" && (step?.completedAt || step?.updatedAt) && (
                       <Typography variant="body2" color="text.secondary">
-                        <strong>Actioned On:</strong> {fDateTime(step.updatedAt)}
+                        <strong>Actioned On:</strong> {fDateTime(step.completedAt || step.updatedAt)}
                       </Typography>
                     )}
                   </Stack>
