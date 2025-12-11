@@ -50,7 +50,7 @@ function AddUserManagementAccess({ handleClose, open, editData, getData }) {
 
   } else {
     reset();
-    setSelectedUser(null);
+    // setSelectedUser(null);
     setTabOptions(defaultTabs);  // reset back to static tabs
   }
 }, [editData, setValue, reset, open]);

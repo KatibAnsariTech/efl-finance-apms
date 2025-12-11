@@ -23,15 +23,29 @@ export default function ImportPaymentReport() {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [selectedTab, setSelectedTab] = useState("submitted");
+  const [selectedTab, setSelectedTab] = useState(" ");
   const navigate = useNavigate()
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userRole = user?.userRoles?.[0]?.userType;
   const pageTitle = requestNo ? "Report Details" : "Reports";
 
-  const menuItems = [
-    // { label: "Pending with Me", value: "pendingWithMe" },
-    { label: "Submitted", value: "submitted" },
-  ];
+  const [menuItems, setMenuItems] = useState([]);
+  const [initialized, setInitialized] = useState(false);
+
+useEffect(() => {
+  if (userRole !== "APPROVER") {
+    setSelectedTab("all");
+    setMenuItems([{ label: "All", value: "all" }]);
+  } else {
+    setSelectedTab("pendingWithMe");
+    setMenuItems([
+      { label: "Pending with Me", value: "pendingWithMe" },
+      { label: "All", value: "all" },
+    ]);
+  }
+  setInitialized(true);
+}, [userRole]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -56,11 +70,13 @@ export default function ImportPaymentReport() {
 
       // Choose API endpoint based on selected tab
       const apiEndpoint =
-        selectedTab === "pendingWithMe"
-          ? "/cpx/getPendingRequestForms"
-          : "/cpx/getRequestsForApprover";
+            selectedTab === "all"
+              ? userRole !== "APPROVER"
+                ? "/imt/getForms?action=all"
+                : "/imt/getRequestsForApprover"
+              : "/imt/getPendingRequestForms";
 
-      const response = await userRequest.get('/imt/getForms?action=all', {
+      const response = await userRequest.get(apiEndpoint, {
         params: {
           page: page + 1,
           limit: rowsPerPage,
@@ -98,8 +114,9 @@ export default function ImportPaymentReport() {
   };
 
   useEffect(() => {
+    if(!initialized) return;
     getData();
-  }, [page, rowsPerPage, selectedTab, debouncedSearch]);
+  }, [page, rowsPerPage, selectedTab, debouncedSearch,initialized]);
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
