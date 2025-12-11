@@ -287,42 +287,42 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
         );
       },
     },
-    {
-      field: "paymentTerms",
-      headerName: "Payment Terms",
-      width: 400,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => {
-        const value = params.value;
-        let displayValue = "-";
-
-        if (typeof value === "object" && value?.name) {
-          displayValue = value.name;
-        } else if (value) {
-          displayValue = value;
-        }
-
-        return (
-          <Box
-            sx={{
-              whiteSpace: "normal !important",
-              wordBreak: "break-word",
-              lineHeight: "1.3rem",
-              p: 1, // padding for readability
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            {displayValue}
-          </Box>
-        );
-      },
-    },
+      {
+          field: "paymentTerms",
+          headerName: "Payment Terms",
+          width: 400,
+          align: "center",
+          headerAlign: "center",
+          renderCell: (params) => {
+            const value = params.value;
+            let displayValue = "-";
+    
+            if (typeof value === "object" && value?.name) {
+              displayValue = value.name;
+            } else if (value) {
+              displayValue = value;
+            }
+    
+            return (
+              <Box
+                sx={{
+                  whiteSpace: "normal !important",
+                  wordBreak: "break-word",
+                  lineHeight: "1.3rem",
+                  p: 1, // padding for readability
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  width: "100%",
+                  height: "100%",
+                }}
+              >
+                {displayValue}
+              </Box>
+            );
+          },
+        },
     {
       field: "vendorId",
       headerName: "vendor Name",

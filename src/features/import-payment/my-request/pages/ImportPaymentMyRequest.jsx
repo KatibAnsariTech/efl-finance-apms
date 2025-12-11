@@ -14,7 +14,7 @@ import { MyRequestsColumns } from "../components/MyRequestsColumns";
 import ColorIndicators from "../components/ColorIndicators";
 import { useNavigate, useParams } from "react-router-dom";
 
-export default function ImportPaymentReport() {
+export default function ImportPaymentMyRequest() {
   const { requestNo } = useParams();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,8 +29,8 @@ export default function ImportPaymentReport() {
   const pageTitle = requestNo ? "Report Details" : "Reports";
 
   const menuItems = [
-    // { label: "Pending with Me", value: "pendingWithMe" },
     { label: "Submitted", value: "submitted" },
+    { label: "Pending with Me", value: "pendingWithMe" },
   ];
 
   useEffect(() => {
@@ -57,10 +57,10 @@ export default function ImportPaymentReport() {
       // Choose API endpoint based on selected tab
       const apiEndpoint =
         selectedTab === "pendingWithMe"
-          ? "/cpx/getPendingRequestForms"
-          : "/cpx/getRequestsForApprover";
+          ? "/imt/getPendingRequestForms"
+          : "/imt/getForms?action=all";
 
-      const response = await userRequest.get('/imt/getForms?action=all', {
+      const response = await userRequest.get(apiEndpoint, {
         params: {
           page: page + 1,
           limit: rowsPerPage,
@@ -121,7 +121,7 @@ export default function ImportPaymentReport() {
       return;
     }
     // Navigate to the import-payment report detail route
-    navigate(`/import-payment/report/${target}`);
+    navigate(`/import-payment/my-request/${target}`);
   };
 
   const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
