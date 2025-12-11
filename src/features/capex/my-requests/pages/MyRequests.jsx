@@ -80,7 +80,7 @@ export default function MyRequests() {
         const mappedData = formsData.map((form) => ({
           ...form,
           requestNo: form.slNo || form.requestNo || form._id,
-          proposedSpoc: form.requesterId?.proposedSPOC || form.proposedSpoc || "-",
+          proposedSpoc: form.requesterId?.user?.username || form.requesterId?.proposedSPOC || form.proposedSpoc || "-",
           date: form.createdAt || form.date,
           contactPersonName: form.requesterId?.contactPersonName || form.contactPersonName || "-",
           contactPersonNumber: form.requesterId?.contactPersonNumber || form.contactPersonNumber || "-",

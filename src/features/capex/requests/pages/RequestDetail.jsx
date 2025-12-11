@@ -88,7 +88,7 @@ export default function RequestDetail() {
         
         // Map API data to form structure
         const formValues = {
-          proposedSpoc: data.requesterId?.proposedSPOC || "",
+          proposedSpoc: data.requesterId?.user?.username || data.requesterId?.proposedSPOC || "",
           date: formatDateTimeLocal(data.createdAt),
           businessVertical: data.businessVertical?._id || "",
           location: data.location?._id || "",
