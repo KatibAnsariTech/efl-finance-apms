@@ -27,8 +27,7 @@ export default function MyRequests() {
 
   const menuItems = [
     { label: "All", value: null },
-    { label: "Submitted", value: "submitted" },
-    { label: "Clarification Needed", value: "clarificationNeed" },
+    { label: "Clarification Needed", value: "clarificationNeeded" },
     { label: "Draft", value: "draft" },
   ];
 
@@ -53,12 +52,16 @@ export default function MyRequests() {
         queryParams.append("search", debouncedSearch);
       }
 
-      if (selectedTab) {
+      let apiEndpoint = "/cpx/getForms";
+      
+      if (selectedTab === "clarificationNeeded") {
+        apiEndpoint = "/cpx/getClarificationNeeded";
+      } else if (selectedTab) {
         queryParams.append("status", selectedTab);
       }
 
       const response = await userRequest.get(
-        `/cpx/getForms?${queryParams.toString()}`
+        `${apiEndpoint}?${queryParams.toString()}`
       );
 
       if (response.data && response.data.data) {
@@ -129,8 +132,15 @@ export default function MyRequests() {
 
   const handleRequestClick = (rowData) => {
     const requestId = rowData._id;
+    const status = rowData.status?.toLowerCase()?.trim();
+    
     if (requestId) {
-      router.push(`/capex/my-requests/${requestId}`);
+      // Route drafts to draft edit page, others to detail page
+      if (status === "draft") {
+        router.push(`/capex/my-requests/draft/${requestId}`);
+      } else {
+        router.push(`/capex/my-requests/${requestId}`);
+      }
     }
   };
 

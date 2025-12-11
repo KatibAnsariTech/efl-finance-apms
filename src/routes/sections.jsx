@@ -165,6 +165,9 @@ const CAPEXRequestDetailPage = lazy(() =>
 const CAPEXMyRequestDetailPage = lazy(() =>
   import("src/features/capex/requests/pages/RequestDetail")
 );
+const CAPEXDraftEditPage = lazy(() =>
+  import("src/features/capex/my-requests/pages/DraftEdit")
+);
 
 const SettingsPage = lazy(() => import("src/features/settings/pages/Settings"));
 const ProfilePage = lazy(() => import("src/features/settings/pages/Profile"));
@@ -730,6 +733,15 @@ export default function Router() {
             <ProtectedRoute
               path="/capex/my-requests"
               element={<CAPEXMyRequestDetailPage />}
+            />
+          ),
+        },
+        {
+          path: "/capex/my-requests/draft/:id",
+          element: (
+            <ProtectedRoute
+              path="/capex/my-requests"
+              element={<CAPEXDraftEditPage />}
             />
           ),
         },

@@ -27,6 +27,7 @@ export default function Requests() {
 
   const menuItems = [
     { label: "Pending with Me", value: "pendingWithMe" },
+    { label: "Clarification Needed", value: "clarificationNeeded" },
     { label: "All", value: "all" },
   ];
 
@@ -52,10 +53,14 @@ export default function Requests() {
       }
 
       // Choose API endpoint based on selected tab
-      const apiEndpoint =
-        selectedTab === "pendingWithMe"
-          ? "/cpx/getPendingRequestForms"
-          : "/cpx/getRequestsForApprover";
+      let apiEndpoint;
+      if (selectedTab === "pendingWithMe") {
+        apiEndpoint = "/cpx/getPendingRequestForms";
+      } else if (selectedTab === "clarificationNeeded") {
+        apiEndpoint = "/cpx/getClarificationNeeded";
+      } else {
+        apiEndpoint = "/cpx/getRequestsForApprover";
+      }
 
       const response = await userRequest.get(apiEndpoint, {
         params: {

@@ -25,10 +25,12 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { useParams, useRouter } from "src/routes/hooks";
 import CloseButton from "src/routes/components/CloseButton";
 import RequestCurrentStatus from "../components/RequestCurrentStatus";
+import { useAccount } from "src/hooks/use-account";
 
 export default function RequestDetail() {
   const router = useRouter();
   const { requestNo } = useParams();
+  const { user } = useAccount();
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState(null);
   const [approvalData, setApprovalData] = useState(null);
@@ -36,6 +38,9 @@ export default function RequestDetail() {
   const [comment, setComment] = useState("");
   const [approveLoading, setApproveLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
+  const [clarificationLoading, setClarificationLoading] = useState(false);
+  const [clarificationResponse, setClarificationResponse] = useState("");
+  const [respondLoading, setRespondLoading] = useState(false);
 
   const {
     control,
@@ -75,8 +80,10 @@ export default function RequestDetail() {
         if (data.request) {
           setApprovalData(data.request);
           
-          // Use isAssigned from API response
+          // Use isAssigned from API response - this is the only source to show approver actions
           setAssigned(data.request.isAssigned || false);
+        } else {
+          setAssigned(false);
         }
         
         // Map API data to form structure
@@ -158,33 +165,44 @@ console.log(formData)
   }, [requestNo]);
 
   const handleApprovalAction = async (action) => {
-    if (action === "rejected" && !comment.trim()) {
-      swal("Warning", "Please provide a comment for rejection", "warning");
+    // Map action to API format
+    const actionMap = {
+      approved: "Approved",
+      rejected: "Declined",
+      clarification: "Need Clarification",
+    };
+
+    const apiAction = actionMap[action];
+
+    // Require comment for rejection and clarification
+    if ((action === "rejected" || action === "clarification") && !comment.trim()) {
+      swal("Warning", `Please provide a comment for ${action === "rejected" ? "rejection" : "clarification request"}`, "warning");
       return;
     }
 
-    if (!requestNo) {
-      swal("Error", "No request ID found", "error");
+    const requestNumber = formData?.slNo || formData?.requestNo || requestNo;
+    if (!requestNumber) {
+      swal("Error", "No request number found", "error");
       return;
     }
 
     try {
       if (action === "approved") {
         setApproveLoading(true);
+      } else if (action === "clarification") {
+        setClarificationLoading(true);
       } else {
         setRejectLoading(true);
       }
 
-      const apiEndpoint =
-        action === "approved" ? "/cpx/acceptForm" : "/cpx/declineForm";
-
-      const response = await userRequest.post(apiEndpoint, {
-        id: requestNo,
-        comment: comment.trim() || (action === "approved" ? "Approved" : "Declined"),
+      const response = await userRequest.post("/cpx/handleApprovalAction", {
+        slNo: requestNumber,
+        action: apiAction,
+        comment: comment.trim() || (action === "approved" ? "Approved" : apiAction),
       });
 
       if (response.data?.success || response.data?.statusCode === 200) {
-        swal("Success", `Request ${action} successfully`, "success");
+        swal("Success", `Request ${action === "approved" ? "approved" : action === "rejected" ? "declined" : "clarification requested"} successfully`, "success");
         setComment("");
         await fetchFormData();
       } else {
@@ -196,9 +214,46 @@ console.log(formData)
     } finally {
       if (action === "approved") {
         setApproveLoading(false);
+      } else if (action === "clarification") {
+        setClarificationLoading(false);
       } else {
         setRejectLoading(false);
       }
+    }
+  };
+
+  const handleRespondToClarification = async () => {
+    if (!clarificationResponse.trim()) {
+      swal("Warning", "Please provide a clarification response", "warning");
+      return;
+    }
+
+    const requestNumber = formData?.slNo || formData?.requestNo || requestNo;
+    if (!requestNumber) {
+      swal("Error", "No request number found", "error");
+      return;
+    }
+
+    try {
+      setRespondLoading(true);
+
+      const response = await userRequest.post("/cpx/respondToClarification", {
+        slNo: requestNumber,
+        response: clarificationResponse.trim(),
+      });
+
+      if (response.data?.success || response.data?.statusCode === 200) {
+        swal("Success", "Clarification response submitted successfully", "success");
+        setClarificationResponse("");
+        await fetchFormData();
+      } else {
+        throw new Error(response.data.message || "Failed to submit clarification response");
+      }
+    } catch (error) {
+      console.error("Error submitting clarification response:", error);
+      showErrorMessage(error, "Failed to submit clarification response", swal);
+    } finally {
+      setRespondLoading(false);
     }
   };
 
@@ -325,7 +380,7 @@ console.log(formData)
                         variant="contained"
                         color="success"
                         onClick={() => handleApprovalAction("approved")}
-                        disabled={approveLoading || rejectLoading}
+                        disabled={approveLoading || rejectLoading || clarificationLoading}
                         startIcon={
                           approveLoading ? <CircularProgress size={20} /> : null
                         }
@@ -335,9 +390,21 @@ console.log(formData)
                       </Button>
                       <Button
                         variant="contained"
+                        color="warning"
+                        onClick={() => handleApprovalAction("clarification")}
+                        disabled={approveLoading || rejectLoading || clarificationLoading}
+                        startIcon={
+                          clarificationLoading ? <CircularProgress size={20} /> : null
+                        }
+                        sx={{ minWidth: 160 }}
+                      >
+                        {clarificationLoading ? "Processing..." : "Need Clarification"}
+                      </Button>
+                      <Button
+                        variant="contained"
                         color="error"
                         onClick={() => handleApprovalAction("rejected")}
-                        disabled={approveLoading || rejectLoading}
+                        disabled={approveLoading || rejectLoading || clarificationLoading}
                         startIcon={
                           rejectLoading ? <CircularProgress size={20} /> : null
                         }
@@ -362,6 +429,99 @@ console.log(formData)
                     sx={{ backgroundColor: "#fff" }}
                   />
                 </Box>
+              )}
+
+              {/* Clarification Response Section for Requesters and Approvers */}
+              {formData && (
+                (() => {
+                  // Check for pending clarification step assigned to current user
+                  const pendingClarificationStep = formData.request?.steps?.find(step => 
+                    step.isClarification && 
+                    step.status === "Pending" && 
+                    !step.completedAt
+                  );
+
+                  if (!pendingClarificationStep) return null;
+
+                  // Check if assigned to requester
+                  const isAssignedToRequester = pendingClarificationStep.assignedTo === "requester";
+                  
+                  // Verify user is the requester (check if user email/username matches requesterId)
+                  const isCurrentUserRequester = formData.requesterId && (
+                    formData.requesterId.user?.email === user?.email ||
+                    formData.requesterId.user?.username === user?.username ||
+                    formData.requesterId.user?._id === user?._id ||
+                    formData.requesterId.userId === user?._id
+                  );
+                  
+                  // Check if current user is in the approver position's approvers list
+                  // This handles cases where procurement team needs to respond to procurement head's clarification
+                  const isUserInApproverPosition = pendingClarificationStep.approverPositionId?.approvers?.some(approver => 
+                    approver.email === user?.email || 
+                    approver.username === user?.username ||
+                    approver._id === user?._id ||
+                    approver.userId === user?._id
+                  );
+
+                  // For approver-to-approver clarifications (e.g., procurement head to procurement team):
+                  // If the user is in the approver position's approvers list AND it's not assigned to "requester",
+                  // then they should be able to respond
+                  // This handles cases where assignedTo might be the approver position ID or structured differently
+                  const approverPositionId = pendingClarificationStep.approverPositionId?._id;
+                  const isAssignedToApproverPosition = !isAssignedToRequester && approverPositionId;
+                  const canApproverRespond = isAssignedToApproverPosition && isUserInApproverPosition;
+
+                  // Show clarification response section if:
+                  // 1. Assigned to requester AND current user is the requester AND not an approver in main flow
+                  // 2. Assigned to approver position (not "requester") AND current user is in that approver position's approvers list
+                  //    This covers procurement team responding to procurement head's clarification
+                  const shouldShowClarificationResponse = 
+                    (isAssignedToRequester && isCurrentUserRequester && !assigned) || 
+                    canApproverRespond;
+                  
+                  return shouldShowClarificationResponse ? (
+                    <Box
+                      sx={{
+                        mt: 4,
+                        p: 3,
+                        backgroundColor: "#e3f2fd",
+                        borderRadius: 1,
+                        border: "1px solid #90caf9",
+                      }}
+                    >
+                      <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+                        Respond to Clarification Request
+                      </Typography>
+                      
+                      <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                        Please provide your response to the clarification request
+                      </Typography>
+
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={4}
+                        placeholder="Enter your clarification response..."
+                        value={clarificationResponse}
+                        onChange={(e) => setClarificationResponse(e.target.value)}
+                        sx={{ backgroundColor: "#fff", mb: 2 }}
+                      />
+
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleRespondToClarification}
+                        disabled={respondLoading}
+                        startIcon={
+                          respondLoading ? <CircularProgress size={20} /> : null
+                        }
+                        sx={{ minWidth: 200 }}
+                      >
+                        {respondLoading ? "Submitting..." : "Submit Response"}
+                      </Button>
+                    </Box>
+                  ) : null;
+                })()
               )}
             </Box>
           </Paper>
