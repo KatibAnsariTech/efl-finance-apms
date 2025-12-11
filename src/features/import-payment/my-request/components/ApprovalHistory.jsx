@@ -34,7 +34,7 @@ function ApprovalHistory({ approvalData, loading, error }) {
     // Steps from new IMT shape: steps[].approvals[]
     if (Array.isArray(approvalData?.steps)) {
       approvalData.steps.forEach((step, idx) => {
-        const level = step.position || `Step ${idx + 2}`;
+        const level = `Step ${idx + 2}`;
         (step.approvals || []).forEach((appr, aIdx) => {
           const approver = appr.approverId || {};
           derived.push({

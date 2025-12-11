@@ -68,68 +68,130 @@ export default function HierarchyTable({
     }));
   };
 
+  // const fetchHierarchyData = async () => {
+  //   if (!importTypeId && !scopeId) {
+  //     setHierarchyData(createDefaultLevels());
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+  //     const res = await userRequest.get("/imt/getHierarchiesByImportTypeAndScope", {
+  //       params: {
+  //         importTypeId: importTypeId,
+  //         scopeId: scopeId,
+  //       },
+  //     });
+
+  //     const approvalTypesData = res?.data?.data || [];
+  //     const approvalType = approvalTypesData.find(
+  //       (item) => item.importTypeId._id === importTypeId && item.scopeId._id === scopeId
+  //     );
+  //     const result = approvalType?.steps || [];
+  //     console.log("approvalTypesData:", approvalType); 
+  //     if (approvalType && approvalType._id) {
+  //       setApprovalTypeId(approvalType._id);
+  //     }
+
+  //     const levels = [1, 2, 3, 4].map((level) => {
+  //       const existingData = result.find((item) => item.level === level);
+  //       if (existingData) {
+  //         const approversWithDetails = existingData.approverId.map(
+  //           (approver) => ({
+  //             userRoleId: approver._id,
+  //             username: approver.user?.username || "Unknown",
+  //             email: approver.user?.email || "Unknown",
+  //             userId: approver.userId,
+  //             _id: approver._id,
+  //           })
+  //         );
+  //         return {
+  //           id: `level-${level}`,
+  //           _id: existingData._id,
+  //           level: level,
+  //           approvers: approversWithDetails,
+  //           status: existingData.status,
+  //         };
+  //       }
+  //       return {
+  //         id: `level-${level}`,
+  //         _id: `level-${level}`,
+  //         level: level,
+  //         approvers: [],
+  //         status: true,
+  //       };
+  //     });
+
+  //     setHierarchyData(levels);
+  //   } catch (error) {
+  //     console.error("Error fetching approval types data:", error);
+  //     setHierarchyData(createDefaultLevels());
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchHierarchyData = async () => {
-    if (!importTypeId && !scopeId) {
-      setHierarchyData(createDefaultLevels());
-      return;
-    }
+  try {
+    setLoading(true);
+    const res = await userRequest.get("/imt/getHierarchiesByImportTypeAndScope", {
+      params: {
+        importTypeId,
+        scopeId,
+      },
+    });
 
-    try {
-      setLoading(true);
-      const res = await userRequest.get("/imt/getHierarchiesByImportTypeAndScope", {
-        params: {
-          importTypeId: importTypeId,
-          scopeId: scopeId,
-        },
-      });
+    const approvalTypesData = res?.data?.data || [];
+    const approvalType = approvalTypesData.find(
+      (item) =>
+        item.importTypeId._id === importTypeId &&
+        item.scopeId._id === scopeId
+    );
 
-      const approvalTypesData = res?.data?.data || [];
-      const approvalType = approvalTypesData.find(
-        (item) => item.importTypeId._id === importTypeId && item.scopeId._id === scopeId
-      );
-      const result = approvalType?.steps || [];
-      console.log("approvalTypesData:", approvalType); 
-      if (approvalType && approvalType._id) {
-        setApprovalTypeId(approvalType._id);
+    const result = approvalType?.steps || [];
+    setApprovalTypeId(approvalType?._id || null);
+
+    // Make levels dynamic
+    const apiLevels = result.map((item) => item.level);
+    const maxLevel = Math.max(...apiLevels, 4);
+    const levelsArray = Array.from({ length: maxLevel }, (_, i) => i + 1);
+
+    const levels = levelsArray.map((level) => {
+      const existing = result.find((step) => step.level === level);
+
+      if (existing) {
+        return {
+          id: existing._id,
+          _id: existing._id,
+          level,
+          approvers: existing.approverId.map((a) => ({
+            userRoleId: a._id,
+            username: a.user?.username,
+            email: a.user?.email,
+            userId: a.userId,
+            _id: a._id,
+          })),
+          status: existing.status,
+        };
       }
 
-      const levels = [1, 2, 3, 4].map((level) => {
-        const existingData = result.find((item) => item.level === level);
-        if (existingData) {
-          const approversWithDetails = existingData.approverId.map(
-            (approver) => ({
-              userRoleId: approver._id,
-              username: approver.user?.username || "Unknown",
-              email: approver.user?.email || "Unknown",
-              userId: approver.userId,
-              _id: approver._id,
-            })
-          );
-          return {
-            id: `level-${level}`,
-            _id: existingData._id,
-            level: level,
-            approvers: approversWithDetails,
-            status: existingData.status,
-          };
-        }
-        return {
-          id: `level-${level}`,
-          _id: `level-${level}`,
-          level: level,
-          approvers: [],
-          status: true,
-        };
-      });
+      return {
+        id: `level-${level}`,
+        _id: `level-${level}`,
+        level,
+        approvers: [],
+        status: true,
+      };
+    });
 
-      setHierarchyData(levels);
-    } catch (error) {
-      console.error("Error fetching approval types data:", error);
-      setHierarchyData(createDefaultLevels());
-    } finally {
-      setLoading(false);
-    }
-  };
+    setHierarchyData(levels);
+  } catch (error) {
+    console.error("Error fetching approval hierarchy:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     if (importTypeId && scopeId && scopeId.trim() !== "" && importTypeId.trim() !== "") {

@@ -7,7 +7,7 @@ export const headLabel = (selectedTab) => {
           id: "email",
           name: "email",
           label: "Email",
-          minWidth: 220,
+          minWidth: 250,
           sortable: true,
         },
         {
@@ -26,7 +26,7 @@ export const headLabel = (selectedTab) => {
           id: "email",
           name: "email",
           label: "Email",
-          minWidth: 220,
+          minWidth: 250,
           sortable: true,
         },
         {

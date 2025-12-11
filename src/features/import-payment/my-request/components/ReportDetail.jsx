@@ -415,24 +415,24 @@ export default function IMTReportDetails({ defaultValues }) {
               <Grid container spacing={3}>
 
                 {/* Request No */}
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     label="Request No"
                     fullWidth
                     value={defaultValues.requestNo}
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Grid> */}
 
                 {/* Status */}
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     label="Status"
                     fullWidth
                     value={defaultValues.status}
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Grid> */}
 
                 {/* Department */}
                 <Grid item xs={12} md={6}>
