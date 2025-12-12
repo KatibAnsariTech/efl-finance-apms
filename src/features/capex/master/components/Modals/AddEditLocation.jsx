@@ -20,8 +20,15 @@ function AddEditLocation({ handleClose, open, editData: locationData, getData })
       setValue("deliveryAddress", locationData.deliveryAddress || "");
       setValue("postalCode", locationData.postalCode || "");
       setValue("state", locationData.state || "");
+      setValue("country", locationData.country || "INDIA");
     } else {
-      reset();
+      reset({
+        location: "",
+        deliveryAddress: "",
+        postalCode: "",
+        state: "",
+        country: "INDIA",
+      });
     }
   }, [locationData, setValue, reset]);
 
@@ -33,6 +40,7 @@ function AddEditLocation({ handleClose, open, editData: locationData, getData })
         deliveryAddress: data.deliveryAddress,
         postalCode: data.postalCode,
         state: data.state,
+        country: data.country || "INDIA",
       };
       
       if (locationData?._id) {
@@ -125,6 +133,13 @@ function AddEditLocation({ handleClose, open, editData: locationData, getData })
             id="state"
             label="State"
             {...register("state", { required: true })}
+            fullWidth
+            required
+          />
+          <TextField
+            id="country"
+            label="Country"
+            {...register("country", { required: true })}
             fullWidth
             required
           />
