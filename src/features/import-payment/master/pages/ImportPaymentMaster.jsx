@@ -65,10 +65,32 @@ export default function ImportPaymentMaster() {
         dangerMode: true,
       });
 
-      console.log("SelectedTab", selectedTab);
+      let apiEndpoint = "";
+
+      switch (selectedTab) {
+        case 0:
+        case 1:
+        case 3:
+        case 4:
+          apiEndpoint = `/imt/deleteMaster/${id}`;
+          break;
+        case 2:
+          apiEndpoint = `/imt/deleteDocument/${id}`;
+          break;
+        case 5: 
+          apiEndpoint = `/imt/deleteCurrency/${id}`;  
+          break;
+        case 6:
+          apiEndpoint = `/imt/deleteVendor/${id}`;
+          break;     
+        default:
+          apiEndpoint = `/imt/deleteOther/${id}`;
+          break;
+      }
+
 
       if (result) {
-        await userRequest.delete(`/imt/deleteMaster/${id}`);
+        await userRequest.delete(apiEndpoint);
         
         // Show success message
         swal("Deleted!", `${selectedCategory} has been deleted successfully.`, "success");

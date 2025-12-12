@@ -153,49 +153,56 @@ const projectConfig = {
         title: "Report",
         path: "/import-payment/report",
         icon: <ReportIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
        {
         id: "master",
         title: "Master Data",
         path: "/import-payment/master",
         icon: <AssignmentIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["SUPER_ADMIN"],
       },
        {
         id: "usermanagement",
         title: "User Management",
         path: "/import-payment/usermanagement",
         icon: <ManageAccountsIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
       },
        {
         id: "request",
         title: "Raise Request",
         path: "/import-payment/request",
         icon: <RequestPageIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["REQUESTER"],
+      },
+       {
+        id: "my-request",
+        title: "My Request",
+        path: "/import-payment/my-request",
+        icon: <RequestPageIcon />,
+        roles: ["REQUESTER"],
       },
       {
         id: "access-point",
         title: "Access Point",
         path: "/import-payment/access-point",
         icon: <AccessTimeIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["SUPER_ADMIN"],
       },
       {
         id: "hierarchy-flow",
         title: "Hierarchy Flow",
         path: "/import-payment/hierarchy-flow",
         icon: <AccountTreeIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["SUPER_ADMIN"],
       },
       {
         id: "import-payment-upload",
         title: "Upload Payment",
         path: "/import-payment/upload",
         icon: <FileUploadIcon />,
-        roles: ["REQUESTER", "APPROVER", "ADMIN", "SUPER_ADMIN"],
+        roles: ["SUPER_ADMIN"],
       },
     ],
   },
@@ -319,7 +326,7 @@ export const generateNavigationConfig = (accessibleProjects, userRoles) => {
     if (projectConfig[projectType]) {
       const project = projectConfig[projectType];
       const userType = userRoles[projectType];
-
+      console.log("project>>>",project)
       const filteredSubItems = project.subItems.filter((subItem) =>
         subItem.roles.includes(userType)
       );

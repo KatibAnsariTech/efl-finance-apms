@@ -44,7 +44,7 @@ const ColorIndicatorGroup = ({
 
 ColorIndicatorGroup.propTypes = {
   statuses: PropTypes.arrayOf(PropTypes.string),
-  groupName: PropTypes.oneOf(['approval', 'hierarchy', 'customDuty', 'alerts']),
+  groupName: PropTypes.oneOf(['approval', 'hierarchy', 'customDuty', 'importPayment','alerts']),
   size: PropTypes.number,
   gap: PropTypes.number,
   justifyContent: PropTypes.string,

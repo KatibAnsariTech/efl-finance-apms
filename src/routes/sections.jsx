@@ -100,6 +100,18 @@ const ImportPaymentReportPage = lazy(() =>
   import("src/features/import-payment/report/pages/ImportPaymentReport")
 );
 
+const ImportPaymentReportDetailView = lazy(() => 
+  import("src/features/import-payment/report/components/ReportDetails")
+);
+
+const ImportPaymentMyRequest = lazy(() =>
+  import("src/features/import-payment/my-request/pages/ImportPaymentMyRequest")
+)
+
+const ImportPaymentMyReportDetailView = lazy(() => 
+  import("src/features/import-payment/my-request/components/ReportDetails")
+);
+
 const CustomDutyPage = lazy(() =>
   import("src/features/custom-duty/dashboard/pages/CustomDuty")
 );
@@ -574,6 +586,24 @@ export default function Router() {
             />
           ),
         },
+         {
+          path: "/import-payment/my-request",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/my-request"
+              element={<ImportPaymentMyRequest />}
+            />
+          ),
+        },
+         {
+          path: "/import-payment/my-request/:requestNo",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/my-request"
+              element={<ImportPaymentMyReportDetailView />}
+            />
+          ),
+        },
         {
           path: "/import-payment/access-point",
           element: (
@@ -601,6 +631,16 @@ export default function Router() {
             />
           ),
         },
+         {
+          path: "/import-payment/report/:requestNo",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/report"
+              element={<ImportPaymentReportDetailView />}
+            />
+          ),
+        },
+
         // Custom Duty subpages
         {
           path: "/custom-duty/raise-request",

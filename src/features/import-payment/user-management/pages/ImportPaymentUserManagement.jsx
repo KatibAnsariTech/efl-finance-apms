@@ -99,7 +99,7 @@ export default function ImportPaymentUserManagement() {
       });
 
       if (result) {
-        await userRequest.delete(`/custom/deleteUser/${userRoleId}`);
+        await userRequest.delete(`/imt/deleteUser/${userRoleId}`);
         swal("Deleted!", "User has been deleted successfully.", "success");
         getData();
       }
@@ -160,97 +160,53 @@ export default function ImportPaymentUserManagement() {
       align: col.align || "center",
       headerAlign: col.align || "center",
       cellClassName: col.id === "department" ? "company-cell" : "",
-      // renderCell: (params) => {
-      //   if (col.id === "sno") {
-      //     return page * rowsPerPage + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
-      //   }
-      //   if (col.id === "createdAt") {
-      //     return fDateTime(params.value);
-      //   }
-      //   if (col.id === "userType") {
-      //     return (
-      //       <Chip
-      //         label={params.value}
-      //         color={
-      //           params.value === "ADMIN"
-      //             ? "error"
-      //             : params.value === "APPROVER"
-      //             ? "warning"
-      //             : params.value === "REQUESTER"
-      //             ? "info"
-      //             : "default"
-      //         }
-      //         size="small"
-      //       />
-      //     );
-      //   }
-      //   if (col.id === "name") {
-      //     return params.row.username || "-";
-      //   }
-      //   if (col.id === "mastersheetPermissions") {
-      //     return Array.isArray(params.value) && params.value.length > 0
-      //       ? params.value.join(", ")
-      //       : "-";
-      //   }
-      //   if (col.id === "Department") {
-      //     const companies = params.row.companies;
-      //     if (Array.isArray(companies) && companies.length > 0) {
-      //       return companies.map(company => company.name).join(',\n');
-      //     }
-      //     return "-";
-      //   }
-      //   return params.value || "-";
-      // },
-   renderCell: (params) => {
-  const col = columns.find((c) => c.id === params.field);
+      renderCell: (params) => {
+      const col = columns.find((c) => c.id === params.field);
 
-  // S.No
-  if (params.field === "sno") {
-      return page * rowsPerPage + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
-  }
+      // S.No
+      if (params.field === "sno") {
+          return page * rowsPerPage + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
+      }
 
-  // CreatedAt formatting
-  if (params.field === "createdAt") {
-    return fDateTime(params.value);
-  }
+      // CreatedAt formatting
+      if (params.field === "createdAt") {
+        return fDateTime(params.value);
+      }
 
-  // Username fallback
-  if (params.field === "name") {
-    return params.row.username || "-";
-  }
+      // Username fallback
+      if (params.field === "name") {
+        return params.row.username || "-";
+      }
 
-  // 🔥 Department (Array)
-  if (params.field === "departmentId") {
-    return Array.isArray(params.row.departmentId)
-      ? params.row.departmentId.map((d) => d.value).join(", ")
-      : "-";
-  }
+      // 🔥 Department (Array)
+      if (params.field === "departmentId") {
+        return Array.isArray(params.row.departmentId)
+          ? params.row.departmentId.map((d) => d.value).join(", ")
+          : "-";
+      }
 
-  // 🔥 Import Type (Array)
-  if (params.field === "importType") {
-    return Array.isArray(params.row.importType)
-      ? params.row.importType.map((d) => d.value).join(", ")
-      : "-";
-  }
+      // 🔥 Import Type (Array)
+      if (params.field === "importType") {
+        return Array.isArray(params.row.importType)
+          ? params.row.importType.map((d) => d.value).join(", ")
+          : "-";
+      }
 
-  // 🔥 Scope (Array)
-  if (params.field === "scope") {
-    return Array.isArray(params.row.scope)
-      ? params.row.scope.map((d) => d.value).join(", ")
-      : "-";
-  }
+      // 🔥 Scope (Array)
+      if (params.field === "scope") {
+        return Array.isArray(params.row.scope)
+          ? params.row.scope.map((d) => d.value).join(", ")
+          : "-";
+      }
 
-  // 🔥 Select Type (Single Object)
-  if (params.field === "selectType") {
-    return params.row.selectType?.value || "-";
-  }
+      // 🔥 Select Type (Single Object)
+      if (params.field === "selectType") {
+        return params.row.selectType?.value || "-";
+      }
 
-  // Default value or "-"
-  return params.value || "-";
-}
-
-
-
+      // Default value or "-"
+      return params.value || "-";
+      }
     }));
 
   columns.push({

@@ -78,31 +78,31 @@ export default function HierarchyManagementView() {
   };
 
   /* ---------------- FETCH TABLE DATA WITH PARAMS ---------------- */
-  const fetchTableData = async (importTypeId, scopeId) => {
-    try {
-      setTableLoading(true);
+  // const fetchTableData = async (importTypeId, scopeId) => {
+  //   try {
+  //     setTableLoading(true);
 
-      const res = await userRequest.get(
-        `/imt/getHierarchies?importTypeId=${importTypeId}&scopeId=${scopeId}`
-      );
-      console.log("Hierarchy Table Data Response:", res.data.data.hierarchies);
-      const data = res?.data?.data.hierarchies || [];
-      setTableData(data);
-    } catch (err) {
-      console.error("Error fetching table:", err);
-      setTableData([]);
-      showErrorMessage(err);
-    } finally {
-      setTableLoading(false);
-    }
-  };
+  //     const res = await userRequest.get(
+  //       `/imt/getHierarchies?importTypeId=${importTypeId}&scopeId=${scopeId}`
+  //     );
+  //     console.log("Hierarchy Table Data Response:", res.data.data.hierarchies);
+  //     const data = res?.data?.data.hierarchies || [];
+  //     setTableData(data);
+  //   } catch (err) {
+  //     console.error("Error fetching table:", err);
+  //     setTableData([]);
+  //     showErrorMessage(err);
+  //   } finally {
+  //     setTableLoading(false);
+  //   }
+  // };
 
   /* ---------------- TRIGGER TABLE LOAD WHEN BOTH SELECTED ---------------- */
-  useEffect(() => {
-    if (selectedImportType && selectedScope) {
-      fetchTableData(selectedImportType._id, selectedScope._id);
-    }
-  }, [selectedImportType, selectedScope]);
+  // useEffect(() => {
+  //   if (selectedImportType && selectedScope) {
+  //     fetchTableData(selectedImportType._id, selectedScope._id);
+  //   }
+  // }, [selectedImportType, selectedScope]);
 
   /* ---------------- INIT DROPDOWNS ---------------- */
   useEffect(() => {

@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, Watch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -129,6 +129,7 @@ export default function IMTRaiseRequest() {
   const [vendorOptions, setVendorsOptions] = useState([]);
   const [currencyOptions, setCurrencyOptions] = useState([]);
   const [purchaseTypeOptions, setPurchaseTypeOptions] = useState([]);
+  const [filteredScopeOptions, setFilteredScopeOptions] = useState([]);
 
   const [loadingDropdowns, setLoadingDropdowns] = useState(true);
 
@@ -157,8 +158,8 @@ export default function IMTRaiseRequest() {
     setImportTypesOptions(impType.data.data.masters);
     setScopesOptions(scope.data.data.masters);
     setPurchaseTypeOptions(type.data.data.masters);
-    // setVendorsOptions(vendors.data.data.vendors);        // [{ _id, name, ... }, ... ]
-    setVendorsOptions(vendors.data.data.vendors.map((i) => i.name));
+    setVendorsOptions(vendors.data.data.vendors);        // [{ _id, name, ... }, ... ]
+    // setVendorsOptions(vendors.data.data.vendors.map((i) => i.name));
     
     setCurrencyOptions(
       currencies.data.data.currencies.map((item) => ({
@@ -178,7 +179,7 @@ export default function IMTRaiseRequest() {
 
 
   // ------------------- FORM HOOK ------------------------
-  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+  const { control, handleSubmit, reset, watch, formState: { errors } } = useForm({
   resolver: yupResolver(importPaymentRequestSchema),
   mode: "onBlur",
   defaultValues: {
@@ -200,13 +201,51 @@ export default function IMTRaiseRequest() {
   },
   });
 
+  const selectedType = watch("type");
+
+useEffect(() => {
+  if (!selectedType) {
+    setFilteredScopeOptions(scopeOptions);
+    return;
+  }
+
+  // Find selected type object
+  const typeObj = purchaseTypeOptions.find(t => t._id === selectedType);
+
+  if (!typeObj?.other?.length) {
+    setFilteredScopeOptions([]);
+    return;
+  }
+
+  // Extract allowed scope IDs from Type.other
+  const allowedScopeIds = typeObj.other.map(item => item._id);
+
+  // Filter from all scope list
+  const filtered = scopeOptions.filter(scope => 
+    allowedScopeIds.includes(scope._id)
+  );
+
+  setFilteredScopeOptions(filtered);
+}, [selectedType, purchaseTypeOptions, scopeOptions]);
+
+
 
   // ------------------- FINAL SUBMIT ------------------------
  const onSubmit = async (data) => {
   console.log("Final Submit Payload:", data);
+    const payload = {
+    ...data,
+    poDocument: Array.isArray(data.poDocument) 
+      ? data.poDocument[0]  // OR .join(",")
+      : data.poDocument,
+
+    piDocument: Array.isArray(data.piDocument)
+      ? data.piDocument[0]  // OR .join(",")
+      : data.piDocument,
+  };
 
   try {
-    const res = await userRequest.post("/imt/createRequest", data);
+    const res = await userRequest.post("/imt/createRequest", payload);
 
     if (res.data.success === true) {
       swal("Success!", "Import payment request submitted successfully!", "success");
@@ -302,17 +341,19 @@ export default function IMTRaiseRequest() {
                     />
                   </Grid>
 
-                  {/* Department (disabled) */}
-                  <Grid item xs={12} md={6}>
+                  {/* Select Type */}
+                  <Grid item md={6}>
                     <Controller
-                      name="department"
+                      name="type"
                       control={control}
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          select disabled fullWidth label="Department"
+                          select fullWidth label="Select Type"
+                          error={!!errors.type}
+                          helperText={errors.type?.message}
                         >
-                          {departmentOptions.map((o) => (
+                          {purchaseTypeOptions.map((o) => (
                             <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
                           ))}
                         </TextField>
@@ -332,27 +373,7 @@ export default function IMTRaiseRequest() {
                           error={!!errors.scope}
                           helperText={errors.scope?.message}
                         >
-                          {scopeOptions.map((o) => (
-                            <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
-                          ))}
-                        </TextField>
-                      )}
-                    />
-                  </Grid>
-
-                  {/* Select Type */}
-                  <Grid item xs={12}>
-                    <Controller
-                      name="type"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          select fullWidth label="Select Type"
-                          error={!!errors.type}
-                          helperText={errors.type?.message}
-                        >
-                          {purchaseTypeOptions.map((o) => (
+                          {filteredScopeOptions.map((o) => (
                             <MenuItem key={o._id} value={o._id}>{o.value}</MenuItem>
                           ))}
                         </TextField>
@@ -410,7 +431,7 @@ export default function IMTRaiseRequest() {
                           helperText={errors.vendorId?.message}
                         >
                           {vendorOptions.map((o) => (
-                            <MenuItem key={o} value={o}>{o}</MenuItem>
+                            <MenuItem key={o._id} value={o._id}>{o.name}</MenuItem>
                           ))}
                         </TextField>
                       )}
@@ -450,7 +471,7 @@ export default function IMTRaiseRequest() {
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <AttachMoneyIcon fontSize="small" />
+                                {/* <AttachMoneyIcon fontSize="small" /> */}
                               </InputAdornment>
                             ),
                           }}
@@ -495,7 +516,7 @@ export default function IMTRaiseRequest() {
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <AttachMoneyIcon fontSize="small" />
+                                {/* <AttachMoneyIcon fontSize="small" /> */}
                               </InputAdornment>
                             ),
                           }}
