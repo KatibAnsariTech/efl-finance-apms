@@ -78,6 +78,12 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
   return (
     <Modal open={open} onClose={handleCancel}>
       <Box
+        onKeyDown={(e) => {
+          // Prevent Enter key from submitting parent form when modal is open
+          if (e.key === "Enter" && e.target.tagName !== "TEXTAREA" && e.target.type !== "submit") {
+            e.stopPropagation();
+          }
+        }}
         sx={{
           position: "absolute",
           top: "50%",
@@ -119,7 +125,15 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
 
         <Box
           component="form"
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSubmit(onSubmit)(e);
+          }}
+          onClick={(e) => {
+            // Stop click events from bubbling to parent form
+            e.stopPropagation();
+          }}
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -154,6 +168,12 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
                     variant="outlined"
                     error={!!errors.description}
                     helperText={errors.description?.message}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                    }}
                   />
                 )}
               />
@@ -173,6 +193,12 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
                     variant="outlined"
                     error={!!errors.quantity}
                     helperText={errors.quantity?.message}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                    }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
@@ -231,6 +257,12 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
                     multiline
                     rows={2}
                     variant="outlined"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                    }}
                   />
                 )}
               />
@@ -250,6 +282,12 @@ export default function CapexItemModal({ open, handleClose, onSave, editItem, in
                     variant="outlined"
                     error={!!errors.costPerUnit}
                     helperText={errors.costPerUnit?.message}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                    }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">

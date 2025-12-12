@@ -31,7 +31,7 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
             }}
             onClick={() => onRequestClick && onRequestClick(params.row)}
           >
-            {params.value || params.row.requestNo || params.row._id || "-"}
+            {params.row.slNo || "-"}
           </Typography>
         </Box>
       ),

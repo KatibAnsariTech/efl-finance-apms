@@ -127,10 +127,12 @@ export default function DraftEdit() {
             acceptanceCriteria: data.technicalAspect?.acceptanceCriteria || "",
             currentScenario: data.technicalAspect?.currentScenario || "",
             proposedAfterScenario: data.technicalAspect?.proposedScenario || "",
-            expectedImplementationDate: data.technicalAspect?.dateOfImplementation || null,
+            expectedImplementationDate: data.expectedImplementationDate 
+              ? new Date(data.expectedImplementationDate) 
+              : null,
             capacityAlignment: data.technicalAspect?.capacityAlignment || "",
             alternateMakeTechnology: data.technicalAspect?.technologyEvaluation || "",
-            modificationOrUpgrade: data.modification?.modification ? "Modification" : "No",
+            modificationOrUpgrade: data.modification?.modification ? "Yes" : "No",
             previousModificationHistory: data.modification?.previousHistory || "",
             challengesInPresentSystem: data.modification?.challenges || "",
             vendorOEM: data.modification?.vendorOEM || "",
@@ -216,7 +218,7 @@ export default function DraftEdit() {
         technologyEvaluation: data.alternateMakeTechnology || "",
       },
       modification: {
-        modification: data.modificationOrUpgrade === "Modification" || data.modificationOrUpgrade === "Upgrade",
+        modification: data.modificationOrUpgrade === "Yes",
         challenges: data.challengesInPresentSystem || "",
         vendorOEM: data.vendorOEM || "",
         previousHistory: data.previousModificationHistory || "",
@@ -241,6 +243,9 @@ export default function DraftEdit() {
         offer3: data.documents?.offer3 ? (Array.isArray(data.documents.offer3) ? data.documents.offer3 : [data.documents.offer3]) : [],
         previousHistoryPresentStatus: data.documents?.previousHistory ? (Array.isArray(data.documents.previousHistory) ? data.documents.previousHistory : [data.documents.previousHistory]) : [],
       },
+      expectedImplementationDate: data.expectedImplementationDate
+        ? new Date(data.expectedImplementationDate).toISOString()
+        : null,
       projectStatus: data.projectStatus === "Active" || data.projectStatus === true,
       submitCheckBox: data.submitCheckBox || false,
     };
@@ -271,9 +276,8 @@ export default function DraftEdit() {
     setSubmitting(true);
     try {
       const formattedData = formatFormData(data);
-      formattedData.status = "Pending";
 
-      const response = await userRequest.post(`/cpx/submitDraft/${id}`, formattedData);
+      const response = await userRequest.put(`/cpx/submitDraft/${id}`, formattedData);
 
       if (response.data?.success || response.data?.statusCode === 200) {
         swal("Success!", "Draft submitted successfully!", "success").then(() => {
@@ -323,7 +327,7 @@ export default function DraftEdit() {
               }}
             >
               <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                Edit Draft: {formData.slNo || id}
+                Request No: {formData.slNo || "-"}
               </Typography>
               <CloseButton
                 onClick={() => router.back()}

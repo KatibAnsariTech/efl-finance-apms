@@ -172,7 +172,7 @@ export default function RaiseRequest() {
           technologyEvaluation: data.alternateMakeTechnology || "",
         },
         modification: {
-          modification: data.modificationOrUpgrade === "Modification" || data.modificationOrUpgrade === "Upgrade",
+          modification: data.modificationOrUpgrade === "Yes",
           challenges: data.challengesInPresentSystem || "",
           vendorOEM: data.vendorOEM || "",
           previousHistory: data.previousModificationHistory || "",
@@ -197,6 +197,9 @@ export default function RaiseRequest() {
           offer3: data.documents?.offer3 ? (Array.isArray(data.documents.offer3) ? data.documents.offer3 : [data.documents.offer3]) : [],
           previousHistoryPresentStatus: data.documents?.previousHistory ? (Array.isArray(data.documents.previousHistory) ? data.documents.previousHistory : [data.documents.previousHistory]) : [],
         },
+        expectedImplementationDate: data.expectedImplementationDate 
+          ? new Date(data.expectedImplementationDate).toISOString()
+          : null,
         status: "Pending",
         projectStatus: data.projectStatus === "Active" || data.projectStatus === true,
         submitCheckBox: data.submitCheckBox || false,
@@ -308,7 +311,7 @@ export default function RaiseRequest() {
           technologyEvaluation: formValues.alternateMakeTechnology || "",
         },
         modification: {
-          modification: formValues.modificationOrUpgrade === "Modification" || formValues.modificationOrUpgrade === "Upgrade",
+          modification: formValues.modificationOrUpgrade === "Yes",
           challenges: formValues.challengesInPresentSystem || "",
           vendorOEM: formValues.vendorOEM || "",
           previousHistory: formValues.previousModificationHistory || "",
@@ -333,6 +336,9 @@ export default function RaiseRequest() {
           offer3: formValues.documents?.offer3 ? (Array.isArray(formValues.documents.offer3) ? formValues.documents.offer3 : [formValues.documents.offer3]) : [],
           previousHistoryPresentStatus: formValues.documents?.previousHistory ? (Array.isArray(formValues.documents.previousHistory) ? formValues.documents.previousHistory : [formValues.documents.previousHistory]) : [],
         },
+        expectedImplementationDate: formValues.expectedImplementationDate 
+          ? new Date(formValues.expectedImplementationDate).toISOString()
+          : null,
         projectStatus: formValues.projectStatus === "Active" || formValues.projectStatus === true,
         submitCheckBox: formValues.submitCheckBox || false,
       };

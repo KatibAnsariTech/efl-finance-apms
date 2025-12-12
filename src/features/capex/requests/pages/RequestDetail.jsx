@@ -113,7 +113,9 @@ export default function RequestDetail() {
           acceptanceCriteria: data.technicalAspect?.acceptanceCriteria || "",
           currentScenario: data.technicalAspect?.currentScenario || "",
           proposedAfterScenario: data.technicalAspect?.proposedScenario || "",
-          expectedImplementationDate: data?.expectedDateOfImplementation || null,
+          expectedImplementationDate: data.expectedImplementationDate 
+            ? new Date(data.expectedImplementationDate) 
+            : null,
           capacityAlignment: data.technicalAspect?.capacityAlignment || "",
           alternateMakeTechnology: data.technicalAspect?.technologyEvaluation || "",
           modificationOrUpgrade: data.modification?.modification ? "Yes" : "No",
@@ -290,7 +292,7 @@ console.log(formData)
               }}
             >
               <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                Request No: {requestNo}
+                Request No: {formData?.slNo || "-"}
               </Typography>
               <CloseButton
                 onClick={() => router.back()}
@@ -474,10 +476,11 @@ console.log(formData)
                   // Show clarification response section if:
                   // 1. Assigned to requester AND current user is the requester AND not an approver in main flow
                   // 2. Assigned to approver position (not "requester") AND current user is in that approver position's approvers list
+                  //    AND NOT assigned to main approval flow (to avoid showing both sections)
                   //    This covers procurement team responding to procurement head's clarification
                   const shouldShowClarificationResponse = 
                     (isAssignedToRequester && isCurrentUserRequester && !assigned) || 
-                    canApproverRespond;
+                    (canApproverRespond && !assigned);
                   
                   return shouldShowClarificationResponse ? (
                     <Box
