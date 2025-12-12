@@ -3,6 +3,13 @@ import React from "react";
 import { fDateTime } from "src/utils/format-time";
 
 function RequestCurrentStatus({ steps = [], data }) {
+  // Find the "Submitted" step (level 0) to get requester info from approvers array
+  const submittedStep = steps.find(step => step.level === 0 || step.status === "Submitted");
+  const requester = submittedStep?.approverPositionId?.approvers?.[0] || 
+                    submittedStep?.approverId?.[0] ||
+                    data?.requester ||
+                    data?.requesterId?.user;
+
   return (
     <Paper
       elevation={0}
@@ -48,9 +55,9 @@ function RequestCurrentStatus({ steps = [], data }) {
                   Raised By
                 </Typography>
                 <Typography>
-                  {data?.requester?.username || data?.requesterId?.username}
-                  {data?.requester?.email || data?.requesterId?.email
-                    ? `(${data?.requester?.email || data?.requesterId?.email})`
+                  {requester?.username || requester?.name}
+                  {requester?.email
+                    ? ` (${requester?.email})`
                     : ""}
                 </Typography>
                 {data?.requesterRemark && (
@@ -88,7 +95,8 @@ function RequestCurrentStatus({ steps = [], data }) {
                 <Typography variant="body2" color="text.secondary">
                   <strong>Raised at:</strong>{" "}
                   {fDateTime(
-                    data?.requester?.createdAt ||
+                    submittedStep?.assignedAt ||
+                      submittedStep?.createdAt ||
                       data?.createdAt ||
                       data?.formId?.createdAt
                   )}
@@ -100,7 +108,9 @@ function RequestCurrentStatus({ steps = [], data }) {
                 No approval history yet.
               </Typography>
             )}
-            {steps.map((step, idx) => {
+            {steps
+              .filter(step => step.level !== 0 && step.status !== "Submitted")
+              .map((step, idx) => {
               // Handle both old structure (approverId) and new structure (approverPositionId.approvers)
               let approver;
               if (step.approverPositionId?.approvers) {
@@ -115,7 +125,10 @@ function RequestCurrentStatus({ steps = [], data }) {
 
               // Check if this is a clarification step
               const isClarification = step.isClarification || step.status === "Clarification_Needed" || step.status === "Clarification_Responded";
-              const statusDisplay = step.status?.replace("_", " ");
+              // Show "Raised By" when status is "Submitted", otherwise show the status
+              const statusDisplay = step.status === "Submitted" 
+                ? "Raised By" 
+                : step.status?.replace("_", " ");
 
               return (
                 <Box key={step._id || idx} mb={2}>

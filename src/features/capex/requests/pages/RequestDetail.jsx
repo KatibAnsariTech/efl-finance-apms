@@ -30,7 +30,7 @@ import { useAccount } from "src/hooks/use-account";
 export default function RequestDetail() {
   const router = useRouter();
   const { requestNo } = useParams();
-  const { user } = useAccount();
+  const account = useAccount();
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState(null);
   const [approvalData, setApprovalData] = useState(null);
@@ -347,10 +347,10 @@ console.log(formData)
                     <RequestCurrentStatus
                       steps={approvalData.steps || []}
                       data={{
-                        requester: approvalData.requester,
-                        requesterId: approvalData.requester,
+                        requester: formData?.requesterId?.user,
+                        requesterId: formData?.requesterId,
                         requesterRemark: formData?.requesterRemark || "",
-                        createdAt: formData?.createdAt || approvalData.requester?.createdAt,
+                        createdAt: formData?.createdAt,
                         formId: formData,
                       }}
                     />
@@ -358,82 +358,6 @@ console.log(formData)
                 </>
               )}
 
-              {assigned && (
-                <Box
-                  sx={{
-                    mt: 4,
-                    p: 3,
-                    backgroundColor: "#f8f9fa",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 2 }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                      Approver Actions
-                    </Typography>
-
-                    <Stack direction="row" spacing={2}>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        onClick={() => handleApprovalAction("approved")}
-                        disabled={approveLoading || rejectLoading || clarificationLoading}
-                        startIcon={
-                          approveLoading ? <CircularProgress size={20} /> : null
-                        }
-                        sx={{ minWidth: 120 }}
-                      >
-                        {approveLoading ? "Processing..." : "Approve"}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="warning"
-                        onClick={() => handleApprovalAction("clarification")}
-                        disabled={approveLoading || rejectLoading || clarificationLoading}
-                        startIcon={
-                          clarificationLoading ? <CircularProgress size={20} /> : null
-                        }
-                        sx={{ minWidth: 160 }}
-                      >
-                        {clarificationLoading ? "Processing..." : "Need Clarification"}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleApprovalAction("rejected")}
-                        disabled={approveLoading || rejectLoading || clarificationLoading}
-                        startIcon={
-                          rejectLoading ? <CircularProgress size={20} /> : null
-                        }
-                        sx={{ minWidth: 120 }}
-                      >
-                        {rejectLoading ? "Processing..." : "Reject"}
-                      </Button>
-                    </Stack>
-                  </Stack>
-
-                  <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
-                    Leave a comment with your response
-                  </Typography>
-
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    placeholder="Comment..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    sx={{ backgroundColor: "#fff" }}
-                  />
-                </Box>
-              )}
-
-              {/* Clarification Response Section for Requesters and Approvers */}
               {formData && (
                 (() => {
                   // Check for pending clarification step assigned to current user
@@ -443,87 +367,189 @@ console.log(formData)
                     !step.completedAt
                   );
 
-                  if (!pendingClarificationStep) return null;
-
                   // Check if assigned to requester
-                  const isAssignedToRequester = pendingClarificationStep.assignedTo === "requester";
+                  const isAssignedToRequester = pendingClarificationStep?.assignedTo === "requester";
                   
                   // Verify user is the requester (check if user email/username matches requesterId)
                   const isCurrentUserRequester = formData.requesterId && (
-                    formData.requesterId.user?.email === user?.email ||
-                    formData.requesterId.user?.username === user?.username ||
-                    formData.requesterId.user?._id === user?._id ||
-                    formData.requesterId.userId === user?._id
+                    formData.requesterId.user?.email === account?.email ||
+                    formData.requesterId.user?.username === account?.username ||
+                    formData.requesterId.user?._id === account?._id ||
+                    formData.requesterId.userId === account?._id
                   );
                   
                   // Check if current user is in the approver position's approvers list
                   // This handles cases where procurement team needs to respond to procurement head's clarification
-                  const isUserInApproverPosition = pendingClarificationStep.approverPositionId?.approvers?.some(approver => 
-                    approver.email === user?.email || 
-                    approver.username === user?.username ||
-                    approver._id === user?._id ||
-                    approver.userId === user?._id
+                  const isUserInApproverPosition = pendingClarificationStep?.approverPositionId?.approvers?.some(approver => 
+                    approver.email === account?.email || 
+                    approver.username === account?.username ||
+                    approver._id === account?._id ||
+                    approver.userId === account?._id
                   );
 
                   // For approver-to-approver clarifications (e.g., procurement head to procurement team):
                   // If the user is in the approver position's approvers list AND it's not assigned to "requester",
                   // then they should be able to respond
-                  // This handles cases where assignedTo might be the approver position ID or structured differently
-                  const approverPositionId = pendingClarificationStep.approverPositionId?._id;
-                  const isAssignedToApproverPosition = !isAssignedToRequester && approverPositionId;
+                  const approverPositionId = pendingClarificationStep?.approverPositionId?._id;
+                  const isAssignedToApproverPosition = pendingClarificationStep && !isAssignedToRequester && approverPositionId;
                   const canApproverRespond = isAssignedToApproverPosition && isUserInApproverPosition;
 
                   // Show clarification response section if:
-                  // 1. Assigned to requester AND current user is the requester AND not an approver in main flow
-                  // 2. Assigned to approver position (not "requester") AND current user is in that approver position's approvers list
-                  //    AND NOT assigned to main approval flow (to avoid showing both sections)
-                  //    This covers procurement team responding to procurement head's clarification
+                  // 1. There is a pending clarification step (isClarification === true)
+                  // 2. AND (assigned to requester and current user is requester) - regardless of assigned flag
+                  //    OR (assigned to approver position and current user is in that position AND assigned is true)
                   const shouldShowClarificationResponse = 
-                    (isAssignedToRequester && isCurrentUserRequester && !assigned) || 
-                    (canApproverRespond && !assigned);
+                    pendingClarificationStep &&
+                    ((isAssignedToRequester && isCurrentUserRequester) || (canApproverRespond && assigned));
                   
-                  return shouldShowClarificationResponse ? (
-                    <Box
-                      sx={{
-                        mt: 4,
-                        p: 3,
-                        backgroundColor: "#e3f2fd",
-                        borderRadius: 1,
-                        border: "1px solid #90caf9",
-                      }}
-                    >
-                      <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-                        Respond to Clarification Request
-                      </Typography>
-                      
-                      <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
-                        Please provide your response to the clarification request
-                      </Typography>
+                  // Check if there's a pending non-clarification step assigned to current approver
+                  // Use isCurrent: true OR (status === "Pending" AND !completedAt) to identify pending steps
+                  const pendingApproverStep = formData.request?.steps?.find(step => 
+                    !step.isClarification && 
+                    step.status === "Pending" && 
+                    (step.isCurrent === true || !step.completedAt) &&
+                    step.approverPositionId?.approvers?.some(approver => 
+                      approver.email === account?.email || 
+                      approver.username === account?.username ||
+                      approver._id === account?._id ||
+                      approver.userId === account?._id
+                    )
+                  );
 
-                      <TextField
-                        fullWidth
-                        multiline
-                        rows={4}
-                        placeholder="Enter your clarification response..."
-                        value={clarificationResponse}
-                        onChange={(e) => setClarificationResponse(e.target.value)}
-                        sx={{ backgroundColor: "#fff", mb: 2 }}
-                      />
+                  // Show approver actions if:
+                  // 1. isAssigned === true (assigned)
+                  // 2. AND there is a pending non-clarification step assigned to current approver
+                  // 3. AND NOT (there is a pending clarification step that the current user should respond to)
+                  const shouldShowApproverActions = 
+                    assigned && 
+                    !!pendingApproverStep &&
+                    !shouldShowClarificationResponse;
 
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleRespondToClarification}
-                        disabled={respondLoading}
-                        startIcon={
-                          respondLoading ? <CircularProgress size={20} /> : null
-                        }
-                        sx={{ minWidth: 200 }}
+                  // Render Clarification Response Section
+                  if (shouldShowClarificationResponse) {
+                    return (
+                      <Box
+                        sx={{
+                          mt: 4,
+                          p: 3,
+                          // backgroundColor: "#e3f2fd",
+                          borderRadius: 1,
+                          border: "1px solid #90caf9",
+                        }}
                       >
-                        {respondLoading ? "Submitting..." : "Submit Response"}
-                      </Button>
-                    </Box>
-                  ) : null;
+                        <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+                          Respond to Clarification Request
+                        </Typography>
+                        
+                        <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                          Please provide your response to the clarification request
+                        </Typography>
+
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={4}
+                          placeholder="Enter your clarification response..."
+                          value={clarificationResponse}
+                          onChange={(e) => setClarificationResponse(e.target.value)}
+                          sx={{ backgroundColor: "#fff", mb: 2 }}
+                        />
+
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleRespondToClarification}
+                          disabled={respondLoading}
+                          startIcon={
+                            respondLoading ? <CircularProgress size={20} /> : null
+                          }
+                          sx={{ minWidth: 200 }}
+                        >
+                          {respondLoading ? "Submitting..." : "Submit Response"}
+                        </Button>
+                      </Box>
+                    );
+                  }
+
+                  // Render Approver Actions Section
+                  if (shouldShowApproverActions) {
+                    return (
+                      <Box
+                        sx={{
+                          mt: 4,
+                          p: 3,
+                          backgroundColor: "#f8f9fa",
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          sx={{ mb: 2 }}
+                        >
+                          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                            Approver Actions
+                          </Typography>
+
+                          <Stack direction="row" spacing={2}>
+                            <Button
+                              variant="contained"
+                              color="success"
+                              onClick={() => handleApprovalAction("approved")}
+                              disabled={approveLoading || rejectLoading || clarificationLoading}
+                              startIcon={
+                                approveLoading ? <CircularProgress size={20} /> : null
+                              }
+                              sx={{ minWidth: 120 }}
+                            >
+                              {approveLoading ? "Processing..." : "Approve"}
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="warning"
+                              onClick={() => handleApprovalAction("clarification")}
+                              disabled={approveLoading || rejectLoading || clarificationLoading}
+                              startIcon={
+                                clarificationLoading ? <CircularProgress size={20} /> : null
+                              }
+                              sx={{ minWidth: 160 }}
+                            >
+                              {clarificationLoading ? "Processing..." : "Need Clarification"}
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleApprovalAction("rejected")}
+                              disabled={approveLoading || rejectLoading || clarificationLoading}
+                              startIcon={
+                                rejectLoading ? <CircularProgress size={20} /> : null
+                              }
+                              sx={{ minWidth: 120 }}
+                            >
+                              {rejectLoading ? "Processing..." : "Reject"}
+                            </Button>
+                          </Stack>
+                        </Stack>
+
+                        <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                          Leave a comment with your response
+                        </Typography>
+
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={3}
+                          placeholder="Comment..."
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          sx={{ backgroundColor: "#fff" }}
+                        />
+                      </Box>
+                    );
+                  }
+
+                  return null;
                 })()
               )}
             </Box>
