@@ -2,7 +2,14 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
 
-export const MyRequestsColumns = ({ onRequestClick }) => {
+export const MyRequestsColumns = ({ onRequestClick,onRequestStatusClick }) => {
+
+  const handleStatusClick = (rowData) => {
+    if (onRequestStatusClick) {
+      onRequestStatusClick(rowData);
+    }
+  };
+
   const columns = [
     {
       field: "requestNo",
@@ -155,30 +162,29 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
         );
       },
     },
-    {
+     {
       field: "status",
       headerName: "Status",
-      width: 150,
+      flex: 1,
+      minWidth: 120,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => {
-        const status = params.value || "";
-        const displayStatus =
-          status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              width: "100%",
-            }}
-          >
-            {displayStatus || "-"}
-          </Box>
-        );
-      },
+      renderCell: (params) => (
+        <Box
+          sx={{
+            cursor: "pointer",
+            color: "#1976d2",
+            textDecoration: "underline",
+            textDecorationThickness: "2px",
+            textUnderlineOffset: "4px",
+            fontWeight: 600,
+            "&:hover": { color: "#1565c0" },
+          }}
+          onClick={() => handleStatusClick(params.row)}
+        >
+          {params.value}
+        </Box>
+      ),
     },
     {
       field: "poNumber",

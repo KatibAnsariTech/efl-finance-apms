@@ -13,6 +13,7 @@ import { FormTableToolbar } from "src/components/table";
 import { MyRequestsColumns } from "../components/MyRequestsColumns";
 import ColorIndicators from "../components/ColorIndicators";
 import { useNavigate, useParams } from "react-router-dom";
+import RequestStatus from "../components/RequestStatus";
 
 export default function ImportPaymentMyRequest() {
   const { requestNo } = useParams();
@@ -27,6 +28,8 @@ export default function ImportPaymentMyRequest() {
   const navigate = useNavigate()
 
   const pageTitle = requestNo ? "Report Details" : "Reports";
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
   const menuItems = [
     { label: "Submitted", value: "submitted" },
@@ -114,6 +117,11 @@ export default function ImportPaymentMyRequest() {
     setSearch(value);
   };
 
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedRowData(null);
+  };
+
   const handleRequestClick = (rowData) => {
     const target = rowData?._id;
     if (!target) {
@@ -123,8 +131,16 @@ export default function ImportPaymentMyRequest() {
     // Navigate to the import-payment report detail route
     navigate(`/import-payment/my-request/${target}`);
   };
+   const handleRequestStatusClick = (rowData) => {
+    console.log("rowData>>>",rowData);
+    setSelectedRowData(rowData);
+    setOpenModal(true);
+  };
 
-  const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
+  const columns = MyRequestsColumns({ 
+    onRequestClick: handleRequestClick, 
+    onRequestStatusClick: handleRequestStatusClick,
+  });
 
   return (
     <>
@@ -253,6 +269,13 @@ export default function ImportPaymentMyRequest() {
             </Box>
           </Box>
         </Card>
+          <RequestStatus
+            open={openModal}
+            onClose={handleCloseModal}
+            rowData={selectedRowData}
+            getRequestData={getData}
+            selectedTab="requests"
+          />
       </Container>
     </>
   );

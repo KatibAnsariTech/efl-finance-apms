@@ -13,6 +13,7 @@ import { FormTableToolbar } from "src/components/table";
 import { MyRequestsColumns } from "../components/MyRequestsColumns";
 import ColorIndicators from "../components/ColorIndicators";
 import { useNavigate, useParams } from "react-router-dom";
+import RequestStatus from "../components/RequestStatus";
 
 export default function ImportPaymentReport() {
   const { requestNo } = useParams();
@@ -32,6 +33,8 @@ export default function ImportPaymentReport() {
 
   const [menuItems, setMenuItems] = useState([]);
   const [initialized, setInitialized] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
 useEffect(() => {
   if (userRole !== "APPROVER") {
@@ -131,6 +134,11 @@ useEffect(() => {
     setSearch(value);
   };
 
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedRowData(null);
+  };
+
   const handleRequestClick = (rowData) => {
     const target = rowData?._id;
     if (!target) {
@@ -141,7 +149,17 @@ useEffect(() => {
     navigate(`/import-payment/report/${target}`);
   };
 
-  const columns = MyRequestsColumns({ onRequestClick: handleRequestClick });
+  
+  const handleRequestStatusClick = (rowData) => {
+    console.log("rowData>>>",rowData);
+    setSelectedRowData(rowData);
+    setOpenModal(true);
+  };
+
+  const columns = MyRequestsColumns({ 
+    onRequestClick: handleRequestClick, 
+    onRequestStatusClick: handleRequestStatusClick,
+  });
 
   return (
     <>
@@ -270,6 +288,15 @@ useEffect(() => {
             </Box>
           </Box>
         </Card>
+
+        <RequestStatus
+          open={openModal}
+          onClose={handleCloseModal}
+          rowData={selectedRowData}
+          getRequestData={getData}
+          selectedTab="requests"
+        />
+
       </Container>
     </>
   );
