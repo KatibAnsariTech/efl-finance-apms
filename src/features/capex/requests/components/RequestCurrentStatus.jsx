@@ -157,9 +157,10 @@ function RequestCurrentStatus({ steps = [], data }) {
                         {approver?.email ? ` (${approver?.email})` : ""}
                       </Typography>
                     )}
-                    {step.comment && <Typography>with comment:</Typography>}
+                    {step.comment && step.status !== "Clarification_Responded" && <Typography>with comment:</Typography>}
+                    {step.responseComment && <Typography>with response:</Typography>}
                   </Stack>
-                  {step.comment && (
+                  {step.comment && step.status !== "Clarification_Responded" && (
                     <Box
                       sx={{
                         borderLeft: "6px solid grey",

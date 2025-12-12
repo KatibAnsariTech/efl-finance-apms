@@ -113,7 +113,7 @@ export default function DraftEdit() {
             deliveryAddress: data.location?.deliveryAddress || "",
             state: data.location?.state || "",
             postalCode: data.location?.postalCode || "",
-            country: "INDIA",
+            country: "",
             capexItems: data.technicalAspect?.items?.map((item) => ({
               description: item.capexDescription || "",
               quantity: item.quantity || 0,

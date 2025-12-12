@@ -88,7 +88,7 @@ export default function MyRequests() {
           deliveryAddress: form.location?.deliveryAddress || form.deliveryAddress || "-",
           state: form.location?.state || form.state || "-",
           postalCode: form.location?.postalCode || form.postalCode || "-",
-          country: "INDIA",
+          country: form.location?.country || form.country || "-",
           expectedDateOfImplementation: form.technicalAspect?.dateOfImplementation || "-",
           modificationOrUpgrade: form.modification?.modification ? "Yes" : "No",
           challenges: form.modification?.challenges || "-",

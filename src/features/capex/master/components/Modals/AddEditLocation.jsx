@@ -20,14 +20,14 @@ function AddEditLocation({ handleClose, open, editData: locationData, getData })
       setValue("deliveryAddress", locationData.deliveryAddress || "");
       setValue("postalCode", locationData.postalCode || "");
       setValue("state", locationData.state || "");
-      setValue("country", locationData.country || "INDIA");
+      setValue("country", locationData.country || "");
     } else {
       reset({
         location: "",
         deliveryAddress: "",
         postalCode: "",
         state: "",
-        country: "INDIA",
+        country: "",
       });
     }
   }, [locationData, setValue, reset]);
@@ -40,7 +40,7 @@ function AddEditLocation({ handleClose, open, editData: locationData, getData })
         deliveryAddress: data.deliveryAddress,
         postalCode: data.postalCode,
         state: data.state,
-        country: data.country || "INDIA",
+        country: data.country || "",
       };
       
       if (locationData?._id) {
