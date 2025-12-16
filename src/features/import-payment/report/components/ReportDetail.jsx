@@ -392,7 +392,7 @@ export default function IMTReportDetails({ defaultValues }) {
       </Helmet>
 
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Box sx={{ backgroundColor: "#F4F6F8", minHeight: "100vh", py: 4 }}>
+        <Box sx={{ minHeight: "100vh", py: 4 }}>
           <Container maxWidth="lg">
             <Paper
               elevation={0}
@@ -572,7 +572,7 @@ export default function IMTReportDetails({ defaultValues }) {
                 </Grid>
 
                 {/* PO Document */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
                   <Typography fontWeight={600}>PO Document</Typography>
                   <Link
                     href={defaultValues.poDocument}
@@ -585,10 +585,22 @@ export default function IMTReportDetails({ defaultValues }) {
                 </Grid>
 
                 {/* PI Document */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
                   <Typography fontWeight={600}>PI Document</Typography>
                   <Link
                     href={defaultValues.piDocument}
+                    target="_blank"
+                    rel="noopener"
+                    underline="hover"
+                  >
+                    View File
+                  </Link>
+                </Grid>
+                 {/* PI Document */}
+                <Grid item xs={12} md={4}>
+                  <Typography fontWeight={600}>Output Document</Typography>
+                  <Link
+                    href={defaultValues.outputDocument}
                     target="_blank"
                     rel="noopener"
                     underline="hover"

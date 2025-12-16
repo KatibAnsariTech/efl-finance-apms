@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { fDateTime } from "src/utils/format-time";
+import ImagePreviewCell from "./ImagePreview";
 
 export const MyRequestsColumns = ({ onRequestClick,onRequestStatusClick }) => {
 
@@ -42,6 +43,102 @@ export const MyRequestsColumns = ({ onRequestClick,onRequestStatusClick }) => {
           </Typography>
         </Box>
       ),
+    },
+     {
+      field: "date",
+      headerName: "Date",
+      width: 180,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const dateValue = params.value || params.row.createdAt;
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            {dateValue ? fDateTime(dateValue) : "-"}
+          </Box>
+        );
+      },
+    },
+    {
+         field: "status",
+         headerName: "Status",
+         flex: 1,
+         minWidth: 120,
+         align: "center",
+         headerAlign: "center",
+         renderCell: (params) => (
+           <Box
+             sx={{
+               cursor: "pointer",
+               color: "#1976d2",
+               textDecoration: "underline",
+               textDecorationThickness: "2px",
+               textUnderlineOffset: "4px",
+               fontWeight: 600,
+               "&:hover": { color: "#1565c0" },
+             }}
+             onClick={() => handleStatusClick(params.row)}
+           >
+             {params.value}
+           </Box>
+         ),
+       },
+    {
+      field: "poNumber",
+      headerName: "PO Number",
+      width: 150,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            width: "100%",
+          }}
+        >
+          {params.value || "-"}
+        </Box>
+      ),
+    },
+    {
+      field: "poAmount",
+      headerName: "PO Amount",
+      width: 180,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const value = params.value;
+        let displayValue = "-";
+        if (typeof value === "object" && value?.name) {
+          displayValue = value.name;
+        } else if (value) {
+          displayValue = value;
+        }
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            {displayValue}
+          </Box>
+        );
+      },
     },
     {
       field: "poDate",
@@ -135,102 +232,6 @@ export const MyRequestsColumns = ({ onRequestClick,onRequestStatusClick }) => {
             }}
           >
             {displayStatus || "-"}
-          </Box>
-        );
-      },
-    },
-    {
-      field: "date",
-      headerName: "Date",
-      width: 180,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => {
-        const dateValue = params.value || params.row.createdAt;
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              width: "100%",
-            }}
-          >
-            {dateValue ? fDateTime(dateValue) : "-"}
-          </Box>
-        );
-      },
-    },
-    {
-         field: "status",
-         headerName: "Status",
-         flex: 1,
-         minWidth: 120,
-         align: "center",
-         headerAlign: "center",
-         renderCell: (params) => (
-           <Box
-             sx={{
-               cursor: "pointer",
-               color: "#1976d2",
-               textDecoration: "underline",
-               textDecorationThickness: "2px",
-               textUnderlineOffset: "4px",
-               fontWeight: 600,
-               "&:hover": { color: "#1565c0" },
-             }}
-             onClick={() => handleStatusClick(params.row)}
-           >
-             {params.value}
-           </Box>
-         ),
-       },
-    {
-      field: "poNumber",
-      headerName: "PO Number",
-      width: 150,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-            width: "100%",
-          }}
-        >
-          {params.value || "-"}
-        </Box>
-      ),
-    },
-    {
-      field: "poAmount",
-      headerName: "PO Amount",
-      width: 180,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => {
-        const value = params.value;
-        let displayValue = "-";
-        if (typeof value === "object" && value?.name) {
-          displayValue = value.name;
-        } else if (value) {
-          displayValue = value;
-        }
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              width: "100%",
-            }}
-          >
-            {displayValue}
           </Box>
         );
       },
@@ -466,7 +467,37 @@ export const MyRequestsColumns = ({ onRequestClick,onRequestStatusClick }) => {
           {params.value || "-"}
         </Box>
       ),
-    }
+    },
+    {
+          field: "poDocument",
+          headerName: "PO Document",
+          width: 190,
+          align: "center",
+          headerAlign: "center",
+          renderCell: (params) => (
+          <ImagePreviewCell src={params.value} />
+        ),
+        },
+        {
+          field: "piDocument",
+          headerName: "PI Document",
+          width: 150,
+          align: "center",
+          headerAlign: "center",
+          renderCell: (params) => (
+          <ImagePreviewCell src={params.value} />
+        ),
+        },
+        {
+          field: "outputDocument",
+          headerName: "Output Document",
+          width: 150,
+          align: "center",
+          headerAlign: "center",
+           renderCell: (params) => (
+          <ImagePreviewCell src={params.value} />
+        ),
+        } 
   ];
 
   return columns;

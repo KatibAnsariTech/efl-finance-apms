@@ -23,6 +23,7 @@ const ReportDetailView = () => {
   const [approvalData, setApprovalData] = useState(null);
   const [error, setError] = useState(null);
   const [actionCompleted, setActionCompleted] = useState(false);
+  const [lastApprover,setLastApprover] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const userEmail = user?.email; // use email, not role
@@ -39,6 +40,7 @@ const ReportDetailView = () => {
           setData(reportData);
           setAssigned(reportData.assigned || false);
           setApprovalData(reportData);
+          setLastApprover(reportData.lastApprover);
           setError(null);
         } else {
           setError("No data found for this request number");
@@ -71,6 +73,7 @@ const ReportDetailView = () => {
           setData(reportData);
           setAssigned(reportData.assigned || false);
           setApprovalData(reportData);
+          setLastApprover(reportData.lastApprover);
           setError(null);
         } else {
           setError("No data found for this request number");
@@ -104,7 +107,7 @@ const canShowAction = steps.some(step =>
       }}
     >
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+      {/* <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <Box sx={{ pl: 3 }}>
           <Typography variant="h5">Report Details</Typography>
           <Box
@@ -126,7 +129,41 @@ const canShowAction = steps.some(step =>
         >
           <CloseIcon />
         </IconButton>
-      </Box>
+      </Box> */}
+      <Box
+  display="flex"
+  justifyContent="space-between"
+  alignItems="flex-start"   // 👈 align from top
+  sx={{ mb: 2, px: 3 }}      // same horizontal padding for both
+>
+  <Box>
+    {/* <Typography variant="h5" sx={{ lineHeight: 1 }}>
+      Report Details
+    </Typography> */}
+
+    <Box
+      sx={{
+        height: 2,
+        width: "100%",
+        background: "#12368d",
+        borderRadius: 1,
+        mt: 1,
+      }}
+    />
+  </Box>
+
+  <IconButton
+    onClick={handleBack}
+    sx={{
+      color: "#d32f2f",
+      mt: "-4px", // optional fine-tune if needed
+      "&:hover": { backgroundColor: "#fdecea" },
+    }}
+  >
+    <CloseIcon />
+  </IconButton>
+</Box>
+
 
       {/* Loader */}
       {loading ? (
@@ -153,7 +190,9 @@ const canShowAction = steps.some(step =>
         !actionCompleted && (
           <ReportAction
             requestNo={data?.requestNo}
+            requestId={data?._id}
             onActionComplete={handleActionComplete}
+            requireUploadForLevel6={lastApprover}
           />
       )}
     </>

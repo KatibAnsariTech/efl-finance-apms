@@ -93,7 +93,7 @@ const ReportDetailView = () => {
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <Box sx={{ pl: 3 }}>
-          <Typography variant="h5">Report Details</Typography>
+          {/* <Typography variant="h5">Report Details</Typography> */}
           <Box
             sx={{
               height: 2,
