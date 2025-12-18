@@ -465,7 +465,7 @@ import Iconify from "src/components/iconify";
 import { userRequest } from "src/requestMethod";
 import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
-import { ConditionModal } from "./ConditionModal";
+import ConditionModal from "./conditionModal";
 
 export default function HierarchyTable({
   companyId,

@@ -19,7 +19,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-export function ConditionModal({
+export default function ConditionModal({
   open,
   onClose,
   onSave,
