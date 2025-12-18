@@ -112,6 +112,10 @@ const ImportPaymentMyReportDetailView = lazy(() =>
   import("src/features/import-payment/my-request/components/ReportDetails")
 );
 
+const ImportPaymentUploadReportDetailView = lazy(()=>
+  import("src/features/import-payment/upload/components/ReportDetails")
+);
+
 const CustomDutyPage = lazy(() =>
   import("src/features/custom-duty/dashboard/pages/CustomDuty")
 );
@@ -553,6 +557,15 @@ export default function Router() {
             <ProtectedRoute
               path="/import-payment/upload"
               element={<ImportPaymentUploadPage />}
+            />
+          ),
+        },
+         {
+          path: "/import-payment/upload/:requestNo",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/upload"
+              element={<ImportPaymentUploadReportDetailView />}
             />
           ),
         },

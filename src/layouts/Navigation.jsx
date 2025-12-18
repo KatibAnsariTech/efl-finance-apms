@@ -130,7 +130,7 @@ const Sidebar = ({
     
     if (user?.accessibleProjects && user?.projectRoles) {
       // Use new project-based navigation system
-      const filteredNav = generateNavigationConfig(user.accessibleProjects, user.projectRoles);
+      const filteredNav = generateNavigationConfig(user.accessibleProjects, user.projectRoles, user);
       setNavigationItems(filteredNav);
     } else {
       // No accessible projects - show empty navigation

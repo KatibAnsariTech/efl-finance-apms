@@ -202,7 +202,7 @@ const projectConfig = {
         title: "Upload Payment",
         path: "/import-payment/upload",
         icon: <FileUploadIcon />,
-        roles: ["SUPER_ADMIN"],
+        roles: ["APPROVER"],
       },
     ],
   },
@@ -319,7 +319,7 @@ const projectConfig = {
   },
 };
 
-export const generateNavigationConfig = (accessibleProjects, userRoles) => {
+export const generateNavigationConfig = (accessibleProjects, userRoles, user = null) => {
   const navItems = [];
 
   accessibleProjects.forEach((projectType) => {
@@ -327,9 +327,14 @@ export const generateNavigationConfig = (accessibleProjects, userRoles) => {
       const project = projectConfig[projectType];
       const userType = userRoles[projectType];
       console.log("project>>>",project)
-      const filteredSubItems = project.subItems.filter((subItem) =>
-        subItem.roles.includes(userType)
-      );
+      const filteredSubItems = project.subItems.filter((subItem) => {
+        // Special condition for import-payment-upload: only show for APPROVER with specific email
+        if (subItem.id === "import-payment-upload" && userType === "APPROVER") {
+          return user?.email === "shweta@eflgmail.com";
+        }
+        // Default role-based filtering
+        return subItem.roles.includes(userType);
+      });
 
       if (filteredSubItems.length > 0) {
         navItems.push({
