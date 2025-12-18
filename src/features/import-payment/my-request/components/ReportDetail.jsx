@@ -392,7 +392,7 @@ export default function IMTReportDetails({ defaultValues }) {
       </Helmet>
 
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Box sx={{ backgroundColor: "#F4F6F8", minHeight: "100vh", py: 4 }}>
+        <Box sx={{ minHeight: "100vh", py: 4 }}>
           <Container maxWidth="lg">
             <Paper
               elevation={0}
