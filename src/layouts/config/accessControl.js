@@ -4,8 +4,8 @@ export const hasAccessToPath = (path, user) => {
   if (!user || !user.accessibleProjects || !user.projectRoles) {
     return false;
   }
-
-  const navItems = generateNavigationConfig(user.accessibleProjects, user.projectRoles);
+  console.log('user>>>>>>>',JSON.stringify(user));
+  const navItems = generateNavigationConfig(user.accessibleProjects, user.projectRoles, user);
   
   const findPathInNav = (items, targetPath) => {
     for (const item of items) {
@@ -32,7 +32,7 @@ export const getFirstAccessiblePath = (user) => {
     return '/dashboard';
   }
 
-  const navItems = generateNavigationConfig(user.accessibleProjects, user.projectRoles);
+  const navItems = generateNavigationConfig(user.accessibleProjects, user.projectRoles, user);
   
   for (const item of navItems) {
     if (item.subItems && item.subItems.length > 0) {
@@ -48,7 +48,7 @@ export const getAccessiblePaths = (user) => {
     return ['/dashboard'];
   }
 
-  const navItems = generateNavigationConfig(user.accessibleProjects, user.projectRoles);
+  const navItems = generateNavigationConfig(user.accessibleProjects, user.projectRoles, user);
   
   const paths = [];
   navItems.forEach(item => {

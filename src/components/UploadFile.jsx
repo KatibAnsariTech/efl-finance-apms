@@ -39,7 +39,7 @@ const UploadFile = ({ onFileUpload, project = "custom" }) => {
         },
       });
 
-      console.log('Upload successful:', response.data);
+      // console.log('Upload successful:', response.data);
       setIsUploadSuccessful(true);
       if (onFileUpload) {
         onFileUpload(response.data.fileUrl); // Assuming the file URL is in `response.data.fileUrl`
