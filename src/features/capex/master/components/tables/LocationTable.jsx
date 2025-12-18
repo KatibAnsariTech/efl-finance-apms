@@ -35,6 +35,7 @@ export default function LocationTable({ handleEdit: parentHandleEdit, handleDele
         deliveryAddress: item.deliveryAddress || "-",
         postalCode: item.postalCode || "-",
         state: item.state || "-",
+        country: item.country || "-",
         ...item,
       }));
 
@@ -141,6 +142,21 @@ export default function LocationTable({ handleEdit: parentHandleEdit, handleDele
     {
       field: "state",
       headerName: "State",
+      minWidth: 150,
+      flex: 1,
+      sortable: true,
+      align: "center",
+      headerAlign: "center",
+      resizable: true,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {params.value || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "country",
+      headerName: "Country",
       minWidth: 150,
       flex: 1,
       sortable: true,

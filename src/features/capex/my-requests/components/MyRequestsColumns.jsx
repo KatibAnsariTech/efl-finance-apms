@@ -5,7 +5,7 @@ import { fDateTime } from "src/utils/format-time";
 export const MyRequestsColumns = ({ onRequestClick }) => {
   const columns = [
     {
-      field: "requestNo",
+      field: "slNo",
       headerName: "Request No.",
       width: 180,
       align: "center",
@@ -31,7 +31,7 @@ export const MyRequestsColumns = ({ onRequestClick }) => {
             }}
             onClick={() => onRequestClick && onRequestClick(params.row)}
           >
-            {params.value || params.row._id || "-"}
+            {params.row.slNo || "-"}
           </Typography>
         </Box>
       ),

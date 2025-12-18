@@ -8,42 +8,12 @@ import Button from "@mui/material/Button";
 import { Autocomplete, CircularProgress } from "@mui/material";
 import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
-import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
+import { userRequest } from "src/requestMethod";
 
-function AddEditMajorPosition({ handleClose, open, editData: positionData, getData }) {
+function AddEditMajorPosition({ handleClose, open, editData: positionData, getData, departments = [], departmentsLoading = false }) {
   const { register, handleSubmit, reset, setValue, control } = useForm();
   const [loading, setLoading] = useState(false);
-  const [departments, setDepartments] = useState([]);
-  const [departmentsLoading, setDepartmentsLoading] = useState(false);
-
-  // Fetch departments
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      setDepartmentsLoading(true);
-      try {
-        const response = await userRequest.get("cpx/getDepartments", {
-          params: {
-            page: 1,
-            limit: 100,
-          },
-        });
-
-        const depts = response.data.data?.items || response.data.data || [];
-        setDepartments(depts);
-      } catch (error) {
-        console.error("Error fetching Departments:", error);
-        showErrorMessage(error, "Error fetching Departments", swal);
-        setDepartments([]);
-      } finally {
-        setDepartmentsLoading(false);
-      }
-    };
-
-    if (open) {
-      fetchDepartments();
-    }
-  }, [open]);
 
   useEffect(() => {
     if (positionData && departments.length > 0 && !departmentsLoading) {

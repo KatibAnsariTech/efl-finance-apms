@@ -27,6 +27,7 @@ export default function Requests() {
 
   const menuItems = [
     { label: "Pending with Me", value: "pendingWithMe" },
+    { label: "Clarification Needed", value: "clarificationNeeded" },
     { label: "All", value: "all" },
   ];
 
@@ -52,10 +53,14 @@ export default function Requests() {
       }
 
       // Choose API endpoint based on selected tab
-      const apiEndpoint =
-        selectedTab === "pendingWithMe"
-          ? "/cpx/getPendingRequestForms"
-          : "/cpx/getRequestsForApprover";
+      let apiEndpoint;
+      if (selectedTab === "pendingWithMe") {
+        apiEndpoint = "/cpx/getPendingRequestForms";
+      } else if (selectedTab === "clarificationNeeded") {
+        apiEndpoint = "/cpx/getClarificationNeeded";
+      } else {
+        apiEndpoint = "/cpx/getRequestsForApprover";
+      }
 
       const response = await userRequest.get(apiEndpoint, {
         params: {
@@ -79,7 +84,29 @@ export default function Requests() {
         const totalCountValue =
           totalForms || total || totalRequests || pagination?.total || 0;
 
-        setData(formsData);
+        // Map the data to include requestNo from slNo
+        const mappedData = formsData.map((form) => ({
+          ...form,
+          requestNo: form.slNo || form.requestNo || form._id,
+          proposedSpoc: form.requesterId?.user?.username || form.requesterId?.proposedSPOC || form.proposedSpoc || "-",
+          date: form.createdAt || form.date,
+          contactPersonName: form.requesterId?.contactPersonName || form.contactPersonName || "-",
+          contactPersonNumber: form.requesterId?.contactPersonNumber || form.contactPersonNumber || "-",
+          location: form.location?.location || form.location || "-",
+          deliveryAddress: form.location?.deliveryAddress || form.deliveryAddress || "-",
+          state: form.location?.state || form.state || "-",
+          postalCode: form.location?.postalCode || form.postalCode || "-",
+          country: form.location?.country || form.country || "-",
+          expectedDateOfImplementation: form.technicalAspect?.dateOfImplementation || "-",
+          modificationOrUpgrade: form.modification?.modification ? "Yes" : "No",
+          challenges: form.modification?.challenges || "-",
+          vendorOEM: form.modification?.vendorOEM || "-",
+          previousHistory: form.modification?.previousHistory || "-",
+          oldPO: form.modification?.oldPO || "-",
+          oldAssetCode: form.modification?.oldAssetCode || "-",
+        }));
+
+        setData(mappedData);
         setTotalCount(totalCountValue);
       } else {
         setData([]);
@@ -112,9 +139,9 @@ export default function Requests() {
   };
 
   const handleRequestClick = (rowData) => {
-    const requestNo = rowData.requestNo || rowData._id;
-    if (requestNo) {
-      router.push(`/capex/requests/${requestNo}`);
+    const requestId = rowData._id;
+    if (requestId) {
+      router.push(`/capex/requests/${requestId}`);
     }
   };
 
@@ -176,10 +203,11 @@ export default function Requests() {
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               getRowClassName={(params) => {
-                const status = params.row.status?.toLowerCase();
+                const status = params.row.status?.toLowerCase().trim();
                 if (status === "draft") return "row-draft";
                 if (status === "submitted") return "row-submitted";
-                if (status === "clarification need" || status === "clarificationneed")
+                if (status === "pending") return "row-pending";
+                if (status === "clarification need" || status === "clarificationneed" || status === "clarification_needed")
                   return "row-clarification";
                 if (status === "approved") return "row-approved";
                 if (status === "rejected" || status === "declined")
@@ -204,6 +232,9 @@ export default function Requests() {
                 },
                 "& .row-submitted": {
                   backgroundColor: "#e3f2fd !important",
+                },
+                "& .row-pending": {
+                  backgroundColor: "#f4f5ba !important",
                 },
                 "& .row-clarification": {
                   backgroundColor: "#9be7fa !important",

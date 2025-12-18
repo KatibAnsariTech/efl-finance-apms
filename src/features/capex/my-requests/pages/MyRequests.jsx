@@ -27,8 +27,7 @@ export default function MyRequests() {
 
   const menuItems = [
     { label: "All", value: null },
-    { label: "Submitted", value: "submitted" },
-    { label: "Clarification Needed", value: "clarificationNeed" },
+    { label: "Clarification Needed", value: "clarificationNeeded" },
     { label: "Draft", value: "draft" },
   ];
 
@@ -53,12 +52,16 @@ export default function MyRequests() {
         queryParams.append("search", debouncedSearch);
       }
 
-      if (selectedTab) {
+      let apiEndpoint = "/cpx/getForms";
+      
+      if (selectedTab === "clarificationNeeded") {
+        apiEndpoint = "/cpx/getClarificationNeeded";
+      } else if (selectedTab) {
         queryParams.append("status", selectedTab);
       }
 
       const response = await userRequest.get(
-        `/cpx/getForms?${queryParams.toString()}`
+        `${apiEndpoint}?${queryParams.toString()}`
       );
 
       if (response.data && response.data.data) {
@@ -73,7 +76,29 @@ export default function MyRequests() {
         const formsData = forms || items || [];
         const totalCountValue = totalForms || total || pagination?.total || 0;
 
-        setData(formsData);
+        // Map the data to include all necessary fields
+        const mappedData = formsData.map((form) => ({
+          ...form,
+          requestNo: form.slNo || form.requestNo || form._id,
+          proposedSpoc: form.requesterId?.user?.username || form.requesterId?.proposedSPOC || form.proposedSpoc || "-",
+          date: form.createdAt || form.date,
+          contactPersonName: form.requesterId?.contactPersonName || form.contactPersonName || "-",
+          contactPersonNumber: form.requesterId?.contactPersonNumber || form.contactPersonNumber || "-",
+          location: form.location?.location || form.location || "-",
+          deliveryAddress: form.location?.deliveryAddress || form.deliveryAddress || "-",
+          state: form.location?.state || form.state || "-",
+          postalCode: form.location?.postalCode || form.postalCode || "-",
+          country: form.location?.country || form.country || "-",
+          expectedDateOfImplementation: form.technicalAspect?.dateOfImplementation || "-",
+          modificationOrUpgrade: form.modification?.modification ? "Yes" : "No",
+          challenges: form.modification?.challenges || "-",
+          vendorOEM: form.modification?.vendorOEM || "-",
+          previousHistory: form.modification?.previousHistory || "-",
+          oldPO: form.modification?.oldPO || "-",
+          oldAssetCode: form.modification?.oldAssetCode || "-",
+        }));
+
+        setData(mappedData);
         setTotalCount(totalCountValue);
       } else {
         setData([]);
@@ -106,9 +131,16 @@ export default function MyRequests() {
   };
 
   const handleRequestClick = (rowData) => {
-    const requestNo = rowData.requestNo || rowData._id;
-    if (requestNo) {
-      router.push(`/capex/my-requests/${requestNo}`);
+    const requestId = rowData._id;
+    const status = rowData.status?.toLowerCase()?.trim();
+    
+    if (requestId) {
+      // Route drafts to draft edit page, others to detail page
+      if (status === "draft") {
+        router.push(`/capex/my-requests/draft/${requestId}`);
+      } else {
+        router.push(`/capex/my-requests/${requestId}`);
+      }
     }
   };
 
@@ -170,10 +202,11 @@ export default function MyRequests() {
               }}
               pageSizeOptions={[5, 10, 25, 50]}
               getRowClassName={(params) => {
-                const status = params.row.status?.toLowerCase();
+                const status = params.row.status?.toLowerCase().trim();
                 if (status === "draft") return "row-draft";
                 if (status === "submitted") return "row-submitted";
-                if (status === "clarification need" || status === "clarificationneed")
+                if (status === "pending") return "row-pending";
+                if (status === "clarification need" || status === "clarificationneed" || status === "clarification_needed")
                   return "row-clarification";
                 if (status === "approved") return "row-approved";
                 if (status === "rejected" || status === "declined")
@@ -198,6 +231,9 @@ export default function MyRequests() {
                 },
                 "& .row-submitted": {
                   backgroundColor: "#e3f2fd !important",
+                },
+                "& .row-pending": {
+                  backgroundColor: "#f4f5ba !important",
                 },
                 "& .row-clarification": {
                   backgroundColor: "#9be7fa !important",

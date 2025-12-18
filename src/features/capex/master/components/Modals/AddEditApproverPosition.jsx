@@ -11,15 +11,13 @@ import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import { showErrorMessage } from "src/utils/errorUtils";
 
-function AddEditApproverPosition({ handleClose, open, editData: positionData, getData }) {
+function AddEditApproverPosition({ handleClose, open, editData: positionData, getData, departments = [], departmentsLoading = false }) {
   const { register, handleSubmit, reset, setValue, control } = useForm();
   const [loading, setLoading] = useState(false);
   const [majorPositions, setMajorPositions] = useState([]);
   const [positionsLoading, setPositionsLoading] = useState(false);
-  const [departments, setDepartments] = useState([]);
-  const [departmentsLoading, setDepartmentsLoading] = useState(false);
 
-  // Fetch major positions and departments
+  // Fetch major positions
   useEffect(() => {
     const fetchMajorPositions = async () => {
       setPositionsLoading(true);
@@ -42,30 +40,8 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
       }
     };
 
-    const fetchDepartments = async () => {
-      setDepartmentsLoading(true);
-      try {
-        const response = await userRequest.get("cpx/getDepartments", {
-          params: {
-            page: 1,
-            limit: 100,
-          },
-        });
-
-        const depts = response.data.data?.items || response.data.data || [];
-        setDepartments(depts);
-      } catch (error) {
-        console.error("Error fetching Departments:", error);
-        showErrorMessage(error, "Error fetching Departments", swal);
-        setDepartments([]);
-      } finally {
-        setDepartmentsLoading(false);
-      }
-    };
-
     if (open) {
       fetchMajorPositions();
-      fetchDepartments();
     }
   }, [open]);
 
@@ -270,7 +246,7 @@ function AddEditApproverPosition({ handleClose, open, editData: positionData, ge
             variant="contained"
             color="primary"
             type="submit"
-            disabled={loading || positionsLoading}
+            disabled={loading || positionsLoading || departmentsLoading}
           >
             {loading ? "Saving..." : positionData ? "Update" : "Save"}
           </Button>

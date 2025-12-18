@@ -33,10 +33,22 @@ export default function ApprovalAuthorityTable({
   const [categoriesLoading, setCategoriesLoading] = useState(false);
 
   const fetchApproverCategories = async () => {
+    // Don't fetch if no department is selected
+    if (!selectedDepartment) {
+      setApproverCategories([]);
+      setCategoriesLoading(false);
+      return;
+    }
+
     setCategoriesLoading(true);
     try {
+      const departmentId = selectedDepartment._id || selectedDepartment;
       const response = await userRequest.get("/cpx/getApproverPositions", {
-        params: { page: 1, limit: 100 },
+        params: { 
+          page: 1, 
+          limit: 100,
+          department: departmentId,
+        },
       });
 
       const categories =
@@ -109,7 +121,7 @@ export default function ApprovalAuthorityTable({
 
   useEffect(() => {
     fetchApproverCategories();
-  }, []);
+  }, [selectedDepartment]);
 
   useEffect(() => {
     fetchData();

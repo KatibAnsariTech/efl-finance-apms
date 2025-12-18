@@ -25,10 +25,12 @@ import { showErrorMessage } from "src/utils/errorUtils";
 import { useParams, useRouter } from "src/routes/hooks";
 import CloseButton from "src/routes/components/CloseButton";
 import RequestCurrentStatus from "../components/RequestCurrentStatus";
+import { useAccount } from "src/hooks/use-account";
 
 export default function RequestDetail() {
   const router = useRouter();
   const { requestNo } = useParams();
+  const account = useAccount();
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState(null);
   const [approvalData, setApprovalData] = useState(null);
@@ -36,6 +38,9 @@ export default function RequestDetail() {
   const [comment, setComment] = useState("");
   const [approveLoading, setApproveLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
+  const [clarificationLoading, setClarificationLoading] = useState(false);
+  const [clarificationResponse, setClarificationResponse] = useState("");
+  const [respondLoading, setRespondLoading] = useState(false);
 
   const {
     control,
@@ -59,118 +64,42 @@ export default function RequestDetail() {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  // Temporary dummy data for testing
-  const getDummyData = () => {
-    return {
-      _id: requestNo,
-      requestNo: requestNo,
-      proposedSpoc: "John Doe",
-      date: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      businessVertical: { _id: "bv1", name: "Manufacturing" },
-      location: { _id: "loc1", location: "Mumbai", deliveryAddress: "123 Main St", postalCode: "400001", state: "Maharashtra" },
-      function: { _id: "func1", name: "Operations" },
-      plantCode: { _id: "pc1", plantCode: "PLT001" },
-      contactPersonName: "Jane Smith",
-      contactPersonNumber: "9876543210",
-      deliveryAddress: "123 Main Street",
-      state: "Maharashtra",
-      postalCode: "400001",
-      country: "INDIA",
-      technicalAspect: {
-        items: [
-          {
-            capexDescription: "Machinery Equipment",
-            quantity: 5,
-            uom: { _id: "uom1", unit: "Units", abbr: "U" },
-            specificationDetails: "Heavy duty machinery",
-            cpu: 100000,
-            totalItemCost: 500000,
-          },
-          {
-            capexDescription: "IT Infrastructure",
-            quantity: 10,
-            uom: { _id: "uom2", unit: "Units", abbr: "U" },
-            specificationDetails: "Servers and networking equipment",
-            cpu: 50000,
-            totalItemCost: 500000,
-          },
-        ],
-        totalCost: 1000000,
-        applicationDetails: "For production line expansion",
-        acceptanceCriteria: "Must meet quality standards",
-        currentScenario: "Current equipment is outdated",
-        proposedScenario: "New equipment will increase efficiency by 30%",
-        dateOfImplementation: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-        capacityAlignment: "Aligned with business goals",
-        technologyEvaluation: "Latest technology available",
-      },
-      modification: {
-        modification: true,
-        challenges: "Current system has frequent breakdowns",
-        vendorOEM: "ABC Manufacturing",
-        previousHistory: "Previous upgrade done in 2020",
-        oldPO: "PO-2020-001",
-        oldAssetCode: "AST-001",
-      },
-      financeAspect: {
-        reason: "Business expansion requirement",
-        benefits: "Increased productivity and reduced downtime",
-        budget: 1200000,
-        impact: "Positive impact on revenue",
-        newAssetCode: "AST-002",
-        roiPayback: "Expected ROI in 2 years",
-      },
-      supportingDocuments: {
-        rfq: ["https://example.com/rfq1.pdf"],
-        drawings: ["https://example.com/drawing1.pdf"],
-        layout: ["https://example.com/layout1.pdf"],
-        catalogue: ["https://example.com/catalogue1.pdf"],
-        offer1: ["https://example.com/offer1.pdf"],
-        offer2: ["https://example.com/offer2.pdf"],
-        offer3: ["https://example.com/offer3.pdf"],
-        previousHistoryPresentStatus: ["https://example.com/history1.pdf"],
-      },
-      projectStatus: true,
-      submitCheckBox: true,
-      status: "Pending",
-    };
-  };
+
 
   const fetchFormData = async () => {
     try {
       setLoading(true);
       
-      // TEMPORARY: Use dummy data for testing
-      // Uncomment the API call below when ready
-      /*
-      const response = await userRequest.get(`/cpx/getFormById`, {
-        params: { id: requestNo },
-      });
+      const response = await userRequest.get(`/cpx/getFormById/${requestNo}`);
 
       if (response.data?.success || response.data?.statusCode === 200) {
         const data = response.data.data || response.data;
         setFormData(data);
-      */
-      
-      // TEMPORARY: Using dummy data
-      const data = getDummyData();
-      setFormData(data);
+        
+        // Set approval data from request field
+        if (data.request) {
+          setApprovalData(data.request);
+          
+          // Use isAssigned from API response - this is the only source to show approver actions
+          setAssigned(data.request.isAssigned || false);
+        } else {
+          setAssigned(false);
+        }
         
         // Map API data to form structure
         const formValues = {
-          proposedSpoc: data.proposedSpoc || "",
-          date: formatDateTimeLocal(data.date || data.createdAt),
-          businessVertical: data.businessVertical?._id || data.businessVertical || "",
-          location: data.location?._id || data.location || "",
-          function: data.function?._id || data.function || "",
-          businessPlantCode: data.plantCode?._id || data.plantCode || data.businessPlantCode || "",
-          contactPersonName: data.contactPersonName || "",
-          contactPersonNumber: data.contactPersonNumber || "",
-          deliveryAddress: data.deliveryAddress || "",
-          state: data.state || "",
-          postalCode: data.postalCode || "",
-          country: data.country || "INDIA",
+          proposedSpoc: data.requesterId?.user?.username || data.requesterId?.proposedSPOC || "",
+          date: formatDateTimeLocal(data.createdAt),
+          businessVertical: data.businessVertical?._id || "",
+          location: data.location?._id || "",
+          function: data.function?._id || "",
+          businessPlantCode: data.plantCode?._id || "",
+          contactPersonName: data.requesterId?.contactPersonName || "",
+          contactPersonNumber: data.requesterId?.contactPersonNumber || "",
+          deliveryAddress: data.location?.deliveryAddress || "",
+          state: data.location?.state || "",
+          postalCode: data.location?.postalCode || "",
+          country: data.location?.country || "",
           capexItems: data.technicalAspect?.items?.map((item) => ({
             description: item.capexDescription || "",
             quantity: item.quantity || 0,
@@ -184,10 +113,12 @@ export default function RequestDetail() {
           acceptanceCriteria: data.technicalAspect?.acceptanceCriteria || "",
           currentScenario: data.technicalAspect?.currentScenario || "",
           proposedAfterScenario: data.technicalAspect?.proposedScenario || "",
-          expectedImplementationDate: data.technicalAspect?.dateOfImplementation || null,
+          expectedImplementationDate: data.expectedImplementationDate 
+            ? new Date(data.expectedImplementationDate) 
+            : null,
           capacityAlignment: data.technicalAspect?.capacityAlignment || "",
           alternateMakeTechnology: data.technicalAspect?.technologyEvaluation || "",
-          modificationOrUpgrade: data.modification?.modification ? "Modification" : "",
+          modificationOrUpgrade: data.modification?.modification ? "Yes" : "No",
           previousModificationHistory: data.modification?.previousHistory || "",
           challengesInPresentSystem: data.modification?.challenges || "",
           vendorOEM: data.modification?.vendorOEM || "",
@@ -214,195 +145,67 @@ export default function RequestDetail() {
         };
 
         reset(formValues);
-      /* TEMPORARY: Uncomment when API is ready
       } else {
         throw new Error(response.data.message || "Failed to fetch form data");
       }
-      */
     } catch (error) {
       console.error("Error fetching form data:", error);
-      // TEMPORARY: Fallback to dummy data on error
-      const dummyData = getDummyData();
-      setFormData(dummyData);
-      const formValues = {
-        proposedSpoc: dummyData.proposedSpoc || "",
-        date: formatDateTimeLocal(dummyData.date || dummyData.createdAt),
-        businessVertical: dummyData.businessVertical?._id || dummyData.businessVertical || "",
-        location: dummyData.location?._id || dummyData.location || "",
-        function: dummyData.function?._id || dummyData.function || "",
-        businessPlantCode: dummyData.plantCode?._id || dummyData.plantCode || dummyData.businessPlantCode || "",
-        contactPersonName: dummyData.contactPersonName || "",
-        contactPersonNumber: dummyData.contactPersonNumber || "",
-        deliveryAddress: dummyData.deliveryAddress || "",
-        state: dummyData.state || "",
-        postalCode: dummyData.postalCode || "",
-        country: dummyData.country || "INDIA",
-        capexItems: dummyData.technicalAspect?.items?.map((item) => ({
-          description: item.capexDescription || "",
-          quantity: item.quantity || 0,
-          uom: item.uom?._id || item.uom || "",
-          specification: item.specificationDetails || "",
-          costPerUnit: item.cpu || 0,
-          totalCost: item.totalItemCost || 0,
-        })) || [],
-        totalCost: dummyData.technicalAspect?.totalCost || 0,
-        applicationDetails: dummyData.technicalAspect?.applicationDetails || "",
-        acceptanceCriteria: dummyData.technicalAspect?.acceptanceCriteria || "",
-        currentScenario: dummyData.technicalAspect?.currentScenario || "",
-        proposedAfterScenario: dummyData.technicalAspect?.proposedScenario || "",
-        expectedImplementationDate: dummyData.technicalAspect?.dateOfImplementation || null,
-        capacityAlignment: dummyData.technicalAspect?.capacityAlignment || "",
-        alternateMakeTechnology: dummyData.technicalAspect?.technologyEvaluation || "",
-        modificationOrUpgrade: dummyData.modification?.modification ? "Modification" : "",
-        previousModificationHistory: dummyData.modification?.previousHistory || "",
-        challengesInPresentSystem: dummyData.modification?.challenges || "",
-        vendorOEM: dummyData.modification?.vendorOEM || "",
-        oldPOReference: dummyData.modification?.oldPO || "",
-        oldAssetCode: dummyData.modification?.oldAssetCode || "",
-        reasonForNeed: dummyData.financeAspect?.reason || "",
-        benefitsOnInvestment: dummyData.financeAspect?.benefits || "",
-        budgetBasicCost: dummyData.financeAspect?.budget || "",
-        impactOnBusiness: dummyData.financeAspect?.impact || "",
-        newAssetCode: dummyData.financeAspect?.newAssetCode || "",
-        businessCaseROI: dummyData.financeAspect?.roiPayback || "",
-        projectStatus: dummyData.projectStatus ? "Active" : "Inactive",
-        submitCheckBox: dummyData.submitCheckBox || false,
-        documents: {
-          rfq: dummyData.supportingDocuments?.rfq || [],
-          drawings: dummyData.supportingDocuments?.drawings || [],
-          layout: dummyData.supportingDocuments?.layout || [],
-          catalogue: dummyData.supportingDocuments?.catalogue || [],
-          offer1: dummyData.supportingDocuments?.offer1 || [],
-          offer2: dummyData.supportingDocuments?.offer2 || [],
-          offer3: dummyData.supportingDocuments?.offer3 || [],
-          previousHistory: dummyData.supportingDocuments?.previousHistoryPresentStatus || [],
-        },
-      };
-      reset(formValues);
-      // showErrorMessage(error, "Failed to fetch request details", swal);
+      showErrorMessage(error, "Failed to fetch request details", swal);
     } finally {
       setLoading(false);
     }
   };
 
-  // Temporary dummy approval data
-  const getDummyApprovalData = () => {
-    return {
-      requester: {
-        username: "john.doe",
-        email: "john.doe@example.com",
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      steps: [
-        {
-          approverId: {
-            username: "manager1",
-            email: "manager1@example.com",
-          },
-          position: 1,
-          status: "Approved",
-          comment: "Looks good, approved for next step",
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          approverId: {
-            username: "finance.head",
-            email: "finance.head@example.com",
-          },
-          position: 2,
-          status: "Pending",
-          comment: "",
-          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          updatedAt: null,
-        },
-      ],
-    };
-  };
 
-  const fetchApprovalInfo = async () => {
-    try {
-      // TEMPORARY: Use dummy data for testing
-      // Uncomment the API call below when ready
-      /*
-      const response = await userRequest.get(`/cpx/getFormSteps`, {
-        params: { formId: requestNo },
-      });
 
-      if (response.data?.statusCode === 200 && response.data?.data) {
-        setApprovalData(response.data.data);
-        // Check if current user is assigned
-        const steps = response.data.data.steps || [];
-        const currentUser = JSON.parse(localStorage.getItem("user"))?.username || 
-                          JSON.parse(localStorage.getItem("user"))?.email;
-        const isAssigned = steps.some(
-          (step) =>
-            step.approverId?.username === currentUser ||
-            step.approverId?.email === currentUser ||
-            (Array.isArray(step.approverId) &&
-              step.approverId.some(
-                (approver) =>
-                  approver?.username === currentUser ||
-                  approver?.email === currentUser
-              ))
-        );
-        setAssigned(isAssigned && steps.some((step) => step.status === "Pending"));
-      }
-      */
-      
-      // TEMPORARY: Using dummy approval data
-      const dummyApprovalData = getDummyApprovalData();
-      setApprovalData(dummyApprovalData);
-      
-      // TEMPORARY: Set assigned to true for testing (you can change this)
-      setAssigned(true);
-    } catch (error) {
-      console.error("Error fetching approval info:", error);
-      // TEMPORARY: Fallback to dummy data on error
-      const dummyApprovalData = getDummyApprovalData();
-      setApprovalData(dummyApprovalData);
-      setAssigned(true);
-    }
-  };
+console.log(formData)
 
   useEffect(() => {
     if (requestNo) {
       fetchFormData();
-      fetchApprovalInfo();
     }
   }, [requestNo]);
 
   const handleApprovalAction = async (action) => {
-    if (action === "rejected" && !comment.trim()) {
-      swal("Warning", "Please provide a comment for rejection", "warning");
+    // Map action to API format
+    const actionMap = {
+      approved: "Approved",
+      rejected: "Declined",
+      clarification: "Need Clarification",
+    };
+
+    const apiAction = actionMap[action];
+
+    // Require comment for rejection and clarification
+    if ((action === "rejected" || action === "clarification") && !comment.trim()) {
+      swal("Warning", `Please provide a comment for ${action === "rejected" ? "rejection" : "clarification request"}`, "warning");
       return;
     }
 
-    if (!requestNo) {
-      swal("Error", "No request ID found", "error");
+    const requestNumber = formData?.slNo || formData?.requestNo || requestNo;
+    if (!requestNumber) {
+      swal("Error", "No request number found", "error");
       return;
     }
 
     try {
       if (action === "approved") {
         setApproveLoading(true);
+      } else if (action === "clarification") {
+        setClarificationLoading(true);
       } else {
         setRejectLoading(true);
       }
 
-      const apiEndpoint =
-        action === "approved" ? "/cpx/acceptForm" : "/cpx/declineForm";
-
-      const response = await userRequest.post(apiEndpoint, {
-        id: requestNo,
-        comment: comment.trim() || (action === "approved" ? "Approved" : "Declined"),
+      const response = await userRequest.post("/cpx/handleApprovalAction", {
+        slNo: requestNumber,
+        action: apiAction,
+        comment: comment.trim() || (action === "approved" ? "Approved" : apiAction),
       });
 
       if (response.data?.success || response.data?.statusCode === 200) {
-        swal("Success", `Request ${action} successfully`, "success");
+        swal("Success", `Request ${action === "approved" ? "approved" : action === "rejected" ? "declined" : "clarification requested"} successfully`, "success");
         setComment("");
-        await fetchApprovalInfo();
         await fetchFormData();
       } else {
         throw new Error(response.data.message || `Failed to ${action} request`);
@@ -413,9 +216,46 @@ export default function RequestDetail() {
     } finally {
       if (action === "approved") {
         setApproveLoading(false);
+      } else if (action === "clarification") {
+        setClarificationLoading(false);
       } else {
         setRejectLoading(false);
       }
+    }
+  };
+
+  const handleRespondToClarification = async () => {
+    if (!clarificationResponse.trim()) {
+      swal("Warning", "Please provide a clarification response", "warning");
+      return;
+    }
+
+    const requestNumber = formData?.slNo || formData?.requestNo || requestNo;
+    if (!requestNumber) {
+      swal("Error", "No request number found", "error");
+      return;
+    }
+
+    try {
+      setRespondLoading(true);
+
+      const response = await userRequest.post("/cpx/respondToClarification", {
+        slNo: requestNumber,
+        response: clarificationResponse.trim(),
+      });
+
+      if (response.data?.success || response.data?.statusCode === 200) {
+        swal("Success", "Clarification response submitted successfully", "success");
+        setClarificationResponse("");
+        await fetchFormData();
+      } else {
+        throw new Error(response.data.message || "Failed to submit clarification response");
+      }
+    } catch (error) {
+      console.error("Error submitting clarification response:", error);
+      showErrorMessage(error, "Failed to submit clarification response", swal);
+    } finally {
+      setRespondLoading(false);
     }
   };
 
@@ -452,7 +292,7 @@ export default function RequestDetail() {
               }}
             >
               <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                Request No: {requestNo}
+                Request No: {formData?.slNo || "-"}
               </Typography>
               <CloseButton
                 onClick={() => router.back()}
@@ -507,10 +347,10 @@ export default function RequestDetail() {
                     <RequestCurrentStatus
                       steps={approvalData.steps || []}
                       data={{
-                        requester: approvalData.requester,
-                        requesterId: approvalData.requester,
+                        requester: formData?.requesterId?.user,
+                        requesterId: formData?.requesterId,
                         requesterRemark: formData?.requesterRemark || "",
-                        createdAt: formData?.createdAt || approvalData.requester?.createdAt,
+                        createdAt: formData?.createdAt,
                         formId: formData,
                       }}
                     />
@@ -518,67 +358,199 @@ export default function RequestDetail() {
                 </>
               )}
 
-              {assigned && (
-                <Box
-                  sx={{
-                    mt: 4,
-                    p: 3,
-                    backgroundColor: "#f8f9fa",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 2 }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                      Approver Actions
-                    </Typography>
+              {formData && (
+                (() => {
+                  // Check for pending clarification step assigned to current user
+                  const pendingClarificationStep = formData.request?.steps?.find(step => 
+                    step.isClarification && 
+                    step.status === "Pending" && 
+                    !step.completedAt
+                  );
 
-                    <Stack direction="row" spacing={2}>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        onClick={() => handleApprovalAction("approved")}
-                        disabled={approveLoading || rejectLoading}
-                        startIcon={
-                          approveLoading ? <CircularProgress size={20} /> : null
-                        }
-                        sx={{ minWidth: 120 }}
+                  // Check if assigned to requester
+                  const isAssignedToRequester = pendingClarificationStep?.assignedTo === "requester";
+                  
+                  // Verify user is the requester (check if user email/username matches requesterId)
+                  const isCurrentUserRequester = formData.requesterId && (
+                    formData.requesterId.user?.email === account?.email ||
+                    formData.requesterId.user?.username === account?.username ||
+                    formData.requesterId.user?._id === account?._id ||
+                    formData.requesterId.userId === account?._id
+                  );
+                  
+                  // Check if current user is in the approver position's approvers list
+                  // This handles cases where procurement team needs to respond to procurement head's clarification
+                  const isUserInApproverPosition = pendingClarificationStep?.approverPositionId?.approvers?.some(approver => 
+                    approver.email === account?.email || 
+                    approver.username === account?.username ||
+                    approver._id === account?._id ||
+                    approver.userId === account?._id
+                  );
+
+                  // For approver-to-approver clarifications (e.g., procurement head to procurement team):
+                  // If the user is in the approver position's approvers list AND it's not assigned to "requester",
+                  // then they should be able to respond
+                  const approverPositionId = pendingClarificationStep?.approverPositionId?._id;
+                  const isAssignedToApproverPosition = pendingClarificationStep && !isAssignedToRequester && approverPositionId;
+                  const canApproverRespond = isAssignedToApproverPosition && isUserInApproverPosition;
+
+                  // Show clarification response section if:
+                  // 1. There is a pending clarification step (isClarification === true)
+                  // 2. AND (assigned to requester and current user is requester) - regardless of assigned flag
+                  //    OR (assigned to approver position and current user is in that position AND assigned is true)
+                  const shouldShowClarificationResponse = 
+                    pendingClarificationStep &&
+                    ((isAssignedToRequester && isCurrentUserRequester) || (canApproverRespond && assigned));
+                  
+                  // Check if there's a pending non-clarification step assigned to current approver
+                  // Use isCurrent: true OR (status === "Pending" AND !completedAt) to identify pending steps
+                  const pendingApproverStep = formData.request?.steps?.find(step => 
+                    !step.isClarification && 
+                    step.status === "Pending" && 
+                    (step.isCurrent === true || !step.completedAt) &&
+                    step.approverPositionId?.approvers?.some(approver => 
+                      approver.email === account?.email || 
+                      approver.username === account?.username ||
+                      approver._id === account?._id ||
+                      approver.userId === account?._id
+                    )
+                  );
+
+                  // Show approver actions if:
+                  // 1. isAssigned === true (assigned)
+                  // 2. AND there is a pending non-clarification step assigned to current approver
+                  // 3. AND NOT (there is a pending clarification step that the current user should respond to)
+                  const shouldShowApproverActions = 
+                    assigned && 
+                    !!pendingApproverStep &&
+                    !shouldShowClarificationResponse;
+
+                  // Render Clarification Response Section
+                  if (shouldShowClarificationResponse) {
+                    return (
+                      <Box
+                        sx={{
+                          mt: 4,
+                          p: 3,
+                          // backgroundColor: "#e3f2fd",
+                          borderRadius: 1,
+                          border: "1px solid #90caf9",
+                        }}
                       >
-                        {approveLoading ? "Processing..." : "Approve"}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleApprovalAction("rejected")}
-                        disabled={approveLoading || rejectLoading}
-                        startIcon={
-                          rejectLoading ? <CircularProgress size={20} /> : null
-                        }
-                        sx={{ minWidth: 120 }}
+                        <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+                          Respond to Clarification Request
+                        </Typography>
+                        
+                        <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                          Please provide your response to the clarification request
+                        </Typography>
+
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={4}
+                          placeholder="Enter your clarification response..."
+                          value={clarificationResponse}
+                          onChange={(e) => setClarificationResponse(e.target.value)}
+                          sx={{ backgroundColor: "#fff", mb: 2 }}
+                        />
+
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleRespondToClarification}
+                          disabled={respondLoading}
+                          startIcon={
+                            respondLoading ? <CircularProgress size={20} /> : null
+                          }
+                          sx={{ minWidth: 200 }}
+                        >
+                          {respondLoading ? "Submitting..." : "Submit Response"}
+                        </Button>
+                      </Box>
+                    );
+                  }
+
+                  // Render Approver Actions Section
+                  if (shouldShowApproverActions) {
+                    return (
+                      <Box
+                        sx={{
+                          mt: 4,
+                          p: 3,
+                          backgroundColor: "#f8f9fa",
+                          borderRadius: 1,
+                        }}
                       >
-                        {rejectLoading ? "Processing..." : "Reject"}
-                      </Button>
-                    </Stack>
-                  </Stack>
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          sx={{ mb: 2 }}
+                        >
+                          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                            Approver Actions
+                          </Typography>
 
-                  <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
-                    Leave a comment with your response
-                  </Typography>
+                          <Stack direction="row" spacing={2}>
+                            <Button
+                              variant="contained"
+                              color="success"
+                              onClick={() => handleApprovalAction("approved")}
+                              disabled={approveLoading || rejectLoading || clarificationLoading}
+                              startIcon={
+                                approveLoading ? <CircularProgress size={20} /> : null
+                              }
+                              sx={{ minWidth: 120 }}
+                            >
+                              {approveLoading ? "Processing..." : "Approve"}
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="warning"
+                              onClick={() => handleApprovalAction("clarification")}
+                              disabled={approveLoading || rejectLoading || clarificationLoading}
+                              startIcon={
+                                clarificationLoading ? <CircularProgress size={20} /> : null
+                              }
+                              sx={{ minWidth: 160 }}
+                            >
+                              {clarificationLoading ? "Processing..." : "Need Clarification"}
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleApprovalAction("rejected")}
+                              disabled={approveLoading || rejectLoading || clarificationLoading}
+                              startIcon={
+                                rejectLoading ? <CircularProgress size={20} /> : null
+                              }
+                              sx={{ minWidth: 120 }}
+                            >
+                              {rejectLoading ? "Processing..." : "Reject"}
+                            </Button>
+                          </Stack>
+                        </Stack>
 
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    placeholder="Comment..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    sx={{ backgroundColor: "#fff" }}
-                  />
-                </Box>
+                        <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                          Leave a comment with your response
+                        </Typography>
+
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={3}
+                          placeholder="Comment..."
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          sx={{ backgroundColor: "#fff" }}
+                        />
+                      </Box>
+                    );
+                  }
+
+                  return null;
+                })()
               )}
             </Box>
           </Paper>
