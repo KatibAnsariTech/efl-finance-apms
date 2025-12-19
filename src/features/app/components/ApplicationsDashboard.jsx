@@ -13,16 +13,6 @@ import { useAccount } from "src/hooks/use-account";
 
 const applications = [
   {
-    id: "credit-deviation",
-    title: "Credit Deviation",
-    description:
-      "Access all credit deviation related features including requests, approvals, master data, and user management",
-    status: "active",
-    color: "#8B4513",
-    route: "/credit-deviation",
-    projectType: "CRD",
-  },
-  {
     id: "import-payment",
     title: "Import Payment",
     description:

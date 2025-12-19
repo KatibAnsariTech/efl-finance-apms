@@ -6,7 +6,6 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import App from './app';
 import { AccountProvider } from './contexts/AccountContext';
-import { CRDCountProvider } from './contexts/CRDCountContext';
 import { JVMProvider } from './contexts/JVMContext';
 import { CustomCountProvider } from './contexts/CustomCountContext';
 
@@ -19,13 +18,11 @@ root.render(
     <BrowserRouter>
       <Suspense>
         <AccountProvider>
-          <CRDCountProvider>
-            <JVMProvider>
-              <CustomCountProvider>
-                <App />
-              </CustomCountProvider>
-            </JVMProvider>
-          </CRDCountProvider>
+          <JVMProvider>
+            <CustomCountProvider>
+              <App />
+            </CustomCountProvider>
+          </JVMProvider>
         </AccountProvider>
       </Suspense>
     </BrowserRouter>

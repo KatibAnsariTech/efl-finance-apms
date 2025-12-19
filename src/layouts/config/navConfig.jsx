@@ -25,64 +25,6 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ReportIcon from '@mui/icons-material/Report';
 
 const projectConfig = {
-  CRD: {
-    id: "credit-deviation",
-    title: "Credit Deviation",
-    path: "/credit-deviation",
-    icon: <CreditCardIcon />,
-    hasSubItems: true,
-    subItems: [
-      {
-        id: "request",
-        title: "Request",
-        path: "/credit-deviation/request",
-        icon: <RequestPageIcon />,
-        roles: ["REQUESTER"],
-      },
-      {
-        id: "request-status",
-        title: "Request Status",
-        path: "/credit-deviation/request-status",
-        icon: <TableChartIcon />,
-        roles: ["REQUESTER"],
-      },
-      {
-        id: "approval",
-        title: "Approval",
-        path: "/credit-deviation/approvals",
-        icon: <CheckCircleIcon />,
-        roles: ["APPROVER"],
-      },
-      {
-        id: "master-data",
-        title: "Master Data",
-        path: "/credit-deviation/master",
-        icon: <AssignmentIcon />,
-        roles: ["SUPER_ADMIN"],
-      },
-      {
-        id: "user-management",
-        title: "User Management",
-        path: "/credit-deviation/usermanagement",
-        icon: <ManageAccountsIcon />,
-        roles: ["SUPER_ADMIN"],
-      },
-      {
-        id: "master-sheet",
-        title: "Master Sheet",
-        path: "/credit-deviation/master-sheet",
-        icon: <TableChartIcon />,
-        roles: ["ADMIN", "SUPER_ADMIN"],
-      },
-      {
-        id: "h-management",
-        title: "H. Management",
-        path: "/credit-deviation/hierarchy-management",
-        icon: <AccountTreeIcon />,
-        roles: ["SUPER_ADMIN"],
-      },
-    ],
-  },
   JVM: {
     id: "jvm",
     title: "JVM",
