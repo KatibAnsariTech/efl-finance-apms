@@ -151,7 +151,7 @@ useEffect(() => {
 
   
   const handleRequestStatusClick = (rowData) => {
-    console.log("rowData>>>",rowData);
+    // console.log("rowData>>>",rowData);
     setSelectedRowData(rowData);
     setOpenModal(true);
   };
@@ -170,7 +170,7 @@ useEffect(() => {
       <Container>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Box>
-            <h2 style={{ margin: 0 }}>{pageTitle}</h2>
+            {/* <h2 style={{ margin: 0 }}>{pageTitle}</h2> */}
             {requestNo && (
               <p style={{ margin: 0, color: "#637381", fontSize: 14 }}>
                 Request #{requestNo}

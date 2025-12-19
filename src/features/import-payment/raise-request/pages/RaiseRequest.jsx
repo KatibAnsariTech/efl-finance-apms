@@ -179,7 +179,7 @@ export default function IMTRaiseRequest() {
 
 
   // ------------------- FORM HOOK ------------------------
-  const { control, handleSubmit, reset, watch, formState: { errors } } = useForm({
+  const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
   resolver: yupResolver(importPaymentRequestSchema),
   mode: "onBlur",
   defaultValues: {
@@ -202,6 +202,32 @@ export default function IMTRaiseRequest() {
   });
 
   const selectedType = watch("type");
+  const poAmountValue = watch("poAmount");
+  const advAmountValue = watch("advAmount");
+  const advPercentageValue = watch("advPercentage");
+
+  const toNumber = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
+  };
+
+  const updateAdvancePercentage = (poVal, advVal) => {
+    const po = toNumber(poVal);
+    const adv = toNumber(advVal);
+    if (po <= 0) {
+      setValue("advPercentage", 0, { shouldValidate: true, shouldDirty: true });
+      return;
+    }
+    const pct = (adv / po) * 100;
+    setValue("advPercentage", Number(pct.toFixed(2)), { shouldValidate: true, shouldDirty: true });
+  };
+
+  const updateAdvanceAmount = (poVal, pctVal) => {
+    const po = toNumber(poVal);
+    const pct = toNumber(pctVal);
+    const adv = (po * pct) / 100;
+    setValue("advAmount", Number(adv.toFixed(2)), { shouldValidate: true, shouldDirty: true });
+  };
 
 useEffect(() => {
   if (!selectedType) {
@@ -467,7 +493,10 @@ useEffect(() => {
                       control={control}
                       render={({ field }) => (
                         <TextField
-                          {...field} fullWidth type="number" label="PO Amount"
+                          {...field}
+                          fullWidth
+                          type="number"
+                          label="PO Amount"
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -477,6 +506,11 @@ useEffect(() => {
                           }}
                           error={!!errors.poAmount}
                           helperText={errors.poAmount?.message}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            updateAdvancePercentage(e.target.value, advAmountValue);
+                            updateAdvanceAmount(e.target.value, advPercentageValue);
+                          }}
                         />
                       )}
                     />
@@ -503,6 +537,33 @@ useEffect(() => {
                       )}
                     />
                   </Grid>
+                  
+                  {/* Advance Percentage */}
+                  <Grid item xs={12} md={6}>
+                    <Controller
+                      name="advPercentage"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          type="number"
+                          label="Advance Percentage"
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">%</InputAdornment>
+                            ),
+                          }}
+                          error={!!errors.advPercentage}
+                          helperText={errors.advPercentage?.message}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            updateAdvanceAmount(poAmountValue, e.target.value);
+                          }}
+                        />
+                      )}
+                    />
+                  </Grid>
 
                   {/* Advance Amount */}
                   <Grid item xs={12} md={6}>
@@ -512,7 +573,9 @@ useEffect(() => {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          fullWidth type="number" label="Advance Amount"
+                          fullWidth
+                          type="number"
+                          label="Advance Amount"
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -522,26 +585,10 @@ useEffect(() => {
                           }}
                           error={!!errors.advAmount}
                           helperText={errors.advAmount?.message}
-                        />
-                      )}
-                    />
-                  </Grid>
-
-                  {/* Advance Percentage */}
-                  <Grid item xs={12} md={6}>
-                    <Controller
-                      name="advPercentage"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field} fullWidth type="number" label="Advance Percentage"
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">%</InputAdornment>
-                            ),
+                          onChange={(e) => {
+                            field.onChange(e);
+                            updateAdvancePercentage(poAmountValue, e.target.value);
                           }}
-                          error={!!errors.advPercentage}
-                          helperText={errors.advPercentage?.message}
                         />
                       )}
                     />

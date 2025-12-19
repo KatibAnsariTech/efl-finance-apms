@@ -20,14 +20,45 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/jvm/requests")) return "Requests";
 
   // Import Payment routes
-  if (path.startsWith("/import-payment/upload")) return "Upload";
+  if (
+    path.startsWith("/import-payment/report/") &&
+    path.split("/").length === 4
+  ) {
+    return "Report Details";
+  }
+
+  if (path === "/import-payment/report") {
+    return "Reports";
+  }
+  if (
+    path.startsWith("/import-payment/my-request/") &&
+    path.split("/").length === 4
+  ) {
+    return "MY Report Details";
+  }
+
+  if (path === "/import-payment/my-request") {
+    return "My Reports";
+  }
+  if (
+    path.startsWith("/import-payment/upload/") &&
+    path.split("/").length === 4
+  ) {
+    return "Upload Report Details";
+  }
+
+  if (path === "/import-payment/upload") {
+    return "Upload Reports";
+  }
+  // if (path.startsWith("/import-payment/upload")) return "Upload";
   if (path.startsWith("/import-payment/master")) return "Master Data";
   if (path.startsWith("/import-payment/usermanagement")) return "User Management";
   if (path.startsWith("/import-payment/request")) return "Raise Request";
   if (path.startsWith("/import-payment/access-point")) return "Access Points";
   if (path.startsWith("/import-payment/hierarchy-flow")) return "Hierarchy Flow";
-  if (path.startsWith("/import-payment/report")) return "";
-  if (path.startsWith("/import-payment/my-request")) return "";
+  // if (path.startsWith("/import-payment/report")) return "Report";
+  // if (path.startsWith("/import-payment/report/")) return "Report Details";
+  // if (path.startsWith("/import-payment/my-request")) return "";
 
   // Custom Duty routes
   if (path.startsWith("/custom-duty/raise-to-bank/submit-detail/")) return "Submit Detail";

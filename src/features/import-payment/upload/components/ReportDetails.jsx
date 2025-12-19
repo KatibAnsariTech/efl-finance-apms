@@ -23,8 +23,10 @@ const ReportDetailView = () => {
   const [approvalData, setApprovalData] = useState(null);
   const [error, setError] = useState(null);
   const [actionCompleted, setActionCompleted] = useState(false);
+  const [outPutDocument,setOutPutDocument] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
+  const userEmail = user?.email; // use email, not role
   const userRole = user?.userRoles?.[0]?.userType;
 
   useEffect(() => {
@@ -34,9 +36,11 @@ const ReportDetailView = () => {
         const res = await userRequest.get(`/imt/getFormById?id=${requestNo}`);
         if (res.data?.success && res.data.data) {
           const reportData = res.data.data;
+          console.log("reportData",reportData)
           setData(reportData);
           setAssigned(reportData.assigned || false);
           setApprovalData(reportData);
+          setOutPutDocument(reportData?.outputDocument);
           setError(null);
         } else {
           setError("No data found for this request number");
@@ -57,7 +61,7 @@ const ReportDetailView = () => {
   }, [requestNo]);
 
   const handleBack = () => {
-    navigate(`/import-payment/my-request`);
+    navigate(`/import-payment/upload`);
   };
 
   const handleActionComplete = async () => {
@@ -69,6 +73,7 @@ const ReportDetailView = () => {
           setData(reportData);
           setAssigned(reportData.assigned || false);
           setApprovalData(reportData);
+          setLastApprover(reportData.status);
           setError(null);
         } else {
           setError("No data found for this request number");
@@ -80,6 +85,17 @@ const ReportDetailView = () => {
     }
   };
 
+  const steps = data?.steps || [];
+
+// Show if user email matches approval email AND status is not Approved or Declined
+const canShowAction = steps.some(step =>
+  step.approvals?.some(appr =>
+    appr?.approverId?.email === userEmail &&
+    appr.status === "Approved" &&
+    appr.status !== "Declined"
+  )
+);
+
   return (
     <Paper
       elevation={0}
@@ -90,30 +106,36 @@ const ReportDetailView = () => {
         backgroundColor: "#fff",
       }}
     >
-      {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Box sx={{ pl: 3 }}>
-          {/* <Typography variant="h5">Report Details</Typography> */}
-          <Box
-            sx={{
-              height: 2,
-              width: "100%",
-              background: "#12368d",
-              borderRadius: 1,
-              mb: 2,
-            }}
-          />
-        </Box>
-        <IconButton
-          onClick={handleBack}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="flex-start"   // 👈 align from top
+        sx={{ mb: 2, px: 3 }}      // same horizontal padding for both
+      >
+      <Box>
+        <Box
           sx={{
-            color: "#d32f2f",
-            "&:hover": { backgroundColor: "#fdecea" },
+            height: 2,
+            width: "100%",
+            background: "#12368d",
+            borderRadius: 1,
+            mt: 1,
           }}
-        >
-          <CloseIcon />
-        </IconButton>
+        />
       </Box>
+
+    <IconButton
+      onClick={handleBack}
+      sx={{
+        color: "#d32f2f",
+        mt: "-4px", // optional fine-tune if needed
+        "&:hover": { backgroundColor: "#fdecea" },
+      }}
+    >
+      <CloseIcon />
+    </IconButton>
+  </Box>
+
 
       {/* Loader */}
       {loading ? (
@@ -135,11 +157,15 @@ const ReportDetailView = () => {
       )}
 
       {/* Report Action */}
-      {userRole === 'APPROVER' && !actionCompleted && (
-        <ReportAction 
-          requestNo={requestNo}
-          onActionComplete={handleActionComplete}
-        />
+      {userRole === "APPROVER" && 
+        canShowAction && 
+        !actionCompleted && (
+          <ReportAction
+            requestNo={data?.requestNo}
+            requestId={data?._id}
+            onActionComplete={handleActionComplete}
+            requireUploadForLevel6={outPutDocument}
+          />
       )}
     </>
       )}
@@ -148,5 +174,6 @@ const ReportDetailView = () => {
 };
 
 export default ReportDetailView;
+
 
 
