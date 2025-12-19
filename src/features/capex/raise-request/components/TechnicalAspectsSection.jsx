@@ -530,25 +530,32 @@ export default function TechnicalAspectsSection({
           <Controller
             name="expectedImplementationDate"
             control={control}
-            render={({ field }) => (
-              <DatePicker
-                {...field}
-                label="Expected Date of Implementation"
-                disabled={readOnly}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    variant: "outlined",
-                    disabled: readOnly,
-                    sx: {
-                      "& .MuiInputLabel-root": {
-                        fontSize: "0.875rem",
+            render={({ field }) => {
+              // Set minDate to today (start of day) to disable past dates
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              
+              return (
+                <DatePicker
+                  {...field}
+                  label="Expected Date of Implementation"
+                  disabled={readOnly}
+                  minDate={today}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      variant: "outlined",
+                      disabled: readOnly,
+                      sx: {
+                        "& .MuiInputLabel-root": {
+                          fontSize: "0.875rem",
+                        },
                       },
                     },
-                  },
-                }}
-              />
-            )}
+                  }}
+                />
+              );
+            }}
           />
         </Grid>
       </Grid>

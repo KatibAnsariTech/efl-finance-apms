@@ -1,22 +1,10 @@
 export const getCurrentTitle = (path) => {
   // Dashboard routes
   if (path === "/") return "";
-  if (path.startsWith("/credit-deviation/dashboard")) return "Dashboard";
   if (path.startsWith("/jvm/dashboard")) return "Dashboard";
   if (path.startsWith("/import-payment/dashboard")) return "Dashboard";
   if (path.startsWith("/custom-duty/dashboard")) return "Dashboard";
   if (path.startsWith("/petty-cash/dashboard")) return "Dashboard";
-
-  // Credit Deviation routes
-  if (path.startsWith("/credit-deviation/request-status/view/")) return "Request Details";
-  if (path.startsWith("/credit-deviation/approvals/view/")) return "Request Details";
-  if (path.startsWith("/credit-deviation/request-status")) return "My Requests";
-  if (path.startsWith("/credit-deviation/request")) return "Request";
-  if (path.startsWith("/credit-deviation/approvals")) return "Approvals Requests";
-  if (path.startsWith("/credit-deviation/usermanagement")) return "User Management";
-  if (path.startsWith("/credit-deviation/master")) return "Master Data";
-  if (path.startsWith("/credit-deviation/hierarchy-management")) return "Hierarchy Management";
-  if (path.startsWith("/credit-deviation/master-sheet")) return "Master Sheet";
 
   // JVM routes
   if (path.startsWith("/jvm/requested-jvs/") && path.split('/').length === 5) return "JV Detail";

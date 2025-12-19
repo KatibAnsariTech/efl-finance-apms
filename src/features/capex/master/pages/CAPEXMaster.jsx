@@ -143,9 +143,15 @@ export default function CAPEXMaster() {
       }
     } catch (error) {
       console.error(`Error deleting ${selectedCategory.toLowerCase()}:`, error);
+      
+      // Extract error message from API response
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          `Failed to delete ${selectedCategory.toLowerCase()}. Please try again.`;
+      
       swal(
         "Error!",
-        `Failed to delete ${selectedCategory.toLowerCase()}. Please try again.`,
+        errorMessage,
         "error"
       );
     }
@@ -240,13 +246,14 @@ export default function CAPEXMaster() {
           )}
           <Box
             component="span"
-            onClick={handleOpen}
+            onClick={selectedTab === 3 && !selectedDepartment ? undefined : handleOpen}
             sx={{
               fontSize: "0.8rem",
               fontWeight: "bold",
-              cursor: "pointer",
-              color: "#167beb",
+              cursor: selectedTab === 3 && !selectedDepartment ? "not-allowed" : "pointer",
+              color: selectedTab === 3 && !selectedDepartment ? "text.disabled" : "#167beb",
               ml: (selectedTab === 1 || selectedTab === 2 || selectedTab === 3) ? "auto" : 0,
+              opacity: selectedTab === 3 && !selectedDepartment ? 0.5 : 1,
             }}
           >
             Add {menuItems[selectedTab]}

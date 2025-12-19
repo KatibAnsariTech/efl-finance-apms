@@ -6,9 +6,8 @@ import Container from "@mui/material/Container";
 import { FormTableToolbar } from "src/components/table";
 import { getComparator } from "src/utils/utils";
 import { userRequest } from "src/requestMethod";
-import FormRequestTabs from "src/features/credit-deviation/approvals/components/FormRequestTabs";
 import { useRouter } from "src/routes/hooks";
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button, IconButton, Tabs, Tab } from "@mui/material";
 import { FilterList } from "@mui/icons-material";
 import RequestStatus from "../../components/RequestStatus";
 import ColorIndicators from "../../components/ColorIndicators";
@@ -186,11 +185,22 @@ export default function RequestedJV() {
       </Helmet>
 
       <Container>
-        <FormRequestTabs
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
-          menuItems={menuItems}
-        />
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+          <Tabs
+            value={selectedTab}
+            onChange={(e, newValue) => setSelectedTab(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              "& .MuiTabs-indicator": { backgroundColor: "#1877F2" },
+              "& .MuiTab-root": { fontWeight: "bold" },
+            }}
+          >
+            {menuItems.map((item, index) => (
+              <Tab key={index} label={item.label} value={item.value} />
+            ))}
+          </Tabs>
+        </Box>
         <Card sx={{ mt: 2, p: 2 }}>
           <Box
             sx={{

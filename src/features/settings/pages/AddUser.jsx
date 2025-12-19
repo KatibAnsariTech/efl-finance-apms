@@ -264,9 +264,7 @@ export default function AddUser() {
                           >
                             {selected.map((value) => {
                               const label =
-                                value === "CRD"
-                                  ? "Credit Deviation"
-                                  : value === "JVM"
+                                value === "JVM"
                                   ? "JVM"
                                   : value === "CPX"
                                   ? "Capex"
@@ -296,7 +294,6 @@ export default function AddUser() {
                           </Box>
                         )}
                       >
-                        <MenuItem value="CRD">Credit Deviation</MenuItem>
                         <MenuItem value="JVM">JVM</MenuItem>
                         <MenuItem value="CPX">Capex</MenuItem>
                         <MenuItem value="CUSTOM">Custom Duty</MenuItem>

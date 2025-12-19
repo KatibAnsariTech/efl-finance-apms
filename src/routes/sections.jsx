@@ -192,47 +192,6 @@ const ChangePasswordPage = lazy(() =>
   import("src/features/settings/pages/ChangePassword")
 );
 
-const CreditDeviationPage = lazy(() =>
-  import("src/features/credit-deviation/pages/CreditDeviation")
-);
-const CreditDeviationDashboard = lazy(() =>
-  import(
-    "src/features/credit-deviation/dashboard/components/CreditDeviationDashboard"
-  )
-);
-const RequestPage = lazy(() =>
-  import("src/features/credit-deviation/request/pages/Request")
-);
-const RequestStatusPage = lazy(() =>
-  import("src/features/credit-deviation/request-status/pages/RequestStatus")
-);
-const ApprovalsPage = lazy(() =>
-  import("src/features/credit-deviation/approvals/pages/Approvals")
-);
-const MasterPage = lazy(() =>
-  import("src/features/credit-deviation/master/pages/Master")
-);
-const UserManagementPage = lazy(() =>
-  import("src/features/credit-deviation/usermanagement/pages/UserManagement")
-);
-const MasterSheetPage = lazy(() =>
-  import("src/features/credit-deviation/master-sheet/pages/MasterSheet")
-);
-const HierarchyManagementPage = lazy(() =>
-  import(
-    "src/features/credit-deviation/hierarchy-management/pages/HierarchyManagement"
-  )
-);
-const FormDetailsPage = lazy(() =>
-  import(
-    "src/features/credit-deviation/approvals/pages/form-details/FormDetails"
-  )
-);
-const FormDetailsViewForm = lazy(() =>
-  import(
-    "src/features/credit-deviation/request-status/components/form-details/FormDetailsView"
-  )
-);
 
 export default function Router() {
   const isLoggedIn = localStorage.getItem("accessToken");
@@ -320,24 +279,6 @@ export default function Router() {
           element: <ProtectedRoute path="/capex" element={<CAPEXPage />} />,
         },
         {
-          path: "/credit-deviation",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation"
-              element={<CreditDeviationPage />}
-            />
-          ),
-        },
-        {
-          path: "/credit-deviation/dashboard",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/dashboard"
-              element={<CreditDeviationDashboard />}
-            />
-          ),
-        },
-        {
           path: "/jvm/dashboard",
           element: (
             <ProtectedRoute path="/jvm/dashboard" element={<JVMDashboard />} />
@@ -376,88 +317,6 @@ export default function Router() {
             <ProtectedRoute
               path="/capex/dashboard"
               element={<CAPEXDashboard />}
-            />
-          ),
-        },
-        // Credit Deviation subpages
-        {
-          path: "/credit-deviation/request",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/request"
-              element={<RequestPage />}
-            />
-          ),
-        },
-        {
-          path: "/credit-deviation/request-status",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/request-status"
-              element={<RequestStatusPage />}
-            />
-          ),
-        },
-        {
-          path: "/credit-deviation/approvals",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/approvals"
-              element={<ApprovalsPage />}
-            />
-          ),
-        },
-        {
-          path: "/credit-deviation/master",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/master"
-              element={<MasterPage />}
-            />
-          ),
-        },
-        {
-          path: "/credit-deviation/usermanagement",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/usermanagement"
-              element={<UserManagementPage />}
-            />
-          ),
-        },
-        {
-          path: "/credit-deviation/master-sheet",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/master-sheet"
-              element={<MasterSheetPage />}
-            />
-          ),
-        },
-        {
-          path: "/credit-deviation/hierarchy-management",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/hierarchy-management"
-              element={<HierarchyManagementPage />}
-            />
-          ),
-        },
-        {
-          path: "credit-deviation/approvals/view/:id",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/approvals"
-              element={<FormDetailsPage />}
-            />
-          ),
-        },
-        {
-          path: "credit-deviation/request-status/view/:id",
-          element: (
-            <ProtectedRoute
-              path="/credit-deviation/request-status"
-              element={<FormDetailsViewForm />}
             />
           ),
         },
