@@ -201,6 +201,21 @@ export default function LocationTable({ handleEdit: parentHandleEdit, handleDele
           >
             <Iconify icon="eva:edit-fill" sx={{ color: "primary.main" }} />
           </IconButton>
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDelete(params.row.id);
+            }}
+            sx={{
+              color: theme.palette.error.main,
+              "&:hover": {
+                backgroundColor: theme.palette.error.lighter,
+              },
+            }}
+          >
+            <Iconify icon="eva:trash-2-fill" sx={{ color: "error.main" }} />
+          </IconButton>
         </Box>
       ),
     },

@@ -22,21 +22,32 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
   // Fetch approver categories
   useEffect(() => {
     const fetchApproverCategories = async () => {
+      // Get department from editData or selectedDepartment
+      const departmentId = authorityData?.department?._id || authorityData?.department || selectedDepartment?._id || selectedDepartment;
+      
+      // Don't fetch if no department is available
+      if (!departmentId) {
+        setApproverCategories([]);
+        setCategoriesLoading(false);
+        return;
+      }
+
       setCategoriesLoading(true);
       try {
         const response = await userRequest.get("/cpx/getApproverPositions", {
           params: {
             page: 1,
             limit: 100,
+            department: departmentId,
           },
         });
 
         const categories = response.data.data.items || response.data.data.approverCategories || [];
-        // Sort categories by ranking - lowest number will be shown last (descending order)
+        // Sort categories by ranking - ascending order (1, 2, 3, ...)
         const sortedCategories = [...categories].sort((a, b) => {
           const rankingA = typeof a.ranking === 'number' ? a.ranking : (parseInt(a.ranking) || 0);
           const rankingB = typeof b.ranking === 'number' ? b.ranking : (parseInt(b.ranking) || 0);
-          return rankingB - rankingA; // Descending order (highest first, lowest last)
+          return rankingA - rankingB; // Ascending order (lowest first, highest last)
         });
         setApproverCategories(sortedCategories);
       } catch (error) {
@@ -51,7 +62,7 @@ function AddEditApprovalAuthority({ handleClose, open, editData: authorityData, 
     if (open) {
       fetchApproverCategories();
     }
-  }, [open]);
+  }, [open, authorityData, selectedDepartment]);
 
   useEffect(() => {
     if (authorityData && approverCategories.length > 0 && !categoriesLoading) {

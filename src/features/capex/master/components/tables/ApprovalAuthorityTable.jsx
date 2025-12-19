@@ -204,10 +204,10 @@ export default function ApprovalAuthorityTable({
     ];
 
     const sortedCategories = [...approverCategories].sort((a, b) => {
-      // Sort by ranking number - lowest number will be shown last (descending order)
+      // Sort by ranking number - ascending order (1, 2, 3, ...)
       const rankingA = typeof a.ranking === 'number' ? a.ranking : (parseInt(a.ranking) || 0);
       const rankingB = typeof b.ranking === 'number' ? b.ranking : (parseInt(b.ranking) || 0);
-      return rankingB - rankingA; // Descending order (highest first, lowest last)
+      return rankingA - rankingB; // Ascending order (lowest first, highest last)
     });
 
     const dynamicColumns = sortedCategories.map((category) => {
