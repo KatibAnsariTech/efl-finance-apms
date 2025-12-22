@@ -20,6 +20,9 @@ const OTPVerificationPage = lazy(() =>
 const ResetPasswordPage = lazy(() =>
   import("src/features/auth/pages/ResetPassword")
 );
+const AzureRedirectHandlerPage = lazy(() =>
+  import("src/features/auth/pages/AzureRedirect")
+);
 
 const Page404 = lazy(() => import("src/features/error/pages/PageNotFound"));
 
@@ -712,6 +715,14 @@ export default function Router() {
       ) : (
         <Suspense>
           <ResetPasswordPage />
+        </Suspense>
+      ),
+    },
+    {
+      path: "/azure-redirect",
+      element: (
+        <Suspense>
+          <AzureRedirectHandlerPage />
         </Suspense>
       ),
     },
