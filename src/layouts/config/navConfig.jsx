@@ -97,6 +97,13 @@ const projectConfig = {
         icon: <ReportIcon />,
         roles: ["APPROVER", "ADMIN", "SUPER_ADMIN"],
       },
+      {
+        id: "request",
+        title: "Request",
+        path: "/import-payment/request",
+        icon: <RequestPageIcon />,
+        roles: ["APPROVER"]
+      },
        {
         id: "master",
         title: "Master Data",
@@ -112,9 +119,9 @@ const projectConfig = {
         roles: ["ADMIN", "SUPER_ADMIN"],
       },
        {
-        id: "request",
+        id: "raised-request",
         title: "Raise Request",
-        path: "/import-payment/request",
+        path: "/import-payment/raised-request",
         icon: <RequestPageIcon />,
         roles: ["REQUESTER"],
       },
@@ -270,10 +277,26 @@ export const generateNavigationConfig = (accessibleProjects, userRoles, user = n
       const userType = userRoles[projectType];
       console.log("project>>>",project)
       const filteredSubItems = project.subItems.filter((subItem) => {
-        // Special condition for import-payment-upload: only show for APPROVER with specific email
-        if (subItem.id === "import-payment-upload" && userType === "APPROVER") {
-          return user?.email === "shweta@eflgmail.com";
+        // Special handling for IMT project type
+        if (projectType === "IMT") {
+          // Report: Show if report is available in accessPoints, except for SUPER_ADMIN (SUPER_ADMIN uses role-based filtering)
+          if (subItem.id === "report") {
+            if (userType === "SUPER_ADMIN") {
+              // SUPER_ADMIN uses default role-based filtering
+              return subItem.roles.includes(userType);
+            }
+            // For non-SUPER_ADMIN: check if accessPoints.report exists
+            const hasReportAccess = user?.accessPoints?.report !== undefined;
+            return hasReportAccess;
+          }
+          
+          // Upload Payment: Show for APPROVER if output_document is available in accessPoints
+          if (subItem.id === "import-payment-upload") {
+            const hasOutputDocumentAccess = user?.accessPoints?.output_document !== undefined;
+            return userType === "APPROVER" && hasOutputDocumentAccess;
+          }
         }
+        
         // Default role-based filtering
         return subItem.roles.includes(userType);
       });
