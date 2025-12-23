@@ -16,26 +16,36 @@ import Iconify from "src/components/iconify";
 import { publicRequest, setTokens, userRequest } from "src/requestMethod";
 import { useForm } from "react-hook-form";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
+import { getUser } from "src/utils/userUtils";
+import { useCountRefresh } from "src/hooks/useCountRefresh";
+import { useAccountContext } from "src/contexts/AccountContext";
 
-export default function OTPVerificationView() {
+export default function OTPVerificationView({ mode = "password-reset" }) {
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
   } = useForm();
-  const [showOTP, setShowOTP] = useState(false);
+  const [showOTP, setShowOTP] = useState(mode === "2fa"); // For 2FA, OTP is already sent
   const [otpProcessing, setOtpProcessing] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(30);
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || "";
+
+  const { refreshUserCounts } = useCountRefresh();
+  const { refreshAccount } = useAccountContext();
 
   useEffect(() => {
     if (email) {
       setValue("email", email);
     }
-  }, [email, setValue]);
+    if (mode === "2fa" && !email) {
+      toast.error("Invalid session. Please login again.");
+      navigate("/login");
+    }
+  }, [email, setValue, mode, navigate]);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -57,7 +67,7 @@ export default function OTPVerificationView() {
 
       console.log("OTP send attempt:", data);
       setShowOTP(true);
-      setTimeLeft(60);
+      setTimeLeft(30);
       notifySuccess("OTP sent to your email");
     } catch (error) {
       console.error(error);
@@ -67,28 +77,70 @@ export default function OTPVerificationView() {
     }
   };
 
+  const handleResend2FAOTP = async () => {
+    if (timeLeft > 0) {
+      toast.info(`Please wait ${timeLeft} seconds before resending OTP`);
+      return;
+    }
+
+    try {
+      setOtpProcessing(true);
+      await publicRequest.post("/admin/resendLoginOtp", {
+        email: email,
+      });
+      setTimeLeft(30);
+      toast.success("OTP sent to your registered email.");
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to resend OTP. Please try again.");
+    } finally {
+      setOtpProcessing(false);
+    }
+  };
+
   const handleVerifyOTP = async (data) => {
     try {
       setOtpProcessing(true);
 
-      // Call the verifyOtp API endpoint
-      const otpData = {
-        email: data.email,
-        otp: data.otp,
-      };
-      
-      const response = await publicRequest.post("/admin/verifyOtp", otpData);
-      
-      console.log("OTP verification attempt:", otpData);
-      console.log("OTP verification response:", response.data);
+      if (mode === "2fa") {
+        // 2FA verification flow
+        const response = await publicRequest.post("/admin/verifyLoginOtp", {
+          email: email,
+          otp: data.otp,
+        });
 
-      notifySuccess("OTP verified successfully");
-      navigate("/reset-password", {
-        state: { 
-          email: data.email, 
-          token: response.data?.data || response.data?.token || "verified" 
-        },
-      });
+        const token = response.data?.data;
+        
+        if (token) {
+          setTokens(token);
+          const user = await getUser(token);
+          refreshAccount();
+          await refreshUserCounts(user);
+          toast.success(response.data?.message || "Login successfully");
+          setTimeout(() => navigate("/"), 1000);
+        } else {
+          throw new Error("No token received from server");
+        }
+      } else {
+        // Password reset flow
+        const otpData = {
+          email: data.email,
+          otp: data.otp,
+        };
+        
+        const response = await publicRequest.post("/admin/verifyOtp", otpData);
+        
+        console.log("OTP verification attempt:", otpData);
+        console.log("OTP verification response:", response.data);
+
+        notifySuccess("OTP verified successfully");
+        navigate("/reset-password", {
+          state: { 
+            email: data.email, 
+            token: response.data?.data || response.data?.token || "verified" 
+          },
+        });
+      }
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "OTP verification failed. Please enter a valid 6-digit OTP.");
@@ -98,6 +150,11 @@ export default function OTPVerificationView() {
   };
 
   const handleResendOTP = async () => {
+    if (mode === "2fa") {
+      await handleResend2FAOTP();
+      return;
+    }
+
     if (timeLeft === 0) {
       try {
         setOtpProcessing(true);
@@ -114,7 +171,7 @@ export default function OTPVerificationView() {
           email: currentEmail,
         });
 
-        setTimeLeft(60);
+        setTimeLeft(30);
         toast.info("OTP resent to your email");
       } catch (error) {
         console.error(error);
@@ -184,7 +241,7 @@ export default function OTPVerificationView() {
                  fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
                }}
              >
-               Reset Password
+               {mode === "2fa" ? "OTP Verification" : "Reset Password"}
              </Typography>
             <Typography
               variant="body2"
@@ -200,7 +257,7 @@ export default function OTPVerificationView() {
             </Typography>
 
              <form
-               onSubmit={handleSubmit(showOTP ? handleVerifyOTP : handleSendOTP)}
+               onSubmit={handleSubmit(mode === "2fa" ? handleVerifyOTP : (showOTP ? handleVerifyOTP : handleSendOTP))}
              >
                <Stack spacing={{ xs: 1, sm: 1.5, md: 1.5 }} sx={{ mx: "auto" }}>
                 <TextField
@@ -215,7 +272,7 @@ export default function OTPVerificationView() {
                   })}
                   error={!!errors.email}
                   helperText={errors.email?.message}
-                  disabled={showOTP}
+                  disabled={showOTP || mode === "2fa"}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "25px",
@@ -281,8 +338,12 @@ export default function OTPVerificationView() {
                   <Box
                     sx={{
                       display: "flex",
-                      justifyContent: "space-between",
                       alignItems: "center",
+                      justifyContent: "flex-end",
+                      gap: 1,
+                      px: 2,
+                      mt: 0.5,
+                      mb: 0.5,
                     }}
                   >
                     <Typography
@@ -294,7 +355,6 @@ export default function OTPVerificationView() {
                         textDecoration: timeLeft === 0 ? "underline" : "none",
                         fontWeight: "bold",
                         fontSize: "0.8rem",
-                        ml: 2,
                       }}
                       onClick={handleResendOTP}
                     >
@@ -302,7 +362,10 @@ export default function OTPVerificationView() {
                     </Typography>
                     <Typography
                       variant="body2"
-                      sx={{ color: "text.secondary" }}
+                      sx={{ 
+                        color: "text.secondary",
+                        fontSize: "0.8rem",
+                      }}
                     >
                       {formatTime(timeLeft)}
                     </Typography>

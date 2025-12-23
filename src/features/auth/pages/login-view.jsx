@@ -22,7 +22,7 @@ import { useCountRefresh } from "src/hooks/useCountRefresh";
 import { useAccountContext } from "src/contexts/AccountContext";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 import { getUser } from "src/utils/userUtils";
-import { initiateAzureLogin } from "src/utils/azureAuth";
+// import { initiateAzureLogin } from "src/utils/azureAuth";
 
 export default function LoginView() {
   const {
@@ -33,7 +33,7 @@ export default function LoginView() {
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
   const [loginProcessing, setLoginProcessing] = useState(false);
-  const [azureLoginProcessing, setAzureLoginProcessing] = useState(false);
+  // const [azureLoginProcessing, setAzureLoginProcessing] = useState(false);
   const navigate = useNavigate();
   const { refreshUserCounts } = useCountRefresh();
   const { refreshAccount } = useAccountContext();
@@ -47,20 +47,22 @@ export default function LoginView() {
         email: data.email,
         password: data.password,
       });
-      const token = response.data.data || response.data.token;
-      if (token) {
-        setTokens(token);
-        const user = await getUser(token);
-        refreshAccount();
-        await refreshUserCounts(user);
-        notifySuccess("Login successful!");
-        setTimeout(() => navigate("/"), 1000);
+      
+      // Backend sends OTP automatically and returns success message
+      // Redirect to 2FA OTP verification page
+      if (response.data?.success && response.data?.message?.includes("OTP sent")) {
+        navigate("/two-factor-otp", {
+          state: {
+            email: data.email,
+          },
+        });
+        toast.success(response.data?.message || "OTP sent to your registered email.");
       } else {
-        throw new Error("No token received from server");
+        throw new Error("Unexpected response from server");
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.errors || "Login failed.");
+      toast.error(error.response?.data?.message || error.response?.data?.errors || "Login failed.");
     } finally {
       setLoginProcessing(false);
     }
@@ -76,14 +78,14 @@ export default function LoginView() {
     toast.info("Contact administrator");
   };
 
-  const handleAzureLogin = () => {
-    setAzureLoginProcessing(true);
-    // Redirect to backend Azure login endpoint
-    // Backend will handle the Azure AD redirect
-    initiateAzureLogin();
-    // Note: We don't set processing to false here because the redirect will navigate away
-    // The AzureRedirectHandler component will handle the completion
-  };
+  // const handleAzureLogin = () => {
+  //   setAzureLoginProcessing(true);
+  //   // Redirect to backend Azure login endpoint
+  //   // Backend will handle the Azure AD redirect
+  //   initiateAzureLogin();
+  //   // Note: We don't set processing to false here because the redirect will navigate away
+  //   // The AzureRedirectHandler component will handle the completion
+  // };
 
   return (
     <Container maxWidth={false} sx={{ backgroundColor: "white" }}>
@@ -259,7 +261,8 @@ export default function LoginView() {
                 Login
               </LoadingButton>
 
-              <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
+              {/* Azure SSO - Commented out */}
+              {/* <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />
                 <Typography variant="body2" sx={{ px: 2, fontSize: "0.8rem" }}>
                   or
@@ -296,7 +299,7 @@ export default function LoginView() {
                 }}
               >
                 Sign in with Microsoft
-              </LoadingButton>
+              </LoadingButton> */}
 
               <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />

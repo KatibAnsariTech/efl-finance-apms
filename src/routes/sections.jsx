@@ -20,9 +20,13 @@ const OTPVerificationPage = lazy(() =>
 const ResetPasswordPage = lazy(() =>
   import("src/features/auth/pages/ResetPassword")
 );
-const AzureRedirectHandlerPage = lazy(() =>
-  import("src/features/auth/pages/AzureRedirect")
+const TwoFactorOTPPage = lazy(() =>
+  import("src/features/auth/pages/TwoFactorOTP")
 );
+// Azure SSO - Commented out
+// const AzureRedirectHandlerPage = lazy(() =>
+//   import("src/features/auth/pages/AzureRedirect")
+// );
 
 const Page404 = lazy(() => import("src/features/error/pages/PageNotFound"));
 
@@ -719,13 +723,24 @@ export default function Router() {
       ),
     },
     {
-      path: "/azure-redirect",
-      element: (
+      path: "/two-factor-otp",
+      element: isLoggedIn ? (
+        <Navigate to="/" replace />
+      ) : (
         <Suspense>
-          <AzureRedirectHandlerPage />
+          <TwoFactorOTPPage />
         </Suspense>
       ),
     },
+    // Azure SSO - Commented out
+    // {
+    //   path: "/azure-redirect",
+    //   element: (
+    //     <Suspense>
+    //       <AzureRedirectHandlerPage />
+    //     </Suspense>
+    //   ),
+    // },
     {
       path: "404",
       element: (
