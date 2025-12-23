@@ -108,12 +108,13 @@ function AddRequester({ handleClose, open, editData, getData }) {
         getData();
         swal("Updated!", "Requester data updated successfully!", "success");
       } else {
-        // Create: include password, company as array of IDs
+        // Create: include password, company as array of IDs, and userType
         const createData = {
           username: data.username,
           email: data.email,
           password: "password123",
           company: companyIds,
+          userType: "REQUESTER",
         };
         await userRequest.post("/jvm/createUser", createData);
         getData();

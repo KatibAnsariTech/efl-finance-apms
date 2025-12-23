@@ -10,6 +10,8 @@ import { userRequest } from "src/requestMethod";
 import MasterTabs from "./master-tab";
 import { headLabel } from "./getHeadLabel";
 import { Box, IconButton, Tooltip, Chip } from "@mui/material";
+import swal from "sweetalert";
+import { showErrorMessage } from "src/utils/errorUtils";
 
 // Permission mapping for display
 const permissionLabels = {
@@ -51,8 +53,48 @@ export default function UserManagementView() {
     setOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    // Add delete functionality here if needed
+  const handleDelete = async (row) => {
+    try {
+      const result = await swal({
+        title: "Warning!",
+        text: `Are you sure you want to delete this user?`,
+        icon: "warning",
+        buttons: {
+          cancel: {
+            text: "Cancel",
+            value: false,
+            visible: true,
+            className: "",
+            closeModal: true,
+          },
+          confirm: {
+            text: "Delete",
+            value: true,
+            visible: true,
+            className: "",
+            closeModal: true,
+          },
+        },
+        dangerMode: true,
+      });
+
+      if (result) {
+        // The id can be either userId or userRoleId
+        const userId = row?._id || row?.userRoleId || row?.userId;
+        
+        if (!userId) {
+          swal("Error!", "Unable to find user ID. Please try again.", "error");
+          return;
+        }
+
+        await userRequest.delete(`/jvm/deleteUser/${userId}`);
+        swal("Deleted!", "User has been deleted successfully.", "success");
+        getData();
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      showErrorMessage(error, "Failed to delete user. Please try again.", swal);
+    }
   };
 
   const getAPIURL = () => {
@@ -370,7 +412,7 @@ export default function UserManagementView() {
                         size="small"
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleDelete(params.row._id);
+                          handleDelete(params.row);
                         }}
                         sx={{ color: "error.main" }}
                       >

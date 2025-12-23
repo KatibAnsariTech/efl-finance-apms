@@ -38,11 +38,12 @@ function AddApprover({ handleClose, open, editData: editData, getData }) {
         getData();
         swal("Updated!", "Approver data updated successfully!", "success");
       } else {
-        // Create: include password
+        // Create: include password and userType
         const createData = {
           username: data.username,
           email: data.email,
           password: "password123",
+          userType: "APPROVER",
         };
         await userRequest.post("/jvm/createUser", createData);
         getData();
