@@ -8,13 +8,9 @@ import { RxCross2 } from "react-icons/rx";
 import swal from "sweetalert";
 import { userRequest } from "src/requestMethod";
 import {
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  OutlinedInput,
-  ListItemText,
+  Autocomplete,
   Chip,
+  FormHelperText,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { showErrorMessage } from "src/utils/errorUtils";
@@ -26,182 +22,100 @@ function AddRequester({ handleClose, open, editData, getData }) {
     reset,
     setValue,
     control,
-    watch,
     formState: { errors },
   } = useForm();
 
-  const [requestTypeOptions, setRequestTypeOptions] = useState([]);
-  const [regionOptions, setRegionOptions] = useState([]);
-  const [salesOfficeOptions, setSalesOfficeOptions] = useState([]);
-  const [salesGroupOptions, setSalesGroupOptions] = useState([]);
-
-  const [openRequestTypeSelect, setOpenRequestTypeSelect] = useState(false);
-  const [openRegionSelect, setOpenRegionSelect] = useState(false);
-  const [openSalesOfficeSelect, setOpenSalesOfficeSelect] = useState(false);
-  const [openSalesGroupSelect, setOpenSalesGroupSelect] = useState(false);
+  const [companyOptions, setCompanyOptions] = useState([]);
 
   useEffect(() => {
     if (open) {
       const fetchOptions = async () => {
         try {
-          const [requestTypeRes, regionRes] = await Promise.all([
-            userRequest.get("/admin/getMasters?key=RequestType"),
-            userRequest.get("/admin/getMasters?key=Region"),
-          ]);
-
-          setRequestTypeOptions(
-            requestTypeRes?.data?.data?.masters?.map((item) => ({
+          const companyRes = await userRequest.get("/jvm/getMasters?key=Company&page=1&limit=1000");
+          setCompanyOptions(
+            companyRes?.data?.data?.masters?.map((item) => ({
               value: item._id,
-              label: item.label || item.value || item._id,
-            })) || []
-          );
-
-          setRegionOptions(
-            regionRes?.data?.data?.masters?.map((item) => ({
-              value: item._id,
-              label: item.label || item.value || item._id,
+              label: item.value || item.label || item._id,
             })) || []
           );
         } catch (err) {
-          setRequestTypeOptions([]);
-          setRegionOptions([]);
+          setCompanyOptions([]);
         }
       };
-
       fetchOptions();
     }
   }, [open]);
 
-
-  const selectedRegions = watch("region") || [];
-  const selectedSalesOffices = watch("salesOffice") || [];
-
-  // Fetch Sales Offices based on selected Region
+  // Pre-fill username and email immediately
   useEffect(() => {
-    if (selectedRegions.length) {
-      const fetchSalesOffices = async () => {
-        try {
-          const res = await userRequest.get(
-            `/admin/getMastersByArray?keys=SalesOffice&others=${selectedRegions.join(
-              ","
-            )}`
-          );
-          setSalesOfficeOptions(
-            res?.data?.data?.masters?.map((item) => ({
-              value: item._id,
-              label: item.label || item.value || item._id,
-            })) || []
-          );
-        } catch (err) {
-          setSalesOfficeOptions([]);
-        }
-      };
-      fetchSalesOffices();
+    if (editData) {
+      setValue("username", editData.username || "");
+      setValue("email", editData.email || "");
     } else {
-      setSalesOfficeOptions([]);
+      reset();
     }
-    // Clear dependent selections
-    setValue("salesOffice", []);
-    setValue("salesGroup", []);
-  }, [selectedRegions, setValue]);
-
-  // Fetch Sales Groups based on selected Sales Office
-  useEffect(() => {
-    if (selectedSalesOffices.length) {
-      const fetchSalesGroups = async () => {
-        try {
-          const res = await userRequest.get(
-            `/admin/getMastersByArray?keys=SalesGroup&others=${selectedSalesOffices.join(
-              ","
-            )}`
-          );
-          setSalesGroupOptions(
-            res?.data?.data?.masters?.map((item) => ({
-              value: item._id,
-              label: item.label || item.value || item._id,
-            })) || []
-          );
-        } catch (err) {
-          setSalesGroupOptions([]);
-        }
-      };
-      fetchSalesGroups();
-    } else {
-      setSalesGroupOptions([]);
-    }
-    // Clear dependent selection
-    setValue("salesGroup", []);
-  }, [selectedSalesOffices, setValue]);
-
-  // Pre-fill for edit, and ensure dependent options are loaded before setting values
-  useEffect(() => {
-    const prefill = async () => {
-      if (editData) {
-        setValue("username", editData.username || "");
-        setValue("email", editData.email || "");
-        setValue("requesterNo", editData.requesterNo || "");
-        const regionIds = (editData.region || []).map((r) => r._id);
-        setValue("region", regionIds);
-        setValue("requestType", (editData.requestType || []).map((r) => r._id));
-
-        // Fetch and set sales offices for regions
-        if (regionIds.length) {
-          try {
-            const res = await userRequest.get(
-              `/admin/getMastersByArray?keys=SalesOffice&others=${regionIds.join(",")}`
-            );
-            setSalesOfficeOptions(
-              res?.data?.data?.masters?.map((item) => ({
-                value: item._id,
-                label: item.label || item.value || item._id,
-              })) || []
-            );
-          } catch {
-            setSalesOfficeOptions([]);
-          }
-        }
-        const salesOfficeIds = (editData.salesOffice || []).map((r) => r);
-        setValue("salesOffice", salesOfficeIds);
-
-        // Fetch and set sales groups for sales offices
-        if (salesOfficeIds.length) {
-          try {
-            const res = await userRequest.get(
-              `/admin/getMastersByArray?keys=SalesGroup&others=${salesOfficeIds.join(",")}`
-            );
-            setSalesGroupOptions(
-              res?.data?.data?.masters?.map((item) => ({
-                value: item._id,
-                label: item.label || item.value || item._id,
-              })) || []
-            );
-          } catch {
-            setSalesGroupOptions([]);
-          }
-        }
-        setValue("salesGroup", (editData.salesGroup || []).map((r) => r));
-      } else {
-        reset();
-      }
-    };
-    prefill();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editData, setValue, reset]);
 
+  // Pre-fill company when options are loaded
+  useEffect(() => {
+    if (editData && companyOptions.length > 0) {
+      // Set company if available - handle both object and array formats
+      if (Array.isArray(editData.company) && editData.company.length > 0) {
+        // If company is an array, map to company option objects
+        const selectedCompanies = editData.company
+          .map((comp) => {
+            const companyId = typeof comp === 'string' ? comp : comp?._id;
+            return companyOptions.find((opt) => opt.value === companyId);
+          })
+          .filter(Boolean);
+        setValue("company", selectedCompanies);
+      } else if (editData.company?._id) {
+        // Single company object
+        const companyOption = companyOptions.find(
+          (opt) => opt.value === editData.company._id
+        );
+        setValue("company", companyOption ? [companyOption] : []);
+      } else if (editData.companyId) {
+        // Single company ID
+        const companyOption = companyOptions.find(
+          (opt) => opt.value === editData.companyId
+        );
+        setValue("company", companyOption ? [companyOption] : []);
+      } else {
+        setValue("company", []);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editData, companyOptions, setValue]);
+
   const handleSaveData = async (data) => {
     try {
-      const formattedData = {
-        userType: "REQUESTER",
-        password: "password123",
-        ...data,
-      };
+      // Extract company IDs from selected company options
+      const companyIds = Array.isArray(data.company)
+        ? data.company.map((comp) => (typeof comp === 'object' ? comp.value : comp))
+        : [];
 
-      if (editData?._id) {
-        await userRequest.put(`/admin/updateAdmin?id=${editData._id}`, data);
+      const userId = editData?._id || editData?.userRoleId || editData?.userId;
+      if (userId) {
+        // Update: no password, company as array of IDs
+        const updateData = {
+          username: data.username,
+          email: data.email,
+          company: companyIds,
+        };
+        await userRequest.put(`/jvm/updateUser/${userId}`, updateData);
         getData();
         swal("Updated!", "Requester data updated successfully!", "success");
       } else {
-        await userRequest.post("/admin/createAdmin", formattedData);
+        // Create: include password, company as array of IDs
+        const createData = {
+          username: data.username,
+          email: data.email,
+          password: "password123",
+          company: companyIds,
+        };
+        await userRequest.post("/jvm/createUser", createData);
         getData();
         swal("Success!", "Requester data saved successfully!", "success");
       }
@@ -257,10 +171,7 @@ function AddRequester({ handleClose, open, editData, getData }) {
             flexDirection: "column",
             gap: 2,
             mt: 4,
-            height: "65dvh",
-            overflowY: "auto",
-            px: 2,
-            p: 1,
+            width: "100%",
           }}
           onSubmit={handleSubmit(handleSaveData)}
           noValidate
@@ -268,240 +179,77 @@ function AddRequester({ handleClose, open, editData, getData }) {
           <TextField
             id="username"
             label="Name"
-            {...register("username", { required: true })}
+            {...register("username", { required: "Name is required" })}
             error={!!errors.username}
-            helperText={errors.username ? "Name is required" : ""}
+            helperText={errors.username?.message}
             fullWidth
           />
           <TextField
             id="email"
             label="Email"
-            {...register("email", { required: true })}
+            type="email"
+            {...register("email", { 
+              required: "Email is required",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Invalid email format"
+              }
+            })}
             error={!!errors.email}
-            helperText={errors.email ? "Email is required" : ""}
-            fullWidth
-          />
-          <TextField
-            id="requesterNo"
-            label="Requester No"
-            {...register("requesterNo", { required: true })}
-            error={!!errors.requesterNo}
-            helperText={
-              errors.requesterNo ? "Requestor number is required" : ""
-            }
+            helperText={errors.email?.message}
             fullWidth
           />
 
-          {/* Request Type */}
-          <FormControl fullWidth>
-            <InputLabel id="requestType-label">Request Type</InputLabel>
-            <Controller
-              name="requestType"
-              control={control}
-              defaultValue={[]}
-              render={({ field }) => (
-                <Select
-                  labelId="requestType-label"
-                  multiple
-                  input={<OutlinedInput label="Request Type" />}
-                  open={openRequestTypeSelect}
-                  onOpen={() => setOpenRequestTypeSelect(true)}
-                  onClose={() => setOpenRequestTypeSelect(false)}
-                  value={field.value || []}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setOpenRequestTypeSelect(false);
-                  }}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {selected.map((value) => {
-                        const optionLabel =
-                          requestTypeOptions.find((o) => o.value === value)
-                            ?.label || value;
-                        return (
-                          <Chip
-                            key={value}
-                            label={optionLabel}
-                            onDelete={() =>
-                              field.onChange(
-                                field.value.filter((v) => v !== value)
-                              )
-                            }
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                        );
-                      })}
-                    </Box>
-                  )}
-                >
-                  {requestTypeOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      <ListItemText primary={option.label} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
-
-          {/* Region */}
-          <FormControl fullWidth>
-            <InputLabel id="region-label">Region</InputLabel>
-            <Controller
-              name="region"
-              control={control}
-              defaultValue={[]}
-              render={({ field }) => (
-                <Select
-                  labelId="region-label"
-                  multiple
-                  input={<OutlinedInput label="Region" />}
-                  open={openRegionSelect}
-                  onOpen={() => setOpenRegionSelect(true)}
-                  onClose={() => setOpenRegionSelect(false)}
-                  value={field.value || []}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setOpenRegionSelect(false);
-                  }}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {selected.map((value) => {
-                        const optionLabel =
-                          regionOptions.find((o) => o.value === value)?.label ||
-                          value;
-                        return (
-                          <Chip
-                            key={value}
-                            label={optionLabel}
-                            onDelete={() =>
-                              field.onChange(
-                                field.value.filter((v) => v !== value)
-                              )
-                            }
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                        );
-                      })}
-                    </Box>
-                  )}
-                >
-                  {regionOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      <ListItemText primary={option.label} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
-
-          {/* Sales Office */}
-          <FormControl fullWidth>
-            <InputLabel id="salesOffice-label">Sales Office</InputLabel>
-            <Controller
-              name="salesOffice"
-              control={control}
-              defaultValue={[]}
-              render={({ field }) => (
-                <Select
-                  labelId="salesOffice-label"
-                  multiple
-                  input={<OutlinedInput label="Sales Office" />}
-                  open={openSalesOfficeSelect}
-                  onOpen={() => setOpenSalesOfficeSelect(true)}
-                  onClose={() => setOpenSalesOfficeSelect(false)}
-                  value={field.value || []}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setOpenSalesOfficeSelect(false);
-                  }}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {selected.map((value) => {
-                        const optionLabel =
-                          salesOfficeOptions.find((o) => o.value === value)
-                            ?.label || value;
-                        return (
-                          <Chip
-                            key={value}
-                            label={optionLabel}
-                            onDelete={() =>
-                              field.onChange(
-                                field.value.filter((v) => v !== value)
-                              )
-                            }
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                        );
-                      })}
-                    </Box>
-                  )}
-                >
-                  {salesOfficeOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      <ListItemText primary={option.label} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
-
-          {/* Sales Group */}
-          <FormControl fullWidth>
-            <InputLabel id="salesGroup-label">Sales Group</InputLabel>
-            <Controller
-              name="salesGroup"
-              control={control}
-              defaultValue={[]}
-              render={({ field }) => (
-                <Select
-                  labelId="salesGroup-label"
-                  multiple
-                  input={<OutlinedInput label="Sales Group" />}
-                  open={openSalesGroupSelect}
-                  onOpen={() => setOpenSalesGroupSelect(true)}
-                  onClose={() => setOpenSalesGroupSelect(false)}
-                  value={field.value || []}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setOpenSalesGroupSelect(false);
-                  }}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {selected.map((value) => {
-                        const optionLabel =
-                          salesGroupOptions.find((o) => o.value === value)
-                            ?.label || value;
-                        return (
-                          <Chip
-                            key={value}
-                            label={optionLabel}
-                            onDelete={() =>
-                              field.onChange(
-                                field.value.filter((v) => v !== value)
-                              )
-                            }
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                        );
-                      })}
-                    </Box>
-                  )}
-                >
-                  {salesGroupOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      <ListItemText primary={option.label} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
+          {/* Company - Multiple Autocomplete */}
+          <Controller
+            name="company"
+            control={control}
+            defaultValue={[]}
+            rules={{
+              validate: (value) => {
+                if (!value || (Array.isArray(value) && value.length === 0)) {
+                  return "At least one company is required";
+                }
+                return true;
+              },
+            }}
+            render={({ field: { onChange, value } }) => (
+              <Autocomplete
+                multiple
+                options={companyOptions}
+                getOptionLabel={(option) => option.label || option.value || ""}
+                value={value || []}
+                onChange={(event, newValue) => {
+                  onChange(newValue);
+                }}
+                isOptionEqualToValue={(option, val) => option.value === val.value}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Company"
+                    error={!!errors.company}
+                  />
+                )}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip
+                      label={option.label || option.value}
+                      {...getTagProps({ index })}
+                      key={option.value}
+                    />
+                  ))
+                }
+              />
+            )}
+          />
+          {errors.company && (
+            <FormHelperText error sx={{ mt: -1, ml: 1.75 }}>
+              {errors.company.message}
+            </FormHelperText>
+          )}
 
           <Button
-            sx={{ marginTop: "20px", height: "80px", py: 1.5 }}
+            sx={{ marginTop: "20px", height: "50px" }}
             variant="contained"
             color="primary"
             type="submit"

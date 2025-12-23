@@ -17,6 +17,13 @@ export const headLabel = (selectedTab) => {
           minWidth: 300,
           sortable: true,
         },
+        {
+          id: "company",
+          name: "company",
+          label: "Company",
+          minWidth: 250,
+          sortable: false,
+        },
         { id: "action", label: "Action", minWidth: 180 },
       ];
     case 1:

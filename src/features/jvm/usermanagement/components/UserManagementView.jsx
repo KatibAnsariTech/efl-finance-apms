@@ -190,9 +190,9 @@ export default function UserManagementView() {
               gap: "8px",
             }}
           >
-            {/* <span onClick={handleOpen} style={{ color: "#167beb" }}>
+            <span onClick={handleOpen} style={{ color: "#167beb" }}>
               Add {menuItems[selectedTab]}
-            </span> */}
+            </span>
           </div>
         </div>
         {/* {open && (
@@ -296,6 +296,28 @@ export default function UserManagementView() {
                     if (col.id === "name") {
                       return params.row.username || "-";
                     }
+                    if (col.id === "company") {
+                      // Handle company display - can be array or single object
+                      if (!params.value) {
+                        return "-";
+                      }
+                      if (Array.isArray(params.value)) {
+                        if (params.value.length === 0) {
+                          return "-";
+                        }
+                        // If array contains objects with name/value property
+                        const companyNames = params.value.map((comp) => {
+                          if (typeof comp === 'string') return comp;
+                          return comp?.name || comp?.value || comp?.label || "-";
+                        });
+                        return companyNames.join(", ");
+                      }
+                      // Single company object
+                      if (typeof params.value === 'object') {
+                        return params.value?.name || params.value?.value || params.value?.label || "-";
+                      }
+                      return params.value || "-";
+                    }
                     if (col.id === "mastersheetPermissions") {
                       if (
                         !params.value ||
@@ -311,8 +333,8 @@ export default function UserManagementView() {
                     return params.value;
                   },
                 })),
-              // Only show actions column for Admin and Super Admin tabs (selectedTab 2 and 3)
-              ...(selectedTab >= 2 ? [{
+              // Show actions column for all tabs
+              {
                 field: "action",
                 headerName: "Actions",
                 width: 120,
@@ -357,7 +379,7 @@ export default function UserManagementView() {
                     </Tooltip>
                   </Box>
                 ),
-              }] : []),
+              },
             ]}
             getRowId={(row) => row?.id}
             loading={loading}
