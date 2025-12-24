@@ -150,13 +150,13 @@ export default function UserManagementView() {
 
   useEffect(() => {
     getData();
-  }, [debouncedSearch, page, rowsPerPage]);
+  }, [debouncedSearch, page, rowsPerPage, selectedTab]);
 
   useEffect(() => {
     // Reset data and loading state when switching tabs
     setData([]);
     setTotalCount(0);
-    getData();
+    setPage(0);
     setSearch("");
   }, [selectedTab]);
 
@@ -168,17 +168,6 @@ export default function UserManagementView() {
       setOrder(isAsc ? "desc" : "asc");
       setOrderBy(id);
     }
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-    setRowsPerPage(rowsPerPage);
-    window.scrollTo(0, 0);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setPage(0);
-    setRowsPerPage(parseInt(event.target.value));
   };
 
   const handleFilterChange = (field, value) => {
@@ -428,6 +417,12 @@ export default function UserManagementView() {
             pagination
             paginationMode="server"
             rowCount={totalCount}
+            paginationModel={{ page, pageSize: rowsPerPage }}
+            onPaginationModelChange={({ page: nextPage, pageSize }) => {
+              setPage(nextPage);
+              setRowsPerPage(pageSize);
+              window.scrollTo(0, 0);
+            }}
             pageSizeOptions={[5, 10, 25]}
             autoHeight
             disableRowSelectionOnClick
