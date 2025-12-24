@@ -19,9 +19,9 @@ const Header = ({
     const fetchCompanies = async () => {
       setCompaniesLoading(true);
       try {
-        const response = await userRequest.get("/jvm/getMasters?key=Company&page=1&limit=1000");
-        if (response.data.success) {
-          setCompanies(response.data.data.masters || []);
+        const response = await userRequest.get("/jvm/getUserCompanies");
+        if (response.data.statusCode === 200 && response.data.data) {
+          setCompanies(response.data.data || []);
         }
       } catch (error) {
         console.error("Error fetching companies:", error);
@@ -75,7 +75,7 @@ const Header = ({
             ) : (
               companies.map((company) => (
                 <MenuItem key={company._id} value={company._id}>
-                  {company.value}
+                  {company.name}
                 </MenuItem>
               ))
             )}

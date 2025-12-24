@@ -67,7 +67,7 @@ export const useInitiateJV = () => {
     // Add company to entry
     const entryWithCompany = {
       ...entry,
-      company: selectedCompany?.value || "",
+      company: selectedCompany?.name || "",
       companyId: selectedCompany?._id || "",
     };
     
@@ -87,7 +87,7 @@ export const useInitiateJV = () => {
       // Add company to all uploaded entries
       const entriesWithCompany = uploadedEntries.map(entry => ({
         ...entry,
-        company: selectedCompany?.value || "",
+        company: selectedCompany?.name || "",
         companyId: selectedCompany?._id || "",
       }));
 

@@ -20,6 +20,13 @@ const OTPVerificationPage = lazy(() =>
 const ResetPasswordPage = lazy(() =>
   import("src/features/auth/pages/ResetPassword")
 );
+const TwoFactorOTPPage = lazy(() =>
+  import("src/features/auth/pages/TwoFactorOTP")
+);
+// Azure SSO - Commented out
+// const AzureRedirectHandlerPage = lazy(() =>
+//   import("src/features/auth/pages/AzureRedirect")
+// );
 
 const Page404 = lazy(() => import("src/features/error/pages/PageNotFound"));
 
@@ -62,6 +69,9 @@ const JVRequestByRequestNoPage = lazy(() =>
 );
 const JVMReportPage = lazy(() =>
   import("src/features/jvm/report/pages/JVMReport")
+);
+const JVMHierarchyManagementPage = lazy(() =>
+  import("src/features/jvm/hierarchy-management/pages/HierarchyManagement")
 );
 
 const ImportPaymentPage = lazy(() =>
@@ -363,6 +373,15 @@ export default function Router() {
             <ProtectedRoute
               path="/jvm/usermanagement"
               element={<JVMUserManagementPage />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/hierarchy-management",
+          element: (
+            <ProtectedRoute
+              path="/jvm/hierarchy-management"
+              element={<JVMHierarchyManagementPage />}
             />
           ),
         },
@@ -715,6 +734,25 @@ export default function Router() {
         </Suspense>
       ),
     },
+      {
+        path: "/verify-otp",
+        element: isLoggedIn ? (
+          <Navigate to="/" replace />
+        ) : (
+          <Suspense>
+            <TwoFactorOTPPage />
+          </Suspense>
+        ),
+      },
+    // Azure SSO - Commented out
+    // {
+    //   path: "/azure-redirect",
+    //   element: (
+    //     <Suspense>
+    //       <AzureRedirectHandlerPage />
+    //     </Suspense>
+    //   ),
+    // },
     {
       path: "404",
       element: (

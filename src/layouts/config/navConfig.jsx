@@ -81,6 +81,13 @@ const projectConfig = {
         icon: <ManageAccountsIcon />,
         roles: ["ADMIN", "SUPER_ADMIN"],
       },
+      {
+        id: "jvm-hierarchy-management",
+        title: "Hierarchy Management",
+        path: "/jvm/hierarchy-management",
+        icon: <AccountTreeIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
+      },
     ],
   },
   IMT: {

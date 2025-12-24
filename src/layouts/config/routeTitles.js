@@ -15,6 +15,7 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/jvm/report")) return "JVM Report";
   if (path.startsWith("/jvm/master")) return "Master Data";
   if (path.startsWith("/jvm/usermanagement")) return "User Management";
+  if (path.startsWith("/jvm/hierarchy-management")) return "Hierarchy Management";
   if (path.startsWith("/jvm/requests/") && path.split('/').length === 5) return "JV Detail";
   if (path.startsWith("/jvm/requests/") && path.split('/').length === 4) return "JVs by Group";
   if (path.startsWith("/jvm/requests")) return "Requests";
@@ -77,6 +78,7 @@ export const getCurrentTitle = (path) => {
   // Auth routes
   if (path.startsWith("/login")) return "Login";
   if (path.startsWith("/otp-verification")) return "OTP Verification";
+  if (path.startsWith("/verify-otp")) return "Verify OTP";
   if (path.startsWith("/reset-password")) return "Reset Password";
 
   // settings routes

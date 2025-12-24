@@ -18,11 +18,11 @@ root.render(
     <BrowserRouter>
       <Suspense>
         <AccountProvider>
-          <JVMProvider>
-            <CustomCountProvider>
-              <App />
-            </CustomCountProvider>
-          </JVMProvider>
+            <JVMProvider>
+              <CustomCountProvider>
+                <App />
+              </CustomCountProvider>
+            </JVMProvider>
         </AccountProvider>
       </Suspense>
     </BrowserRouter>

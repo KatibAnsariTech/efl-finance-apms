@@ -22,6 +22,7 @@ import { useCountRefresh } from "src/hooks/useCountRefresh";
 import { useAccountContext } from "src/contexts/AccountContext";
 import LoginLeftPanel from "src/features/auth/components/LoginLeftPanel";
 import { getUser } from "src/utils/userUtils";
+// import { initiateAzureLogin } from "src/utils/azureAuth";
 
 export default function LoginView() {
   const {
@@ -32,6 +33,7 @@ export default function LoginView() {
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
   const [loginProcessing, setLoginProcessing] = useState(false);
+  // const [azureLoginProcessing, setAzureLoginProcessing] = useState(false);
   const navigate = useNavigate();
   const { refreshUserCounts } = useCountRefresh();
   const { refreshAccount } = useAccountContext();
@@ -45,20 +47,22 @@ export default function LoginView() {
         email: data.email,
         password: data.password,
       });
-      const token = response.data.data || response.data.token;
-      if (token) {
-        setTokens(token);
-        const user = await getUser(token);
-        refreshAccount();
-        await refreshUserCounts(user);
-        notifySuccess("Login successful!");
-        setTimeout(() => navigate("/"), 1000);
+      
+      // Backend sends OTP automatically and returns success message
+      // Redirect to 2FA OTP verification page
+      if (response.data?.success && response.data?.message?.includes("OTP sent")) {
+        navigate("/verify-otp", {
+          state: {
+            email: data.email,
+          },
+        });
+        toast.success(response.data?.message || "OTP sent to your registered email.");
       } else {
-        throw new Error("No token received from server");
+        throw new Error("Unexpected response from server");
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.errors || "Login failed.");
+      toast.error(error.response?.data?.message || error.response?.data?.errors || "Login failed.");
     } finally {
       setLoginProcessing(false);
     }
@@ -73,6 +77,15 @@ export default function LoginView() {
   const handleContactAdmin = () => {
     toast.info("Contact administrator");
   };
+
+  // const handleAzureLogin = () => {
+  //   setAzureLoginProcessing(true);
+  //   // Redirect to backend Azure login endpoint
+  //   // Backend will handle the Azure AD redirect
+  //   initiateAzureLogin();
+  //   // Note: We don't set processing to false here because the redirect will navigate away
+  //   // The AzureRedirectHandler component will handle the completion
+  // };
 
   return (
     <Container maxWidth={false} sx={{ backgroundColor: "white" }}>
@@ -247,6 +260,46 @@ export default function LoginView() {
               >
                 Login
               </LoadingButton>
+
+              {/* Azure SSO - Commented out */}
+              {/* <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
+                <Divider sx={{ flex: 1 }} />
+                <Typography variant="body2" sx={{ px: 2, fontSize: "0.8rem" }}>
+                  or
+                </Typography>
+                <Divider sx={{ flex: 1 }} />
+              </Box>
+
+              <LoadingButton
+                fullWidth
+                size="large"
+                variant="outlined"
+                onClick={handleAzureLogin}
+                disabled={azureLoginProcessing}
+                loading={azureLoginProcessing}
+                startIcon={
+                  <Box
+                    component="img"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 23'%3E%3Cpath fill='%23f25022' d='M0 0h11v11H0z'/%3E%3Cpath fill='%2300a4ef' d='M12 0h11v11H12z'/%3E%3Cpath fill='%237fba00' d='M0 12h11v11H0z'/%3E%3Cpath fill='%23ffb900' d='M12 12h11v11H12z'/%3E%3C/svg%3E"
+                    alt="Microsoft"
+                    sx={{ width: 20, height: 20, mr: 0.5 }}
+                  />
+                }
+                sx={{
+                  borderRadius: "25px",
+                  py: { xs: 1.5, sm: 1.5, md: 1.5 },
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  borderColor: "#0078d4",
+                  color: "#0078d4",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    borderColor: "#005a9e",
+                    backgroundColor: "rgba(0, 120, 212, 0.04)",
+                  },
+                }}
+              >
+                Sign in with Microsoft
+              </LoadingButton> */}
 
               <Box sx={{ my: 1.5, display: "flex", alignItems: "center" }}>
                 <Divider sx={{ flex: 1 }} />
