@@ -15,7 +15,7 @@ import ColorIndicators from "../components/ColorIndicators";
 import { useNavigate, useParams } from "react-router-dom";
 import RequestStatus from "../components/RequestStatus";
 
-export default function ImportPaymentReport() {
+export default function ImportPaymentRequestPage() {
   const { requestNo } = useParams();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,12 +36,19 @@ export default function ImportPaymentReport() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-  useEffect(() => {
-    // Always show only one tab
+useEffect(() => {
+  if (userRole !== "APPROVER") {
     setSelectedTab("all");
     setMenuItems([{ label: "All", value: "all" }]);
-    setInitialized(true);
-  }, []);
+  } else {
+    setSelectedTab("pendingWithMe");
+    setMenuItems([
+      { label: "Pending with Me", value: "pendingWithMe" },
+      { label: "All", value: "all" },
+    ]);
+  }
+  setInitialized(true);
+}, [userRole]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -65,7 +72,12 @@ export default function ImportPaymentReport() {
       }
 
       // Choose API endpoint based on selected tab
-      const apiEndpoint = "/imt/getForms?action=all"
+      const apiEndpoint =
+            selectedTab === "all"
+              ? userRole !== "APPROVER"
+                ? "/imt/getForms?action=all"
+                : "/imt/getRequestsForApprover"
+              : "/imt/getPendingRequestForms";
 
       const response = await userRequest.get(apiEndpoint, {
         params: {

@@ -1,16 +1,23 @@
 import { Box, Tab, Tabs } from "@mui/material";
-import React from "react";
+import React, { useMemo } from "react";
 
 function UserManagementTabs({ selectedTab, setSelectedTab, menuItems }) {
   const user = JSON.parse(localStorage.getItem("user"));
-  const userRole = user?.userRoles?.[0]?.userType;
-  console.log('users>>>>',user.accessPoints);
+  const accessPoints = user?.accessPoints || {};
+  const userManagementAccess = accessPoints?.usermanagement;
 
-  // Filter menu items based on role
-  const filteredMenuItems =
-    userRole === "ADMIN"
-      ? menuItems.filter((item) => item === "Requester")
-      : menuItems;
+  // Decide tabs to show
+  const filteredMenuItems = useMemo(() => {
+    // If usermanagement access exists → show only allowed tabs
+    if (userManagementAccess?.tabs?.length) {
+      return menuItems.filter((item) =>
+        userManagementAccess.tabs.includes(item)
+      );
+    }
+
+    // Otherwise show all tabs
+    return menuItems;
+  }, [menuItems, userManagementAccess]);
 
   return (
     <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>

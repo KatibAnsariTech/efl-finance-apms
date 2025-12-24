@@ -438,6 +438,486 @@
 // }
 
 
+// import React, { useState, useEffect } from "react";
+// import {
+//   Box,
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow,
+//   Paper,
+//   Chip,
+//   IconButton,
+//   Tooltip,
+//   Switch,
+//   Typography,
+//   TextField,
+//   Autocomplete,
+//   Button,
+//   CircularProgress,
+//   Fade,
+// } from "@mui/material";
+// import { Update as UpdateIcon } from "@mui/icons-material";
+// import { useTheme } from "@mui/material/styles";
+// import Iconify from "src/components/iconify";
+// import { userRequest } from "src/requestMethod";
+// import swal from "sweetalert";
+// import { showErrorMessage } from "src/utils/errorUtils";
+// import { ConditionModal } from "./ConditionModal";
+
+// export default function HierarchyTable({
+//   companyId,
+//   importTypeId,
+//   scopeId,
+//   companiesLoaded = true,
+// }) {
+//   const theme = useTheme();
+
+//   const [hierarchyData, setHierarchyData] = useState([]);
+//   const [approvers, setApprovers] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [editingLevel, setEditingLevel] = useState(null);
+//   const [hasChanges, setHasChanges] = useState(false);
+//   const [approvalTypeId, setApprovalTypeId] = useState(null);
+
+//   const [conditionModalOpen, setConditionModalOpen] = useState(false);
+//   const [selectedLevel, setSelectedLevel] = useState(null);
+
+//   const createDefaultLevels = () =>
+//     [1, 2, 3, 4, 5].map((level) => ({
+//       id: `level-${level}`,
+//       level,
+//       approvers: [],
+//       status: true,
+//       conditionEnabled: false,
+//       condition: [],
+//     }));
+
+//   const fetchApprovers = async () => {
+//     try {
+//       const res = await userRequest.get(
+//         "/imt/getApproversByImportTypeAndScope",
+//         { params: { importTypeId, scopeId } }
+//       );
+//       setApprovers(res?.data?.data?.approvers || []);
+//     } catch {
+//       setApprovers([]);
+//     }
+//   };
+
+//   const fetchHierarchyData = async () => {
+//     try {
+//       setLoading(true);
+
+//       const res = await userRequest.get(
+//         "/imt/getHierarchiesByImportTypeAndScope",
+//         { params: { importTypeId, scopeId } }
+//       );
+
+//       const approvalType = res?.data?.data?.[0];
+//       setApprovalTypeId(approvalType?._id || null);
+
+//       const steps = approvalType?.steps || [];
+
+//       const levels = createDefaultLevels().map((level) => {
+//         const existing = steps.find((s) => s.level === level.level);
+//         if (!existing) return level;
+
+//         return {
+//           ...level,
+//           id: existing._id,
+//           approvers: existing.approverId.map((a) => ({
+//             _id: a._id,
+//             email: a.user?.email,
+//           })),
+//           status: existing.status,
+//           conditionEnabled: existing.isConditionMet || false,
+//           condition: existing.conditions || [],
+//         };
+//       });
+
+//       setHierarchyData(levels);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (importTypeId && scopeId) {
+//       fetchApprovers();
+//       fetchHierarchyData();
+//     } else {
+//       setHierarchyData(createDefaultLevels());
+//     }
+//   }, [importTypeId, scopeId]);
+
+//   useEffect(() => {
+//     if (companiesLoaded) fetchHierarchyData();
+//   }, [companiesLoaded]);
+
+//   useEffect(() => {
+//     setEditingLevel(null);
+//     setHasChanges(false);
+//   }, [companyId]);
+
+//   const updateField = (level, field, value) => {
+//     setHierarchyData((prev) =>
+//       prev.map((row) =>
+//         row.level === level ? { ...row, [field]: value } : row
+//       )
+//     );
+//     setHasChanges(true);
+//   };
+
+//   const handleStatusToggle = async (row) => {
+//     try {
+//       const newStatus = !row.status;
+
+//       const confirm = await swal({
+//         title: "Are you sure?",
+//         text: `Do you want to ${
+//           newStatus ? "activate" : "deactivate"
+//         } Level ${row.level}?`,
+//         icon: "warning",
+//         buttons: true,
+//         dangerMode: true,
+//       });
+
+//       if (!confirm) return;
+
+//       await userRequest.put("/imt/updateHierarchyStepStatus", {
+//         _id: approvalTypeId,
+//         level: row.level,
+//         status: newStatus,
+//       });
+
+//       fetchHierarchyData();
+//       swal("Success", "Status updated successfully", "success");
+//     } catch (e) {
+//       showErrorMessage(e, "Status update failed", swal);
+//     }
+//   };
+
+//   const handleConditionToggle = async (row) => {
+//     try {
+//       const newStatus = !row.conditionEnabled;
+
+//       const confirm = await swal({
+//         title: "Are you sure?",
+//         text: `Do you want to ${
+//           newStatus ? "enable" : "disable"
+//         } condition for Level ${row.level}?`,
+//         icon: "warning",
+//         buttons: true,
+//         dangerMode: true,
+//       });
+
+//       if (!confirm) return;
+
+//       await userRequest.put("/imt/updateHierarchyStepIsConditionMet", {
+//         _id: approvalTypeId,
+//         level: row.level,
+//         isConditionMet: newStatus,
+//       });
+
+//       fetchHierarchyData();
+//       swal("Success", "Condition status updated", "success");
+//     } catch (e) {
+//       showErrorMessage(e, "Condition toggle failed", swal);
+//     }
+//   };
+
+//   const handleSaveConditions = async (conditions) => {
+//     try {
+//       await userRequest.put("/imt/updateHierarchyStepConditions", {
+//         _id: approvalTypeId,
+//         level: selectedLevel.level,
+//         conditions,
+//       });
+
+//       setConditionModalOpen(false);
+//       fetchHierarchyData();
+//     } catch (e) {
+//       showErrorMessage(e, "Failed to save conditions", swal);
+//     }
+//   };
+
+//   const handleUpdateApprovers = async () => {
+//     try {
+//       setLoading(true);
+
+//       const currentLevel = hierarchyData.find(
+//         (l) => l.level === editingLevel
+//       );
+
+//       await userRequest.put("/imt/updateHierarchyStepApproverId", {
+//         _id: approvalTypeId,
+//         level: currentLevel.level,
+//         approverId: currentLevel.approvers.map((a) => a._id),
+//       });
+
+//       swal("Success", "Approvers updated successfully", "success");
+//       setHasChanges(false);
+//       setEditingLevel(null);
+//       fetchHierarchyData();
+//     } catch (e) {
+//       showErrorMessage(e, "Approver update failed", swal);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <Box>
+//       {loading ? (
+//         <Fade in>
+//           <Box
+//             sx={{
+//               display: "flex",
+//               flexDirection: "column",
+//               justifyContent: "center",
+//               alignItems: "center",
+//               height: "250px",
+//               width: "100%",
+//               gap: 2,
+//             }}
+//           >
+//             <CircularProgress size={40} />
+//             <Typography variant="body2" color="text.secondary">
+//               Loading hierarchy data...
+//             </Typography>
+//           </Box>
+//         </Fade>
+//       ) : (
+//         <Fade in>
+//           <TableContainer component={Paper}>
+//             <Table>
+//               <TableHead>
+//                 <TableRow>
+//                   <TableCell align="center" sx={{ width: "120px" }}>
+//                     Level
+//                   </TableCell>
+//                   <TableCell align="center" sx={{ width: "400px" }}>
+//                     Approvers
+//                   </TableCell>
+//                   <TableCell align="center" sx={{ width: "120px" }}>
+//                     Condition
+//                   </TableCell>
+//                   <TableCell align="center" sx={{ width: "300px" }}>
+//                     Condition Details
+//                   </TableCell>
+//                   <TableCell align="center" sx={{ width: "180px" }}>
+//                     Actions
+//                   </TableCell>
+//                 </TableRow>
+//               </TableHead>
+
+//               <TableBody>
+//                 {hierarchyData.map((row) => (
+//                   <TableRow key={row.level}>
+//                     <TableCell align="center">
+//                       <Typography variant="body1">{row.level}</Typography>
+//                     </TableCell>
+
+//                     <TableCell align="center">
+//                       {editingLevel === row.level ? (
+//                         <Box
+//                           sx={{
+//                             display: "flex",
+//                             justifyContent: "center",
+//                             width: "100%",
+//                           }}
+//                         >
+//                           <Autocomplete
+//                             multiple
+//                             size="small"
+//                             options={approvers}
+//                             value={row.approvers}
+//                             getOptionLabel={(o) => o.email}
+//                             onChange={(_, v) =>
+//                               updateField(row.level, "approvers", v)
+//                             }
+//                             renderInput={(params) => (
+//                               <TextField
+//                                 {...params}
+//                                 placeholder="Select approvers..."
+//                                 size="small"
+//                               />
+//                             )}
+//                             sx={{ width: "70%" }}
+//                           />
+//                         </Box>
+//                       ) : (
+//                         <Box
+//                           sx={{
+//                             display: "flex",
+//                             flexWrap: "wrap",
+//                             gap: 1,
+//                             justifyContent: "center",
+//                           }}
+//                         >
+//                           {row.approvers.length ? (
+//                             row.approvers.map((a) => (
+//                               <Chip
+//                                 key={a._id}
+//                                 label={a.email}
+//                                 size="small"
+//                                 variant="outlined"
+//                                 color="primary"
+//                               />
+//                             ))
+//                           ) : (
+//                             <Typography
+//                               variant="body2"
+//                               color="text.secondary"
+//                             >
+//                               No approvers assigned
+//                             </Typography>
+//                           )}
+//                         </Box>
+//                       )}
+//                     </TableCell>
+
+//                     <TableCell align="center">
+//                       <Switch
+//                         checked={row.conditionEnabled}
+//                         onChange={() => handleConditionToggle(row)}
+//                       />
+//                     </TableCell>
+
+//                     <TableCell align="center">
+//                       {row.conditionEnabled && row.condition.length ? (
+//                         <Box
+//                           sx={{
+//                             display: "flex",
+//                             flexDirection: "column",
+//                             gap: 0.5,
+//                           }}
+//                         >
+//                           {row.condition.map((c, i) => (
+//                             <Typography key={i} variant="body2">
+//                               {c.field}{" "}
+//                               {c.operator.replace("_", " ")} {c.value}
+//                             </Typography>
+//                           ))}
+//                         </Box>
+//                       ) : (
+//                         <Typography
+//                           variant="body2"
+//                           color="text.secondary"
+//                         >
+//                           No Condition
+//                         </Typography>
+//                       )}
+//                     </TableCell>
+
+//                     <TableCell align="center">
+//                       <Box
+//                         sx={{
+//                           display: "flex",
+//                           alignItems: "center",
+//                           justifyContent: "center",
+//                           gap: 1,
+//                         }}
+//                       >
+//                         {row.conditionEnabled && (
+//                           <Tooltip title="Condition Settings">
+//                             <IconButton
+//                               size="small"
+//                               sx={{
+//                                 color: theme.palette.primary.main,
+//                                 "&:hover": {
+//                                   backgroundColor:
+//                                     theme.palette.primary.lighter,
+//                                 },
+//                               }}
+//                               onClick={() => {
+//                                 setSelectedLevel(row);
+//                                 setConditionModalOpen(true);
+//                               }}
+//                             >
+//                               <Iconify icon="mdi:cog-outline" />
+//                             </IconButton>
+//                           </Tooltip>
+//                         )}
+
+//                         <Tooltip title="Edit Approvers">
+//                           <IconButton
+//                             size="small"
+//                             onClick={() =>
+//                               setEditingLevel(
+//                                 editingLevel === row.level
+//                                   ? null
+//                                   : row.level
+//                               )
+//                             }
+//                             sx={{
+//                               color: theme.palette.primary.main,
+//                               backgroundColor:
+//                                 editingLevel === row.level
+//                                   ? theme.palette.primary.lighter
+//                                   : "transparent",
+//                               "&:hover": {
+//                                 backgroundColor:
+//                                   theme.palette.primary.lighter,
+//                               },
+//                             }}
+//                           >
+//                             <Iconify icon="eva:edit-fill" />
+//                           </IconButton>
+//                         </Tooltip>
+
+//                         <Tooltip
+//                           title={
+//                             row.status
+//                               ? "Deactivate Level"
+//                               : "Activate Level"
+//                           }
+//                         >
+//                           <Switch
+//                             checked={row.status}
+//                             onChange={() => handleStatusToggle(row)}
+//                           />
+//                         </Tooltip>
+//                       </Box>
+//                     </TableCell>
+//                   </TableRow>
+//                 ))}
+//               </TableBody>
+//             </Table>
+//           </TableContainer>
+//         </Fade>
+//       )}
+
+//       {hasChanges && (
+//         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+//           <Button
+//             variant="contained"
+//             startIcon={<UpdateIcon />}
+//             onClick={handleUpdateApprovers}
+//             sx={{ minWidth: 150, py: 1.5 }}
+//           >
+//             Update Approvers
+//           </Button>
+//         </Box>
+//       )}
+
+//       {conditionModalOpen && selectedLevel && (
+//         <ConditionModal
+//           open={conditionModalOpen}
+//           onClose={() => setConditionModalOpen(false)}
+//           onSave={handleSaveConditions}
+//           initialConditions={selectedLevel.condition}
+//           levelNumber={selectedLevel.level}
+//         />
+//       )}
+//     </Box>
+//   );
+// }
+
+
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -531,6 +1011,9 @@ export default function HierarchyTable({
           approvers: existing.approverId.map((a) => ({
             _id: a._id,
             email: a.user?.email,
+            username: a.user?.username,
+            userId: a.userId,
+            userRoleId: a._id, // REQUIRED FOR MULTIPLE APPROVER UPDATE
           })),
           status: existing.status,
           conditionEnabled: existing.isConditionMet || false,
@@ -655,7 +1138,9 @@ export default function HierarchyTable({
       await userRequest.put("/imt/updateHierarchyStepApproverId", {
         _id: approvalTypeId,
         level: currentLevel.level,
-        approverId: currentLevel.approvers.map((a) => a._id),
+        approverId: currentLevel.approvers.map(
+          (a) => a._id || a.userRoleId
+        ),
       });
 
       swal("Success", "Approvers updated successfully", "success");
@@ -735,7 +1220,9 @@ export default function HierarchyTable({
                             size="small"
                             options={approvers}
                             value={row.approvers}
-                            getOptionLabel={(o) => o.email}
+                            getOptionLabel={(o) =>
+                              `${o.username || ""} (${o.email})`
+                            }
                             onChange={(_, v) =>
                               updateField(row.level, "approvers", v)
                             }
@@ -804,10 +1291,7 @@ export default function HierarchyTable({
                           ))}
                         </Box>
                       ) : (
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                        >
+                        <Typography variant="body2" color="text.secondary">
                           No Condition
                         </Typography>
                       )}
@@ -899,7 +1383,7 @@ export default function HierarchyTable({
             onClick={handleUpdateApprovers}
             sx={{ minWidth: 150, py: 1.5 }}
           >
-            Update Approvers
+            Update 
           </Button>
         </Box>
       )}

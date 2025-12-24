@@ -15,7 +15,8 @@ import swal from "sweetalert";
 import { showErrorMessage } from "src/utils/errorUtils";
 const AddReportAccess = lazy(() => import("../components/Modals/AddAccessReport"));
 const AddUserManagementAccess = lazy(()=> import("../components/Modals/AddUserMangementtAccess"));
-const menuItems = ["Report","User Management"];
+const AddOutputDocumentAccess = lazy(() => import("../components/Modals/AddAccessOutputDocument"));
+const menuItems = ["Report","User Management","Out Put Document"];
 
 export default function ImportPaymentAccessPoint() {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -51,10 +52,17 @@ export default function ImportPaymentAccessPoint() {
   };
 
   // Choose API endpoint based on selected tab
-      const apiEndpoint =
-        selectedCategory === 'Report'
-          ? "/imt/getAccessPoints?place=report"
-          : "/imt/getAccessPoints?place=usermanagement";
+      // const apiEndpoint =
+      //   selectedCategory === 'Report'
+      //     ? "/imt/getAccessPoints?place=report"
+      //     : "/imt/getAccessPoints?place=usermanagement";
+  const API_MAP = {
+  Report: "/imt/getAccessPoints?place=report",
+  "User Management": "/imt/getAccessPoints?place=usermanagement",
+  "Out Put Document": "/imt/getAccessPoints?place=output_document",
+};
+
+const apiEndpoint = API_MAP[selectedCategory];        
 
   const getData = useCallback(async () => {
     try {
@@ -301,6 +309,17 @@ export default function ImportPaymentAccessPoint() {
           {open && selectedTab === 1 && (
             <Suspense fallback={<CircularIndeterminate />}>
               <AddUserManagementAccess
+                handleClose={handleClose}
+                open={open}
+                getData={getData}
+                editData={editData}
+              />
+            </Suspense>
+          )}
+
+          {open && selectedTab === 2 && (
+            <Suspense fallback={<CircularIndeterminate />}>
+              <AddOutputDocumentAccess
                 handleClose={handleClose}
                 open={open}
                 getData={getData}

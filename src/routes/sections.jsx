@@ -86,6 +86,10 @@ const ImportPaymentUploadPage = lazy(() =>
   import("src/features/import-payment/upload/pages/ImportPaymentUpload")
 );
 
+const ImportPaymentRequestPage = lazy(()=> 
+  import("src/features/import-payment/request/pages/ImportPaymentRequest")
+);
+
 const ImportPaymentMasterPage = lazy(() =>
   import("src/features/import-payment/master/pages/ImportPaymentMaster")
 );
@@ -442,6 +446,15 @@ export default function Router() {
           ),
         },
          {
+          path: "/import-payment/request",
+          element: (
+            <ProtectedRoute
+              path="/import-payment/request"
+              element={<ImportPaymentRequestPage />}
+            />
+          ),
+        },
+         {
           path: "/import-payment/upload/:requestNo",
           element: (
             <ProtectedRoute
@@ -469,10 +482,10 @@ export default function Router() {
           ),
         },
         {
-          path: "/import-payment/request",
+          path: "/import-payment/raised-request",
           element: (
             <ProtectedRoute
-              path="/import-payment/request"
+              path="/import-payment/raised-request"
               element={<IMTRaiseRequest />}
             />
           ),
