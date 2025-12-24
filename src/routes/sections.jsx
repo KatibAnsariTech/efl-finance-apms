@@ -70,6 +70,9 @@ const JVRequestByRequestNoPage = lazy(() =>
 const JVMReportPage = lazy(() =>
   import("src/features/jvm/report/pages/JVMReport")
 );
+const JVMHierarchyManagementPage = lazy(() =>
+  import("src/features/jvm/hierarchy-management/pages/HierarchyManagement")
+);
 
 const ImportPaymentPage = lazy(() =>
   import("src/features/import-payment/dashboard/pages/ImportPayment")
@@ -370,6 +373,15 @@ export default function Router() {
             <ProtectedRoute
               path="/jvm/usermanagement"
               element={<JVMUserManagementPage />}
+            />
+          ),
+        },
+        {
+          path: "/jvm/hierarchy-management",
+          element: (
+            <ProtectedRoute
+              path="/jvm/hierarchy-management"
+              element={<JVMHierarchyManagementPage />}
             />
           ),
         },

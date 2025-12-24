@@ -295,12 +295,6 @@ export default function JVByRequestNo() {
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                   Approval History
                 </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => setOpenStatusModal(true)}
-                >
-                  View Full History
-                </Button>
               </Box>
               <JVCurrentStatus steps={jvData.steps || []} data={jvData} />
             </Box>
