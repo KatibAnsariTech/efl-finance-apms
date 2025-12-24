@@ -78,6 +78,7 @@ export const getCurrentTitle = (path) => {
   // Auth routes
   if (path.startsWith("/login")) return "Login";
   if (path.startsWith("/otp-verification")) return "OTP Verification";
+  if (path.startsWith("/verify-otp")) return "Verify OTP";
   if (path.startsWith("/reset-password")) return "Reset Password";
 
   // settings routes

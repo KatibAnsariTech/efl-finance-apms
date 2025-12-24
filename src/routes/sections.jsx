@@ -734,16 +734,16 @@ export default function Router() {
         </Suspense>
       ),
     },
-    {
-      path: "/two-factor-otp",
-      element: isLoggedIn ? (
-        <Navigate to="/" replace />
-      ) : (
-        <Suspense>
-          <TwoFactorOTPPage />
-        </Suspense>
-      ),
-    },
+      {
+        path: "/verify-otp",
+        element: isLoggedIn ? (
+          <Navigate to="/" replace />
+        ) : (
+          <Suspense>
+            <TwoFactorOTPPage />
+          </Suspense>
+        ),
+      },
     // Azure SSO - Commented out
     // {
     //   path: "/azure-redirect",

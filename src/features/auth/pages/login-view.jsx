@@ -51,7 +51,7 @@ export default function LoginView() {
       // Backend sends OTP automatically and returns success message
       // Redirect to 2FA OTP verification page
       if (response.data?.success && response.data?.message?.includes("OTP sent")) {
-        navigate("/two-factor-otp", {
+        navigate("/verify-otp", {
           state: {
             email: data.email,
           },
