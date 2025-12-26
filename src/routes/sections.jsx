@@ -212,8 +212,14 @@ export default function Router() {
   const user = JSON.parse(localStorage.getItem("user"));
   
   // Check if user has SUPER_ADMIN role in any project
-  const isSAdmin = user?.userRoles?.some(role => role.userType === "SUPER_ADMIN") || 
-                   Object.values(user?.projectRoles || {}).includes("SUPER_ADMIN");
+  const isSAdmin = user?.userRoles?.some(role => {
+    const userTypes = Array.isArray(role.userType) ? role.userType : [role.userType];
+    return userTypes.includes("SUPER_ADMIN");
+  }) || 
+  Object.values(user?.projectRoles || {}).some(userType => {
+    const userTypes = Array.isArray(userType) ? userType : [userType];
+    return userTypes.includes("SUPER_ADMIN");
+  });
 
   const AdminRoute = ({ children }) => {
     return isSAdmin ? children : <Navigate to="/" replace />;

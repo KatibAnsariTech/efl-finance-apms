@@ -72,7 +72,11 @@ export default function HierarchyManagementView() {
             <Autocomplete
               sx={{ minWidth: 300 }}
               options={Array.isArray(initiators) ? initiators : []}
-              getOptionLabel={(option) => option.name || option.username || ""}
+              getOptionLabel={(option) => {
+                const name = option.name || option.username || "";
+                const email = option.email || "";
+                return email ? `${name} (${email})` : name;
+              }}
               value={initiators.find(initiator => 
                 initiator._id === selectedInitiator || 
                 initiator.userRoleId === selectedInitiator || 

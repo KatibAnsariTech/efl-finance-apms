@@ -22,13 +22,9 @@ const permissionLabels = {
 };
 import Iconify from "src/components/iconify";
 import { fDateTime } from "src/utils/format-time";
-const AddRequester = lazy(() => import("./Modals/AddRequester"));
-const AddAdmin = lazy(() => import("./Modals/AddAdmin"));
-const AddSuperAdmin = lazy(() => import("./Modals/AddSuperAdmin"));
-const AddApprover = lazy(() => import("./Modals/AddApprover"));
+const AddUser = lazy(() => import("./Modals/AddUser"));
 
-// const menuItems = ["Requester", "Approver", "Admin", "Super Admin"];
-const menuItems = ["Requester", "Approver"];
+const menuItems = ["Users"]; // Admin and Super Admin tabs hidden for now
 
 export default function UserManagementView() {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -42,7 +38,6 @@ export default function UserManagementView() {
   const [orderBy, setOrderBy] = useState("createdAt");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [editData, setEditData] = useState(null);
-  const selectedCategory = menuItems[selectedTab];
 
   const handleEdit = (row, event) => {
     if (event) {
@@ -98,41 +93,43 @@ export default function UserManagementView() {
   };
 
   const getAPIURL = () => {
+    // Base URL for getting JVM users
+    return "jvm/getJVMUsers";
+  };
+
+  const getUserTypeFilter = () => {
     switch (selectedTab) {
-      case 0:
-        return "jvm/getJVMUsersByUserType?userType=REQUESTER";
-      case 1:
-        return "jvm/getJVMUsersByUserType?userType=APPROVER";
-      case 2:
-        return "/admin/getAllAdmins?type=ADMIN";
-      case 3:
-        return "/admin/getAllAdmins?type=SUPER_ADMIN";
+      case 0: // Users tab - REQUESTER and APPROVER
+        return "REQUESTER,APPROVER";
+      case 1: // Admin tab
+        return "ADMIN";
+      case 2: // Super Admin tab
+        return "SUPER_ADMIN";
       default:
-        return "jvm/getJVMUsersByUserType?userType=REQUESTER";
+        return "REQUESTER,APPROVER";
     }
   };
 
   const getData = async () => {
     try {
       setLoading(true);
-      const res = await userRequest.get(getAPIURL(), {
-        params: {
-          page: page + 1,
-          limit: rowsPerPage,
-          search: debouncedSearch,
-        },
-      });
+      const userTypeFilter = getUserTypeFilter();
+      const params = {
+        page: page + 1,
+        limit: rowsPerPage,
+        search: debouncedSearch,
+      };
 
-      // Handle different response structures for JVM vs Admin APIs
-      if (selectedTab === 0 || selectedTab === 1) {
-        // JVM API response structure: data.data.data and data.data.pagination
-        setData(res?.data?.data?.data || []);
-        setTotalCount(res?.data?.data?.pagination?.totalCount || 0);
-      } else {
-        // Admin API response structure
-        setData(res?.data?.data?.admins || []);
-        setTotalCount(res?.data?.data?.total || 0);
+      // Add userType filter if not empty
+      if (userTypeFilter) {
+        params.userType = userTypeFilter;
       }
+
+      const res = await userRequest.get(getAPIURL(), { params });
+
+      // JVM API response structure: data.data.data and data.data.pagination
+      setData(res?.data?.data?.data || []);
+      setTotalCount(res?.data?.data?.pagination?.totalCount || 0);
       setLoading(false);
     } catch (err) {
       console.log("err:", err);
@@ -190,6 +187,19 @@ export default function UserManagementView() {
 
   let notFound = !dataFiltered.length && !!search;
 
+  const getAddButtonText = () => {
+    switch (selectedTab) {
+      case 0:
+        return "Add User";
+      case 1:
+        return "Add Admin";
+      case 2:
+        return "Add Super Admin";
+      default:
+        return "Add User";
+    }
+  };
+
   return (
     <Container>
       <MasterTabs
@@ -209,22 +219,23 @@ export default function UserManagementView() {
             search={search}
             onFilterChange={handleFilterChange}
           />
-          <div
-            style={{
+          <Box
+            onClick={handleOpen}
+            sx={{
               display: "flex",
+              alignItems: "center",
               justifyContent: "center",
-              alignItems: "center",
-              alignItems: "center",
-              fontSize: "0.8rem",
-              fontWeight: "bold",
+              fontSize: "0.875rem",
+              fontWeight: 600,
               cursor: "pointer",
-              gap: "8px",
+              color: "primary.main",
+              "&:hover": {
+                textDecoration: "underline",
+              },
             }}
           >
-            <span onClick={handleOpen} style={{ color: "#167beb" }}>
-              Add {menuItems[selectedTab]}
-            </span>
-          </div>
+            {getAddButtonText()}
+          </Box>
         </div>
         {/* {open && (
           <Suspense fallback={<CircularIndeterminate />}>
@@ -238,45 +249,15 @@ export default function UserManagementView() {
           </Suspense>
         )} */}
 
-        {/* Conditionally render modals based on selected tab */}
-        {open && selectedTab === 0 && (
+        {/* Unified Add User Modal */}
+        {open && (
           <Suspense fallback={<CircularIndeterminate />}>
-            <AddRequester
+            <AddUser
               handleClose={handleClose}
               open={open}
               getData={getData}
               editData={editData}
-            />
-          </Suspense>
-        )}
-
-        {open && selectedTab === 1 && (
-          <Suspense fallback={<CircularIndeterminate />}>
-            <AddApprover
-              handleClose={handleClose}
-              open={open}
-              getData={getData}
-              editData={editData}
-            />
-          </Suspense>
-        )}
-        {open && selectedTab === 2 && (
-          <Suspense fallback={<CircularIndeterminate />}>
-            <AddAdmin
-              handleClose={handleClose}
-              open={open}
-              getData={getData}
-              editData={editData}
-            />
-          </Suspense>
-        )}
-        {open && selectedTab === 3 && (
-          <Suspense fallback={<CircularIndeterminate />}>
-            <AddSuperAdmin
-              handleClose={handleClose}
-              open={open}
-              getData={getData}
-              editData={editData}
+              selectedTab={selectedTab}
             />
           </Suspense>
         )}
@@ -296,58 +277,120 @@ export default function UserManagementView() {
                 .map((col) => ({
                   field: col.name || col.id, 
                   headerName: col.label,
-                  width: col.width || 150,
+                  width: col.width || col.minWidth || 150,
                   minWidth: col.minWidth || 100,
-                  // maxWidth: col.maxWidth || 300,
+                  flex: col.id === "email" || col.id === "name" ? 1 : undefined,
                   sortable: col.sortable !== false,
-                  align: col.align || "center",
-                  headerAlign: col.align || "center",
+                  align: col.align || (col.id === "sno" ? "center" : "left"),
+                  headerAlign: col.align || (col.id === "sno" ? "center" : "left"),
                   resizable: true,
                   renderCell: (params) => {
                     if (col.id === "createdAt") {
                       return fDateTime(params.value);
                     }
                     if (col.id === "userType") {
+                      // Handle userType as array or string
+                      const userTypes = Array.isArray(params.value) ? params.value : (params.value ? [params.value] : []);
+                      if (userTypes.length === 0) return "-";
+                      
                       return (
-                        <Chip
-                          label={params.value}
-                          color={
-                            params.value === "SUPER_ADMIN"
-                              ? "error"
-                              : params.value === "ADMIN"
-                              ? "warning"
-                              : params.value === "APPROVER"
-                              ? "info"
-                              : "default"
-                          }
-                          size="small"
-                        />
+                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", justifyContent: col.align === "center" ? "center" : "flex-start" }}>
+                          {userTypes.map((type, index) => (
+                            <Chip
+                              key={index}
+                              label={type}
+                              variant="outlined"
+                              color={
+                                type === "SUPER_ADMIN"
+                                  ? "error"
+                                  : type === "ADMIN"
+                                  ? "warning"
+                                  : "default"
+                              }
+                              size="small"
+                              sx={{ 
+                                fontSize: "0.75rem",
+                                backgroundColor: "transparent",
+                                ...(type === "APPROVER" && {
+                                  borderColor: "rgba(0, 0, 0, 0.23)",
+                                  color: "rgba(0, 0, 0, 0.87)",
+                                }),
+                                "& .MuiChip-label": {
+                                  padding: "0 8px",
+                                }
+                              }}
+                            />
+                          ))}
+                        </Box>
                       );
                     }
                     if (col.id === "name") {
-                      return params.row.username || "-";
+                      return (
+                        <Box sx={{ textAlign: col.align === "center" ? "center" : "left" }}>
+                          {params.row.username || "-"}
+                        </Box>
+                      );
+                    }
+                    if (col.id === "email") {
+                      return (
+                        <Box sx={{ textAlign: col.align === "center" ? "center" : "left" }}>
+                          {params.value || "-"}
+                        </Box>
+                      );
                     }
                     if (col.id === "company") {
                       // Handle company display - can be array or single object
                       if (!params.value) {
-                        return "-";
+                        return (
+                          <Box sx={{ textAlign: col.align === "center" ? "center" : "left", color: "text.secondary" }}>
+                            -
+                          </Box>
+                        );
                       }
+                      
+                      let companyNames = [];
+                      
                       if (Array.isArray(params.value)) {
                         if (params.value.length === 0) {
-                          return "-";
+                          return (
+                            <Box sx={{ textAlign: col.align === "center" ? "center" : "left", color: "text.secondary" }}>
+                              -
+                            </Box>
+                          );
                         }
                         // If array contains objects with name/value property
-                        const companyNames = params.value.map((comp) => {
+                        companyNames = params.value.map((comp) => {
                           if (typeof comp === 'string') return comp;
                           return comp?.name || comp?.value || comp?.label || "-";
                         });
-                        return companyNames.join(", ");
+                      } else if (typeof params.value === 'object') {
+                        // Single company object
+                        const companyName = params.value?.name || params.value?.value || params.value?.label || "-";
+                        companyNames = [companyName];
+                      } else {
+                        // Single string value
+                        companyNames = [params.value];
                       }
-                      // Single company object
-                      if (typeof params.value === 'object') {
-                        return params.value?.name || params.value?.value || params.value?.label || "-";
-                      }
-                      return params.value || "-";
+                      
+                      return (
+                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", justifyContent: col.align === "center" ? "center" : "flex-start" }}>
+                          {companyNames.map((companyName, index) => (
+                            <Chip
+                              key={index}
+                              label={companyName}
+                              variant="outlined"
+                              size="small"
+                              sx={{ 
+                                fontSize: "0.75rem",
+                                backgroundColor: "transparent",
+                                "& .MuiChip-label": {
+                                  padding: "0 8px",
+                                }
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      );
                     }
                     if (col.id === "mastersheetPermissions") {
                       if (
@@ -369,12 +412,14 @@ export default function UserManagementView() {
                 field: "action",
                 headerName: "Actions",
                 width: 120,
+                minWidth: 120,
                 sortable: false,
                 align: "center",
                 headerAlign: "center",
                 disableColumnMenu: true,
                 disableReorder: true,
                 disableExport: true,
+                pinned: "right",
                 renderCell: (params) => (
                   <Box
                     onClick={(event) => event.stopPropagation()}
@@ -428,7 +473,6 @@ export default function UserManagementView() {
             disableRowSelectionOnClick
             sx={{
               "& .MuiDataGrid-cell": {
-                justifyContent: "center",
                 display: "flex",
                 alignItems: "center",
                 "&:focus": {
@@ -440,20 +484,26 @@ export default function UserManagementView() {
               },
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: "#f5f6f8",
-                fontWeight: "bold",
+                fontWeight: 600,
                 color: "#637381",
+                borderBottom: "2px solid #e0e0e0",
               },
               "& .MuiDataGrid-columnHeaderTitle": {
-                width: "100%",
-                textAlign: "center",
+                fontWeight: 600,
               },
               "& .MuiDataGrid-row": {
+                "&:hover": {
+                  backgroundColor: "#f9fafb",
+                },
                 "&:focus": {
                   outline: "none",
                 },
                 "&:focus-visible": {
                   outline: "none",
                 },
+              },
+              "& .MuiDataGrid-cellContent": {
+                overflow: "visible",
               },
             }}
           />

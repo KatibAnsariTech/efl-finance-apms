@@ -15,7 +15,9 @@ export const getUser = async (token) => {
       const processedUser = {
         ...user,
         projectRoles: user.userRoles.reduce((acc, role) => {
-          acc[role.projectType] = role.userType;
+          // Normalize userType to always be an array
+          const userTypes = Array.isArray(role.userType) ? role.userType : [role.userType];
+          acc[role.projectType] = userTypes;
           return acc;
         }, {}),
         accessibleProjects: user.userRoles.map(role => role.projectType)
