@@ -1,67 +1,49 @@
 export const headLabel = (selectedTab) => {
+  const baseColumns = [
+    { id: "sno", label: "S.No.", minWidth: 80, width: 80, align: "center" },
+    {
+      id: "name",
+      name: "username",
+      label: "Name",
+      minWidth: 200,
+      width: 250,
+      sortable: true,
+    },
+    {
+      id: "email",
+      name: "email",
+      label: "Email",
+      minWidth: 250,
+      width: 300,
+      sortable: true,
+    },
+  ];
+
   switch (selectedTab) {
-    case 0:
+    case 0: // Users tab (REQUESTER, APPROVER)
       return [
-        { id: "sno", label: "S.No.", minWidth: 90, align: "center" },
+        ...baseColumns,
         {
-          id: "name",
-          name: "username",
-          label: "Name",
-          minWidth: 300,
-          sortable: true,
-        },
-        {
-          id: "email",
-          name: "email",
-          label: "Email",
-          minWidth: 300,
-          sortable: true,
+          id: "userType",
+          name: "userType",
+          label: "User Type",
+          minWidth: 180,
+          width: 200,
+          sortable: false,
         },
         {
           id: "company",
           name: "company",
           label: "Company",
-          minWidth: 250,
+          minWidth: 200,
+          width: 250,
           sortable: false,
         },
-        { id: "action", label: "Action", minWidth: 180 },
+        { id: "action", label: "Actions", minWidth: 120, width: 120 },
       ];
-    case 1:
+    case 1: // Admin tab
       return [
-        { id: "sno", label: "S.No.", minWidth: 90, align: "center" },
-        {
-          id: "name",
-          name: "username",
-          label: "Name",
-          minWidth: 300,
-          sortable: true,
-        },
-        {
-          id: "email",
-          name: "email",
-          label: "Email",
-          minWidth: 300,
-          sortable: true,
-        },
-        { id: "action", label: "Action", minWidth: 180 },
-      ];
-    case 2:
-      return [
-        { id: "sno", label: "S.No.", minWidth: 60, align: "center" },
-        {
-          id: "name",
-          name: "username",
-          label: "Name",
-          minWidth: 180,
-          sortable: true,
-        },
-        {
-          id: "email",
-          name: "email",
-          label: "Email",
-          minWidth: 180,
-          sortable: true,
-        },
+        ...baseColumns,
         {
           id: "mastersheetPermissions",
           name: "mastersheetPermissions",
@@ -69,24 +51,29 @@ export const headLabel = (selectedTab) => {
           minWidth: 500,
           sortable: true,
         },
-        { id: "action", label: "Action", minWidth: 150 },
+        { id: "action", label: "Action", minWidth: 180 },
       ];
-    case 3:
+    case 2: // Super Admin tab
       return [
-        { id: "sno", label: "S.No.", minWidth: 90, align: "center" },
+        ...baseColumns,
+        { id: "action", label: "Action", minWidth: 180 },
+      ];
+    default:
+      return [
+        ...baseColumns,
         {
-          id: "name",
-          name: "username",
-          label: "Name",
-          minWidth: 300,
-          sortable: true,
+          id: "userType",
+          name: "userType",
+          label: "User Type",
+          minWidth: 200,
+          sortable: false,
         },
         {
-          id: "email",
-          name: "email",
-          label: "Email",
-          minWidth: 300,
-          sortable: true,
+          id: "company",
+          name: "company",
+          label: "Company",
+          minWidth: 250,
+          sortable: false,
         },
         { id: "action", label: "Action", minWidth: 180 },
       ];

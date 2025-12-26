@@ -278,6 +278,18 @@ const projectConfig = {
 export const generateNavigationConfig = (accessibleProjects, userRoles, user = null) => {
   const navItems = [];
 
+  // Helper function to check if userType (array or string) includes any of the required roles
+  const hasUserType = (userType, requiredRoles) => {
+    const userTypes = Array.isArray(userType) ? userType : [userType];
+    return userTypes.some(type => requiredRoles.includes(type));
+  };
+
+  // Helper function to check if userType (array or string) includes a specific role
+  const includesUserType = (userType, role) => {
+    const userTypes = Array.isArray(userType) ? userType : [userType];
+    return userTypes.includes(role);
+  };
+
   accessibleProjects.forEach((projectType) => {
     if (projectConfig[projectType]) {
       const project = projectConfig[projectType];
@@ -288,9 +300,9 @@ export const generateNavigationConfig = (accessibleProjects, userRoles, user = n
         if (projectType === "IMT") {
           // Report: Show if report is available in accessPoints, except for SUPER_ADMIN (SUPER_ADMIN uses role-based filtering)
           if (subItem.id === "report") {
-            if (userType === "SUPER_ADMIN") {
+            if (includesUserType(userType, "SUPER_ADMIN")) {
               // SUPER_ADMIN uses default role-based filtering
-              return subItem.roles.includes(userType);
+              return hasUserType(userType, subItem.roles);
             }
             // For non-SUPER_ADMIN: check if accessPoints.report exists
             const hasReportAccess = user?.accessPoints?.report !== undefined;
@@ -300,12 +312,12 @@ export const generateNavigationConfig = (accessibleProjects, userRoles, user = n
           // Upload Payment: Show for APPROVER if output_document is available in accessPoints
           if (subItem.id === "import-payment-upload") {
             const hasOutputDocumentAccess = user?.accessPoints?.output_document !== undefined;
-            return userType === "APPROVER" && hasOutputDocumentAccess;
+            return includesUserType(userType, "APPROVER") && hasOutputDocumentAccess;
           }
         }
         
         // Default role-based filtering
-        return subItem.roles.includes(userType);
+        return hasUserType(userType, subItem.roles);
       });
 
       if (filteredSubItems.length > 0) {
@@ -351,8 +363,12 @@ export const generateNavigationConfig = (accessibleProjects, userRoles, user = n
   // });
 
   // Get all unique user roles across all projects
-  
-  const allUserRoles = [...new Set(Object.values(userRoles))];
+  // Flatten arrays and get unique values
+  const allUserRoles = [...new Set(
+    Object.values(userRoles).flatMap(userType => 
+      Array.isArray(userType) ? userType : [userType]
+    )
+  )];
   const settingsSubItems = [
     {
       id: "profile",
