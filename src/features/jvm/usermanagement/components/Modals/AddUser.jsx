@@ -127,15 +127,24 @@ function AddUser({ handleClose, open, editData, getData, selectedTab = 0 }) {
         setValue("company", []);
       }
     } else if (!isRequesterSelected) {
+      // Clear company when REQUESTER is not selected
       setValue("company", []);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editData, companyOptions, setValue, isRequesterSelected]);
 
+  // Clear company field when REQUESTER is deselected
+  useEffect(() => {
+    if (!isRequesterSelected) {
+      setValue("company", []);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRequesterSelected, setValue]);
+
   const handleSaveData = async (data) => {
     try {
       // Extract company IDs from selected company options (only if REQUESTER is selected)
-      const companyIds = isRequesterSelected && Array.isArray(data.company)
+      const companyIds = isRequesterSelected && Array.isArray(data.company) && data.company.length > 0
         ? data.company.map((comp) => (typeof comp === 'object' ? comp.value : comp))
         : [];
 
@@ -149,9 +158,12 @@ function AddUser({ handleClose, open, editData, getData, selectedTab = 0 }) {
           userType: data.userType, // Array of user types
         };
         
-        // Only include company if REQUESTER is selected
-        if (isRequesterSelected) {
+        // Only include company if REQUESTER is selected and company IDs exist
+        if (isRequesterSelected && companyIds.length > 0) {
           updateData.company = companyIds;
+        } else {
+          // Explicitly set company to empty array if REQUESTER is not selected
+          updateData.company = [];
         }
         
         await userRequest.put(`/jvm/updateUser/${userId}`, updateData);
@@ -166,9 +178,12 @@ function AddUser({ handleClose, open, editData, getData, selectedTab = 0 }) {
           userType: data.userType, // Array of user types
         };
         
-        // Only include company if REQUESTER is selected
-        if (isRequesterSelected) {
+        // Only include company if REQUESTER is selected and company IDs exist
+        if (isRequesterSelected && companyIds.length > 0) {
           createData.company = companyIds;
+        } else {
+          // Explicitly set company to empty array if REQUESTER is not selected
+          createData.company = [];
         }
         
         await userRequest.post("/jvm/createUser", createData);
