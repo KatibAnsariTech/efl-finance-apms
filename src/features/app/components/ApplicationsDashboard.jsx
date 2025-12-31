@@ -74,6 +74,17 @@ const applications = [
     route: "/capex",
     projectType: "CPX",
   },
+  {
+    id: "apms",
+    title: "Advance Payment Management System",
+    description:
+      "Manage petty cash, non-PO expenses, ad-hoc advances, and approval workflows with complete financial visibility.",
+    status: "active",
+    color: "#2563EB",
+    route: "/apms",
+    projectType: "APMS",
+  },
+
 ];
 
 export default function ApplicationsDashboard() {
@@ -138,141 +149,141 @@ export default function ApplicationsDashboard() {
             // Maintain original layout: first 2 cards are md=3, third card is md=6, rest are md=3
             let gridSize = 3;
             if (index === 2) gridSize = 6; // Third card is wider
-            
+
             return (
-            <Grid 
-              key={app.id} 
-              item 
-              xs={12} 
-              sm={6} 
-              md={gridSize}
-            >
-            <Card
-              sx={{
-                height: "240px",
-                borderRadius: "16px",
-                background: `linear-gradient(135deg, ${app.color} 0%, ${app.color}dd 100%)`,
-                position: "relative",
-                overflow: "hidden",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                },
-              }}
-              onClick={() => handleCardClick(app.route)}
-            >
-              <CardContent
-                sx={{
-                  padding: 3,
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  position: "relative",
-                  zIndex: 2,
-                }}
+              <Grid
+                key={app.id}
+                item
+                xs={12}
+                sm={6}
+                md={gridSize}
               >
-                <Typography
+                <Card
                   sx={{
-                    fontSize: "18px",
-                    fontWeight: "bold",
-                    color: "white",
-                    marginBottom: 1,
-                    fontFamily: "Arial, sans-serif",
+                    height: "240px",
+                    borderRadius: "16px",
+                    background: `linear-gradient(135deg, ${app.color} 0%, ${app.color}dd 100%)`,
+                    position: "relative",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                    },
                   }}
+                  onClick={() => handleCardClick(app.route)}
                 >
-                  {app.title}
-                </Typography>
-
-                <Typography
-                  sx={{
-                    fontSize: "14px",
-                    color: "rgba(255, 255, 255, 0.9)",
-                    lineHeight: 1.5,
-                    marginBottom: 2,
-                    fontFamily: "Arial, sans-serif",
-                  }}
-                >
-                  {app.description}
-                </Typography>
-
-                {app.status === "coming-soon" ? (
-                  <Typography
+                  <CardContent
                     sx={{
-                      fontSize: "12px",
-                      color: "rgba(255, 255, 255, 0.8)",
-                      fontStyle: "italic",
-                      fontFamily: "Arial, sans-serif",
+                      padding: 3,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      position: "relative",
+                      zIndex: 2,
                     }}
                   >
-                    ...Coming Soon
-                  </Typography>
-                ) : app.status === "active" ? (
-                  <Button
+                    <Typography
+                      sx={{
+                        fontSize: "18px",
+                        fontWeight: "bold",
+                        color: "white",
+                        marginBottom: 1,
+                        fontFamily: "Arial, sans-serif",
+                      }}
+                    >
+                      {app.title}
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "14px",
+                        color: "rgba(255, 255, 255, 0.9)",
+                        lineHeight: 1.5,
+                        marginBottom: 2,
+                        fontFamily: "Arial, sans-serif",
+                      }}
+                    >
+                      {app.description}
+                    </Typography>
+
+                    {app.status === "coming-soon" ? (
+                      <Typography
+                        sx={{
+                          fontSize: "12px",
+                          color: "rgba(255, 255, 255, 0.8)",
+                          fontStyle: "italic",
+                          fontFamily: "Arial, sans-serif",
+                        }}
+                      >
+                        ...Coming Soon
+                      </Typography>
+                    ) : app.status === "active" ? (
+                      <Button
+                        sx={{
+                          backgroundColor: "#28a745",
+                          color: "white",
+                          borderRadius: "20px",
+                          padding: "8px 16px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          textTransform: "none",
+                          minWidth: "100px",
+                          width: "120px",
+                          "&:hover": {
+                            backgroundColor: "#218838",
+                          },
+                        }}
+                      >
+                        View
+                      </Button>
+                    ) : (
+                      <Button
+                        sx={{
+                          backgroundColor: "#dc3545",
+                          color: "white",
+                          borderRadius: "20px",
+                          padding: "8px 16px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          textTransform: "none",
+                          minWidth: "100px",
+                          width: "120px",
+                          "&:hover": {
+                            backgroundColor: "#c82333",
+                          },
+                        }}
+                      >
+                        {app.pendingCount} Pending
+                      </Button>
+                    )}
+                  </CardContent>
+
+                  <Box
                     sx={{
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      borderRadius: "20px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      textTransform: "none",
-                      minWidth: "100px",
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
                       width: "120px",
-                      "&:hover": {
-                        backgroundColor: "#218838",
-                      },
+                      height: "120px",
+                      opacity: 0.1,
+                      zIndex: 1,
                     }}
                   >
-                    View
-                  </Button>
-                ) : (
-                  <Button
-                    sx={{
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      borderRadius: "20px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      textTransform: "none",
-                      minWidth: "100px",
-                      width: "120px",
-                      "&:hover": {
-                        backgroundColor: "#c82333",
-                      },
-                    }}
-                  >
-                    {app.pendingCount} Pending
-                  </Button>
-                )}
-              </CardContent>
-
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  width: "120px",
-                  height: "120px",
-                  opacity: 0.1,
-                  zIndex: 1,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    background:
-                      "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
-                    borderRadius: "50%",
-                  }}
-                />
-              </Box>
-            </Card>
-          </Grid>
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        background:
+                          "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </Box>
+                </Card>
+              </Grid>
             );
           })}
         </Grid>

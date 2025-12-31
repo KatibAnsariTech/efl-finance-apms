@@ -87,6 +87,14 @@ export const getCurrentTitle = (path) => {
   if (path.startsWith("/settings/add-user")) return "Add User";
   if (path.startsWith("/settings")) return "Settings";
   
+  // APMS Routes
+  if(path.startsWith("/apms/raise-request")) return "Raise Request";
+  if(path.startsWith("/apms/my-request")) return "My Requests";
+  if(path.startsWith("/apms/requests")) return "Request Details";
+  if(path.startsWith("/apms/master")) return "Master Data";
+  if(path.startsWith("/apms/user-management")) return "User Management";
+  if(path.startsWith("/apms/hierarchy-management")) return "Hierarchy Management";
+
   // Error routes
   if (path.startsWith("/404")) return "Page Not Found";
 

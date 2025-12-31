@@ -86,7 +86,7 @@ const ImportPaymentUploadPage = lazy(() =>
   import("src/features/import-payment/upload/pages/ImportPaymentUpload")
 );
 
-const ImportPaymentRequestPage = lazy(()=> 
+const ImportPaymentRequestPage = lazy(() =>
   import("src/features/import-payment/request/pages/ImportPaymentRequest")
 );
 
@@ -114,7 +114,7 @@ const ImportPaymentReportPage = lazy(() =>
   import("src/features/import-payment/report/pages/ImportPaymentReport")
 );
 
-const ImportPaymentReportDetailView = lazy(() => 
+const ImportPaymentReportDetailView = lazy(() =>
   import("src/features/import-payment/report/components/ReportDetails")
 );
 
@@ -122,11 +122,11 @@ const ImportPaymentMyRequest = lazy(() =>
   import("src/features/import-payment/my-request/pages/ImportPaymentMyRequest")
 )
 
-const ImportPaymentMyReportDetailView = lazy(() => 
+const ImportPaymentMyReportDetailView = lazy(() =>
   import("src/features/import-payment/my-request/components/ReportDetails")
 );
 
-const ImportPaymentUploadReportDetailView = lazy(()=>
+const ImportPaymentUploadReportDetailView = lazy(() =>
   import("src/features/import-payment/upload/components/ReportDetails")
 );
 
@@ -199,6 +199,38 @@ const CAPEXDraftEditPage = lazy(() =>
   import("src/features/capex/my-requests/pages/DraftEdit")
 );
 
+// apms routes :
+const APMSPage = lazy(() =>
+  import("src/features/apms/Dashboard/pages/APMS")
+);
+const APMSDashboard = lazy(() =>
+  import("src/features/apms/Dashboard/components/APMSDashboard")
+);
+const APMSMasterPage = lazy(() =>
+  import("src/features/apms/master/pages/APMSMaster")
+);
+const APMSRaiseRequestPage = lazy(() =>
+  import("src/features/apms/raise-request/pages/RaiseRequest")
+);
+const APMSMyRequestsPage = lazy(() =>
+  import("src/features/apms/my-requests/pages/MyRequests")
+);
+const APMSRequestsPage = lazy(() =>
+  import("src/features/apms/request/pages/APMRequest")
+);
+const APMSHierarchyManagementPage = lazy(() =>
+  import("src/features/apms/hierachy-management/pages/APMSHierarchyManagementPage")
+)
+const APMSUserManagement = lazy(() =>
+  import("src/features/apms/usermanagement/pages/APMSUserManagement")
+);
+// const CAPEXRequestDetailPage = lazy(() =>
+//   import("src/features/capex/requests/pages/RequestDetail")
+// );
+const APMSMyRequestDetailPage = lazy(() =>
+  import("src/features/apms/my-requests/components/APMSDetails")
+);
+
 const SettingsPage = lazy(() => import("src/features/settings/pages/Settings"));
 const ProfilePage = lazy(() => import("src/features/settings/pages/Profile"));
 const AddUserPage = lazy(() => import("src/features/settings/pages/AddUser"));
@@ -210,16 +242,16 @@ const ChangePasswordPage = lazy(() =>
 export default function Router() {
   const isLoggedIn = localStorage.getItem("accessToken");
   const user = JSON.parse(localStorage.getItem("user"));
-  
+
   // Check if user has SUPER_ADMIN role in any project
   const isSAdmin = user?.userRoles?.some(role => {
     const userTypes = Array.isArray(role.userType) ? role.userType : [role.userType];
     return userTypes.includes("SUPER_ADMIN");
-  }) || 
-  Object.values(user?.projectRoles || {}).some(userType => {
-    const userTypes = Array.isArray(userType) ? userType : [userType];
-    return userTypes.includes("SUPER_ADMIN");
-  });
+  }) ||
+    Object.values(user?.projectRoles || {}).some(userType => {
+      const userTypes = Array.isArray(userType) ? userType : [userType];
+      return userTypes.includes("SUPER_ADMIN");
+    });
 
   const AdminRoute = ({ children }) => {
     return isSAdmin ? children : <Navigate to="/" replace />;
@@ -235,15 +267,15 @@ export default function Router() {
   // Protected route wrapper that checks URL access
   const ProtectedRoute = ({ path, element }) => {
     const user = JSON.parse(localStorage.getItem("user"));
-    
+
     if (!user) {
       return <Navigate to="/login" replace />;
     }
-    
+
     if (hasAccessToPath(path, user)) {
       return element;
     }
-    
+
     // Show 404 page if user doesn't have access
     return <Page404 />;
   };
@@ -251,10 +283,10 @@ export default function Router() {
 
   const RoleBasedRedirect = () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    
+
     // Get the first accessible path for the user
     const redirectPath = getFirstAccessiblePath(user);
-    
+
     return <Navigate to={redirectPath} replace />;
   };
 
@@ -299,6 +331,10 @@ export default function Router() {
           element: <ProtectedRoute path="/capex" element={<CAPEXPage />} />,
         },
         {
+          path: "/apms",
+          element: <ProtectedRoute path="/apms" element={<APMSPage />} />,
+        },
+        {
           path: "/jvm/dashboard",
           element: (
             <ProtectedRoute path="/jvm/dashboard" element={<JVMDashboard />} />
@@ -337,6 +373,15 @@ export default function Router() {
             <ProtectedRoute
               path="/capex/dashboard"
               element={<CAPEXDashboard />}
+            />
+          ),
+        },
+        {
+          path: "/apms/dashboard",
+          element: (
+            <ProtectedRoute
+              path="/apms/dashboard"
+              element={<APMSDashboard />}
             />
           ),
         },
@@ -451,7 +496,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/request",
           element: (
             <ProtectedRoute
@@ -460,7 +505,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/upload/:requestNo",
           element: (
             <ProtectedRoute
@@ -469,7 +514,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/master",
           element: (
             <ProtectedRoute
@@ -478,7 +523,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/usermanagement",
           element: (
             <ProtectedRoute
@@ -496,7 +541,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/my-request",
           element: (
             <ProtectedRoute
@@ -505,7 +550,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/my-request/:requestNo",
           element: (
             <ProtectedRoute
@@ -523,7 +568,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/hierarchy-flow",
           element: (
             <ProtectedRoute
@@ -532,7 +577,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/report",
           element: (
             <ProtectedRoute
@@ -541,7 +586,7 @@ export default function Router() {
             />
           ),
         },
-         {
+        {
           path: "/import-payment/report/:requestNo",
           element: (
             <ProtectedRoute
@@ -695,6 +740,71 @@ export default function Router() {
             />
           ),
         },
+        // APMS subpages
+        {
+          path: "/apms/master",
+          element: (
+            <ProtectedRoute
+              path="/apms/master"
+              element={<APMSMasterPage />}
+            />
+          ),
+        },
+        {
+          path: "/apms/raise-request",
+          element: (
+            <ProtectedRoute
+              path="/apms/raise-request"
+              element={<APMSRaiseRequestPage />}
+            />
+          ),
+        },
+        {
+          path: "/apms/my-requests",
+          element: (
+            <ProtectedRoute
+              path="/apms/my-requests"
+              element={<APMSMyRequestsPage />}
+            />
+          ),
+        },
+        {
+          path: "/apms/requests",
+          element: (
+            <ProtectedRoute
+              path="/apms/requests"
+              element={<APMSRequestsPage />}
+            />
+          ),
+        },
+        {
+          path: "/apms/hierarchy-management",
+          element: (
+            <ProtectedRoute
+              path="/apms/hierarchy-management"
+              element={<APMSHierarchyManagementPage />}
+            />
+          ),
+        },
+        {
+          path: "/apms/user-management",
+          element: (
+            <ProtectedRoute
+              path="/apms/user-management"
+              element={<APMSUserManagement />}
+            />
+          ),
+        },
+        {
+          path: "/apms/my-requests/:id",
+          element: (
+            <ProtectedRoute
+              path="/apms/my-requests"
+              element={<APMSMyRequestDetailPage />}
+            />
+          ),
+        },
+        
         // Settings pages
         {
           path: "/settings",
@@ -753,16 +863,16 @@ export default function Router() {
         </Suspense>
       ),
     },
-      {
-        path: "/verify-otp",
-        element: isLoggedIn ? (
-          <Navigate to="/" replace />
-        ) : (
-          <Suspense>
-            <TwoFactorOTPPage />
-          </Suspense>
-        ),
-      },
+    {
+      path: "/verify-otp",
+      element: isLoggedIn ? (
+        <Navigate to="/" replace />
+      ) : (
+        <Suspense>
+          <TwoFactorOTPPage />
+        </Suspense>
+      ),
+    },
     // Azure SSO - Commented out
     // {
     //   path: "/azure-redirect",

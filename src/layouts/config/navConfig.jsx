@@ -111,28 +111,28 @@ const projectConfig = {
         icon: <RequestPageIcon />,
         roles: ["APPROVER"]
       },
-       {
+      {
         id: "master",
         title: "Master Data",
         path: "/import-payment/master",
         icon: <AssignmentIcon />,
         roles: ["SUPER_ADMIN"],
       },
-       {
+      {
         id: "usermanagement",
         title: "User Management",
         path: "/import-payment/usermanagement",
         icon: <ManageAccountsIcon />,
         roles: ["ADMIN", "SUPER_ADMIN"],
       },
-       {
+      {
         id: "raised-request",
         title: "Raise Request",
         path: "/import-payment/raised-request",
         icon: <RequestPageIcon />,
         roles: ["REQUESTER"],
       },
-       {
+      {
         id: "my-request",
         title: "My Request",
         path: "/import-payment/my-request",
@@ -236,43 +236,96 @@ const projectConfig = {
       },
     ],
   },
+  
+  // CPX: {
+  //   id: "capex",
+  //   title: "CAPEX",
+  //   path: "/capex",
+  //   icon: <TrendingUpIcon />,
+  //   hasSubItems: true,
+  //   subItems: [
+  //     {
+  //       id: "capex-raise-request",
+  //       title: "Raise Request",
+  //       path: "/capex/raise-request",
+  //       icon: <RequestPageIcon />,
+  //       roles: ["REQUESTER"],
+  //     },
+  //     {
+  //       id: "capex-my-requests",
+  //       title: "My Requests",
+  //       path: "/capex/my-requests",
+  //       icon: <ListAltIcon />,
+  //       roles: ["REQUESTER"],
+  //     },
+  //     {
+  //       id: "capex-requests",
+  //       title: "Requests",
+  //       path: "/capex/requests",
+  //       icon: <ViewListIcon />,
+  //       roles: ["APPROVER"],
+  //     },
+  //     {
+  //       id: "capex-master",
+  //       title: "Master Data",
+  //       path: "/capex/master",
+  //       icon: <SettingsIcon />,
+  //       roles: ["ADMIN", "SUPER_ADMIN"],
+  //     },
+  //   ],
+  // },
+
   CPX: {
-    id: "capex",
-    title: "CAPEX",
-    path: "/capex",
-    icon: <TrendingUpIcon />,
+    id: "apms",
+    title: "APMS",
+    path: "/apms",
+    icon: <AccountBalanceWalletIcon />,
     hasSubItems: true,
     subItems: [
       {
-        id: "capex-raise-request",
+        id: "apms-raise-request",
         title: "Raise Request",
-        path: "/capex/raise-request",
+        path: "/apms/raise-request",
         icon: <RequestPageIcon />,
-        roles: ["REQUESTER"],
+        roles: ["REQUESTER", "SUPER_ADMIN"],
       },
       {
-        id: "capex-my-requests",
+        id: "apms-my-requests",
         title: "My Requests",
-        path: "/capex/my-requests",
+        path: "/apms/my-requests",
         icon: <ListAltIcon />,
-        roles: ["REQUESTER"],
+        roles: ["REQUESTER", "SUPER_ADMIN"],
       },
+      // {
+      //   id: "apms-requests",
+      //   title: "Requests",
+      //   path: "/apms/requests",
+      //   icon: <ViewListIcon />,
+      //   roles: ["APPROVER", "SUPER_ADMIN"],
+      // },
       {
-        id: "capex-requests",
-        title: "Requests",
-        path: "/capex/requests",
-        icon: <ViewListIcon />,
-        roles: ["APPROVER"],
-      },
-      {
-        id: "capex-master",
+        id: "apms-master",
         title: "Master Data",
-        path: "/capex/master",
+        path: "/apms/master",
         icon: <SettingsIcon />,
         roles: ["ADMIN", "SUPER_ADMIN"],
       },
-    ],
-  },
+      {
+        id: "apms-user-management",
+        title: "User Management",
+        path: "/apms/user-management",
+        icon: <ManageAccountsIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
+      },
+      {
+        id: "apms-hierarchy-management",
+        title: "Hierarchy Management",
+        path: "/apms/hierarchy-management",
+        icon: <AccountTreeIcon />,
+        roles: ["ADMIN", "SUPER_ADMIN"],
+      },
+    ]
+  }
 };
 
 export const generateNavigationConfig = (accessibleProjects, userRoles, user = null) => {
@@ -294,7 +347,7 @@ export const generateNavigationConfig = (accessibleProjects, userRoles, user = n
     if (projectConfig[projectType]) {
       const project = projectConfig[projectType];
       const userType = userRoles[projectType];
-      console.log("project>>>",project)
+      console.log("project>>>", project)
       const filteredSubItems = project.subItems.filter((subItem) => {
         // Special handling for IMT project type
         if (projectType === "IMT") {
@@ -308,14 +361,14 @@ export const generateNavigationConfig = (accessibleProjects, userRoles, user = n
             const hasReportAccess = user?.accessPoints?.report !== undefined;
             return hasReportAccess;
           }
-          
+
           // Upload Payment: Show for APPROVER if output_document is available in accessPoints
           if (subItem.id === "import-payment-upload") {
             const hasOutputDocumentAccess = user?.accessPoints?.output_document !== undefined;
             return includesUserType(userType, "APPROVER") && hasOutputDocumentAccess;
           }
         }
-        
+
         // Default role-based filtering
         return hasUserType(userType, subItem.roles);
       });
@@ -365,7 +418,7 @@ export const generateNavigationConfig = (accessibleProjects, userRoles, user = n
   // Get all unique user roles across all projects
   // Flatten arrays and get unique values
   const allUserRoles = [...new Set(
-    Object.values(userRoles).flatMap(userType => 
+    Object.values(userRoles).flatMap(userType =>
       Array.isArray(userType) ? userType : [userType]
     )
   )];
