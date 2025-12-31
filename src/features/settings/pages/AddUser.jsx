@@ -298,6 +298,7 @@ export default function AddUser() {
                         <MenuItem value="CPX">Capex</MenuItem>
                         <MenuItem value="CUSTOM">Custom Duty</MenuItem>
                         <MenuItem value="IMT">Import Payment</MenuItem>
+                        <MenuItem value="APMS">Advanced Payment Management System</MenuItem>
                         {/* <MenuItem value="PC">Petty Cash</MenuItem> */}
                       </Select>
                       {errors.projectType && (

@@ -17,7 +17,7 @@ function AddEditBussinessArea({ handleClose, open, editData: accountTypeData, ge
 
   React.useEffect(() => {
     if (accountTypeData) {
-      setValue("department", accountTypeData.department || "");
+      setValue("businessArea", accountTypeData.businessArea || "");
     } else {
       reset();
     }
@@ -27,7 +27,7 @@ function AddEditBussinessArea({ handleClose, open, editData: accountTypeData, ge
     setLoading(true);
     try {
       const formattedData = {
-        key: "Department",
+        key: "businessArea",
         value: data.department,
       };
       if (accountTypeData?._id) {
